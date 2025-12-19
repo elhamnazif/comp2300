@@ -32,7 +32,7 @@ import org.maplibre.spatialk.geojson.*
 fun ClinicMap(
     clinics: List<Clinic>,
     selectedClinic: Clinic? = null,
-    onClinicSelect: (Clinic) -> Unit = {}, // callback to notify parent
+    onClinicSelect: (Clinic) -> Unit = {},
 ) {
     // 1. Dynamic Styling Colors based on Material Theme
     // We can pass Color objects directly to const() in the DSL
