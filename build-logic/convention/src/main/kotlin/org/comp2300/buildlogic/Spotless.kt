@@ -25,10 +25,10 @@ internal fun Project.configureSpotless(extension: SpotlessExtension) = extension
         format("xml") {
             target("**/*.xml")
             targetExclude("**/build/**/*.xml")
-            // licenseHeader(
-            //     rootProject.file("config/spotless/copyright.xml"),
-            //     "(^(?![\\/ ]\\*).*$)"
-            // )
+            //licenseHeader(
+            //    rootProject.file("config/spotless/copyright.xml"),
+            //    "(^(?![\\/ ]\\*).*$)"
+            //)
         }
     }
 }
