@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 data class ProfileUiState(
-        val userInitials: String = "JP",
-        val userName: String = "Vita User",
-        val memberSince: String = "Member since 2024",
-        val recentResults: List<LabResult> = emptyList()
+    val userInitials: String = "JP",
+    val userName: String = "Vita User",
+    val memberSince: String = "Member since 2024",
+    val recentResults: List<LabResult> = emptyList(),
 )
 
 class ProfileViewModel : ViewModel() {

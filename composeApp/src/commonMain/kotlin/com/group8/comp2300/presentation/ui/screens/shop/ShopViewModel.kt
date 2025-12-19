@@ -10,9 +10,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 data class ShopUiState(
-        val products: List<Product> = emptyList(),
-        val selectedCategory: ProductCategory = ProductCategory.ALL,
-        val cartItemCount: Int = 2
+    val products: List<Product> = emptyList(),
+    val selectedCategory: ProductCategory = ProductCategory.ALL,
+    val cartItemCount: Int = 2,
 )
 
 class ShopViewModel(private val repository: ShopRepository) : ViewModel() {

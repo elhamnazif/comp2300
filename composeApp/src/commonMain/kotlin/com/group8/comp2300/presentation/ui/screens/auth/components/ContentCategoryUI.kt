@@ -5,10 +5,10 @@ import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.app.symbols.icons.materialsymbols.Icons as MaterialIcons
 import com.app.symbols.icons.materialsymbols.icons.FingerprintW500Outlined
 import com.app.symbols.icons.materialsymbols.icons.HealthAndSafetyW500Outlined
 import com.group8.comp2300.domain.model.education.ContentCategory
+import com.app.symbols.icons.materialsymbols.Icons as MaterialIcons
 
 /**
  * UI-specific extension properties for ContentCategory. These are kept in composeApp since they

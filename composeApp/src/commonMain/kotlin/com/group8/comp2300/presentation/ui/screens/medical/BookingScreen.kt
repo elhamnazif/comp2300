@@ -22,91 +22,91 @@ import com.group8.comp2300.presentation.ui.screens.medical.components.ClinicMap
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingScreen(
-        clinics: List<Clinic>,
-        selectedClinic: Clinic?,
-        onClinicClick: (String) -> Unit,
-        onClinicSelect: (Clinic) -> Unit,
-        modifier: Modifier = Modifier,
-        isGuest: Boolean = false,
-        onRequireAuth: () -> Unit = {},
+    clinics: List<Clinic>,
+    selectedClinic: Clinic?,
+    onClinicClick: (String) -> Unit,
+    onClinicSelect: (Clinic) -> Unit,
+    modifier: Modifier = Modifier,
+    isGuest: Boolean = false,
+    onRequireAuth: () -> Unit = {},
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
 
     BottomSheetScaffold(
-            modifier = modifier,
-            scaffoldState = scaffoldState,
-            sheetPeekHeight = 160.dp,
-            sheetContainerColor = MaterialTheme.colorScheme.surface,
-            sheetShadowElevation = 16.dp,
-            sheetShape =
-                    MaterialTheme.shapes.extraLarge.copy(
-                            bottomStart = androidx.compose.foundation.shape.CornerSize(0.dp),
-                            bottomEnd = androidx.compose.foundation.shape.CornerSize(0.dp)
-                    ),
-            sheetContent = {
-                LazyColumn(
-                        contentPadding = PaddingValues(bottom = 24.dp, start = 16.dp, end = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                ) {
-                    item {
-                        Text(
-                                "Nearby Locations",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.padding(horizontal = 12.dp)
-                        )
-                    }
+        modifier = modifier,
+        scaffoldState = scaffoldState,
+        sheetPeekHeight = 160.dp,
+        sheetContainerColor = MaterialTheme.colorScheme.surface,
+        sheetShadowElevation = 16.dp,
+        sheetShape =
+        MaterialTheme.shapes.extraLarge.copy(
+            bottomStart = androidx.compose.foundation.shape.CornerSize(0.dp),
+            bottomEnd = androidx.compose.foundation.shape.CornerSize(0.dp),
+        ),
+        sheetContent = {
+            LazyColumn(
+                contentPadding = PaddingValues(bottom = 24.dp, start = 16.dp, end = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                item {
+                    Text(
+                        "Nearby Locations",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 12.dp),
+                    )
+                }
 
-                    items(clinics) { clinic ->
-                        ClinicCompactRow(
-                                clinic = clinic,
-                                isSelected = selectedClinic?.id == clinic.id,
-                                onClick = { onClinicSelect(clinic) },
-                                onNavigate = { onClinicClick(clinic.id) }
-                        )
-                        HorizontalDivider(
-                                modifier = Modifier.padding(top = 8.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                        )
-                    }
+                items(clinics) { clinic ->
+                    ClinicCompactRow(
+                        clinic = clinic,
+                        isSelected = selectedClinic?.id == clinic.id,
+                        onClick = { onClinicSelect(clinic) },
+                        onNavigate = { onClinicClick(clinic.id) },
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 8.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    )
                 }
             }
+        },
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
             ClinicMap(
-                    clinics = clinics,
-                    selectedClinic = selectedClinic,
+                clinics = clinics,
+                selectedClinic = selectedClinic,
             )
 
             // Search Bar (Floating at Top)
             Surface(
-                    modifier =
-                            Modifier.align(Alignment.TopCenter)
-                                    .statusBarsPadding()
-                                    .padding(top = 8.dp, start = 16.dp, end = 16.dp)
-                                    .fillMaxWidth(),
-                    shape = MaterialTheme.shapes.extraLarge,
-                    shadowElevation = 4.dp,
-                    color = MaterialTheme.colorScheme.surface
+                modifier =
+                Modifier.align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(top = 8.dp, start = 16.dp, end = 16.dp)
+                    .fillMaxWidth(),
+                shape = MaterialTheme.shapes.extraLarge,
+                shadowElevation = 4.dp,
+                color = MaterialTheme.colorScheme.surface,
             ) {
                 Row(
-                        modifier =
-                                Modifier.clickable { /* TODO: Open Search Screen */}
-                                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                    Modifier.clickable { /* TODO: Open Search Screen */ }
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = "Search",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
-                            text = "Search for clinics...",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "Search for clinics...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -115,52 +115,55 @@ fun BookingScreen(
 }
 
 @Composable
-fun ClinicCompactRow(
-        clinic: Clinic,
-        isSelected: Boolean,
-        onClick: () -> Unit,
-        onNavigate: () -> Unit
-) {
+fun ClinicCompactRow(clinic: Clinic, isSelected: Boolean, onClick: () -> Unit, onNavigate: () -> Unit) {
     val containerColor =
-            if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+        if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
 
     Row(
-            modifier =
-                    Modifier.fillMaxWidth()
-                            .background(containerColor, MaterialTheme.shapes.medium)
-                            .clickable { onClick() }
-                            .padding(vertical = 12.dp, horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        modifier =
+        Modifier.fillMaxWidth()
+            .background(containerColor, MaterialTheme.shapes.medium)
+            .clickable { onClick() }
+            .padding(vertical = 12.dp, horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                    text = clinic.name,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color =
-                            if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                            else MaterialTheme.colorScheme.onSurface
+                text = clinic.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color =
+                if (isSelected) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                    text = "${clinic.formattedDistance} • ${clinic.tags.joinToString()}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color =
-                            if (isSelected)
-                                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                            else MaterialTheme.colorScheme.secondary,
-                    maxLines = 1
+                text = "${clinic.formattedDistance} • ${clinic.tags.joinToString()}",
+                style = MaterialTheme.typography.bodySmall,
+                color =
+                if (isSelected) {
+                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                } else {
+                    MaterialTheme.colorScheme.secondary
+                },
+                maxLines = 1,
             )
         }
 
         IconButton(onClick = onNavigate) {
             Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = "View Details",
-                    tint =
-                            if (isSelected) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.primary
+                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = "View Details",
+                tint =
+                if (isSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.primary
+                },
             )
         }
     }

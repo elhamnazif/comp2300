@@ -31,17 +31,17 @@ val navigationModule = module {
     navigation<Screen.Onboarding> {
         val navigator = LocalNavigator.current
         OnboardingScreen(
-                isGuest = navigator.isGuest,
-                onRequireAuth = navigator::requireAuth,
-                onFinished = { navigator.clearAndGoTo(Screen.Home) },
+            isGuest = navigator.isGuest,
+            onRequireAuth = navigator::requireAuth,
+            onFinished = { navigator.clearAndGoTo(Screen.Home) },
         )
     }
 
     navigation<Screen.Login> {
         val navigator = LocalNavigator.current
         LoginScreen(
-                onLoginSuccess = navigator::goBack,
-                onDismiss = navigator::goBack,
+            onLoginSuccess = navigator::goBack,
+            onDismiss = navigator::goBack,
         )
     }
 
@@ -52,40 +52,40 @@ val navigationModule = module {
     navigation<Screen.Home> {
         val navigator = LocalNavigator.current
         HomeScreen(
-                onNavigateToShop = { navigator.navigate(Screen.Shop) },
-                onNavigateToCalendar = { navigator.navigate(Screen.Calendar) },
-                onNavigateToEducation = { navigator.navigate(Screen.Education) },
-                onNavigateToMedication = { navigator.navigate(Screen.Medication) },
-                onNavigateToSymptomChecker = { navigator.navigate(Screen.SelfDiagnosis) },
-                onNavigateToClinicMap = { navigator.navigate(Screen.Booking) },
+            onNavigateToShop = { navigator.navigate(Screen.Shop) },
+            onNavigateToCalendar = { navigator.navigate(Screen.Calendar) },
+            onNavigateToEducation = { navigator.navigate(Screen.Education) },
+            onNavigateToMedication = { navigator.navigate(Screen.Medication) },
+            onNavigateToSymptomChecker = { navigator.navigate(Screen.SelfDiagnosis) },
+            onNavigateToClinicMap = { navigator.navigate(Screen.Booking) },
         )
     }
 
     navigation<Screen.Calendar> {
         val navigator = LocalNavigator.current
         CalendarScreen(
-                isGuest = navigator.isGuest,
-                onRequireAuth = navigator::requireAuth,
+            isGuest = navigator.isGuest,
+            onRequireAuth = navigator::requireAuth,
         )
     }
 
     navigation<Screen.Profile> {
         val navigator = LocalNavigator.current
         ProfileScreen(
-                isGuest = navigator.isGuest,
-                onRequireAuth = navigator::requireAuth,
-                onNavigateToLabResults = { navigator.navigate(Screen.LabResults) },
-                onNavigateToPrivacySecurity = { navigator.navigate(Screen.PrivacySecurity) },
-                onNavigateToNotifications = { navigator.navigate(Screen.Notifications) },
-                onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) },
+            isGuest = navigator.isGuest,
+            onRequireAuth = navigator::requireAuth,
+            onNavigateToLabResults = { navigator.navigate(Screen.LabResults) },
+            onNavigateToPrivacySecurity = { navigator.navigate(Screen.PrivacySecurity) },
+            onNavigateToNotifications = { navigator.navigate(Screen.Notifications) },
+            onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) },
         )
     }
 
     navigation<Screen.Medication> {
         val navigator = LocalNavigator.current
         MedicationScreen(
-                isGuest = navigator.isGuest,
-                onRequireAuth = navigator::requireAuth,
+            isGuest = navigator.isGuest,
+            onRequireAuth = navigator::requireAuth,
         )
     }
 
@@ -99,15 +99,15 @@ val navigationModule = module {
         val uiState by viewModel.uiState.collectAsState()
 
         ShopScreen(
-                products = uiState.products,
-                selectedCategory = uiState.selectedCategory,
-                cartItemCount = uiState.cartItemCount,
-                // When clicking a product, the Navigator should know to show the Detail pane
-                onProductClick = { prodId -> navigator.navigate(Screen.ProductDetail(prodId)) },
-                onCategorySelect = viewModel::selectCategory,
-                onAddToCart = viewModel::addToCart,
-                isGuest = navigator.isGuest,
-                onRequireAuth = navigator::requireAuth,
+            products = uiState.products,
+            selectedCategory = uiState.selectedCategory,
+            cartItemCount = uiState.cartItemCount,
+            // When clicking a product, the Navigator should know to show the Detail pane
+            onProductClick = { prodId -> navigator.navigate(Screen.ProductDetail(prodId)) },
+            onCategorySelect = viewModel::selectCategory,
+            onAddToCart = viewModel::addToCart,
+            isGuest = navigator.isGuest,
+            onRequireAuth = navigator::requireAuth,
         )
     }
 
@@ -115,8 +115,8 @@ val navigationModule = module {
         val navigator = LocalNavigator.current
 
         ProductDetailScreen(
-                productId = route.productId,
-                onBack = navigator::goBack,
+            productId = route.productId,
+            onBack = navigator::goBack,
         )
     }
 
@@ -130,12 +130,12 @@ val navigationModule = module {
         val uiState by viewModel.uiState.collectAsState()
 
         BookingScreen(
-                clinics = uiState.clinics,
-                selectedClinic = uiState.selectedClinic,
-                onClinicClick = { clinicId -> navigator.navigate(Screen.ClinicDetail(clinicId)) },
-                onClinicSelect = viewModel::selectClinic,
-                isGuest = navigator.isGuest,
-                onRequireAuth = navigator::requireAuth,
+            clinics = uiState.clinics,
+            selectedClinic = uiState.selectedClinic,
+            onClinicClick = { clinicId -> navigator.navigate(Screen.ClinicDetail(clinicId)) },
+            onClinicSelect = viewModel::selectClinic,
+            isGuest = navigator.isGuest,
+            onRequireAuth = navigator::requireAuth,
         )
     }
 
@@ -143,15 +143,15 @@ val navigationModule = module {
         val navigator = LocalNavigator.current
 
         BookingDetailsScreen(
-                clinicId = route.clinicId,
-                onBack = navigator::goBack,
-                onConfirm = {
-                    if (navigator.isGuest) {
-                        navigator.requireAuth()
-                    } else {
-                        // TODO: Handle booking confirmation
-                    }
-                },
+            clinicId = route.clinicId,
+            onBack = navigator::goBack,
+            onConfirm = {
+                if (navigator.isGuest) {
+                    navigator.requireAuth()
+                } else {
+                    // TODO: Handle booking confirmation
+                }
+            },
         )
     }
 
@@ -165,20 +165,20 @@ val navigationModule = module {
         val uiState by viewModel.uiState.collectAsState()
 
         EducationScreen(
-                filteredContent = uiState.filteredContent,
-                featuredItem = uiState.featuredItem,
-                selectedCategory = uiState.selectedCategory,
-                onContentClick = { id ->
-                    // Note: You might need a way to determine type without fetching the whole item
-                    // if you want this navigation logic to be purely route-based.
-                    val content = viewModel.getContentById(id)
-                    if (content?.type == ContentType.QUIZ) {
-                        navigator.navigate(Screen.QuizScreen(id))
-                    } else {
-                        navigator.navigate(Screen.VideoDetail(id))
-                    }
-                },
-                onCategorySelect = viewModel::selectCategory,
+            filteredContent = uiState.filteredContent,
+            featuredItem = uiState.featuredItem,
+            selectedCategory = uiState.selectedCategory,
+            onContentClick = { id ->
+                // Note: You might need a way to determine type without fetching the whole item
+                // if you want this navigation logic to be purely route-based.
+                val content = viewModel.getContentById(id)
+                if (content?.type == ContentType.QUIZ) {
+                    navigator.navigate(Screen.QuizScreen(id))
+                } else {
+                    navigator.navigate(Screen.VideoDetail(id))
+                }
+            },
+            onCategorySelect = viewModel::selectCategory,
         )
     }
 
@@ -187,14 +187,14 @@ val navigationModule = module {
         val viewModel = koinViewModel<EducationViewModel> { parametersOf(route.videoId) }
 
         VideoDetailScreen(
-                viewModel = viewModel,
-                videoId = route.videoId,
-                onBack = navigator::goBack,
-                onActionClick = { action ->
-                    if (action.contains("Clinic")) {
-                        navigator.clearAndGoTo(Screen.Booking)
-                    }
-                },
+            viewModel = viewModel,
+            videoId = route.videoId,
+            onBack = navigator::goBack,
+            onActionClick = { action ->
+                if (action.contains("Clinic")) {
+                    navigator.clearAndGoTo(Screen.Booking)
+                }
+            },
         )
     }
 
@@ -203,9 +203,9 @@ val navigationModule = module {
         val viewModel = koinViewModel<EducationViewModel> { parametersOf(route.quizId) }
 
         QuizScreen(
-                viewModel = viewModel,
-                quizId = route.quizId,
-                onBack = navigator::goBack,
+            viewModel = viewModel,
+            quizId = route.quizId,
+            onBack = navigator::goBack,
         )
     }
 
@@ -216,16 +216,16 @@ val navigationModule = module {
     navigation<Screen.SelfDiagnosis> {
         val navigator = LocalNavigator.current
         SelfDiagnosisScreen(
-                onBack = navigator::goBack,
-                onNavigateToBooking = { navigator.navigate(Screen.Booking) },
+            onBack = navigator::goBack,
+            onNavigateToBooking = { navigator.navigate(Screen.Booking) },
         )
     }
 
     navigation<Screen.LabResults> {
         val navigator = LocalNavigator.current
         LabResultsScreen(
-                onBack = navigator::goBack,
-                onScheduleTest = { navigator.navigate(Screen.Booking) },
+            onBack = navigator::goBack,
+            onScheduleTest = { navigator.navigate(Screen.Booking) },
         )
     }
 

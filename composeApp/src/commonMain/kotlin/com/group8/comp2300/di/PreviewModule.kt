@@ -46,8 +46,11 @@ class FakeEducationRepository : EducationRepository {
 class FakeShopRepository : ShopRepository {
     override fun getAllProducts(): List<Product> = sampleProducts
     override fun getProductsByCategory(category: ProductCategory): List<Product> =
-            if (category == ProductCategory.ALL) sampleProducts
-            else sampleProducts.filter { it.category == category }
+        if (category == ProductCategory.ALL) {
+            sampleProducts
+        } else {
+            sampleProducts.filter { it.category == category }
+        }
 
     override fun getProductById(id: String): Product? = sampleProducts.find { it.id == id }
 }
@@ -58,38 +61,38 @@ class FakeAuthRepository : AuthRepository {
 
     override suspend fun login(email: String, password: String): Result<User> {
         val user =
-                User(
-                        id = "preview-user",
-                        email = email,
-                        firstName = "Preview",
-                        lastName = "User",
-                        gender = Gender.PREFER_NOT_TO_SAY,
-                        sexualOrientation = SexualOrientation.PREFER_NOT_TO_SAY,
-                        dateOfBirth = null
-                )
+            User(
+                id = "preview-user",
+                email = email,
+                firstName = "Preview",
+                lastName = "User",
+                gender = Gender.PREFER_NOT_TO_SAY,
+                sexualOrientation = SexualOrientation.PREFER_NOT_TO_SAY,
+                dateOfBirth = null,
+            )
         _currentUser.value = user
         return Result.success(user)
     }
 
     override suspend fun register(
-            email: String,
-            password: String,
-            firstName: String,
-            lastName: String,
-            gender: Gender,
-            sexualOrientation: SexualOrientation,
-            dateOfBirth: LocalDate?
+        email: String,
+        password: String,
+        firstName: String,
+        lastName: String,
+        gender: Gender,
+        sexualOrientation: SexualOrientation,
+        dateOfBirth: LocalDate?,
     ): Result<User> {
         val user =
-                User(
-                        id = "preview-user",
-                        email = email,
-                        firstName = firstName,
-                        lastName = lastName,
-                        gender = gender,
-                        sexualOrientation = sexualOrientation,
-                        dateOfBirth = dateOfBirth
-                )
+            User(
+                id = "preview-user",
+                email = email,
+                firstName = firstName,
+                lastName = lastName,
+                gender = gender,
+                sexualOrientation = sexualOrientation,
+                dateOfBirth = dateOfBirth,
+            )
         _currentUser.value = user
         return Result.success(user)
     }

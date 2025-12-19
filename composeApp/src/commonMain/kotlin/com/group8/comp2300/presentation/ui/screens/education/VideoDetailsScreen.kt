@@ -24,10 +24,10 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VideoDetailScreen(
-        viewModel: EducationViewModel = koinViewModel(),
-        videoId: String,
-        onBack: () -> Unit,
-        onActionClick: (String) -> Unit
+    viewModel: EducationViewModel = koinViewModel(),
+    videoId: String,
+    onBack: () -> Unit,
+    onActionClick: (String) -> Unit,
 ) {
     val item = viewModel.getContentById(videoId)
     if (item == null) {
@@ -36,55 +36,55 @@ fun VideoDetailScreen(
         return
     }
     Scaffold(
-            topBar = {
-                // Transparent TopBar allowing content to shine through
-                TopAppBar(
-                        title = {},
-                        navigationIcon = {
-                            IconButton(onClick = onBack) {
-                                Icon(
-                                        Icons.AutoMirrored.Filled.ArrowBack,
-                                        "Back",
-                                        tint = Color.White
-                                )
-                            }
-                        },
-                        colors =
-                                TopAppBarDefaults.topAppBarColors(
-                                        containerColor = Color.Transparent
-                                )
-                )
-            }
+        topBar = {
+            // Transparent TopBar allowing content to shine through
+            TopAppBar(
+                title = {},
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            "Back",
+                            tint = Color.White,
+                        )
+                    }
+                },
+                colors =
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                ),
+            )
+        },
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
             // 1. STICKY VIDEO PLAYER (Mock)
             // Stays pinned at the top, does not scroll with the text
             Box(
-                    modifier = Modifier.fillMaxWidth().height(240.dp).background(Color.Black),
-                    contentAlignment = Alignment.Center
+                modifier = Modifier.fillMaxWidth().height(240.dp).background(Color.Black),
+                contentAlignment = Alignment.Center,
             ) {
                 // Placeholder for ExoPlayer
                 Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Play",
-                        tint = Color.White,
-                        modifier =
-                                Modifier.size(64.dp)
-                                        .background(Color.White.copy(alpha = 0.3f), CircleShape)
-                                        .padding(8.dp)
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "Play",
+                    tint = Color.White,
+                    modifier =
+                    Modifier.size(64.dp)
+                        .background(Color.White.copy(alpha = 0.3f), CircleShape)
+                        .padding(8.dp),
                 )
                 Text(
-                        "Video Player Placeholder",
-                        color = Color.Gray,
-                        modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp)
+                    "Video Player Placeholder",
+                    color = Color.Gray,
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
                 )
             }
 
             // 2. SCROLLABLE CONTENT
             LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 // Header Info
                 item {
@@ -95,15 +95,15 @@ fun VideoDetailScreen(
                         Spacer(Modifier.width(8.dp))
                         Text(item.formattedDuration, color = Color.Gray)
                         Spacer(Modifier.weight(1f))
-                        IconButton(onClick = { /* Share */}) { Icon(Icons.Default.Share, null) }
+                        IconButton(onClick = { /* Share */ }) { Icon(Icons.Default.Share, null) }
                     }
                 }
 
                 item {
                     Text(
-                            text = item.title,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
+                        text = item.title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
                     )
                 }
 
@@ -119,16 +119,16 @@ fun VideoDetailScreen(
                 // The "Knowledge" (Transcript)
                 item {
                     Text(
-                            text = "Transcript & Key Points",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
+                        text = "Transcript & Key Points",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                            text = item.transcript,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.4
+                        text = item.transcript,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.4,
                     )
                 }
 
@@ -139,12 +139,12 @@ fun VideoDetailScreen(
                     item {
                         Spacer(Modifier.height(16.dp))
                         Button(
-                                onClick = { onActionClick(relatedAction) },
-                                modifier = Modifier.fillMaxWidth().height(50.dp),
-                                colors =
-                                        ButtonDefaults.buttonColors(
-                                                containerColor = MaterialTheme.colorScheme.primary
-                                        )
+                            onClick = { onActionClick(relatedAction) },
+                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                            ),
                         ) {
                             Icon(Icons.Default.ThumbUp, null)
                             Spacer(Modifier.width(8.dp))

@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
-import kotlin.time.Duration.Companion.seconds
 import kotlinx.serialization.json.JsonPrimitive
 import org.maplibre.compose.camera.CameraPosition
 import org.maplibre.compose.camera.rememberCameraState
@@ -27,13 +26,10 @@ import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.compose.util.ClickResult
 import org.maplibre.spatialk.geojson.*
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
-fun ClinicMap(
-    clinics: List<Clinic>,
-    selectedClinic: Clinic? = null,
-    onClinicSelect: (Clinic) -> Unit = {},
-) {
+fun ClinicMap(clinics: List<Clinic>, selectedClinic: Clinic? = null, onClinicSelect: (Clinic) -> Unit = {}) {
     // 1. Dynamic Styling Colors based on Material Theme
     // We can pass Color objects directly to const() in the DSL
     val primaryColor = MaterialTheme.colorScheme.primary
@@ -51,10 +47,10 @@ fun ClinicMap(
     val cameraState =
         rememberCameraState(
             firstPosition =
-                CameraPosition(
-                    target = Position(101.6841, 3.1319), // KL Default
-                    zoom = 11.0
-                )
+            CameraPosition(
+                target = Position(101.6841, 3.1319), // KL Default
+                zoom = 11.0,
+            ),
         )
 
     // 3. Construct GeoJSON with "selected" property
@@ -67,23 +63,25 @@ fun ClinicMap(
                         id = JsonPrimitive(clinic.id),
                         geometry = Point(Position(clinic.lng, clinic.lat)),
                         properties =
-                            mapOf(
-                                "title" to JsonPrimitive(clinic.name),
-                                // Store as String "true"/"false" for
-                                // robust matching in 'switch'
-                                // expression
-                                "isSelected" to
-                                        JsonPrimitive(
-                                            if (clinic.id ==
-                                                selectedClinic
-                                                    ?.id
-                                            )
-                                                "true"
-                                            else "false"
-                                        )
-                            )
+                        mapOf(
+                            "title" to JsonPrimitive(clinic.name),
+                            // Store as String "true"/"false" for
+                            // robust matching in 'switch'
+                            // expression
+                            "isSelected" to
+                                JsonPrimitive(
+                                    if (clinic.id ==
+                                        selectedClinic
+                                            ?.id
+                                    ) {
+                                        "true"
+                                    } else {
+                                        "false"
+                                    },
+                                ),
+                        ),
                     )
-                }
+                },
             )
                 .toJson()
         }
@@ -93,11 +91,11 @@ fun ClinicMap(
         selectedClinic?.let {
             cameraState.animateTo(
                 finalPosition =
-                    cameraState.position.copy(
-                        target = Position(it.lng, it.lat),
-                        zoom = 15.0
-                    ),
-                duration = 1.seconds
+                cameraState.position.copy(
+                    target = Position(it.lng, it.lat),
+                    zoom = 15.0,
+                ),
+                duration = 1.seconds,
             )
         }
     }
@@ -108,7 +106,7 @@ fun ClinicMap(
             modifier = Modifier.fillMaxSize(),
             baseStyle = BaseStyle.Uri(styleUri),
             options = MapOptions(ornamentOptions = OrnamentOptions.OnlyLogo),
-            cameraState = cameraState
+            cameraState = cameraState,
         ) {
             val clinicSource =
                 rememberGeoJsonSource(
@@ -119,17 +117,17 @@ fun ClinicMap(
                 id = "clinics-layer",
                 source = clinicSource,
                 color =
-                    switch(
-                        feature["isSelected"].asString(),
-                        case(label = "true", output = const(primaryColor)),
-                        fallback = const(secondaryColor)
-                    ),
+                switch(
+                    feature["isSelected"].asString(),
+                    case(label = "true", output = const(primaryColor)),
+                    fallback = const(secondaryColor),
+                ),
                 radius =
-                    switch(
-                        feature["isSelected"].asString(),
-                        case(label = "true", output = const(12.dp)),
-                        fallback = const(8.dp)
-                    ),
+                switch(
+                    feature["isSelected"].asString(),
+                    case(label = "true", output = const(12.dp)),
+                    fallback = const(8.dp),
+                ),
                 strokeColor = const(surfaceColor),
                 strokeWidth = const(2.dp),
                 onClick = { features ->

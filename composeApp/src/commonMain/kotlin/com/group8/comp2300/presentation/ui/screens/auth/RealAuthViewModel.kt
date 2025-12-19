@@ -5,7 +5,6 @@ import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
-import kotlin.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 
 class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewModel() {
 
@@ -24,7 +24,7 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
     override val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     override val currentUser: StateFlow<User?> =
-            authRepository.currentUser.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+        authRepository.currentUser.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     // --- Actions (Intents) ---
 
@@ -34,47 +34,64 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
                 val isValid = isValidEmail(event.email)
                 _uiState.update {
                     it.copy(
-                            email = event.email,
-                            emailError =
-                                    if (isValid || event.email.isEmpty()) null
-                                    else "Invalid email format"
+                        email = event.email,
+                        emailError =
+                        if (isValid || event.email.isEmpty()) {
+                            null
+                        } else {
+                            "Invalid email format"
+                        },
                     )
                 }
             }
+
             is AuthUiEvent.PasswordChanged -> {
                 val isValid = isValidPassword(event.password)
                 _uiState.update {
                     it.copy(
-                            password = event.password,
-                            passwordError =
-                                    if (isValid || event.password.isEmpty()) null else "Min 8 chars"
+                        password = event.password,
+                        passwordError =
+                        if (isValid || event.password.isEmpty()) null else "Min 8 chars",
                     )
                 }
             }
+
             is AuthUiEvent.TogglePasswordVisibility -> {
                 _uiState.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
             }
+
             is AuthUiEvent.ToggleTerms -> {
                 _uiState.update { it.copy(termsAccepted = !it.termsAccepted) }
             }
+
             is AuthUiEvent.FirstNameChanged -> _uiState.update { it.copy(firstName = event.name) }
+
             is AuthUiEvent.LastNameChanged -> _uiState.update { it.copy(lastName = event.name) }
+
             is AuthUiEvent.GenderChanged -> _uiState.update { it.copy(gender = event.gender) }
+
             is AuthUiEvent.OrientationChanged ->
-                    _uiState.update { it.copy(sexualOrientation = event.orientation) }
+                _uiState.update { it.copy(sexualOrientation = event.orientation) }
+
             is AuthUiEvent.DateOfBirthChanged ->
-                    _uiState.update {
-                        it.copy(dateOfBirth = event.dateMillis, showDatePicker = false)
-                    }
+                _uiState.update {
+                    it.copy(dateOfBirth = event.dateMillis, showDatePicker = false)
+                }
+
             is AuthUiEvent.ShowDatePicker ->
-                    _uiState.update { it.copy(showDatePicker = event.show) }
+                _uiState.update { it.copy(showDatePicker = event.show) }
+
             is AuthUiEvent.ToggleAuthMode ->
-                    _uiState.update {
-                        AuthUiState(isRegistering = !it.isRegistering) // Reset form on switch
-                    }
+                _uiState.update {
+                    AuthUiState(isRegistering = !it.isRegistering) // Reset form on switch
+                }
+
             is AuthUiEvent.NextStep -> _uiState.update { it.copy(step = 1) }
+
             is AuthUiEvent.PrevStep -> _uiState.update { it.copy(step = 0) }
+
             is AuthUiEvent.Submit -> submitData(event.onSuccess)
+
             is AuthUiEvent.ClearError -> _uiState.update { it.copy(errorMessage = null) }
         }
     }
@@ -101,31 +118,35 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
         viewModelScope.launch {
             // Convert UI strings to enums, with defaults if empty
             val gender =
-                    if (state.gender.isNotEmpty())
-                            Gender.fromDisplayName(state.gender) ?: Gender.PREFER_NOT_TO_SAY
-                    else Gender.PREFER_NOT_TO_SAY
+                if (state.gender.isNotEmpty()) {
+                    Gender.fromDisplayName(state.gender) ?: Gender.PREFER_NOT_TO_SAY
+                } else {
+                    Gender.PREFER_NOT_TO_SAY
+                }
 
             val orientation =
-                    if (state.sexualOrientation.isNotEmpty())
-                            SexualOrientation.fromDisplayName(state.sexualOrientation)
-                                    ?: SexualOrientation.HETEROSEXUAL
-                    else SexualOrientation.HETEROSEXUAL
+                if (state.sexualOrientation.isNotEmpty()) {
+                    SexualOrientation.fromDisplayName(state.sexualOrientation)
+                        ?: SexualOrientation.HETEROSEXUAL
+                } else {
+                    SexualOrientation.HETEROSEXUAL
+                }
 
             val result =
-                    authRepository.register(
-                            state.email,
-                            state.password,
-                            firstName = state.firstName,
-                            lastName = state.lastName,
-                            gender = gender,
-                            sexualOrientation = orientation,
-                            dateOfBirth =
-                                    state.dateOfBirth?.let {
-                                        Instant.fromEpochMilliseconds(it)
-                                                .toLocalDateTime(TimeZone.currentSystemDefault())
-                                                .date
-                                    }
-                    )
+                authRepository.register(
+                    state.email,
+                    state.password,
+                    firstName = state.firstName,
+                    lastName = state.lastName,
+                    gender = gender,
+                    sexualOrientation = orientation,
+                    dateOfBirth =
+                    state.dateOfBirth?.let {
+                        Instant.fromEpochMilliseconds(it)
+                            .toLocalDateTime(TimeZone.currentSystemDefault())
+                            .date
+                    },
+                )
             handleResult(result, onSuccess)
         }
     }
@@ -137,8 +158,8 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
         } else {
             _uiState.update {
                 it.copy(
-                        isLoading = false,
-                        errorMessage = result.exceptionOrNull()?.message ?: "Authentication failed"
+                    isLoading = false,
+                    errorMessage = result.exceptionOrNull()?.message ?: "Authentication failed",
                 )
             }
         }
@@ -174,38 +195,38 @@ sealed interface AuthUiEvent {
 }
 
 data class AuthUiState(
-        // Mode
-        val isRegistering: Boolean = false,
-        val step: Int = 0,
-        val isLoading: Boolean = false,
-        val errorMessage: String? = null,
+    // Mode
+    val isRegistering: Boolean = false,
+    val step: Int = 0,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
 
-        // Step 1: Credentials
-        val email: String = "",
-        val emailError: String? = null,
-        val password: String = "",
-        val passwordError: String? = null,
-        val isPasswordVisible: Boolean = false,
-        val termsAccepted: Boolean = false,
+    // Step 1: Credentials
+    val email: String = "",
+    val emailError: String? = null,
+    val password: String = "",
+    val passwordError: String? = null,
+    val isPasswordVisible: Boolean = false,
+    val termsAccepted: Boolean = false,
 
-        // Step 2: Personal Details
-        val firstName: String = "",
-        val lastName: String = "",
-        val dateOfBirth: Long? = null, // Epoch millis
-        val gender: String = "",
-        val sexualOrientation: String = "",
+    // Step 2: Personal Details
+    val firstName: String = "",
+    val lastName: String = "",
+    val dateOfBirth: Long? = null, // Epoch millis
+    val gender: String = "",
+    val sexualOrientation: String = "",
 
-        // UI Control
-        val showDatePicker: Boolean = false
+    // UI Control
+    val showDatePicker: Boolean = false,
 ) {
     // Computed Properties for Validation
     val isStep1Valid: Boolean
         get() =
-                emailError == null &&
-                        email.isNotBlank() &&
-                        passwordError == null &&
-                        password.isNotBlank() &&
-                        termsAccepted
+            emailError == null &&
+                email.isNotBlank() &&
+                passwordError == null &&
+                password.isNotBlank() &&
+                termsAccepted
 
     val isStep2Valid: Boolean
         get() = firstName.isNotBlank() && lastName.isNotBlank() && dateOfBirth != null

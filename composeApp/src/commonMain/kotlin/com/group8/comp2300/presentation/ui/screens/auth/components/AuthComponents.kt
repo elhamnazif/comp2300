@@ -28,7 +28,7 @@ fun AuthTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     OutlinedTextField(
         value = value,
@@ -46,7 +46,7 @@ fun AuthTextField(
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     )
 }
 
@@ -61,7 +61,7 @@ fun ClickableTextField(
     onClick: () -> Unit,
     leadingIcon: ImageVector? = null,
     trailingIcon: ImageVector? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Box(modifier = modifier) {
         OutlinedTextField(
@@ -72,14 +72,14 @@ fun ClickableTextField(
             trailingIcon = trailingIcon?.let { { Icon(it, contentDescription = null) } },
             modifier = Modifier.fillMaxWidth(),
             readOnly = true, // Visual only
-            singleLine = true
+            singleLine = true,
         )
         // Overlay Box that captures the click
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .alpha(0f)
-                .clickable(onClick = onClick)
+                .clickable(onClick = onClick),
         )
     }
 }
@@ -89,12 +89,7 @@ fun ClickableTextField(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AuthDropdown(
-    label: String,
-    selectedValue: String,
-    options: List<String>,
-    onOptionSelected: (String) -> Unit
-) {
+fun AuthDropdown(label: String, selectedValue: String, options: List<String>, onOptionSelected: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
 
     Box {
@@ -102,13 +97,13 @@ fun AuthDropdown(
             value = selectedValue,
             label = label,
             onClick = { expanded = true },
-            trailingIcon = Icons.Default.ArrowDropDown
+            trailingIcon = Icons.Default.ArrowDropDown,
         )
 
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth(0.7f) // Adjust width as needed
+            modifier = Modifier.fillMaxWidth(0.7f), // Adjust width as needed
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -116,7 +111,7 @@ fun AuthDropdown(
                     onClick = {
                         onOptionSelected(option)
                         expanded = false
-                    }
+                    },
                 )
             }
         }

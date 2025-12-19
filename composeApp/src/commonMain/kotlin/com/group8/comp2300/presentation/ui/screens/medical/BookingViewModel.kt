@@ -7,10 +7,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-data class BookingUiState(
-        val clinics: List<Clinic> = emptyList(),
-        val selectedClinic: Clinic? = null
-)
+data class BookingUiState(val clinics: List<Clinic> = emptyList(), val selectedClinic: Clinic? = null)
 
 class BookingViewModel(private val repository: ClinicRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(BookingUiState(clinics = repository.getAllClinics()))
