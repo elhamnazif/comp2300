@@ -10,6 +10,8 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.symbolCraft)
+    alias(libs.plugins.comp2300.spotless)
+    alias(libs.plugins.comp2300.detekt)
 }
 
 kotlin {
@@ -24,22 +26,34 @@ kotlin {
 
     jvm()
 
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.uuid.ExperimentalUuidApi",
+            "-opt-in=kotlin.time.ExperimentalTime",
+            "-Xexpect-actual-classes",
+            "-Xannotation-default-target=param-property",
+        )
+    }
+
     // https://maplibre.org/maplibre-compose/getting-started/#set-up-desktop-jvm
     fun detectTarget(): String {
-        val hostOs = when (val os = System.getProperty("os.name").lowercase()) {
-            "mac os x" -> "macos"
-            else -> os.split(" ").first()
-        }
-        val hostArch = when (val arch = System.getProperty("os.arch").lowercase()) {
-            "x86_64" -> "amd64"
-            "arm64" -> "aarch64"
-            else -> arch
-        }
-        val renderer = when (hostOs) {
-            "macos" -> "metal"
-            else -> "opengl"
-        }
-        return "${hostOs}-${hostArch}-${renderer}"
+        val hostOs =
+            when (val os = System.getProperty("os.name").lowercase()) {
+                "mac os x" -> "macos"
+                else -> os.split(" ").first()
+            }
+        val hostArch =
+            when (val arch = System.getProperty("os.arch").lowercase()) {
+                "x86_64" -> "amd64"
+                "arm64" -> "aarch64"
+                else -> arch
+            }
+        val renderer =
+            when (hostOs) {
+                "macos" -> "metal"
+                else -> "opengl"
+            }
+        return "$hostOs-$hostArch-$renderer"
     }
 
     sourceSets {
@@ -103,12 +117,21 @@ kotlin {
 
 android {
     namespace = "com.group8.comp2300"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         applicationId = "com.group8.comp2300"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "1.0"
     }
@@ -151,7 +174,7 @@ symbolCraft {
         "visibility",
         "visibility_off",
         "calendar_month",
-        "local_pharmacy"
+        "local_pharmacy",
     ) { weights(SymbolWeight.W500, variant = SymbolVariant.OUTLINED) }
 
     // Local SVG files stored in the repository

@@ -14,8 +14,16 @@ kotlin {
 
     jvm()
 
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlin.uuid.ExperimentalUuidApi",
+            "-opt-in=kotlin.time.ExperimentalTime",
+            "-Xexpect-actual-classes",
+            "-Xannotation-default-target=param-property",
+        )
+    }
+
     sourceSets {
-        all { languageSettings.optIn("kotlin.time.ExperimentalTime") }
         commonMain.dependencies {
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
