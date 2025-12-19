@@ -10,11 +10,10 @@ enum class SexualOrientation(val displayName: String) {
     BISEXUAL("Bisexual"),
     PANSEXUAL("Pansexual"),
     ASEXUAL("Asexual"),
-    PREFER_NOT_TO_SAY("Prefer not to say");
+    PREFER_NOT_TO_SAY("Prefer not to say"),
+    ;
 
     companion object {
-        fun fromDisplayName(displayName: String): SexualOrientation? {
-            return entries.find { it.displayName == displayName }
-        }
+        fun fromDisplayName(displayName: String): SexualOrientation? = entries.find { it.displayName == displayName }
     }
 }

@@ -38,17 +38,15 @@ private fun formatDate(timestamp: Long): String {
             "September",
             "October",
             "November",
-            "December"
+            "December",
         )
     return "${months[localDateTime.month.number - 1]} ${localDateTime.day}, ${localDateTime.year}"
 }
 
 // Helper to create timestamp from date components
-private fun dateToTimestamp(year: Int, month: Int, day: Int): Long {
-    return kotlinx.datetime.LocalDate(year, month, day)
-        .atStartOfDayIn(TimeZone.UTC)
-        .toEpochMilliseconds()
-}
+private fun dateToTimestamp(year: Int, month: Int, day: Int): Long = kotlinx.datetime.LocalDate(year, month, day)
+    .atStartOfDayIn(TimeZone.UTC)
+    .toEpochMilliseconds()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,11 +62,12 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
         remember(selectedFilter) {
             when (selectedFilter) {
                 "HIV" -> allResults.filter { it.testName.contains("HIV", ignoreCase = true) }
+
                 "STI Panel" ->
                     allResults.filter {
                         it.testName.contains("Chlamydia", ignoreCase = true) ||
-                                it.testName.contains("Gonorrhea", ignoreCase = true) ||
-                                it.testName.contains("Syphilis", ignoreCase = true)
+                            it.testName.contains("Gonorrhea", ignoreCase = true) ||
+                            it.testName.contains("Syphilis", ignoreCase = true)
                     }
 
                 "Hepatitis" ->
@@ -88,42 +87,42 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier.padding(innerPadding)
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            Modifier.padding(innerPadding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Header
             Text(
                 text = "Complete Test History",
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 text = "View all your lab results and testing history",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             // Filter chips
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 filterOptions.forEach { filter ->
                     FilterChip(
                         selected = selectedFilter == filter,
                         onClick = { selectedFilter = filter },
-                        label = { Text(filter) }
+                        label = { Text(filter) },
                     )
                 }
             }
@@ -131,9 +130,9 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
             // Results count
             Text(
                 text =
-                    "${filteredResults.size} ${if (filteredResults.size == 1) "result" else "results"}",
+                "${filteredResults.size} ${if (filteredResults.size == 1) "result" else "results"}",
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
             )
 
             // Results list
@@ -144,32 +143,32 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
                 onClick = onScheduleTest,
                 modifier = Modifier.fillMaxWidth(),
                 colors =
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
+                ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                ),
             ) { Text("Schedule Next Test") }
 
             // Educational info
             Card(
                 colors =
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    ),
-                modifier = Modifier.fillMaxWidth()
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                ),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "Testing Recommendations",
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text =
-                            "• HIV testing: Every 3-6 months for sexually active individuals\n" +
-                                    "• STI screening: Every 3-6 months or as recommended\n" +
-                                    "• Hepatitis: Annually or as recommended by your provider",
-                        style = MaterialTheme.typography.bodySmall
+                        "• HIV testing: Every 3-6 months for sexually active individuals\n" +
+                            "• STI screening: Every 3-6 months or as recommended\n" +
+                            "• Hepatitis: Annually or as recommended by your provider",
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
@@ -187,26 +186,26 @@ private fun LabResultCard(result: LabResult) {
         modifier = Modifier.fillMaxWidth(),
         onClick = { expanded = !expanded },
         colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            )
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = result.testName,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = formatDate(result.testDate),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
                 StatusBadge(result)
@@ -227,7 +226,7 @@ private fun LabResultCard(result: LabResult) {
                 Text(
                     text = "All test results are reviewed by licensed healthcare providers.",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -246,7 +245,7 @@ private fun StatusBadge(result: LabResult) {
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             style = MaterialTheme.typography.labelMedium,
             color = textColor,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
     }
 }
@@ -255,17 +254,17 @@ private fun StatusBadge(result: LabResult) {
 private fun DetailRow(label: String, value: String) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
     }
 }

@@ -4,8 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class AdherenceStatus {
-        NONE,
-        TAKEN,
-        MISSED,
-        APPOINTMENT
+    NONE,
+    TAKEN,
+    MISSED,
+    APPOINTMENT,
 }

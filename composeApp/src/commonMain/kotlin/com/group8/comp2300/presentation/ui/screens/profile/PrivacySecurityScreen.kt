@@ -28,29 +28,29 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier =
-                Modifier.fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
+            Modifier.fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
         ) {
             Text(
                 "Security Settings",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
                 title = "Biometric Authentication",
                 description = "Use fingerprint or face recognition to secure your data",
                 checked = biometricsEnabled,
-                onCheckedChange = { biometricsEnabled = it }
+                onCheckedChange = { biometricsEnabled = it },
             )
 
             Spacer(Modifier.height(8.dp))
@@ -59,7 +59,7 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
                 title = "Data Encryption",
                 description = "Encrypt all health records stored on device",
                 checked = dataEncryptionEnabled,
-                onCheckedChange = { dataEncryptionEnabled = it }
+                onCheckedChange = { dataEncryptionEnabled = it },
             )
 
             Spacer(Modifier.height(24.dp))
@@ -68,14 +68,14 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
                 "Privacy Settings",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
                 title = "Anonymous Reporting",
                 description = "Share anonymous health trends to help public health research",
                 checked = anonymousReporting,
-                onCheckedChange = { anonymousReporting = it }
+                onCheckedChange = { anonymousReporting = it },
             )
 
             Spacer(Modifier.height(8.dp))
@@ -84,29 +84,29 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
                 title = "Share Data for Research",
                 description = "Allow anonymized data to be used in medical studies",
                 checked = shareDataForResearch,
-                onCheckedChange = { shareDataForResearch = it }
+                onCheckedChange = { shareDataForResearch = it },
             )
 
             Spacer(Modifier.height(24.dp))
 
             Card(
                 colors =
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         "Your Privacy Matters",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         "All your health data is encrypted and stored securely. We will never share your personal information without your explicit consent.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             }
@@ -120,31 +120,31 @@ private fun SettingToggleItem(
     description: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ),
-        modifier = modifier.fillMaxWidth()
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     title,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
             Spacer(Modifier.width(16.dp))

@@ -4,12 +4,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class LabResult(
-        val id: String,
-        val testName: String,
-        val testDate: Long, // Unix timestamp
-        val status: LabStatus,
-        val notes: String? = null
+    val id: String,
+    val testName: String,
+    val testDate: Long, // Unix timestamp
+    val status: LabStatus,
+    val notes: String? = null,
 ) {
-        val isPositive: Boolean
-                get() = status == LabStatus.POSITIVE
+    val isPositive: Boolean
+        get() = status == LabStatus.POSITIVE
 }

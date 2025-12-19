@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 enum class MedicationStatus {
     ACTIVE,
-    ARCHIVED
+    ARCHIVED,
 }

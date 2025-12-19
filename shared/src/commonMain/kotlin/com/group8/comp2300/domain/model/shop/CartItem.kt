@@ -4,7 +4,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CartItem(
-        val productId: String,
-        val quantity: Int,
-        val priceAtAdd: Double // Capture price at time of adding to cart
+    val productId: String,
+    val quantity: Int,
+    /** Capture price at time of adding to cart */
+    val priceAtAdd: Double,
 )

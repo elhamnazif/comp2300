@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class QuizDifficulty(val displayName: String) {
-        EASY("Easy"),
-        MEDIUM("Medium"),
-        HARD("Hard")
+    EASY("Easy"),
+    MEDIUM("Medium"),
+    HARD("Hard"),
 }

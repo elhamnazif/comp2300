@@ -31,7 +31,7 @@ import kotlin.time.Clock
 
 enum class MedicationStatus {
     Active,
-    Archived
+    Archived,
 }
 
 data class Medication(
@@ -41,7 +41,7 @@ data class Medication(
     val frequency: String,
     val instructions: String,
     val color: Color,
-    val status: MedicationStatus = MedicationStatus.Active
+    val status: MedicationStatus = MedicationStatus.Active,
 )
 
 // --- Constants ---
@@ -55,7 +55,7 @@ private object MedConstants {
             Color(0xFFFFA726), // Orange
             Color(0xFFAB47BC), // Purple
             Color(0xFF26C6DA), // Cyan
-            Color(0xFF78909C) // Blue Grey
+            Color(0xFF78909C), // Blue Grey
         )
 
     val Frequencies = listOf("Daily", "Twice Daily", "Weekly", "On Demand")
@@ -79,22 +79,24 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                         frequency = domainMed.frequency.displayName,
                         instructions = domainMed.instructions,
                         color =
-                            try {
-                                // Simple hex parsing (simplified)
-                                val hex = domainMed.colorHex.removePrefix("#")
-                                Color(hex.toLong(16) or 0xFF00000000)
-                            } catch (e: Exception) {
-                                MedConstants.PresetColors.first()
-                            },
+                        try {
+                            // Simple hex parsing (simplified)
+                            val hex = domainMed.colorHex.removePrefix("#")
+                            Color(hex.toLong(16) or 0xFF00000000)
+                        } catch (e: Exception) {
+                            MedConstants.PresetColors.first()
+                        },
                         status =
-                            if (domainMed.status ==
-                                com.group8.comp2300.domain.model.medical
-                                    .MedicationStatus.ACTIVE
-                            )
-                                MedicationStatus.Active
-                            else MedicationStatus.Archived
+                        if (domainMed.status ==
+                            com.group8.comp2300.domain.model.medical
+                                .MedicationStatus.ACTIVE
+                        ) {
+                            MedicationStatus.Active
+                        } else {
+                            MedicationStatus.Archived
+                        },
                     )
-                }
+                },
             )
         }
     }
@@ -109,9 +111,9 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
             TopAppBar(
                 title = { Text("My Medicine Cabinet", fontWeight = FontWeight.Bold) },
                 colors =
-                    TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    )
+                TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
             )
         },
         floatingActionButton = {
@@ -124,17 +126,17 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                         showBottomSheet = true
                     }
                 },
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary,
             ) { Icon(Icons.Default.Add, contentDescription = "Add Medication") }
-        }
+        },
     ) { innerPadding ->
         LazyColumn(
             modifier =
-                Modifier.fillMaxSize()
-                    .padding(innerPadding)
-                    .background(MaterialTheme.colorScheme.surface),
+            Modifier.fillMaxSize()
+                .padding(innerPadding)
+                .background(MaterialTheme.colorScheme.surface),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
             // 1. Active Medications Section
             val activeMeds = medications.filter { it.status == MedicationStatus.Active }
@@ -149,7 +151,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                         onClick = {
                             editingMedication = med
                             showBottomSheet = true
-                        }
+                        },
                     )
                 }
             }
@@ -168,7 +170,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                             editingMedication = med
                             showBottomSheet = true
                         },
-                        isArchived = true
+                        isArchived = true,
                     )
                 }
             }
@@ -179,7 +181,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
-                sheetState = sheetState
+                sheetState = sheetState,
             ) {
                 MedicationFormSheet(
                     medicationToEdit = editingMedication,
@@ -196,7 +198,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                         medications.removeAll { it.id == medId }
                         showBottomSheet = false
                     },
-                    onCancel = { showBottomSheet = false }
+                    onCancel = { showBottomSheet = false },
                 )
             }
         }
@@ -211,7 +213,7 @@ fun SectionHeader(title: String, count: Int) {
             text = title,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Spacer(Modifier.width(8.dp))
         Badge(containerColor = MaterialTheme.colorScheme.primaryContainer) {
@@ -224,12 +226,12 @@ fun SectionHeader(title: String, count: Int) {
 fun EmptyStateMessage(msg: String) {
     Box(
         modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             msg,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
@@ -238,22 +240,25 @@ fun EmptyStateMessage(msg: String) {
 fun MedicationCard(medication: Medication, onClick: () -> Unit, isArchived: Boolean = false) {
     val cardAlpha = if (isArchived) 0.6f else 1f
     val containerColor =
-        if (isArchived) MaterialTheme.colorScheme.surfaceContainerHighest
-        else MaterialTheme.colorScheme.surfaceContainerLow
+        if (isArchived) {
+            MaterialTheme.colorScheme.surfaceContainerHighest
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLow
+        }
 
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().alpha(cardAlpha),
-        colors = CardDefaults.cardColors(containerColor = containerColor)
+        colors = CardDefaults.cardColors(containerColor = containerColor),
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             // Color Indicator
             Box(
                 modifier =
-                    Modifier.size(48.dp)
-                        .clip(CircleShape)
-                        .background(medication.color.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center
+                Modifier.size(48.dp)
+                    .clip(CircleShape)
+                    .background(medication.color.copy(alpha = 0.2f)),
+                contentAlignment = Alignment.Center,
             ) {
                 Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(medication.color))
             }
@@ -267,8 +272,11 @@ fun MedicationCard(medication: Medication, onClick: () -> Unit, isArchived: Bool
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color =
-                        if (isArchived) MaterialTheme.colorScheme.onSurfaceVariant
-                        else MaterialTheme.colorScheme.onSurface
+                    if (isArchived) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
                 )
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -276,13 +284,13 @@ fun MedicationCard(medication: Medication, onClick: () -> Unit, isArchived: Bool
                         Icons.Default.Info,
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = MaterialTheme.colorScheme.secondary,
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
                         text = "${medication.dosage} • ${medication.frequency}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
                 if (medication.instructions.isNotEmpty()) {
@@ -291,7 +299,7 @@ fun MedicationCard(medication: Medication, onClick: () -> Unit, isArchived: Bool
                         text = "Note: ${medication.instructions}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.tertiary,
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
             }
@@ -300,7 +308,7 @@ fun MedicationCard(medication: Medication, onClick: () -> Unit, isArchived: Bool
                 Icons.Default.Edit,
                 contentDescription = "Edit",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
         }
     }
@@ -313,7 +321,7 @@ fun MedicationFormSheet(
     medicationToEdit: Medication?,
     onSave: (Medication) -> Unit,
     onDelete: (String) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     val isEditMode = medicationToEdit != null
 
@@ -334,30 +342,30 @@ fun MedicationFormSheet(
 
     Column(
         modifier =
-            Modifier.fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .navigationBarsPadding()
-                .imePadding()
-                .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        Modifier.fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .navigationBarsPadding()
+            .imePadding()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = if (isEditMode) "Edit Medication" else "Add Medication",
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             if (isEditMode) {
                 IconButton(onClick = { onDelete(medicationToEdit.id) }) {
                     Icon(
                         Icons.Outlined.Delete,
                         contentDescription = "Delete",
-                        tint = MaterialTheme.colorScheme.error
+                        tint = MaterialTheme.colorScheme.error,
                     )
                 }
             }
@@ -372,10 +380,10 @@ fun MedicationFormSheet(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions =
-                KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    imeAction = ImeAction.Next
-                )
+            KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Next,
+            ),
         )
 
         OutlinedTextField(
@@ -385,7 +393,7 @@ fun MedicationFormSheet(
             placeholder = { Text("e.g. 200mg or 1 Pill") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         )
 
         // Frequency Selection
@@ -393,11 +401,11 @@ fun MedicationFormSheet(
             Text(
                 "Frequency",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
             )
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 MedConstants.Frequencies.forEach { freq ->
                     FilterChip(
@@ -405,9 +413,10 @@ fun MedicationFormSheet(
                         onClick = { frequency = freq },
                         label = { Text(freq) },
                         leadingIcon = {
-                            if (frequency == freq)
+                            if (frequency == freq) {
                                 Icon(Icons.Default.Check, null, Modifier.size(18.dp))
-                        }
+                            }
+                        },
                     )
                 }
             }
@@ -418,26 +427,28 @@ fun MedicationFormSheet(
             Text(
                 "Color Tag",
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MedConstants.PresetColors.forEach { color ->
                     val isSelected = selectedColor == color
                     Box(
                         modifier =
-                            Modifier.size(36.dp)
-                                .clip(CircleShape)
-                                .background(color)
-                                .border(
-                                    width = if (isSelected) 3.dp else 0.dp,
-                                    color =
-                                        if (isSelected)
-                                            MaterialTheme.colorScheme
-                                                .onSurface
-                                        else Color.Transparent,
-                                    shape = CircleShape
-                                )
-                                .clickable { selectedColor = color }
+                        Modifier.size(36.dp)
+                            .clip(CircleShape)
+                            .background(color)
+                            .border(
+                                width = if (isSelected) 3.dp else 0.dp,
+                                color =
+                                if (isSelected) {
+                                    MaterialTheme.colorScheme
+                                        .onSurface
+                                } else {
+                                    Color.Transparent
+                                },
+                                shape = CircleShape,
+                            )
+                            .clickable { selectedColor = color },
                     )
                 }
             }
@@ -450,7 +461,7 @@ fun MedicationFormSheet(
             label = { Text("Instructions (Optional)") },
             placeholder = { Text("e.g. Take with food") },
             modifier = Modifier.fillMaxWidth(),
-            maxLines = 3
+            maxLines = 3,
         )
 
         // Archive Toggle (Only in Edit Mode)
@@ -458,38 +469,47 @@ fun MedicationFormSheet(
             Surface(
                 onClick = {
                     status =
-                        if (status == MedicationStatus.Active) MedicationStatus.Archived
-                        else MedicationStatus.Active
+                        if (status == MedicationStatus.Active) {
+                            MedicationStatus.Archived
+                        } else {
+                            MedicationStatus.Active
+                        }
                 },
                 shape = RoundedCornerShape(12.dp),
                 color = MaterialTheme.colorScheme.surfaceContainer,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Column {
                         Text(
                             "Archive Medication",
                             style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
                         )
                         Text(
-                            if (status == MedicationStatus.Archived) "Currently Archived"
-                            else "Move to archive to hide from active list",
+                            if (status == MedicationStatus.Archived) {
+                                "Currently Archived"
+                            } else {
+                                "Move to archive to hide from active list"
+                            },
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.secondary,
                         )
                     }
                     Switch(
                         checked = status == MedicationStatus.Archived,
                         onCheckedChange = { isChecked ->
                             status =
-                                if (isChecked) MedicationStatus.Archived
-                                else MedicationStatus.Active
-                        }
+                                if (isChecked) {
+                                    MedicationStatus.Archived
+                                } else {
+                                    MedicationStatus.Active
+                                }
+                        },
                     )
                 }
             }
@@ -510,12 +530,12 @@ fun MedicationFormSheet(
                         frequency = frequency,
                         instructions = instructions,
                         color = selectedColor,
-                        status = status
+                        status = status,
                     )
                 onSave(newMed)
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = isFormValid
+            enabled = isFormValid,
         ) { Text(if (isEditMode) "Save Changes" else "Add Medication") }
 
         TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {

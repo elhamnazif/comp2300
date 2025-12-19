@@ -27,10 +27,7 @@ abstract class Navigator : ViewModel() {
 }
 
 @OptIn(SavedStateHandleSaveableApi::class)
-class RealNavigator(
-    savedStateHandle: SavedStateHandle,
-    startDestination: Screen = Screen.Onboarding
-) : Navigator() {
+class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen = Screen.Onboarding) : Navigator() {
 
     override val backStack: MutableList<Screen> = savedStateHandle.saveable(
         key = "nav_stack",
@@ -47,8 +44,8 @@ class RealNavigator(
                     // Fallback in case of deserialization error
                     mutableStateListOf(startDestination)
                 }
-            }
-        )
+            },
+        ),
     ) {
         // Initial value if no state is saved
         mutableStateListOf(startDestination)
@@ -79,10 +76,7 @@ class RealNavigator(
     }
 }
 
-
-class FakeNavigator(
-    startDestination: Screen = Screen.Onboarding
-) : Navigator() {
+class FakeNavigator(startDestination: Screen = Screen.Onboarding) : Navigator() {
 
     override val backStack = mutableListOf(startDestination)
 

@@ -29,11 +29,7 @@ import androidx.compose.ui.unit.sp
 import com.group8.comp2300.mock.sampleOnboardingQuestions
 
 @Composable
-fun OnboardingScreen(
-    isGuest: Boolean = true,
-    onRequireAuth: () -> Unit = {},
-    onFinished: () -> Unit
-) {
+fun OnboardingScreen(isGuest: Boolean = true, onRequireAuth: () -> Unit = {}, onFinished: () -> Unit) {
     var step by remember {
         mutableIntStateOf(0)
     } // 0: Welcome, 1: Auth, 2: PIN, 3: Q1, 4: Q2, 5: Result
@@ -43,20 +39,21 @@ fun OnboardingScreen(
     // Container
     Box(
         modifier =
-            Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(24.dp)
+        Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(24.dp),
     ) {
         val questionStartIndex = 3
         val questionEndIndex = questionStartIndex + sampleOnboardingQuestions.size
 
         when (step) {
             0 -> WelcomeStep(onNext = { step++ })
+
             1 ->
                 AuthChoiceStep(
                     isGuest = isGuest,
                     onRequireAuth = onRequireAuth,
-                    onNext = { step++ }
+                    onNext = { step++ },
                 )
 
             2 ->
@@ -65,7 +62,7 @@ fun OnboardingScreen(
                     onCompleted = { enteredPin ->
                         pin = enteredPin
                         step++
-                    }
+                    },
                 )
 
             in questionStartIndex until questionEndIndex -> {
@@ -77,7 +74,7 @@ fun OnboardingScreen(
                     onAnswer = { index ->
                         riskScore += index
                         step++
-                    }
+                    },
                 )
             }
 
@@ -90,9 +87,9 @@ fun OnboardingScreen(
             LinearProgressIndicator(
                 progress = { progress },
                 modifier =
-                    Modifier.align(Alignment.TopCenter)
-                        .fillMaxWidth()
-                        .padding(top = 20.dp),
+                Modifier.align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
             )
         }
     }
@@ -103,13 +100,13 @@ fun AuthChoiceStep(isGuest: Boolean, onRequireAuth: () -> Unit, onNext: () -> Un
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             imageVector = Icons.Default.AccountBox,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(80.dp)
+            modifier = Modifier.size(80.dp),
         )
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -117,13 +114,13 @@ fun AuthChoiceStep(isGuest: Boolean, onRequireAuth: () -> Unit, onNext: () -> Un
             Text(
                 "Welcome Back!",
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 "You are signed in.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 16.dp),
             )
             Spacer(modifier = Modifier.height(32.dp))
             Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(50.dp)) {
@@ -133,27 +130,27 @@ fun AuthChoiceStep(isGuest: Boolean, onRequireAuth: () -> Unit, onNext: () -> Un
             Text(
                 "Create an Account",
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 "Sign up to save your progress and access all features.",
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 16.dp),
             )
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
                 onClick = onRequireAuth,
-                modifier = Modifier.fillMaxWidth().height(50.dp)
+                modifier = Modifier.fillMaxWidth().height(50.dp),
             ) { Text("Sign Up / Log In") }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
                 onClick = onNext,
-                modifier = Modifier.fillMaxWidth().height(50.dp)
+                modifier = Modifier.fillMaxWidth().height(50.dp),
             ) { Text("Continue as Guest") }
         }
     }
@@ -164,26 +161,26 @@ fun WelcomeStep(onNext: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             imageVector = Icons.Default.AccountBox,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(80.dp)
+            modifier = Modifier.size(80.dp),
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             "Welcome to Vita",
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Text(
             "Your private, judgment-free space for sexual health.",
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(vertical = 16.dp)
+            modifier = Modifier.padding(vertical = 16.dp),
         )
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(50.dp)) {
@@ -207,13 +204,13 @@ fun PinStep(pinLength: Int = 4, onCompleted: (String) -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize().systemBarsPadding(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             Icons.Default.Lock,
             contentDescription = null,
             modifier = Modifier.size(48.dp),
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
         )
 
         Spacer(Modifier.height(24.dp))
@@ -221,11 +218,11 @@ fun PinStep(pinLength: Int = 4, onCompleted: (String) -> Unit) {
         Text(
             text = "Create a Privacy PIN",
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Text(
             text = "We'll ask for this whenever you open the app.",
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.secondary,
         )
 
         Spacer(Modifier.height(32.dp))
@@ -235,16 +232,17 @@ fun PinStep(pinLength: Int = 4, onCompleted: (String) -> Unit) {
             repeat(pinLength) { index ->
                 Box(
                     modifier =
-                        Modifier.size(24.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (index < pin.length)
-                                    MaterialTheme.colorScheme
-                                        .primary
-                                else
-                                    MaterialTheme.colorScheme
-                                        .surfaceVariant
-                            )
+                    Modifier.size(24.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (index < pin.length) {
+                                MaterialTheme.colorScheme
+                                    .primary
+                            } else {
+                                MaterialTheme.colorScheme
+                                    .surfaceVariant
+                            },
+                        ),
                 )
             }
         }
@@ -254,14 +252,14 @@ fun PinStep(pinLength: Int = 4, onCompleted: (String) -> Unit) {
         /* Keypad */
         Column(
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val rows =
                 listOf(
                     listOf("1", "2", "3"),
                     listOf("4", "5", "6"),
                     listOf("7", "8", "9"),
-                    listOf(null, "0", "⌫") // null = spacer
+                    listOf(null, "0", "⌫"), // null = spacer
                 )
 
             rows.forEach { row ->
@@ -278,10 +276,9 @@ fun PinStep(pinLength: Int = 4, onCompleted: (String) -> Unit) {
                             onClick = {
                                 haptic.performHapticFeedback(
                                     HapticFeedbackType
-                                        .TextHandleMove
+                                        .TextHandleMove,
                                 )
-                                if (isBackspace && pin.isNotEmpty()
-                                ) {
+                                if (isBackspace && pin.isNotEmpty()) {
                                     pin = pin.dropLast(1)
                                 } else if (!isBackspace &&
                                     pin.length <
@@ -289,7 +286,7 @@ fun PinStep(pinLength: Int = 4, onCompleted: (String) -> Unit) {
                                 ) {
                                     pin += label
                                 }
-                            }
+                            },
                         )
                     }
                 }
@@ -305,27 +302,32 @@ private fun KeyPadButton(text: String, onClick: () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
         modifier =
-            Modifier.size(72.dp)
-                .clip(CircleShape)
-                .background(
-                    if (pressed)
-                        MaterialTheme.colorScheme.primary.copy(alpha = .3f)
-                    else MaterialTheme.colorScheme.surfaceContainerHigh
+        Modifier.size(72.dp)
+            .clip(CircleShape)
+            .background(
+                if (pressed) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = .3f)
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainerHigh
+                },
+            )
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = { tryAwaitRelease() },
+                    onTap = { onClick() },
                 )
-                .pointerInput(Unit) {
-                    detectTapGestures(
-                        onPress = { tryAwaitRelease() },
-                        onTap = { onClick() }
-                    )
-                }
-                .semantics { contentDescription = text }
+            }
+            .semantics { contentDescription = text },
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.headlineSmall,
             color =
-                if (text == "⌫") MaterialTheme.colorScheme.onSurface
-                else MaterialTheme.colorScheme.onSurface
+            if (text == "⌫") {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
         )
     }
 }
@@ -337,17 +339,17 @@ fun QuestionStep(question: String, options: List<String>, onAnswer: (Int) -> Uni
             question,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 32.dp),
         )
 
         options.forEachIndexed { index, option ->
             OutlinedButton(
                 onClick = { onAnswer(index) },
                 modifier =
-                    Modifier.fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .height(56.dp),
-                shape = RoundedCornerShape(12.dp)
+                Modifier.fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .height(56.dp),
+                shape = RoundedCornerShape(12.dp),
             ) { Text(option, fontSize = 18.sp) }
         }
     }
@@ -361,49 +363,49 @@ fun ResultStep(riskScore: Int, onFinish: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             Icons.Default.Check,
             contentDescription = null,
             tint = Color(0xFF4CAF50), // Success Green
             modifier =
-                Modifier.size(100.dp)
-                    .background(Color(0xFFE8F5E9), CircleShape)
-                    .padding(16.dp)
+            Modifier.size(100.dp)
+                .background(Color(0xFFE8F5E9), CircleShape)
+                .padding(16.dp),
         )
         Spacer(Modifier.height(32.dp))
         Text(
             "You're all set!",
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
 
         Card(
             modifier = Modifier.padding(vertical = 24.dp).fillMaxWidth(),
             colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+            ),
         ) {
             Column(
                 modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     "Recommended Plan",
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     "HIV/STI Screening",
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
                     recommendation,
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }

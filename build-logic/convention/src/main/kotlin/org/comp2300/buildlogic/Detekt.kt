@@ -8,18 +8,16 @@ import org.gradle.kotlin.dsl.named
 import java.io.File
 
 internal fun Project.configureDetekt(extension: DetektExtension) = extension.apply {
-    extension.apply {
-        toolVersion.set(libs.versions.detekt.get().toString())
-        config.setFrom("$rootDir/config/detekt/detekt.yml")
-        buildUponDefaultConfig.set(true)
-        allRules.set(false)
-        source.setFrom(
-            files(
-                "src/main/java",
-                "src/main/kotlin",
-            ),
-        )
-    }
+    toolVersion.set(libs.versions.detekt.get().toString())
+    config.setFrom("$rootDir/config/detekt/detekt.yml")
+    buildUponDefaultConfig.set(true)
+    allRules.set(false)
+    source.setFrom(
+        files(
+            "src/main/java",
+            "src/main/kotlin",
+        ),
+    )
     tasks.named<Detekt>("detekt") {
         reports {
             checkstyle.required.set(true)

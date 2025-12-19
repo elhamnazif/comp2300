@@ -9,8 +9,11 @@ class ShopRepositoryImpl : ShopRepository {
     override fun getAllProducts(): List<Product> = sampleProducts
 
     override fun getProductsByCategory(category: ProductCategory): List<Product> =
-        if (category == ProductCategory.ALL) sampleProducts
-        else sampleProducts.filter { it.category == category }
+        if (category == ProductCategory.ALL) {
+            sampleProducts
+        } else {
+            sampleProducts.filter { it.category == category }
+        }
 
     override fun getProductById(id: String): Product? = sampleProducts.find { it.id == id }
 }

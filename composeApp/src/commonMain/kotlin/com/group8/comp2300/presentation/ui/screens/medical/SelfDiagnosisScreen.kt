@@ -49,17 +49,20 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                         text = diagnosisResult,
                         style = MaterialTheme.typography.headlineMedium,
                         color =
-                            if (diagnosisResult == "High Risk")
-                                MaterialTheme.colorScheme.error
-                            else MaterialTheme.colorScheme.primary
+                        if (diagnosisResult == "High Risk") {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text =
-                            if (diagnosisResult == "High Risk")
-                                "Based on your answers, you may be at higher risk for HIV. We recommend consulting a healthcare provider for further testing."
-                            else
-                                "Based on your answers, your risk appears to be low. However, regular screening is always recommended for sexual health."
+                        if (diagnosisResult == "High Risk") {
+                            "Based on your answers, you may be at higher risk for HIV. We recommend consulting a healthcare provider for further testing."
+                        } else {
+                            "Based on your answers, your risk appears to be low. However, regular screening is always recommended for sexual health."
+                        },
                     )
                 }
             },
@@ -68,12 +71,12 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                     onClick = {
                         showResultDialog = false
                         onNavigateToBooking()
-                    }
+                    },
                 ) { Text("Book Appointment") }
             },
             dismissButton = {
                 TextButton(onClick = { showResultDialog = false }) { Text("Close") }
-            }
+            },
         )
     }
 
@@ -85,25 +88,25 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { innerPadding ->
         Column(
             modifier =
-                Modifier.padding(innerPadding)
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            Modifier.padding(innerPadding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(text = "HIV Risk Assessment", style = MaterialTheme.typography.headlineSmall)
 
             Text(
                 text = "Please answer the following questions to assess your risk.",
-                style = MaterialTheme.typography.bodyMedium
+                style = MaterialTheme.typography.bodyMedium,
             )
 
             // Question 1
@@ -111,45 +114,49 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "Have you had unprotected sex in the last 3 months?",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
                             onClick = { unprotectedSex = true },
                             colors =
-                                ButtonDefaults.buttonColors(
-                                    containerColor =
-                                        if (unprotectedSex == true)
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            MaterialTheme.colorScheme
-                                                .surfaceVariant,
-                                    contentColor =
-                                        if (unprotectedSex == true)
-                                            MaterialTheme.colorScheme.onPrimary
-                                        else
-                                            MaterialTheme.colorScheme
-                                                .onSurfaceVariant
-                                )
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                if (unprotectedSex == true) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme
+                                        .surfaceVariant
+                                },
+                                contentColor =
+                                if (unprotectedSex == true) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme
+                                        .onSurfaceVariant
+                                },
+                            ),
                         ) { Text("Yes") }
                         Button(
                             onClick = { unprotectedSex = false },
                             colors =
-                                ButtonDefaults.buttonColors(
-                                    containerColor =
-                                        if (unprotectedSex == false)
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            MaterialTheme.colorScheme
-                                                .surfaceVariant,
-                                    contentColor =
-                                        if (unprotectedSex == false)
-                                            MaterialTheme.colorScheme.onPrimary
-                                        else
-                                            MaterialTheme.colorScheme
-                                                .onSurfaceVariant
-                                )
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                if (unprotectedSex == false) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme
+                                        .surfaceVariant
+                                },
+                                contentColor =
+                                if (unprotectedSex == false) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme
+                                        .onSurfaceVariant
+                                },
+                            ),
                         ) { Text("No") }
                     }
                 }
@@ -160,45 +167,49 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = "Have you shared needles or injection equipment?",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
                             onClick = { sharedNeedles = true },
                             colors =
-                                ButtonDefaults.buttonColors(
-                                    containerColor =
-                                        if (sharedNeedles == true)
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            MaterialTheme.colorScheme
-                                                .surfaceVariant,
-                                    contentColor =
-                                        if (sharedNeedles == true)
-                                            MaterialTheme.colorScheme.onPrimary
-                                        else
-                                            MaterialTheme.colorScheme
-                                                .onSurfaceVariant
-                                )
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                if (sharedNeedles == true) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme
+                                        .surfaceVariant
+                                },
+                                contentColor =
+                                if (sharedNeedles == true) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme
+                                        .onSurfaceVariant
+                                },
+                            ),
                         ) { Text("Yes") }
                         Button(
                             onClick = { sharedNeedles = false },
                             colors =
-                                ButtonDefaults.buttonColors(
-                                    containerColor =
-                                        if (sharedNeedles == false)
-                                            MaterialTheme.colorScheme.primary
-                                        else
-                                            MaterialTheme.colorScheme
-                                                .surfaceVariant,
-                                    contentColor =
-                                        if (sharedNeedles == false)
-                                            MaterialTheme.colorScheme.onPrimary
-                                        else
-                                            MaterialTheme.colorScheme
-                                                .onSurfaceVariant
-                                )
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                if (sharedNeedles == false) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme
+                                        .surfaceVariant
+                                },
+                                contentColor =
+                                if (sharedNeedles == false) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme
+                                        .onSurfaceVariant
+                                },
+                            ),
                         ) { Text("No") }
                     }
                 }
@@ -209,14 +220,14 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
             Button(
                 onClick = { calculateRisk() },
                 enabled = unprotectedSex != null && sharedNeedles != null,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) { Text("Get Results") }
 
             Text(
                 text =
-                    "Note: This is a preliminary self-assessment and does not replace professional medical advice.",
+                "Note: This is a preliminary self-assessment and does not replace professional medical advice.",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

@@ -61,23 +61,23 @@ fun ShopScreen(
     onRequireAuth: () -> Unit = {},
 ) {
     Column(
-        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).systemBarsPadding()
+        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).systemBarsPadding(),
     ) {
         Surface(
             color = MaterialTheme.colorScheme.secondaryContainer,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Row(
                 Modifier.padding(12.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Icon(Icons.Default.ShoppingCart, null, Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
                     "100% Discreet, Unbranded Packaging",
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }
@@ -85,12 +85,12 @@ fun ShopScreen(
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     "Prevention Store",
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
                 BadgedBox(badge = { Badge { Text(cartItemCount.toString()) } }) {
                     Icon(Icons.Default.ShoppingCart, "Cart")
@@ -99,7 +99,7 @@ fun ShopScreen(
             Spacer(Modifier.height(16.dp))
             Row(
                 Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 ProductCategory.entries.forEach { category ->
                     FilterChip(
@@ -107,9 +107,11 @@ fun ShopScreen(
                         onClick = { onCategorySelect(category) },
                         label = { Text(category.displayName) },
                         leadingIcon =
-                            if (selectedCategory == category) {
-                                { Icon(Icons.Filled.Check, null, Modifier.size(16.dp)) }
-                            } else null
+                        if (selectedCategory == category) {
+                            { Icon(Icons.Filled.Check, null, Modifier.size(16.dp)) }
+                        } else {
+                            null
+                        },
                     )
                 }
             }
@@ -117,7 +119,7 @@ fun ShopScreen(
             LazyVerticalGrid(
                 columns = GridCells.Adaptive(150.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 items(products) { product ->
                     ProductCard(
@@ -129,7 +131,7 @@ fun ShopScreen(
                             } else {
                                 onAddToCart(product)
                             }
-                        }
+                        },
                     )
                 }
             }
@@ -141,10 +143,10 @@ fun ShopScreen(
 fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit) {
     Card(
         colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-            ),
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+        modifier = Modifier.fillMaxWidth().clickable { onClick() },
     ) {
         Column(Modifier.padding(12.dp)) {
             Box(
@@ -152,15 +154,17 @@ fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit) {
                     .height(100.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    if (product.category == ProductCategory.MEDICATION)
+                    if (product.category == ProductCategory.MEDICATION) {
                         Icons.Default.MailOutline
-                    else Icons.Default.Done,
+                    } else {
+                        Icons.Default.Done
+                    },
                     null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp),
                 )
             }
             Spacer(Modifier.height(12.dp))
@@ -168,26 +172,29 @@ fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit) {
                 product.name,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                maxLines = 1
+                maxLines = 1,
             )
             Text(
                 product.description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary,
-                maxLines = 1
+                maxLines = 1,
             )
             Spacer(Modifier.height(8.dp))
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     if (product.insuranceCovered) "$0 (Insured)" else product.formattedPrice,
                     style = MaterialTheme.typography.labelLarge,
                     color =
-                        if (product.insuranceCovered) MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.onSurface
+                    if (product.insuranceCovered) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
                 )
                 FilledTonalIconButton(onClick = onAddClick, modifier = Modifier.size(32.dp)) {
                     Icon(Icons.Default.Add, null, Modifier.size(16.dp))

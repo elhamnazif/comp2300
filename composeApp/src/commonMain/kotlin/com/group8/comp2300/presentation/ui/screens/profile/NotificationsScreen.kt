@@ -30,29 +30,29 @@ fun NotificationsScreen(onBack: () -> Unit) {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier =
-                Modifier.fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(16.dp)
+            Modifier.fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
         ) {
             Text(
                 "General",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
                 title = "Discreet Mode",
                 description = "Hide sensitive information in notifications",
                 checked = discreetMode,
-                onCheckedChange = { discreetMode = it }
+                onCheckedChange = { discreetMode = it },
             )
 
             Spacer(Modifier.height(24.dp))
@@ -61,14 +61,14 @@ fun NotificationsScreen(onBack: () -> Unit) {
                 "Health Reminders",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
                 title = "Appointment Reminders",
                 description = "Get notified 24 hours before scheduled appointments",
                 checked = appointmentReminders,
-                onCheckedChange = { appointmentReminders = it }
+                onCheckedChange = { appointmentReminders = it },
             )
 
             Spacer(Modifier.height(8.dp))
@@ -77,7 +77,7 @@ fun NotificationsScreen(onBack: () -> Unit) {
                 title = "Test Results",
                 description = "Get notified when lab results are available",
                 checked = testResults,
-                onCheckedChange = { testResults = it }
+                onCheckedChange = { testResults = it },
             )
 
             Spacer(Modifier.height(8.dp))
@@ -86,7 +86,7 @@ fun NotificationsScreen(onBack: () -> Unit) {
                 title = "Regular Testing Reminders",
                 description = "Remind me to schedule screenings every 3 months",
                 checked = testReminders,
-                onCheckedChange = { testReminders = it }
+                onCheckedChange = { testReminders = it },
             )
 
             Spacer(Modifier.height(24.dp))
@@ -95,14 +95,14 @@ fun NotificationsScreen(onBack: () -> Unit) {
                 "Content & Updates",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
                 title = "Educational Content",
                 description = "Weekly tips and articles about sexual health",
                 checked = educationContent,
-                onCheckedChange = { educationContent = it }
+                onCheckedChange = { educationContent = it },
             )
 
             Spacer(Modifier.height(8.dp))
@@ -111,29 +111,29 @@ fun NotificationsScreen(onBack: () -> Unit) {
                 title = "Product Deals",
                 description = "Special offers on protection and testing kits",
                 checked = productDeals,
-                onCheckedChange = { productDeals = it }
+                onCheckedChange = { productDeals = it },
             )
 
             Spacer(Modifier.height(24.dp))
 
             Card(
                 colors =
-                    CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.tertiaryContainer
-                    )
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                ),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         "Discreet Mode",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         "When enabled, notifications will not show specific details about appointments or test results. You'll receive a generic reminder to check the app.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                        color = MaterialTheme.colorScheme.onTertiaryContainer,
                     )
                 }
             }
@@ -147,31 +147,31 @@ private fun SettingToggleItem(
     description: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
-            ),
-        modifier = modifier.fillMaxWidth()
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+        modifier = modifier.fillMaxWidth(),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     title,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
             Spacer(Modifier.width(16.dp))

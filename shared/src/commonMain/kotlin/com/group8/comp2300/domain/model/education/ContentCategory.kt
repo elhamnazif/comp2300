@@ -9,5 +9,5 @@ enum class ContentCategory(val label: String) {
     RELATIONSHIPS("Relationships"),
     STI("STIs & Safety"),
     IDENTITY("Identity"),
-    SEXUAL_HEALTH("Sexual Health")
+    SEXUAL_HEALTH("Sexual Health"),
 }

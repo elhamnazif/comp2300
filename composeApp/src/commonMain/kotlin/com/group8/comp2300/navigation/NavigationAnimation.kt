@@ -10,18 +10,18 @@ val pushAnimation =
     materialSharedAxisXIn(
         initialOffsetX = { (it * INITIAL_OFFSET_FACTOR).toInt() },
     ) togetherWith
-            materialSharedAxisXOut(
-                targetOffsetX = {
-                    -(it * INITIAL_OFFSET_FACTOR).toInt()
-                },
-            )
+        materialSharedAxisXOut(
+            targetOffsetX = {
+                -(it * INITIAL_OFFSET_FACTOR).toInt()
+            },
+        )
 
 val popAnimation =
     materialSharedAxisXIn(
         initialOffsetX = { -(it * INITIAL_OFFSET_FACTOR).toInt() },
     ) togetherWith
-            materialSharedAxisXOut(
-                targetOffsetX = {
-                    (it * INITIAL_OFFSET_FACTOR).toInt()
-                },
-            )
+        materialSharedAxisXOut(
+            targetOffsetX = {
+                (it * INITIAL_OFFSET_FACTOR).toInt()
+            },
+        )
