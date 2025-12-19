@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.comp2300.spotless)
+    alias(libs.plugins.comp2300.detekt)
 }
 
 kotlin {

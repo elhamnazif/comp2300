@@ -11,21 +11,24 @@ internal fun Project.configureSpotless(extension: SpotlessExtension) = extension
         kotlin {
             target("src/*/kotlin/**/*.kt", "src/*/java/**/*.kt")
             targetExclude("**/build/**/*.kt")
-            ktlint(ktlintVersion).setEditorConfigPath(rootProject.file("../config/spotless/.editorconfig").path)
-            //licenseHeaderFile(rootProject.file("../config/spotless/copyright.kt"))
+            ktlint(ktlintVersion).setEditorConfigPath(rootProject.file("config/spotless/.editorconfig").path)
+            //licenseHeaderFile(rootProject.file("config/spotless/copyright.kt"))
         }
         kotlinGradle {
             target("**/*.gradle.kts")
-            ktlint(ktlintVersion).setEditorConfigPath(rootProject.file("../config/spotless/.editorconfig").path)
+            ktlint(ktlintVersion).setEditorConfigPath(rootProject.file("config/spotless/.editorconfig").path)
             //licenseHeaderFile(
-            //    rootProject.file("../config/spotless/copyright.kts"),
+            //    rootProject.file("config/spotless/copyright.kts"),
             //    "(^(?![\\/ ]\\*).*$)"
             //)
         }
         format("xml") {
             target("**/*.xml")
             targetExclude("**/build/**/*.xml")
-            // licenseHeader(licenseHeaderXml, "(^(?![\\/ ]\\*).*$)")
+            // licenseHeader(
+            //     rootProject.file("config/spotless/copyright.xml"),
+            //     "(^(?![\\/ ]\\*).*$)"
+            // )
         }
     }
 }
