@@ -18,8 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.presentation.ui.components.education.color
-import com.group8.comp2300.presentation.viewmodel.EducationViewModel
+import com.group8.comp2300.presentation.ui.screens.auth.components.color
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.ui.components.education
+package com.group8.comp2300.presentation.ui.screens.auth.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face

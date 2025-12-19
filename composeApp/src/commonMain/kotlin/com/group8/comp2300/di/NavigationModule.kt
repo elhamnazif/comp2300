@@ -1,5 +1,6 @@
 package com.group8.comp2300.di
 
+// ViewModels are now in their respective screen packages and picked up by wildcards above
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.collectAsState
@@ -13,7 +14,6 @@ import com.group8.comp2300.presentation.ui.screens.home.*
 import com.group8.comp2300.presentation.ui.screens.medical.*
 import com.group8.comp2300.presentation.ui.screens.profile.*
 import com.group8.comp2300.presentation.ui.screens.shop.*
-import com.group8.comp2300.presentation.viewmodel.*
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.parameter.parametersOf

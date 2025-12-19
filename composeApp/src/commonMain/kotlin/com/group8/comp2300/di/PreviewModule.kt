@@ -16,12 +16,12 @@ import com.group8.comp2300.mock.allQuizzes
 import com.group8.comp2300.mock.educationContent
 import com.group8.comp2300.mock.sampleClinics
 import com.group8.comp2300.mock.sampleProducts
-import com.group8.comp2300.presentation.viewmodel.AuthUiEvent
-import com.group8.comp2300.presentation.viewmodel.AuthUiState
-import com.group8.comp2300.presentation.viewmodel.AuthViewModel
-import com.group8.comp2300.presentation.viewmodel.BookingViewModel
-import com.group8.comp2300.presentation.viewmodel.EducationViewModel
-import com.group8.comp2300.presentation.viewmodel.ShopViewModel
+import com.group8.comp2300.presentation.ui.screens.auth.AuthUiEvent
+import com.group8.comp2300.presentation.ui.screens.auth.AuthUiState
+import com.group8.comp2300.presentation.ui.screens.auth.AuthViewModel
+import com.group8.comp2300.presentation.ui.screens.education.EducationViewModel
+import com.group8.comp2300.presentation.ui.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.ui.screens.shop.ShopViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,9 +31,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
-/**
- * Fake repositories for Compose Preview support.
- */
+/** Fake repositories for Compose Preview support. */
 class FakeClinicRepository : ClinicRepository {
     override fun getAllClinics(): List<Clinic> = sampleClinics
     override fun getClinicById(id: String): Clinic? = sampleClinics.find { it.id == id }
@@ -48,8 +46,8 @@ class FakeEducationRepository : EducationRepository {
 class FakeShopRepository : ShopRepository {
     override fun getAllProducts(): List<Product> = sampleProducts
     override fun getProductsByCategory(category: ProductCategory): List<Product> =
-        if (category == ProductCategory.ALL) sampleProducts
-        else sampleProducts.filter { it.category == category }
+            if (category == ProductCategory.ALL) sampleProducts
+            else sampleProducts.filter { it.category == category }
 
     override fun getProductById(id: String): Product? = sampleProducts.find { it.id == id }
 }
@@ -60,38 +58,38 @@ class FakeAuthRepository : AuthRepository {
 
     override suspend fun login(email: String, password: String): Result<User> {
         val user =
-            User(
-                id = "preview-user",
-                email = email,
-                firstName = "Preview",
-                lastName = "User",
-                gender = Gender.PREFER_NOT_TO_SAY,
-                sexualOrientation = SexualOrientation.PREFER_NOT_TO_SAY,
-                dateOfBirth = null
-            )
+                User(
+                        id = "preview-user",
+                        email = email,
+                        firstName = "Preview",
+                        lastName = "User",
+                        gender = Gender.PREFER_NOT_TO_SAY,
+                        sexualOrientation = SexualOrientation.PREFER_NOT_TO_SAY,
+                        dateOfBirth = null
+                )
         _currentUser.value = user
         return Result.success(user)
     }
 
     override suspend fun register(
-        email: String,
-        password: String,
-        firstName: String,
-        lastName: String,
-        gender: Gender,
-        sexualOrientation: SexualOrientation,
-        dateOfBirth: LocalDate?
+            email: String,
+            password: String,
+            firstName: String,
+            lastName: String,
+            gender: Gender,
+            sexualOrientation: SexualOrientation,
+            dateOfBirth: LocalDate?
     ): Result<User> {
         val user =
-            User(
-                id = "preview-user",
-                email = email,
-                firstName = firstName,
-                lastName = lastName,
-                gender = gender,
-                sexualOrientation = sexualOrientation,
-                dateOfBirth = dateOfBirth
-            )
+                User(
+                        id = "preview-user",
+                        email = email,
+                        firstName = firstName,
+                        lastName = lastName,
+                        gender = gender,
+                        sexualOrientation = sexualOrientation,
+                        dateOfBirth = dateOfBirth
+                )
         _currentUser.value = user
         return Result.success(user)
     }
@@ -103,9 +101,7 @@ class FakeAuthRepository : AuthRepository {
     override fun isGuest(): Boolean = _currentUser.value == null
 }
 
-/**
- * Fake AuthViewModel for Compose Preview.
- */
+/** Fake AuthViewModel for Compose Preview. */
 class FakeAuthViewModel : AuthViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     override val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()

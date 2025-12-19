@@ -14,15 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.presentation.viewmodel.ShopViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
-    viewModel: ShopViewModel = koinViewModel(),
-    productId: String,
-    onBack: () -> Unit
+        viewModel: ShopViewModel = koinViewModel(),
+        productId: String,
+        onBack: () -> Unit
 ) {
     val product = viewModel.getProductById(productId)
     if (product == null) {
@@ -31,59 +30,59 @@ fun ProductDetailScreen(
         return
     }
     Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {},
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+            topBar = {
+                CenterAlignedTopAppBar(
+                        title = {},
+                        navigationIcon = {
+                            IconButton(onClick = onBack) {
+                                Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
+                            }
+                        }
+                )
+            },
+            bottomBar = {
+                // Sticky Checkout Bar
+                Surface(shadowElevation = 12.dp) {
+                    Row(
+                            modifier =
+                                    Modifier.fillMaxWidth().padding(16.dp).navigationBarsPadding(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Total", style = MaterialTheme.typography.labelLarge)
+                            Text(
+                                    if (product.insuranceCovered) "$0 (Insured)"
+                                    else product.formattedPrice,
+                                    style = MaterialTheme.typography.headlineSmall,
+                                    color =
+                                            if (product.insuranceCovered)
+                                                    MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Button(
+                                onClick = { /* Add to Cart Logic */},
+                                modifier = Modifier.weight(1f).height(50.dp)
+                        ) { Text("Add to Cart") }
                     }
-                }
-            )
-        },
-        bottomBar = {
-            // Sticky Checkout Bar
-            Surface(shadowElevation = 12.dp) {
-                Row(
-                    modifier =
-                        Modifier.fillMaxWidth().padding(16.dp).navigationBarsPadding(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Total", style = MaterialTheme.typography.labelLarge)
-                        Text(
-                            if (product.insuranceCovered) "$0 (Insured)"
-                            else product.formattedPrice,
-                            style = MaterialTheme.typography.headlineSmall,
-                            color =
-                                if (product.insuranceCovered)
-                                    MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    Button(
-                        onClick = { /* Add to Cart Logic */ },
-                        modifier = Modifier.weight(1f).height(50.dp)
-                    ) { Text("Add to Cart") }
                 }
             }
-        }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).verticalScroll(rememberScrollState())) {
             // 1. Product Image Placeholder
             Box(
-                modifier =
-                    Modifier.fillMaxWidth()
-                        .height(250.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
+                    modifier =
+                            Modifier.fillMaxWidth()
+                                    .height(250.dp)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    Icons.Default.CheckCircle,
-                    null,
-                    modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        Icons.Default.CheckCircle,
+                        null,
+                        modifier = Modifier.size(80.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -91,21 +90,21 @@ fun ProductDetailScreen(
             Column(modifier = Modifier.padding(24.dp)) {
                 if (product.insuranceCovered) {
                     AssistChip(
-                        onClick = {},
-                        label = { Text("Covered by Insurance") },
-                        leadingIcon = { Icon(Icons.Default.CheckCircle, null) },
-                        colors =
-                            AssistChipDefaults.assistChipColors(
-                                leadingIconContentColor = Color(0xFF4CAF50)
-                            )
+                            onClick = {},
+                            label = { Text("Covered by Insurance") },
+                            leadingIcon = { Icon(Icons.Default.CheckCircle, null) },
+                            colors =
+                                    AssistChipDefaults.assistChipColors(
+                                            leadingIconContentColor = Color(0xFF4CAF50)
+                                    )
                     )
                     Spacer(Modifier.height(8.dp))
                 }
 
                 Text(
-                    product.name,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
+                        product.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(12.dp))
                 Text(product.description, style = MaterialTheme.typography.bodyLarge)
@@ -125,22 +124,22 @@ fun ProductDetailScreen(
 fun FeatureRow(title: String, subtitle: String) {
     Row(modifier = Modifier.padding(vertical = 8.dp)) {
         Icon(
-            Icons.Default.CheckCircle,
-            null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
+                Icons.Default.CheckCircle,
+                null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
         )
         Spacer(Modifier.width(12.dp))
         Column {
             Text(
-                title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold
+                    title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold
             )
             Text(
-                subtitle,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                    subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

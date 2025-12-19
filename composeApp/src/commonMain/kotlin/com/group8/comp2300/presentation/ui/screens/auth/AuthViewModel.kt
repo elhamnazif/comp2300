@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.viewmodel
+package com.group8.comp2300.presentation.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
 import com.group8.comp2300.domain.model.user.User

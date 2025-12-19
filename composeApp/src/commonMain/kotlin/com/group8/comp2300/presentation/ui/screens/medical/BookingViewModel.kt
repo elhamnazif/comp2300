@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.viewmodel
+package com.group8.comp2300.presentation.ui.screens.medical
 
 import androidx.lifecycle.ViewModel
 import com.group8.comp2300.domain.model.medical.Clinic
@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 data class BookingUiState(
-    val clinics: List<Clinic> = emptyList(),
-    val selectedClinic: Clinic? = null
+        val clinics: List<Clinic> = emptyList(),
+        val selectedClinic: Clinic? = null
 )
 
 class BookingViewModel(private val repository: ClinicRepository) : ViewModel() {

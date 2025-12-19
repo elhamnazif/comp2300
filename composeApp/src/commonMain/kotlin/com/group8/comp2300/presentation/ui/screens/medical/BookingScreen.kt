@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
-import com.group8.comp2300.presentation.ui.components.medical.ClinicMap
+import com.group8.comp2300.presentation.ui.screens.medical.components.ClinicMap
 
 /** Pure UI component for the Booking screen. Takes state and callbacks, no ViewModel dependency. */
 @OptIn(ExperimentalMaterial3Api::class)

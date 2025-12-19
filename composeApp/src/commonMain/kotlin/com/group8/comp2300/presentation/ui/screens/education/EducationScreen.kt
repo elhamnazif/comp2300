@@ -23,8 +23,8 @@ import com.app.symbols.icons.materialsymbols.icons.QuizW500Outlined
 import com.group8.comp2300.domain.model.education.ContentCategory
 import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.ContentType
-import com.group8.comp2300.presentation.ui.components.education.color
-import com.group8.comp2300.presentation.ui.components.education.icon
+import com.group8.comp2300.presentation.ui.screens.auth.components.color
+import com.group8.comp2300.presentation.ui.screens.auth.components.icon
 
 /**
  * Pure UI component for the Education screen. Takes state and callbacks, no ViewModel dependency.

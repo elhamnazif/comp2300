@@ -15,7 +15,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.education.Quiz
-import com.group8.comp2300.presentation.viewmodel.EducationViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 private val CorrectGreen = Color(0xFF4CAF50) // Material green 500
@@ -24,9 +23,9 @@ private val CorrectOnGreen = Color.White
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizScreen(
-    viewModel: EducationViewModel = koinViewModel(),
-    quizId: String,
-    onBack: () -> Unit
+        viewModel: EducationViewModel = koinViewModel(),
+        quizId: String,
+        onBack: () -> Unit
 ) {
     val quiz = viewModel.getQuizById(quizId)
     if (quiz == null) {
@@ -46,107 +45,141 @@ fun QuizScreen(
     fun handleNextQuestion() {
         if (selectedAnswerIndex == currentQuestion?.correctAnswerIndex) correctAnswersCount++
         if (currentQuestionIndex < quiz.questions.size - 1) {
-            currentQuestionIndex++; selectedAnswerIndex = null; showFeedback = false
+            currentQuestionIndex++
+            selectedAnswerIndex = null
+            showFeedback = false
         } else showResults = true
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Column {
-                        Text(quiz.title)
-                        if (!showResults) Text(
-                            "Question ${currentQuestionIndex + 1} of ${quiz.questions.size}",
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
+            topBar = {
+                TopAppBar(
+                        title = {
+                            Column {
+                                Text(quiz.title)
+                                if (!showResults)
+                                        Text(
+                                                "Question ${currentQuestionIndex + 1} of ${quiz.questions.size}",
+                                                style = MaterialTheme.typography.labelSmall
+                                        )
+                            }
+                        },
+                        navigationIcon = {
+                            IconButton(onClick = onBack) {
+                                Icon(
+                                        Icons.AutoMirrored.Filled.ArrowBack,
+                                        contentDescription = "Back"
+                                )
+                            }
+                        }
+                )
+            }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-        ) {
+        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             if (!showResults)
-                LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
+                    LinearProgressIndicator(
+                            progress = { progress },
+                            modifier = Modifier.fillMaxWidth()
+                    )
 
             if (showResults) {
-                ResultsScreen(quiz, correctAnswersCount, onRetake = {
-                    currentQuestionIndex = 0; selectedAnswerIndex = null
-                    showFeedback = false; correctAnswersCount = 0; showResults = false
-                }, onClose = onBack)
+                ResultsScreen(
+                        quiz,
+                        correctAnswersCount,
+                        onRetake = {
+                            currentQuestionIndex = 0
+                            selectedAnswerIndex = null
+                            showFeedback = false
+                            correctAnswersCount = 0
+                            showResults = false
+                        },
+                        onClose = onBack
+                )
             } else if (currentQuestion != null) {
                 Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        modifier =
+                                Modifier.weight(1f)
+                                        .verticalScroll(rememberScrollState())
+                                        .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        )
+                            modifier = Modifier.fillMaxWidth(),
+                            colors =
+                                    CardDefaults.cardColors(
+                                            containerColor =
+                                                    MaterialTheme.colorScheme.primaryContainer
+                                    )
                     ) {
                         Text(
-                            text = currentQuestion.question,
-                            style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.padding(20.dp)
+                                text = currentQuestion.question,
+                                style = MaterialTheme.typography.headlineSmall,
+                                modifier = Modifier.padding(20.dp)
                         )
                     }
 
                     currentQuestion.options.forEachIndexed { index, option ->
                         OptionCard(
-                            option = option,
-                            index = index,
-                            selectedIndex = selectedAnswerIndex,
-                            correctIndex = if (showFeedback) currentQuestion.correctAnswerIndex else null,
-                            onClick = {
-                                if (!showFeedback) {
-                                    selectedAnswerIndex = index; showFeedback = true
+                                option = option,
+                                index = index,
+                                selectedIndex = selectedAnswerIndex,
+                                correctIndex =
+                                        if (showFeedback) currentQuestion.correctAnswerIndex
+                                        else null,
+                                onClick = {
+                                    if (!showFeedback) {
+                                        selectedAnswerIndex = index
+                                        showFeedback = true
+                                    }
                                 }
-                            }
                         )
                     }
 
                     androidx.compose.animation.AnimatedVisibility(visible = showFeedback) {
                         Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = if (selectedAnswerIndex == currentQuestion.correctAnswerIndex)
-                                    CorrectGreen.copy(alpha = 0.9f)          // theme-adaptive green
-                                else
-                                    MaterialTheme.colorScheme.errorContainer
-                            )
+                                modifier = Modifier.fillMaxWidth(),
+                                colors =
+                                        CardDefaults.cardColors(
+                                                containerColor =
+                                                        if (selectedAnswerIndex ==
+                                                                        currentQuestion
+                                                                                .correctAnswerIndex
+                                                        )
+                                                                CorrectGreen.copy(
+                                                                        alpha = 0.9f
+                                                                ) // theme-adaptive green
+                                                        else
+                                                                MaterialTheme.colorScheme
+                                                                        .errorContainer
+                                        )
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
-                                    text = if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) "✓ Correct!"
-                                    else "✗ Incorrect",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (selectedAnswerIndex == currentQuestion.correctAnswerIndex)
-                                        CorrectOnGreen
-                                    else
-                                        MaterialTheme.colorScheme.onErrorContainer
+                                        text =
+                                                if (selectedAnswerIndex ==
+                                                                currentQuestion.correctAnswerIndex
+                                                )
+                                                        "✓ Correct!"
+                                                else "✗ Incorrect",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color =
+                                                if (selectedAnswerIndex ==
+                                                                currentQuestion.correctAnswerIndex
+                                                )
+                                                        CorrectOnGreen
+                                                else MaterialTheme.colorScheme.onErrorContainer
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = currentQuestion.explanation,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = if (selectedAnswerIndex == currentQuestion.correctAnswerIndex)
-                                        CorrectOnGreen
-                                    else
-                                        Color.Unspecified
+                                        text = currentQuestion.explanation,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color =
+                                                if (selectedAnswerIndex ==
+                                                                currentQuestion.correctAnswerIndex
+                                                )
+                                                        CorrectOnGreen
+                                                else Color.Unspecified
                                 )
                             }
                         }
@@ -154,13 +187,14 @@ fun QuizScreen(
                 }
 
                 Button(
-                    onClick = { handleNextQuestion() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    enabled = showFeedback
+                        onClick = { handleNextQuestion() },
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        enabled = showFeedback
                 ) {
-                    Text(if (currentQuestionIndex < quiz.questions.size - 1) "Next Question" else "See Results")
+                    Text(
+                            if (currentQuestionIndex < quiz.questions.size - 1) "Next Question"
+                            else "See Results"
+                    )
                 }
             }
         }
@@ -169,50 +203,54 @@ fun QuizScreen(
 
 @Composable
 private fun OptionCard(
-    option: String,
-    index: Int,
-    selectedIndex: Int?,
-    correctIndex: Int?,
-    onClick: () -> Unit
+        option: String,
+        index: Int,
+        selectedIndex: Int?,
+        correctIndex: Int?,
+        onClick: () -> Unit
 ) {
     val isSelected = index == selectedIndex
     val isCorrect = index == correctIndex
     val showResult = correctIndex != null
 
     Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = when {
-                showResult && isCorrect -> CorrectGreen.copy(alpha = 0.9f)
-                showResult && isSelected && !isCorrect -> MaterialTheme.colorScheme.errorContainer
-                isSelected -> MaterialTheme.colorScheme.secondaryContainer
-                else -> MaterialTheme.colorScheme.surfaceVariant
-            }
-        ),
-        border = BorderStroke(
-            width = if (isSelected && !showResult) 2.dp else 0.dp,
-            color = if (isSelected && !showResult) MaterialTheme.colorScheme.primary else Color.Transparent
-        )
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+            colors =
+                    CardDefaults.cardColors(
+                            containerColor =
+                                    when {
+                                        showResult && isCorrect -> CorrectGreen.copy(alpha = 0.9f)
+                                        showResult && isSelected && !isCorrect ->
+                                                MaterialTheme.colorScheme.errorContainer
+                                        isSelected -> MaterialTheme.colorScheme.secondaryContainer
+                                        else -> MaterialTheme.colorScheme.surfaceVariant
+                                    }
+                    ),
+            border =
+                    BorderStroke(
+                            width = if (isSelected && !showResult) 2.dp else 0.dp,
+                            color =
+                                    if (isSelected && !showResult) MaterialTheme.colorScheme.primary
+                                    else Color.Transparent
+                    )
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = option,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f),
-                color = if (showResult && isCorrect) CorrectOnGreen else Color.Unspecified
+                    text = option,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f),
+                    color = if (showResult && isCorrect) CorrectOnGreen else Color.Unspecified
             )
             if (showResult && isCorrect) {
                 Text(
-                    text = "✓",
-                    color = CorrectOnGreen,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
+                        text = "✓",
+                        color = CorrectOnGreen,
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -221,87 +259,88 @@ private fun OptionCard(
 
 @Composable
 private fun ResultsScreen(
-    quiz: Quiz,
-    correctAnswersCount: Int,
-    onRetake: () -> Unit,
-    onClose: () -> Unit
+        quiz: Quiz,
+        correctAnswersCount: Int,
+        onRetake: () -> Unit,
+        onClose: () -> Unit
 ) {
     val percentage = (correctAnswersCount.toFloat() / quiz.questions.size * 100).toInt()
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
         Card(
-            modifier = Modifier.size(200.dp),
-            shape = RoundedCornerShape(100.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = when {
-                    percentage >= 80 -> CorrectGreen.copy(alpha = 0.9f)
-                    percentage >= 60 -> MaterialTheme.colorScheme.secondaryContainer
-                    else -> MaterialTheme.colorScheme.errorContainer
-                }
-            )
+                modifier = Modifier.size(200.dp),
+                shape = RoundedCornerShape(100.dp),
+                colors =
+                        CardDefaults.cardColors(
+                                containerColor =
+                                        when {
+                                            percentage >= 80 -> CorrectGreen.copy(alpha = 0.9f)
+                                            percentage >= 60 ->
+                                                    MaterialTheme.colorScheme.secondaryContainer
+                                            else -> MaterialTheme.colorScheme.errorContainer
+                                        }
+                        )
         ) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "$percentage%",
-                        style = MaterialTheme.typography.displayLarge,
-                        fontWeight = FontWeight.Bold
+                            text = "$percentage%",
+                            style = MaterialTheme.typography.displayLarge,
+                            fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "$correctAnswersCount/${quiz.questions.size}",
-                        style = MaterialTheme.typography.titleMedium
+                            text = "$correctAnswersCount/${quiz.questions.size}",
+                            style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
         }
 
         Text(
-            text = when {
-                percentage >= 80 -> "Excellent!"
-                percentage >= 60 -> "Good job!"
-                else -> "Keep learning!"
-            },
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+                text =
+                        when {
+                            percentage >= 80 -> "Excellent!"
+                            percentage >= 60 -> "Good job!"
+                            else -> "Keep learning!"
+                        },
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
         )
 
         Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
-            )
+                modifier = Modifier.fillMaxWidth(),
+                colors =
+                        CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                        )
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Feedback",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                        text = "Feedback",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = when {
-                        percentage >= 80 ->
-                            "Great work! You have a strong understanding of ${quiz.title.lowercase()}. " +
-                                    "Continue to stay informed about your sexual health."
-
-                        percentage >= 60 ->
-                            "You're on the right track! Review the explanations for questions you missed " +
-                                    "to strengthen your knowledge."
-
-                        else ->
-                            "Learning is a journey! Take time to review the material and retake the quiz " +
-                                    "to improve your understanding."
-                    },
-                    style = MaterialTheme.typography.bodyMedium
+                        text =
+                                when {
+                                    percentage >= 80 ->
+                                            "Great work! You have a strong understanding of ${quiz.title.lowercase()}. " +
+                                                    "Continue to stay informed about your sexual health."
+                                    percentage >= 60 ->
+                                            "You're on the right track! Review the explanations for questions you missed " +
+                                                    "to strengthen your knowledge."
+                                    else ->
+                                            "Learning is a journey! Take time to review the material and retake the quiz " +
+                                                    "to improve your understanding."
+                                },
+                        style = MaterialTheme.typography.bodyMedium
                 )
             }
         }

@@ -11,11 +11,11 @@ import com.group8.comp2300.domain.repository.EducationRepository
 import com.group8.comp2300.domain.repository.ShopRepository
 import com.group8.comp2300.navigation.Navigator
 import com.group8.comp2300.navigation.RealNavigator
-import com.group8.comp2300.presentation.viewmodel.RealAuthViewModel
-import com.group8.comp2300.presentation.viewmodel.BookingViewModel
-import com.group8.comp2300.presentation.viewmodel.EducationViewModel
-import com.group8.comp2300.presentation.viewmodel.AuthViewModel
-import com.group8.comp2300.presentation.viewmodel.ShopViewModel
+import com.group8.comp2300.presentation.ui.screens.auth.AuthViewModel
+import com.group8.comp2300.presentation.ui.screens.auth.RealAuthViewModel
+import com.group8.comp2300.presentation.ui.screens.education.EducationViewModel
+import com.group8.comp2300.presentation.ui.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.ui.screens.shop.ShopViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
