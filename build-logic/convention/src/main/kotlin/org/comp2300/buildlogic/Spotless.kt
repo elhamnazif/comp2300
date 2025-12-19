@@ -5,7 +5,7 @@ import org.gradle.api.Project
 
 internal fun Project.configureSpotless(extension: SpotlessExtension) =
         extension.apply {
-            val ktlintVersion = libs.versions.ktlint.get().toString()
+            val ktlintVersion = libs.versions.ktlint.get()
 
             ratchetFrom("origin/main")
             kotlin {
