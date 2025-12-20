@@ -64,8 +64,6 @@ in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and r
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
-
 ### Project architecture (MVVM)
 
 This project follows a simple MVVM layering inside `composeApp/src/commonMain/kotlin/com/group8/comp2300`:
@@ -87,14 +85,3 @@ This project follows a simple MVVM layering inside `composeApp/src/commonMain/ko
 - Domain: `domain/repository/ShopRepository.kt`
 - Data: `data/repository/ShopRepositoryImpl.kt`
 - Presentation: `presentation/viewmodel/ShopViewModel.kt` depends on `ShopRepository` (defaulting to `ShopRepositoryImpl`).
-
-#### Transitional bridges (deprecated)
-
-Legacy ViewModel files remain under `com.group8.comp2300.viewmodel` as typealias bridges and are marked `@Deprecated`:
-
-- `viewmodel/ShopViewModel.kt` → aliases to `presentation.viewmodel.ShopViewModel` and `ShopUiState`.
-- `viewmodel/ProfileViewModel.kt` → aliases to `presentation.viewmodel.ProfileViewModel` and `ProfileUiState`.
-
-New code should import from `com.group8.comp2300.presentation.viewmodel.*`. You may safely remove the legacy alias files once all imports have been updated.
-
-If you prefer a stricter structure where all UI files live under `presentation/ui/**`, we can relocate `ui/**` accordingly and update imports in one pass.

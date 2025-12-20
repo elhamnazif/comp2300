@@ -38,7 +38,7 @@ import kotlin.time.Clock
 @Composable
 fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), onLoginSuccess: () -> Unit, onDismiss: () -> Unit) {
     // Collecting State safely with Lifecycle awareness
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
     // Auto-scroll to top on error
@@ -56,12 +56,12 @@ fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), onLoginSuccess: () -
                     ?: Clock.System.now().toEpochMilliseconds(),
             )
         DatePickerDialog(
-            onDismissRequest = { viewModel.onEvent(AuthUiEvent.ShowDatePicker(false)) },
+            onDismissRequest = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ShowDatePicker(false)) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.onEvent(
-                            AuthUiEvent.DateOfBirthChanged(
+                            AuthViewModel.AuthUiEvent.DateOfBirthChanged(
                                 dateState.selectedDateMillis,
                             ),
                         )
@@ -71,7 +71,7 @@ fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), onLoginSuccess: () -
             dismissButton = {
                 TextButton(
                     onClick = {
-                        viewModel.onEvent(AuthUiEvent.ShowDatePicker(false))
+                        viewModel.onEvent(AuthViewModel.AuthUiEvent.ShowDatePicker(false))
                     },
                 ) { Text("Cancel") }
             },
@@ -91,7 +91,7 @@ fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), onLoginSuccess: () -
             HeaderSection(
                 isRegistering = state.isRegistering,
                 step = state.step,
-                onBack = { viewModel.onEvent(AuthUiEvent.PrevStep) },
+                onBack = { viewModel.onEvent(AuthViewModel.AuthUiEvent.PrevStep) },
             )
 
             Spacer(Modifier.height(32.dp))
@@ -129,7 +129,7 @@ fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), onLoginSuccess: () -
                 FooterSection(
                     isRegistering = state.isRegistering,
                     onToggleMode = {
-                        viewModel.onEvent(AuthUiEvent.ToggleAuthMode)
+                        viewModel.onEvent(AuthViewModel.AuthUiEvent.ToggleAuthMode)
                     },
                     onGuestParams = onDismiss,
                 )
@@ -164,12 +164,12 @@ private fun HeaderSection(isRegistering: Boolean, step: Int, onBack: () -> Unit)
 }
 
 @Composable
-private fun CredentialsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Unit) {
+private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.AuthUiEvent) -> Unit) {
     val focusManager = LocalFocusManager.current
 
     AuthTextField(
         value = state.email,
-        onValueChange = { onEvent(AuthUiEvent.EmailChanged(it)) },
+        onValueChange = { onEvent(AuthViewModel.AuthUiEvent.EmailChanged(it)) },
         label = "Email",
         leadingIcon = Icons.Default.Email,
         errorMessage = state.emailError,
@@ -185,7 +185,7 @@ private fun CredentialsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Unit) 
 
     AuthTextField(
         value = state.password,
-        onValueChange = { onEvent(AuthUiEvent.PasswordChanged(it)) },
+        onValueChange = { onEvent(AuthViewModel.AuthUiEvent.PasswordChanged(it)) },
         label = "Password",
         leadingIcon = Icons.Default.Lock,
         errorMessage =
@@ -195,7 +195,7 @@ private fun CredentialsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Unit) 
             null
         }, // Don't show validation error on Login
         trailingIcon = {
-            IconButton(onClick = { onEvent(AuthUiEvent.TogglePasswordVisibility) }) {
+            IconButton(onClick = { onEvent(AuthViewModel.AuthUiEvent.TogglePasswordVisibility) }) {
                 val icon =
                     if (state.isPasswordVisible) {
                         com.app.symbols.icons.materialsymbols.Icons
@@ -227,12 +227,12 @@ private fun CredentialsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Unit) 
             verticalAlignment = Alignment.CenterVertically,
             modifier =
             Modifier.fillMaxWidth().clickable {
-                onEvent(AuthUiEvent.ToggleTerms)
+                onEvent(AuthViewModel.AuthUiEvent.ToggleTerms)
             },
         ) {
             Checkbox(
                 checked = state.termsAccepted,
-                onCheckedChange = { onEvent(AuthUiEvent.ToggleTerms) },
+                onCheckedChange = { onEvent(AuthViewModel.AuthUiEvent.ToggleTerms) },
             )
             val annotatedText = buildAnnotatedString {
                 append("I agree to the ")
@@ -254,12 +254,12 @@ private fun CredentialsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Unit) 
 }
 
 @Composable
-private fun PersonalDetailsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Unit) {
+private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.AuthUiEvent) -> Unit) {
     val focusManager = LocalFocusManager.current
 
     AuthTextField(
         value = state.firstName,
-        onValueChange = { onEvent(AuthUiEvent.FirstNameChanged(it)) },
+        onValueChange = { onEvent(AuthViewModel.AuthUiEvent.FirstNameChanged(it)) },
         label = "First Name",
         leadingIcon = Icons.Default.Person,
         keyboardOptions =
@@ -274,7 +274,7 @@ private fun PersonalDetailsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Un
 
     AuthTextField(
         value = state.lastName,
-        onValueChange = { onEvent(AuthUiEvent.LastNameChanged(it)) },
+        onValueChange = { onEvent(AuthViewModel.AuthUiEvent.LastNameChanged(it)) },
         label = "Last Name",
         leadingIcon = Icons.Default.Person,
         keyboardOptions =
@@ -290,7 +290,7 @@ private fun PersonalDetailsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Un
         value = state.getFormattedDate(),
         label = "Date of Birth",
         leadingIcon = Icons.Default.DateRange,
-        onClick = { onEvent(AuthUiEvent.ShowDatePicker(true)) },
+        onClick = { onEvent(AuthViewModel.AuthUiEvent.ShowDatePicker(true)) },
     )
     Spacer(Modifier.height(16.dp))
 
@@ -302,7 +302,7 @@ private fun PersonalDetailsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Un
         label = "Gender",
         selectedValue = state.gender,
         options = listOf("Male", "Female", "Non-binary", "Prefer not to say"),
-        onOptionSelected = { onEvent(AuthUiEvent.GenderChanged(it)) },
+        onOptionSelected = { onEvent(AuthViewModel.AuthUiEvent.GenderChanged(it)) },
     )
     Spacer(Modifier.height(16.dp))
 
@@ -318,21 +318,25 @@ private fun PersonalDetailsStep(state: AuthUiState, onEvent: (AuthUiEvent) -> Un
             "Pansexual",
             "Asexual",
         ),
-        onOptionSelected = { onEvent(AuthUiEvent.OrientationChanged(it)) },
+        onOptionSelected = { onEvent(AuthViewModel.AuthUiEvent.OrientationChanged(it)) },
     )
 }
 
 @Composable
-private fun ActionButtons(state: AuthUiState, onEvent: (AuthUiEvent) -> Unit, onLoginSuccess: () -> Unit) {
+private fun ActionButtons(
+    state: AuthViewModel.State,
+    onEvent: (AuthViewModel.AuthUiEvent) -> Unit,
+    onLoginSuccess: () -> Unit,
+) {
     Button(
         onClick = {
-            onEvent(AuthUiEvent.ClearError)
+            onEvent(AuthViewModel.AuthUiEvent.ClearError)
             when {
                 state.isRegistering && state.step == 0 -> {
-                    if (state.isStep1Valid) onEvent(AuthUiEvent.NextStep)
+                    if (state.isStep1Valid) onEvent(AuthViewModel.AuthUiEvent.NextStep)
                 }
 
-                else -> onEvent(AuthUiEvent.Submit(onLoginSuccess))
+                else -> onEvent(AuthViewModel.AuthUiEvent.Submit(onLoginSuccess))
             }
         },
         modifier = Modifier.fillMaxWidth().height(50.dp),

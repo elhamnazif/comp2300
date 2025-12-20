@@ -16,8 +16,6 @@ import com.group8.comp2300.mock.allQuizzes
 import com.group8.comp2300.mock.educationContent
 import com.group8.comp2300.mock.sampleClinics
 import com.group8.comp2300.mock.sampleProducts
-import com.group8.comp2300.presentation.ui.screens.auth.AuthUiEvent
-import com.group8.comp2300.presentation.ui.screens.auth.AuthUiState
 import com.group8.comp2300.presentation.ui.screens.auth.AuthViewModel
 import com.group8.comp2300.presentation.ui.screens.education.EducationViewModel
 import com.group8.comp2300.presentation.ui.screens.medical.BookingViewModel
@@ -106,8 +104,8 @@ class FakeAuthRepository : AuthRepository {
 
 /** Fake AuthViewModel for Compose Preview. */
 class FakeAuthViewModel : AuthViewModel() {
-    private val _uiState = MutableStateFlow(AuthUiState())
-    override val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
+    final override val state: StateFlow<State>
+        field = MutableStateFlow(State())
 
     private val _currentUser = MutableStateFlow<User?>(null)
     override val currentUser: StateFlow<User?> = _currentUser.asStateFlow()

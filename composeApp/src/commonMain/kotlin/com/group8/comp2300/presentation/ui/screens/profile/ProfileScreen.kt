@@ -64,7 +64,7 @@ fun ProfileScreen(
     if (isGuest) {
         NotLoggedInContent(onRequireAuth = onRequireAuth)
     } else {
-        val uiState by viewModel.uiState.collectAsState()
+        val uiState by viewModel.state.collectAsState()
 
         Column(
             Modifier.fillMaxSize()
@@ -265,11 +265,15 @@ private fun FeatureCard(icon: ImageVector, title: String, description: String, m
 
 /* ------------------  INSET CONTENT  ------------------ */
 @Composable
-private fun InsetContent(uiState: ProfileUiState, onNavigateToLabResults: () -> Unit, modifier: Modifier = Modifier) {
+private fun InsetContent(
+    state: ProfileViewModel.State,
+    onNavigateToLabResults: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(modifier.padding(horizontal = 16.dp)) {
-        Header(uiState)
+        Header(state)
         Spacer(Modifier.height(24.dp))
-        RecentResultsCard(uiState.recentResults, onNavigateToLabResults)
+        RecentResultsCard(state.recentResults, onNavigateToLabResults)
         Spacer(Modifier.height(24.dp))
         CommunityCard()
         Spacer(Modifier.height(24.dp))
@@ -284,11 +288,11 @@ private fun InsetContent(uiState: ProfileUiState, onNavigateToLabResults: () -> 
 
 /* ------------------  HEADER  ------------------ */
 @Composable
-private fun Header(uiState: ProfileUiState) {
+private fun Header(state: ProfileViewModel.State) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Avatar(uiState.userInitials)
+        Avatar(state.userInitials)
         Spacer(Modifier.width(16.dp))
-        UserInfo(uiState.userName, uiState.memberSince)
+        UserInfo(state.userName, state.memberSince)
     }
 }
 

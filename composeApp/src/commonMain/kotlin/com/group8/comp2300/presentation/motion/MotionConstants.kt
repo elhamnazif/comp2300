@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.ui.motion
+package com.group8.comp2300.presentation.motion
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp

@@ -3,7 +3,7 @@ agp = "8.13.2"
 android-compileSdk = "36"
 android-minSdk = "24"
 android-targetSdk = "36"
-androidx-activity = "1.12.1"
+androidx-activity = "1.12.2"
 androidx-appcompat = "1.7.1"
 androidx-core = "1.17.0"
 androidx-espresso = "3.7.0"
@@ -20,7 +20,7 @@ foundation = "1.10.0-rc02"
 navigationevent = "1.0.0-rc02"
 spotless = "8.1.0"
 junit = "4.13.2"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 kotlinx-coroutines = "1.10.2"
 ktlint = "1.8.0"
 ktor = "3.3.3"
@@ -98,7 +98,6 @@ detekt-gradlePlugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref 
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
@@ -106,6 +105,7 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 symbolCraft = { id = "io.github.kingsword09.symbolcraft", version = "0.3.3" }
 

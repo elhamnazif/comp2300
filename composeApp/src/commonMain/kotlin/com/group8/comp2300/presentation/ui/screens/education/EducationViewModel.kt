@@ -1,53 +1,95 @@
 package com.group8.comp2300.presentation.ui.screens.education
 
+import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.domain.model.education.ContentCategory
 import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.Quiz
 import com.group8.comp2300.domain.repository.EducationRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-
-data class EducationUiState(
-    val allContent: List<ContentItem> = emptyList(),
-    val filteredContent: List<ContentItem> = emptyList(),
-    val selectedCategory: ContentCategory? = null,
-    val featuredItem: ContentItem? = null,
-)
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class EducationViewModel(private val repository: EducationRepository) : ViewModel() {
-    private val _uiState: MutableStateFlow<EducationUiState>
 
-    init {
+    val selectedCategory: StateFlow<ContentCategory?>
+        field: MutableStateFlow<ContentCategory?> = MutableStateFlow(null)
+
+    private val refreshTrigger: MutableSharedFlow<Unit> = MutableSharedFlow(replay = 1)
+
+    val state: StateFlow<State> = flow {
+        // Initial emit
+        emit(fetchData())
+
+        // React to refreshes
+        refreshTrigger.collect {
+            emit(State(isLoading = true)) // Optimistic loading state
+            emit(fetchData())
+        }
+    }
+        .combine(selectedCategory) { currentState, category ->
+            if (currentState.isLoading || currentState.isError) {
+                currentState
+            } else {
+                val filtered = if (category == null) {
+                    currentState.allContent
+                } else {
+                    currentState.allContent.filter { it.category == category }
+                }
+                currentState.copy(
+                    selectedCategory = category,
+                    filteredContent = filtered,
+                )
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = State(isLoading = true),
+        )
+
+    private suspend fun fetchData(): State = try {
         val allContent = repository.getAllContent()
         val featuredItem = allContent.firstOrNull { it.isFeatured }
-        _uiState =
-            MutableStateFlow(
-                EducationUiState(
-                    allContent = allContent,
-                    filteredContent = allContent,
-                    featuredItem = featuredItem,
-                ),
-            )
+        State(
+            isLoading = false,
+            allContent = allContent,
+            filteredContent = allContent, // Default to showing all
+            featuredItem = featuredItem,
+        )
+    } catch (_: Exception) {
+        State(isLoading = false, isError = true)
     }
 
-    val uiState: StateFlow<EducationUiState> = _uiState.asStateFlow()
+    // ACTIONS
 
     fun selectCategory(category: ContentCategory?) {
-        _uiState.update { state ->
-            val filtered =
-                if (category == null) {
-                    state.allContent
-                } else {
-                    state.allContent.filter { it.category == category }
-                }
-            state.copy(selectedCategory = category, filteredContent = filtered)
+        // Direct access to the backing field
+        selectedCategory.value = category
+    }
+
+    fun refresh() {
+        viewModelScope.launch {
+            refreshTrigger.emit(Unit)
         }
     }
 
     fun getContentById(id: String): ContentItem? = repository.getContentById(id)
-
     fun getQuizById(id: String): Quiz? = repository.getQuizById(id)
+
+    @Immutable
+    data class State(
+        val isLoading: Boolean = false,
+        val isError: Boolean = false,
+        val allContent: List<ContentItem> = emptyList(),
+        val filteredContent: List<ContentItem> = emptyList(),
+        val selectedCategory: ContentCategory? = null,
+        val featuredItem: ContentItem? = null,
+    )
 }

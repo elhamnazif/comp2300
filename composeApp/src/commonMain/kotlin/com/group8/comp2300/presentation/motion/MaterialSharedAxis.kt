@@ -1,7 +1,5 @@
-package com.group8.comp2300.presentation.ui.motion
+package com.group8.comp2300.presentation.motion
 
-// Code taken from
-// https://github.com/ReadYouApp/ReadYou/blob/c9b52e73c6759efd9dc7bed9f9a8887658073150/app/src/main/java/me/ash/reader/ui/motion/MaterialSharedAxis.kt#L71
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -20,6 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
+
+// Code taken from
+// https://github.com/ReadYouApp/ReadYou/blob/c9b52e73c6759efd9dc7bed9f9a8887658073150/app/src/main/java/me/ash/reader/ui/motion/MaterialSharedAxis.kt#L71
 
 /**
  * Returns the provided [Dp] as an [Int] value by the [LocalDensity].

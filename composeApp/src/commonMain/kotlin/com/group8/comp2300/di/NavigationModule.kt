@@ -96,7 +96,7 @@ val navigationModule = module {
     navigation<Screen.Shop>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current
         val viewModel = koinViewModel<ShopViewModel>()
-        val uiState by viewModel.uiState.collectAsState()
+        val uiState by viewModel.state.collectAsState()
 
         ShopScreen(
             products = uiState.products,
@@ -127,7 +127,7 @@ val navigationModule = module {
     navigation<Screen.Booking>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current
         val viewModel = koinViewModel<BookingViewModel>()
-        val uiState by viewModel.uiState.collectAsState()
+        val uiState by viewModel.state.collectAsState()
 
         BookingScreen(
             clinics = uiState.clinics,
@@ -162,7 +162,7 @@ val navigationModule = module {
     navigation<Screen.Education>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current
         val viewModel = koinViewModel<EducationViewModel>()
-        val uiState by viewModel.uiState.collectAsState()
+        val uiState by viewModel.state.collectAsState()
 
         EducationScreen(
             filteredContent = uiState.filteredContent,
