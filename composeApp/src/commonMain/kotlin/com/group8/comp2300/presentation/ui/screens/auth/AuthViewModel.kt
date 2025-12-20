@@ -59,15 +59,12 @@ abstract class AuthViewModel : ViewModel() {
         val isStep2Valid: Boolean
             get() = firstName.isNotBlank() && lastName.isNotBlank() && dateOfBirth != null
 
-        // Formatters (KMP Friendly)
         fun getFormattedDate(): String {
             if (dateOfBirth == null) return ""
 
             val instant = Instant.fromEpochMilliseconds(dateOfBirth)
             val date = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
 
-            // Manual formatting to DD/MM/YYYY to avoid java.time.format dependency
-            // TODO: Make this multiplatform
             val day = date.day.toString().padStart(2, '0')
             val month = date.month.number.toString().padStart(2, '0')
 
