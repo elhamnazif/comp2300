@@ -1,9 +1,9 @@
 plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.ktor)
-    application
     alias(libs.plugins.comp2300.spotless)
     alias(libs.plugins.comp2300.detekt)
+    application
 }
 
 group = "com.group8.comp2300"

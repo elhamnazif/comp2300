@@ -32,8 +32,8 @@ koin = "4.2.0-beta2"
 mpStools = "1.6.3"
 detekt = "2.0.0-alpha.1"
 kotlinStdlib = "2.3.0"
-runner = "1.5.2"
-core = "1.5.0"
+runner = "1.7.0"
+core = "1.7.0"
 
 [libraries]
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }
@@ -134,4 +134,5 @@ comp2300-detekt = { id = "comp2300.detekt" }
 #comp2300-kmp-library = { id = "comp2300.kmp.library" }
 #comp2300-root = { id = "comp2300.root" }
 comp2300-spotless = { id = "comp2300.spotless" }
+# TODO: Check if below is used
 android-lint = { id = "com.android.lint", version.ref = "agp" }
