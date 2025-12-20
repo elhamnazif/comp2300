@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.androidLibrary
 import io.github.kingsword09.symbolcraft.model.SymbolVariant
 import io.github.kingsword09.symbolcraft.model.SymbolWeight
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
@@ -16,6 +17,15 @@ plugins {
 
 kotlin {
     androidTarget { compilerOptions { jvmTarget.set(JvmTarget.JVM_11) } }
+
+    // TODO: There isn't a direct replacement for configuring a Kotlin Multiplatform module using
+    //       com.android.application plugin. To migrate, extract your Android application to a separate Gradle module.
+    //       https://developer.android.com/kotlin/multiplatform/plugin#apply
+    // androidLibrary {
+    //     compilerOptions {
+    //         jvmTarget.set(JvmTarget.JVM_11)
+    //     }
+    // }
 
     listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
@@ -63,8 +73,10 @@ kotlin {
             implementation(libs.androidx.appcompat)
         }
         commonMain.dependencies {
+            implementation(projects.shared)
             implementation(projects.i18n)
 
+            // Compose
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -72,35 +84,33 @@ kotlin {
             implementation(libs.compose.components.resources)
             implementation(libs.compose.ui.tooling.preview)
 
+            // Lifecycles
             implementation(libs.lifecycle.viewmodelCompose)
             implementation(libs.lifecycle.runtimeCompose)
             implementation(libs.lifecycle.viewmodelNavigation3)
             implementation(libs.lifecycle.viewmodelSavedstate)
 
-            // implementation(libs.navigation3.runtime)
+            // Navigation3 and Adaptive
             implementation(libs.navigation3.ui)
-
-            // Adaptive Navigation
             implementation(libs.material3.adaptive)
             implementation(libs.material3.adaptive.navigation3)
             implementation(libs.material3.adaptive.layout)
             implementation(libs.material3.adaptive.navigation.suite)
 
-            implementation(libs.kotlinx.datetime)
-            implementation(libs.material.icons.core)
+            implementation(libs.material.icons.core) // TODO: Remove
 
             // MapLibre
             implementation(libs.maplibre.compose)
             implementation(libs.maplibre.composeMaterial3)
 
+            // kotlinx
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.kotlinx.datetime)
 
-            // Koin for dependency injection (Multiplatform and Compose)
+            // Koin
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.navigation3)
-
-            implementation(projects.shared)
         }
         commonTest.dependencies { implementation(libs.kotlin.test) }
         jvmMain.dependencies {
@@ -183,11 +193,11 @@ symbolCraft {
     //        // include("**/*.svg") // optional, defaults to **/*.svg
     //    }
 
-    //    localIcons(libraryName = "brand") {
-    //        directory = "design/exported"
-    //        include("brand/**/*.svg")
-    //        exclude("legacy/**")
-    //    }
+    //  localIcons(libraryName = "brand") {
+    //      directory = "design/exported"
+    //      include("brand/**/*.svg")
+    //      exclude("legacy/**")
+    //  }
 }
 
 compose.desktop {
