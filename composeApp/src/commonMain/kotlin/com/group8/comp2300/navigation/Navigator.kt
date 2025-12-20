@@ -33,11 +33,9 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
         key = "nav_stack",
         saver = listSaver(
             save = { list ->
-                // Convert List<Screen> -> List<String> (JSON)
                 list.map { Json.encodeToString(it) }
             },
             restore = { savedList ->
-                // Convert List<String> (JSON) -> MutableList<Screen>
                 try {
                     savedList.map { Json.decodeFromString<Screen>(it) }.toMutableStateList()
                 } catch (_: Exception) {
