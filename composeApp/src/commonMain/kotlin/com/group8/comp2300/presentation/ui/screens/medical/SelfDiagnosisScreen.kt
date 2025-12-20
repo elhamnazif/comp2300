@@ -19,9 +19,9 @@ import org.jetbrains.compose.resources.stringResource
 /**
  * Self Diagnosis Screen
  *
- * TODO: Future Enhancement We want to make this screen reusable so that we can define an STI Object
- * and pass it to the screen and the screen will automatically format the questions as inputs and
- * stuff for us. For now, this is a simple implementation for HIV.
+ * TODO: Future Enhancement We want to make this screen reusable so that we can define an STI Object and pass it to the
+ *   screen and the screen will automatically format the questions as inputs and stuff for us. For now, this is a simple
+ *   implementation for HIV.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +48,8 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
             text = {
                 Column {
                     Text(
-                        text = if (diagnosisResult == "High Risk") {
+                        text =
+                        if (diagnosisResult == "High Risk") {
                             stringResource(Res.string.medical_self_diagnosis_risk_high)
                         } else {
                             stringResource(Res.string.medical_self_diagnosis_risk_low)
@@ -78,12 +79,14 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                         showResultDialog = false
                         onNavigateToBooking()
                     },
-                ) { Text(stringResource(Res.string.medical_self_diagnosis_book_button)) }
+                ) {
+                    Text(stringResource(Res.string.medical_self_diagnosis_book_button))
+                }
             },
             dismissButton = {
-                TextButton(onClick = {
-                    showResultDialog = false
-                }) { Text(stringResource(Res.string.medical_self_diagnosis_close_button)) }
+                TextButton(onClick = { showResultDialog = false }) {
+                    Text(stringResource(Res.string.medical_self_diagnosis_close_button))
+                }
             },
         )
     }
@@ -104,10 +107,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
         },
     ) { innerPadding ->
         Column(
-            modifier =
-            Modifier.padding(innerPadding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
@@ -137,18 +137,18 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                                 if (unprotectedSex == true) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
-                                    MaterialTheme.colorScheme
-                                        .surfaceVariant
+                                    MaterialTheme.colorScheme.surfaceVariant
                                 },
                                 contentColor =
                                 if (unprotectedSex == true) {
                                     MaterialTheme.colorScheme.onPrimary
                                 } else {
-                                    MaterialTheme.colorScheme
-                                        .onSurfaceVariant
+                                    MaterialTheme.colorScheme.onSurfaceVariant
                                 },
                             ),
-                        ) { Text("Yes") }
+                        ) {
+                            Text("Yes")
+                        }
                         Button(
                             onClick = { unprotectedSex = false },
                             colors =
@@ -157,18 +157,18 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                                 if (unprotectedSex == false) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
-                                    MaterialTheme.colorScheme
-                                        .surfaceVariant
+                                    MaterialTheme.colorScheme.surfaceVariant
                                 },
                                 contentColor =
                                 if (unprotectedSex == false) {
                                     MaterialTheme.colorScheme.onPrimary
                                 } else {
-                                    MaterialTheme.colorScheme
-                                        .onSurfaceVariant
+                                    MaterialTheme.colorScheme.onSurfaceVariant
                                 },
                             ),
-                        ) { Text("No") }
+                        ) {
+                            Text("No")
+                        }
                     }
                 }
             }
@@ -190,18 +190,18 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                                 if (sharedNeedles == true) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
-                                    MaterialTheme.colorScheme
-                                        .surfaceVariant
+                                    MaterialTheme.colorScheme.surfaceVariant
                                 },
                                 contentColor =
                                 if (sharedNeedles == true) {
                                     MaterialTheme.colorScheme.onPrimary
                                 } else {
-                                    MaterialTheme.colorScheme
-                                        .onSurfaceVariant
+                                    MaterialTheme.colorScheme.onSurfaceVariant
                                 },
                             ),
-                        ) { Text("Yes") }
+                        ) {
+                            Text("Yes")
+                        }
                         Button(
                             onClick = { sharedNeedles = false },
                             colors =
@@ -210,18 +210,18 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                                 if (sharedNeedles == false) {
                                     MaterialTheme.colorScheme.primary
                                 } else {
-                                    MaterialTheme.colorScheme
-                                        .surfaceVariant
+                                    MaterialTheme.colorScheme.surfaceVariant
                                 },
                                 contentColor =
                                 if (sharedNeedles == false) {
                                     MaterialTheme.colorScheme.onPrimary
                                 } else {
-                                    MaterialTheme.colorScheme
-                                        .onSurfaceVariant
+                                    MaterialTheme.colorScheme.onSurfaceVariant
                                 },
                             ),
-                        ) { Text("No") }
+                        ) {
+                            Text("No")
+                        }
                     }
                 }
             }
@@ -232,7 +232,9 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                 onClick = { calculateRisk() },
                 enabled = unprotectedSex != null && sharedNeedles != null,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text(stringResource(Res.string.medical_self_diagnosis_submit_button)) }
+            ) {
+                Text(stringResource(Res.string.medical_self_diagnosis_submit_button))
+            }
 
             Text(
                 text = stringResource(Res.string.medical_self_diagnosis_disclaimer),

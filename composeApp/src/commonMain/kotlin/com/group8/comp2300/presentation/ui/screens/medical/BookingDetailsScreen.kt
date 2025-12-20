@@ -74,8 +74,7 @@ fun BookingDetailsScreen(
                 // Tomorrow: Fully booked (Demonstrates "No slots left")
                 today.plus(1, DateTimeUnit.DAY).toString() to baseSlots.toSet(),
                 // Day after tomorrow: Morning busy
-                today.plus(2, DateTimeUnit.DAY).toString() to
-                    setOf("09:00 AM", "09:30 AM", "10:00 AM"),
+                today.plus(2, DateTimeUnit.DAY).toString() to setOf("09:00 AM", "09:30 AM", "10:00 AM"),
             )
         }
 
@@ -121,10 +120,7 @@ fun BookingDetailsScreen(
                         )
                     }
                 },
-                colors =
-                TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
         },
         bottomBar = {
@@ -150,16 +146,15 @@ fun BookingDetailsScreen(
                         onClick = onConfirm,
                         enabled = selectedTimeSlot != null && reasonText.isNotBlank(),
                         modifier = Modifier.width(200.dp),
-                    ) { Text(contextString) }
+                    ) {
+                        Text(contextString)
+                    }
                 }
             }
         },
     ) { paddingValues ->
         LazyColumn(
-            modifier =
-            Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(paddingValues),
+            modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
@@ -192,11 +187,7 @@ fun BookingDetailsScreen(
                     if (availableSlots.isEmpty()) {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            colors =
-                            CardDefaults.cardColors(
-                                containerColor =
-                                MaterialTheme.colorScheme.errorContainer,
-                            ),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                         ) {
                             Text(
                                 stringResource(Res.string.medical_booking_details_no_slots),
@@ -204,14 +195,8 @@ fun BookingDetailsScreen(
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                             )
                         }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(top = 8.dp),
-                        ) {
-                            Checkbox(
-                                checked = showNotifyToggle,
-                                onCheckedChange = { showNotifyToggle = it },
-                            )
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
+                            Checkbox(checked = showNotifyToggle, onCheckedChange = { showNotifyToggle = it })
                             Text(stringResource(Res.string.medical_booking_details_notify_on_slot))
                         }
                     } else {
@@ -228,13 +213,11 @@ fun BookingDetailsScreen(
                     OutlinedTextField(
                         value = reasonText,
                         onValueChange = { reasonText = it },
-                        modifier =
-                        Modifier.fillMaxWidth().height(if (expanded) 100.dp else 56.dp),
+                        modifier = Modifier.fillMaxWidth().height(if (expanded) 100.dp else 56.dp),
                         placeholder = { Text(stringResource(Res.string.medical_booking_details_reason_placeholder)) },
                         singleLine = !expanded,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                        keyboardActions =
-                        KeyboardActions(onDone = { focusManager.clearFocus() }),
+                        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
                         shape = RoundedCornerShape(12.dp),
                     )
                     if (!expanded && reasonText.isBlank()) {
@@ -245,9 +228,7 @@ fun BookingDetailsScreen(
                             modifier = Modifier.padding(top = 4.dp),
                         )
                     }
-                    LaunchedEffect(reasonText) {
-                        expanded = reasonText.length > 30 || reasonText.contains("\n")
-                    }
+                    LaunchedEffect(reasonText) { expanded = reasonText.length > 30 || reasonText.contains("\n") }
                 }
             }
         }
@@ -274,16 +255,11 @@ private fun ClinicSummaryHeader(clinic: Clinic) {
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier =
                 Modifier.size(64.dp)
-                    .clip(
-                        RoundedCornerShape(12.dp),
-                    ) // Square for buildings/locations
+                    .clip(RoundedCornerShape(12.dp)) // Square for buildings/locations
                     .background(MaterialTheme.colorScheme.tertiaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
@@ -296,11 +272,7 @@ private fun ClinicSummaryHeader(clinic: Clinic) {
             }
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    clinic.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
+                Text(clinic.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(4.dp))
 
                 // Location / Tags
@@ -312,12 +284,7 @@ private fun ClinicSummaryHeader(clinic: Clinic) {
 
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Star,
-                        null,
-                        tint = Color(0xFFFFB300),
-                        modifier = Modifier.size(16.dp),
-                    )
+                    Icon(Icons.Default.Star, null, tint = Color(0xFFFFB300), modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(
                         stringResource(Res.string.medical_booking_details_verified_clinic),
@@ -363,21 +330,22 @@ private fun CalendarGrid(
                     contentDescription = stringResource(Res.string.medical_booking_details_prev_month),
                 )
             }
-            val monthRes = when (displayDate.month.number) {
-                1 -> Res.string.month_jan
-                2 -> Res.string.month_feb
-                3 -> Res.string.month_mar
-                4 -> Res.string.month_apr
-                5 -> Res.string.month_may
-                6 -> Res.string.month_jun
-                7 -> Res.string.month_jul
-                8 -> Res.string.month_aug
-                9 -> Res.string.month_sep
-                10 -> Res.string.month_oct
-                11 -> Res.string.month_nov
-                12 -> Res.string.month_dec
-                else -> Res.string.month_jan
-            }
+            val monthRes =
+                when (displayDate.month.number) {
+                    1 -> Res.string.month_jan
+                    2 -> Res.string.month_feb
+                    3 -> Res.string.month_mar
+                    4 -> Res.string.month_apr
+                    5 -> Res.string.month_may
+                    6 -> Res.string.month_jun
+                    7 -> Res.string.month_jul
+                    8 -> Res.string.month_aug
+                    9 -> Res.string.month_sep
+                    10 -> Res.string.month_oct
+                    11 -> Res.string.month_nov
+                    12 -> Res.string.month_dec
+                    else -> Res.string.month_jan
+                }
             Text(
                 "${stringResource(monthRes)} ${displayDate.year}",
                 style = MaterialTheme.typography.titleSmall,
@@ -401,21 +369,21 @@ private fun CalendarGrid(
                 Res.string.day_initial_fri,
                 Res.string.day_initial_sat,
                 Res.string.day_initial_sun,
-            ).forEach {
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    Text(
-                        stringResource(it),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
+            )
+                .forEach {
+                    Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                        Text(
+                            stringResource(it),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
                 }
-            }
         }
         Spacer(Modifier.height(4.dp))
         val firstCalDate = firstOfMonth.minus(startOffset, DateTimeUnit.DAY)
         val totalCells = ((daysInMonth + startOffset + 6) / 7) * 7
-        val dates: List<LocalDate> =
-            (0 until totalCells).map { firstCalDate.plus(it, DateTimeUnit.DAY) }
+        val dates: List<LocalDate> = (0 until totalCells).map { firstCalDate.plus(it, DateTimeUnit.DAY) }
 
         dates.chunked(7).forEach { weekDates ->
             Row(Modifier.fillMaxWidth()) {
@@ -430,21 +398,15 @@ private fun CalendarGrid(
                             .clip(RoundedCornerShape(8.dp))
                             .background(
                                 when {
-                                    isSelected ->
-                                        MaterialTheme.colorScheme.primary
+                                    isSelected -> MaterialTheme.colorScheme.primary
 
                                     isPast || !isCurrentMonth ->
-                                        MaterialTheme.colorScheme
-                                            .surfaceVariant.copy(
-                                                alpha = 0.4f,
-                                            )
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
 
                                     else -> Color.Transparent
                                 },
                             )
-                            .clickable(enabled = !isPast && isCurrentMonth) {
-                                onDateSelect(date)
-                            }
+                            .clickable(enabled = !isPast && isCurrentMonth) { onDateSelect(date) }
                             .padding(4.dp),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -483,10 +445,7 @@ private fun CalendarGrid(
 private fun TimeGrid(slots: List<String>, selected: String?, onSelect: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         slots.chunked(3).forEach { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 row.forEach { slot ->
                     val isSelected = slot == selected
                     val isAm = slot.endsWith("AM") && slot != "12:00 PM"
@@ -525,11 +484,7 @@ private fun TimeGrid(slots: List<String>, selected: String?, onSelect: (String) 
                         Modifier.weight(1f)
                             .clip(RoundedCornerShape(8.dp))
                             .background(containerColor)
-                            .border(
-                                width = 1.dp,
-                                color = borderColor,
-                                shape = RoundedCornerShape(8.dp),
-                            )
+                            .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(8.dp))
                             .clickable { onSelect(slot) }
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center,

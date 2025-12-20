@@ -9,41 +9,46 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.domain.model.shop.Product
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(viewModel: ShopViewModel = koinViewModel(), productId: String, onBack: () -> Unit) {
-    val product = viewModel.getProductById(productId)
+    val productState by
+        produceState<Product?>(initialValue = null, productId) { value = viewModel.getProductById(productId) }
+
+    ProductDetailContent(product = productState, onBack = onBack, onAddToCart = { prod -> viewModel.addToCart(prod) })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToCart: (Product) -> Unit) {
     if (product == null) {
-        // Handle case where product is not found
-        onBack()
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
         return
     }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {},
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                    }
-                },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } },
             )
         },
         bottomBar = {
             // Sticky Checkout Bar
             Surface(shadowElevation = 12.dp) {
                 Row(
-                    modifier =
-                    Modifier.fillMaxWidth().padding(16.dp).navigationBarsPadding(),
+                    modifier = Modifier.fillMaxWidth().padding(16.dp).navigationBarsPadding(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
@@ -67,10 +72,9 @@ fun ProductDetailScreen(viewModel: ShopViewModel = koinViewModel(), productId: S
                             },
                         )
                     }
-                    Button(
-                        onClick = { /* Add to Cart Logic */ },
-                        modifier = Modifier.weight(1f).height(50.dp),
-                    ) { Text(stringResource(Res.string.shop_details_add_to_cart_button)) }
+                    Button(onClick = { onAddToCart(product) }, modifier = Modifier.weight(1f).height(50.dp)) {
+                        Text(stringResource(Res.string.shop_details_add_to_cart_button))
+                    }
                 }
             }
         },
@@ -78,10 +82,7 @@ fun ProductDetailScreen(viewModel: ShopViewModel = koinViewModel(), productId: S
         Column(modifier = Modifier.padding(padding).verticalScroll(rememberScrollState())) {
             // 1. Product Image Placeholder
             Box(
-                modifier =
-                Modifier.fillMaxWidth()
-                    .height(250.dp)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                modifier = Modifier.fillMaxWidth().height(250.dp).background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -99,19 +100,12 @@ fun ProductDetailScreen(viewModel: ShopViewModel = koinViewModel(), productId: S
                         onClick = {},
                         label = { Text(stringResource(Res.string.shop_details_insurance_badge)) },
                         leadingIcon = { Icon(Icons.Default.CheckCircle, null) },
-                        colors =
-                        AssistChipDefaults.assistChipColors(
-                            leadingIconContentColor = Color(0xFF4CAF50),
-                        ),
+                        colors = AssistChipDefaults.assistChipColors(leadingIconContentColor = Color(0xFF4CAF50)),
                     )
                     Spacer(Modifier.height(8.dp))
                 }
 
-                Text(
-                    product.name,
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                )
+                Text(product.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(12.dp))
                 Text(product.description, style = MaterialTheme.typography.bodyLarge)
 
@@ -138,19 +132,10 @@ fun ProductDetailScreen(viewModel: ShopViewModel = koinViewModel(), productId: S
 @Composable
 fun FeatureRow(title: String, subtitle: String) {
     Row(modifier = Modifier.padding(vertical = 8.dp)) {
-        Icon(
-            Icons.Default.CheckCircle,
-            null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp),
-        )
+        Icon(Icons.Default.CheckCircle, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
         Spacer(Modifier.width(12.dp))
         Column {
-            Text(
-                title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             Text(
                 subtitle,
                 style = MaterialTheme.typography.bodyMedium,

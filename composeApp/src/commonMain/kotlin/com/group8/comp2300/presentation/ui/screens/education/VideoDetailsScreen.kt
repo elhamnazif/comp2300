@@ -52,10 +52,7 @@ fun VideoDetailScreen(
                         )
                     }
                 },
-                colors =
-                TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
             )
         },
     ) { padding ->
@@ -72,9 +69,7 @@ fun VideoDetailScreen(
                     contentDescription = stringResource(Res.string.education_video_play_desc),
                     tint = Color.White,
                     modifier =
-                    Modifier.size(64.dp)
-                        .background(Color.White.copy(alpha = 0.3f), CircleShape)
-                        .padding(8.dp),
+                    Modifier.size(64.dp).background(Color.White.copy(alpha = 0.3f), CircleShape).padding(8.dp),
                 )
                 Text(
                     stringResource(Res.string.education_video_player_placeholder),
@@ -93,13 +88,14 @@ fun VideoDetailScreen(
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Badge(containerColor = item.category.color, contentColor = Color.White) {
-                            val labelRes = when (item.category) {
-                                ContentCategory.PUBERTY -> Res.string.education_category_puberty
-                                ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
-                                ContentCategory.STI -> Res.string.education_category_sti
-                                ContentCategory.IDENTITY -> Res.string.education_category_identity
-                                ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
-                            }
+                            val labelRes =
+                                when (item.category) {
+                                    ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                                    ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                                    ContentCategory.STI -> Res.string.education_category_sti
+                                    ContentCategory.IDENTITY -> Res.string.education_category_identity
+                                    ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                                }
                             Text(stringResource(labelRes), modifier = Modifier.padding(4.dp))
                         }
                         Spacer(Modifier.width(8.dp))
@@ -120,9 +116,7 @@ fun VideoDetailScreen(
                 // Tags Row
                 item {
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(item.tags) { tag ->
-                            SuggestionChip(onClick = {}, label = { Text("#$tag") })
-                        }
+                        items(item.tags) { tag -> SuggestionChip(onClick = {}, label = { Text("#$tag") }) }
                     }
                 }
 
@@ -151,19 +145,17 @@ fun VideoDetailScreen(
                         Button(
                             onClick = { onActionClick(relatedAction) },
                             modifier = Modifier.fillMaxWidth().height(50.dp),
-                            colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                            ),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         ) {
                             Icon(Icons.Default.ThumbUp, null)
                             Spacer(Modifier.width(8.dp))
-                            val actionRes = when (relatedAction) {
-                                "Take Consent Quiz" -> Res.string.education_video_action_take_quiz
-                                "Find PrEP Clinic" -> Res.string.education_video_action_find_clinic
-                                "Start Quiz" -> Res.string.education_video_action_start_quiz
-                                else -> null
-                            }
+                            val actionRes =
+                                when (relatedAction) {
+                                    "Take Consent Quiz" -> Res.string.education_video_action_take_quiz
+                                    "Find PrEP Clinic" -> Res.string.education_video_action_find_clinic
+                                    "Start Quiz" -> Res.string.education_video_action_start_quiz
+                                    else -> null
+                                }
                             Text(actionRes?.let { stringResource(it) } ?: relatedAction)
                         }
                     }

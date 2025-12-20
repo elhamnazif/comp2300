@@ -11,12 +11,14 @@ internal fun Project.configureSpotless(extension: SpotlessExtension) =
             kotlin {
                 target("src/*/kotlin/**/*.kt", "src/*/java/**/*.kt")
                 targetExclude("**/build/**/*.kt", "**/com/app/symbols/**/*.kt")
+                // ktfmt().kotlinlangStyle().configure { it.setMaxWidth(120) }
                 ktlint(ktlintVersion)
                         .setEditorConfigPath(rootProject.file("config/spotless/.editorconfig").path)
                 // licenseHeaderFile(rootProject.file("config/spotless/copyright.kt"))
             }
             kotlinGradle {
                 target("**/*.gradle.kts")
+                // ktfmt().kotlinlangStyle().configure { it.setMaxWidth(120) }
                 ktlint(ktlintVersion)
                         .setEditorConfigPath(rootProject.file("config/spotless/.editorconfig").path)
                 // licenseHeaderFile(

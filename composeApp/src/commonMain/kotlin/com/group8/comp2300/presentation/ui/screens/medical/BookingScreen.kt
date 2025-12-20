@@ -77,10 +77,7 @@ fun BookingScreen(
         },
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
-            ClinicMap(
-                clinics = clinics,
-                selectedClinic = selectedClinic,
-            )
+            ClinicMap(clinics = clinics, selectedClinic = selectedClinic)
 
             // Search Bar (Floating at Top)
             Surface(
@@ -118,8 +115,7 @@ fun BookingScreen(
 
 @Composable
 fun ClinicCompactRow(clinic: Clinic, isSelected: Boolean, onClick: () -> Unit, onNavigate: () -> Unit) {
-    val containerColor =
-        if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+    val containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
 
     Row(
         modifier =

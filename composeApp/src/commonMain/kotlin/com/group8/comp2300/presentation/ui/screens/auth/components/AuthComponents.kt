@@ -17,9 +17,7 @@ import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * Standard text input for the app with consistent styling
- */
+/** Standard text input for the app with consistent styling */
 @Composable
 fun AuthTextField(
     value: String,
@@ -53,10 +51,7 @@ fun AuthTextField(
     )
 }
 
-/**
- * A text field that acts like a button.
- * Used for Date Pickers and Dropdowns to ensure the WHOLE area is clickable.
- */
+/** A text field that acts like a button. Used for Date Pickers and Dropdowns to ensure the WHOLE area is clickable. */
 @Composable
 fun ClickableTextField(
     value: String,
@@ -78,18 +73,11 @@ fun ClickableTextField(
             singleLine = true,
         )
         // Overlay Box that captures the click
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .alpha(0f)
-                .clickable(onClick = onClick),
-        )
+        Box(modifier = Modifier.matchParentSize().alpha(0f).clickable(onClick = onClick))
     }
 }
 
-/**
- * Reusable Dropdown component
- */
+/** Reusable Dropdown component */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthDropdown(label: String, selectedValue: String, options: List<String>, onOptionSelected: (String) -> Unit) {

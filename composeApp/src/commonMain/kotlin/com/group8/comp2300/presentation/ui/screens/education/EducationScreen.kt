@@ -28,9 +28,7 @@ import com.group8.comp2300.presentation.ui.screens.auth.components.icon
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
-/**
- * Pure UI component for the Education screen. Takes state and callbacks, no ViewModel dependency.
- */
+/** Pure UI component for the Education screen. Takes state and callbacks, no ViewModel dependency. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EducationScreen(
@@ -40,12 +38,7 @@ fun EducationScreen(
     onContentClick: (String) -> Unit,
     onCategorySelect: (ContentCategory?) -> Unit,
 ) {
-    Column(
-        modifier =
-        Modifier.fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .systemBarsPadding(),
-    ) {
+    Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).systemBarsPadding()) {
         // 1. Search Header
         SearchBar(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Text(stringResource(Res.string.education_search_placeholder))
@@ -72,22 +65,17 @@ fun EducationScreen(
                         onCategorySelect(if (selectedCategory == category) null else category)
                     },
                     label = {
-                        val labelRes = when (category) {
-                            ContentCategory.PUBERTY -> Res.string.education_category_puberty
-                            ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
-                            ContentCategory.STI -> Res.string.education_category_sti
-                            ContentCategory.IDENTITY -> Res.string.education_category_identity
-                            ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
-                        }
+                        val labelRes =
+                            when (category) {
+                                ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                                ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                                ContentCategory.STI -> Res.string.education_category_sti
+                                ContentCategory.IDENTITY -> Res.string.education_category_identity
+                                ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                            }
                         Text(stringResource(labelRes))
                     },
-                    leadingIcon = {
-                        Icon(
-                            category.icon,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                        )
-                    },
+                    leadingIcon = { Icon(category.icon, contentDescription = null, modifier = Modifier.size(16.dp)) },
                 )
             }
         }
@@ -115,13 +103,14 @@ fun EducationScreen(
                     if (selectedCategory == null) {
                         stringResource(Res.string.education_latest_updates)
                     } else {
-                        val labelRes = when (selectedCategory) {
-                            ContentCategory.PUBERTY -> Res.string.education_category_puberty
-                            ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
-                            ContentCategory.STI -> Res.string.education_category_sti
-                            ContentCategory.IDENTITY -> Res.string.education_category_identity
-                            ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
-                        }
+                        val labelRes =
+                            when (selectedCategory) {
+                                ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                                ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                                ContentCategory.STI -> Res.string.education_category_sti
+                                ContentCategory.IDENTITY -> Res.string.education_category_identity
+                                ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                            }
                         stringResource(Res.string.education_library_format, stringResource(labelRes))
                     },
                     style = MaterialTheme.typography.titleMedium,
@@ -149,15 +138,8 @@ fun SearchBar(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         modifier = modifier.height(56.dp),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp),
-        ) {
-            Icon(
-                Icons.Default.Search,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.dp)) {
+            Icon(Icons.Default.Search, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.width(12.dp))
             Box(Modifier.weight(1f)) { content() }
         }
@@ -166,11 +148,7 @@ fun SearchBar(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
 
 @Composable
 fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(200.dp),
-        shape = RoundedCornerShape(16.dp),
-    ) {
+    Card(onClick = onClick, modifier = Modifier.fillMaxWidth().height(200.dp), shape = RoundedCornerShape(16.dp)) {
         Box(modifier = Modifier.fillMaxSize()) {
             // Gradient Background (Placeholder for Image)
             Box(
@@ -178,13 +156,7 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit) {
                 Modifier.fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            colors =
-                            listOf(
-                                item.category.color.copy(
-                                    alpha = 0.6f,
-                                ),
-                                item.category.color,
-                            ),
+                            colors = listOf(item.category.color.copy(alpha = 0.6f), item.category.color),
                         ),
                     ),
             )
@@ -202,13 +174,14 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit) {
             // Text Content
             Column(modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)) {
                 Badge(containerColor = Color.White, contentColor = Color.Black) {
-                    val labelRes = when (item.category) {
-                        ContentCategory.PUBERTY -> Res.string.education_category_puberty
-                        ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
-                        ContentCategory.STI -> Res.string.education_category_sti
-                        ContentCategory.IDENTITY -> Res.string.education_category_identity
-                        ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
-                    }
+                    val labelRes =
+                        when (item.category) {
+                            ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                            ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                            ContentCategory.STI -> Res.string.education_category_sti
+                            ContentCategory.IDENTITY -> Res.string.education_category_identity
+                            ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                        }
                     Text(stringResource(labelRes), modifier = Modifier.padding(4.dp))
                 }
                 Spacer(Modifier.height(8.dp))
@@ -232,10 +205,7 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit) {
 fun StandardContentCard(item: ContentItem, onClick: () -> Unit) {
     Card(
         onClick = onClick,
-        colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -250,17 +220,9 @@ fun StandardContentCard(item: ContentItem, onClick: () -> Unit) {
                 Icon(
                     imageVector =
                     when (item.type) {
-                        ContentType.VIDEO ->
-                            com.app.symbols.icons.materialsymbols.Icons
-                                .PlayCircleW500Outlined
-
-                        ContentType.QUIZ ->
-                            com.app.symbols.icons.materialsymbols.Icons
-                                .QuizW500Outlined
-
-                        ContentType.ARTICLE ->
-                            com.app.symbols.icons.materialsymbols.Icons
-                                .ArticleW500Outlined
+                        ContentType.VIDEO -> com.app.symbols.icons.materialsymbols.Icons.PlayCircleW500Outlined
+                        ContentType.QUIZ -> com.app.symbols.icons.materialsymbols.Icons.QuizW500Outlined
+                        ContentType.ARTICLE -> com.app.symbols.icons.materialsymbols.Icons.ArticleW500Outlined
                     },
                     contentDescription = null,
                     tint = item.category.color,
@@ -270,11 +232,7 @@ fun StandardContentCard(item: ContentItem, onClick: () -> Unit) {
             Spacer(Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    item.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                Text(item.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text(
                     item.description,
                     style = MaterialTheme.typography.bodySmall,
@@ -282,13 +240,14 @@ fun StandardContentCard(item: ContentItem, onClick: () -> Unit) {
                     maxLines = 2,
                 )
                 Spacer(Modifier.height(4.dp))
-                val labelRes = when (item.category) {
-                    ContentCategory.PUBERTY -> Res.string.education_category_puberty
-                    ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
-                    ContentCategory.STI -> Res.string.education_category_sti
-                    ContentCategory.IDENTITY -> Res.string.education_category_identity
-                    ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
-                }
+                val labelRes =
+                    when (item.category) {
+                        ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                        ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                        ContentCategory.STI -> Res.string.education_category_sti
+                        ContentCategory.IDENTITY -> Res.string.education_category_identity
+                        ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                    }
                 Text(
                     "${stringResource(labelRes)} • ${item.formattedDuration}",
                     style = MaterialTheme.typography.labelSmall,

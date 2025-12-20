@@ -45,13 +45,12 @@ private fun formatDate(timestamp: Long): String {
             12 -> Res.string.month_dec
             else -> Res.string.month_jan
         }
-    return "${stringResource(monthRes)} ${localDateTime.dayOfMonth}, ${localDateTime.year}"
+    return "${stringResource(monthRes)} ${localDateTime.day}, ${localDateTime.year}"
 }
 
 // Helper to create timestamp from date components
-private fun dateToTimestamp(year: Int, month: Int, day: Int): Long = kotlinx.datetime.LocalDate(year, month, day)
-    .atStartOfDayIn(TimeZone.UTC)
-    .toEpochMilliseconds()
+private fun dateToTimestamp(year: Int, month: Int, day: Int): Long =
+    kotlinx.datetime.LocalDate(year, month, day).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,10 +79,7 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
                             it.testName.contains("Syphilis", ignoreCase = true)
                     }
 
-                filterHepatitis ->
-                    allResults.filter {
-                        it.testName.contains("Hepatitis", ignoreCase = true)
-                    }
+                filterHepatitis -> allResults.filter { it.testName.contains("Hepatitis", ignoreCase = true) }
 
                 else -> allResults
             }
@@ -105,10 +101,7 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
         },
     ) { innerPadding ->
         Column(
-            modifier =
-            Modifier.padding(innerPadding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier = Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Header
@@ -124,10 +117,7 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
             )
 
             // Filter chips
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 filterOptions.forEach { filter ->
                     FilterChip(
                         selected = selectedFilter == filter,
@@ -139,7 +129,8 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
 
             // Results count
             Text(
-                text = if (filteredResults.size == 1) {
+                text =
+                if (filteredResults.size == 1) {
                     stringResource(Res.string.medical_lab_results_count_single, filteredResults.size)
                 } else {
                     stringResource(Res.string.medical_lab_results_count_multiple, filteredResults.size)
@@ -155,18 +146,14 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
             Button(
                 onClick = onScheduleTest,
                 modifier = Modifier.fillMaxWidth(),
-                colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                ),
-            ) { Text(stringResource(Res.string.medical_lab_results_schedule_next)) }
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            ) {
+                Text(stringResource(Res.string.medical_lab_results_schedule_next))
+            }
 
             // Educational info
             Card(
-                colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                ),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -195,10 +182,7 @@ private fun LabResultCard(result: LabResult) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = { expanded = !expanded },
-        colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -228,12 +212,13 @@ private fun LabResultCard(result: LabResult) {
 
                 DetailRow(stringResource(Res.string.medical_lab_results_detail_type), result.testName)
                 DetailRow(stringResource(Res.string.medical_lab_results_detail_date), formatDate(result.testDate))
-                val statusRes = when (result.status) {
-                    LabStatus.PENDING -> Res.string.lab_status_pending
-                    LabStatus.NEGATIVE -> Res.string.lab_status_negative
-                    LabStatus.POSITIVE -> Res.string.lab_status_positive
-                    LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
-                }
+                val statusRes =
+                    when (result.status) {
+                        LabStatus.PENDING -> Res.string.lab_status_pending
+                        LabStatus.NEGATIVE -> Res.string.lab_status_negative
+                        LabStatus.POSITIVE -> Res.string.lab_status_positive
+                        LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
+                    }
                 DetailRow(stringResource(Res.string.medical_lab_results_detail_status), stringResource(statusRes))
                 DetailRow(
                     stringResource(Res.string.medical_lab_results_detail_location),
@@ -257,8 +242,7 @@ private fun LabResultCard(result: LabResult) {
 
 @Composable
 private fun StatusBadge(result: LabResult) {
-    val bgColor =
-        if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
+    val bgColor = if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
     val textColor = if (result.isPositive) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
 
     val statusRes =
@@ -281,19 +265,12 @@ private fun StatusBadge(result: LabResult) {
 
 @Composable
 private fun DetailRow(label: String, value: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-        )
+        Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
     }
 }

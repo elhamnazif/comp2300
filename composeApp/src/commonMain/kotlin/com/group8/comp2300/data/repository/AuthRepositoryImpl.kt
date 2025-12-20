@@ -1,5 +1,6 @@
 package com.group8.comp2300.data.repository
 
+import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
@@ -10,7 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.LocalDate
 import kotlin.time.Clock
 
-class AuthRepositoryImpl : AuthRepository {
+class AuthRepositoryImpl(private val apiService: ApiService) : AuthRepository {
     private val _currentUser = MutableStateFlow<User?>(null)
     override val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
