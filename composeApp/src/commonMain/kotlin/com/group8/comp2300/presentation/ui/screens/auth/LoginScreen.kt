@@ -31,13 +31,14 @@ import com.app.symbols.icons.materialsymbols.icons.VisibilityW500Outlined
 import com.group8.comp2300.presentation.ui.screens.auth.components.AuthDropdown
 import com.group8.comp2300.presentation.ui.screens.auth.components.AuthTextField
 import com.group8.comp2300.presentation.ui.screens.auth.components.ClickableTextField
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), onLoginSuccess: () -> Unit, onDismiss: () -> Unit) {
-    // Collecting State safely with Lifecycle awareness
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
@@ -66,14 +67,14 @@ fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), onLoginSuccess: () -
                             ),
                         )
                     },
-                ) { Text("OK") }
+                ) { Text(stringResource(Res.string.auth_ok)) }
             },
             dismissButton = {
                 TextButton(
                     onClick = {
                         viewModel.onEvent(AuthViewModel.AuthUiEvent.ShowDatePicker(false))
                     },
-                ) { Text("Cancel") }
+                ) { Text(stringResource(Res.string.auth_cancel)) }
             },
         ) { DatePicker(state = dateState) }
     }
@@ -107,7 +108,7 @@ fun LoginScreen(viewModel: AuthViewModel = koinViewModel(), onLoginSuccess: () -
             if (state.errorMessage != null) {
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    text = state.errorMessage!!,
+                    text = stringResource(state.errorMessage!!),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -145,19 +146,31 @@ private fun HeaderSection(isRegistering: Boolean, step: Int, onBack: () -> Unit)
             IconButton(onClick = onBack, Modifier.align(Alignment.CenterStart)) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(Res.string.auth_back_desc),
                 )
             }
         }
     }
     Text(
-        text = if (isRegistering) "Create Account" else "Welcome Back",
+        text = if (isRegistering) {
+            stringResource(
+                Res.string.auth_create_account,
+            )
+        } else {
+            stringResource(Res.string.auth_welcome_back)
+        },
         style = MaterialTheme.typography.headlineMedium,
         fontWeight = FontWeight.Bold,
     )
     Spacer(Modifier.height(8.dp))
     Text(
-        text = if (isRegistering) "Join to access full features" else "Sign in to continue",
+        text = if (isRegistering) {
+            stringResource(
+                Res.string.auth_join_desc,
+            )
+        } else {
+            stringResource(Res.string.auth_sign_in_desc)
+        },
         style = MaterialTheme.typography.bodyMedium,
         color = MaterialTheme.colorScheme.secondary,
     )
@@ -170,7 +183,7 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
     AuthTextField(
         value = state.email,
         onValueChange = { onEvent(AuthViewModel.AuthUiEvent.EmailChanged(it)) },
-        label = "Email",
+        label = stringResource(Res.string.auth_email_label),
         leadingIcon = Icons.Default.Email,
         errorMessage = state.emailError,
         keyboardOptions =
@@ -186,7 +199,7 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
     AuthTextField(
         value = state.password,
         onValueChange = { onEvent(AuthViewModel.AuthUiEvent.PasswordChanged(it)) },
-        label = "Password",
+        label = stringResource(Res.string.auth_password_label),
         leadingIcon = Icons.Default.Lock,
         errorMessage =
         if (state.isRegistering) {
@@ -204,7 +217,7 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
                         com.app.symbols.icons.materialsymbols.Icons
                             .VisibilityOffW500Outlined
                     }
-                Icon(icon, contentDescription = "Toggle password visibility")
+                Icon(icon, contentDescription = stringResource(Res.string.auth_toggle_password_desc))
             }
         },
         visualTransformation =
@@ -235,13 +248,13 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
                 onCheckedChange = { onEvent(AuthViewModel.AuthUiEvent.ToggleTerms) },
             )
             val annotatedText = buildAnnotatedString {
-                append("I agree to the ")
+                append(stringResource(Res.string.auth_agree_to))
                 pushStyle(SpanStyle(textDecoration = TextDecoration.Underline))
-                append("Terms")
+                append(stringResource(Res.string.auth_terms))
                 pop()
-                append(" and ")
+                append(stringResource(Res.string.auth_and))
                 pushStyle(SpanStyle(textDecoration = TextDecoration.Underline))
-                append("Privacy Policy")
+                append(stringResource(Res.string.auth_privacy_policy))
                 pop()
             }
             Text(
@@ -260,7 +273,7 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
     AuthTextField(
         value = state.firstName,
         onValueChange = { onEvent(AuthViewModel.AuthUiEvent.FirstNameChanged(it)) },
-        label = "First Name",
+        label = stringResource(Res.string.auth_first_name_label),
         leadingIcon = Icons.Default.Person,
         keyboardOptions =
         KeyboardOptions(
@@ -275,7 +288,7 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
     AuthTextField(
         value = state.lastName,
         onValueChange = { onEvent(AuthViewModel.AuthUiEvent.LastNameChanged(it)) },
-        label = "Last Name",
+        label = stringResource(Res.string.auth_last_name_label),
         leadingIcon = Icons.Default.Person,
         keyboardOptions =
         KeyboardOptions(
@@ -288,35 +301,40 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
 
     ClickableTextField(
         value = state.getFormattedDate(),
-        label = "Date of Birth",
+        label = stringResource(Res.string.auth_dob_label),
         leadingIcon = Icons.Default.DateRange,
         onClick = { onEvent(AuthViewModel.AuthUiEvent.ShowDatePicker(true)) },
     )
     Spacer(Modifier.height(16.dp))
 
     HorizontalDivider(Modifier.padding(vertical = 8.dp))
-    Text("Optional Information", style = MaterialTheme.typography.titleMedium)
+    Text(stringResource(Res.string.auth_optional_info), style = MaterialTheme.typography.titleMedium)
     Spacer(Modifier.height(16.dp))
 
     AuthDropdown(
-        label = "Gender",
+        label = stringResource(Res.string.auth_gender_label),
         selectedValue = state.gender,
-        options = listOf("Male", "Female", "Non-binary", "Prefer not to say"),
+        options = listOf(
+            stringResource(Res.string.auth_gender_male),
+            stringResource(Res.string.auth_gender_female),
+            stringResource(Res.string.auth_gender_non_binary),
+            stringResource(Res.string.auth_gender_prefer_not_to_say),
+        ),
         onOptionSelected = { onEvent(AuthViewModel.AuthUiEvent.GenderChanged(it)) },
     )
     Spacer(Modifier.height(16.dp))
 
     AuthDropdown(
-        label = "Sexual Orientation",
+        label = stringResource(Res.string.auth_orientation_label),
         selectedValue = state.sexualOrientation,
         options =
         listOf(
-            "Heterosexual",
-            "Gay",
-            "Lesbian",
-            "Bisexual",
-            "Pansexual",
-            "Asexual",
+            stringResource(Res.string.auth_orientation_heterosexual),
+            stringResource(Res.string.auth_orientation_gay),
+            stringResource(Res.string.auth_orientation_lesbian),
+            stringResource(Res.string.auth_orientation_bisexual),
+            stringResource(Res.string.auth_orientation_pansexual),
+            stringResource(Res.string.auth_orientation_asexual),
         ),
         onOptionSelected = { onEvent(AuthViewModel.AuthUiEvent.OrientationChanged(it)) },
     )
@@ -360,9 +378,9 @@ private fun ActionButtons(
         } else {
             Text(
                 when {
-                    state.isRegistering && state.step == 0 -> "Continue"
-                    state.isRegistering -> "Sign Up"
-                    else -> "Sign In"
+                    state.isRegistering && state.step == 0 -> stringResource(Res.string.auth_continue)
+                    state.isRegistering -> stringResource(Res.string.auth_sign_up)
+                    else -> stringResource(Res.string.auth_sign_in)
                 },
             )
         }
@@ -374,13 +392,13 @@ private fun FooterSection(isRegistering: Boolean, onToggleMode: () -> Unit, onGu
     TextButton(onClick = onToggleMode) {
         Text(
             if (isRegistering) {
-                "Already have an account? Sign In"
+                stringResource(Res.string.auth_already_have_account)
             } else {
-                "Don't have an account? Sign Up"
+                stringResource(Res.string.auth_no_account)
             },
         )
     }
     TextButton(onClick = onGuestParams) {
-        Text("Continue as Guest", color = MaterialTheme.colorScheme.secondary)
+        Text(stringResource(Res.string.auth_continue_as_guest), color = MaterialTheme.colorScheme.secondary)
     }
 }

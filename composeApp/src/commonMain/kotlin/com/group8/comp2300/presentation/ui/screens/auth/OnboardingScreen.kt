@@ -27,6 +27,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.group8.comp2300.mock.sampleOnboardingQuestions
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun OnboardingScreen(isGuest: Boolean = true, onRequireAuth: () -> Unit = {}, onFinished: () -> Unit) {
@@ -68,9 +70,33 @@ fun OnboardingScreen(isGuest: Boolean = true, onRequireAuth: () -> Unit = {}, on
             in questionStartIndex until questionEndIndex -> {
                 val questionIndex = step - questionStartIndex
                 val question = sampleOnboardingQuestions[questionIndex]
+
+                val questionText = when (question.id) {
+                    1 -> stringResource(Res.string.onboarding_q1_text)
+                    2 -> stringResource(Res.string.onboarding_q2_text)
+                    else -> question.text
+                }
+
+                val localizedOptions = when (question.id) {
+                    1 -> listOf(
+                        stringResource(Res.string.onboarding_q1_op1),
+                        stringResource(Res.string.onboarding_q1_op2),
+                        stringResource(Res.string.onboarding_q1_op3),
+                        stringResource(Res.string.onboarding_q1_op4),
+                    )
+
+                    2 -> listOf(
+                        stringResource(Res.string.onboarding_q2_op1),
+                        stringResource(Res.string.onboarding_q2_op2),
+                        stringResource(Res.string.onboarding_q2_op3),
+                    )
+
+                    else -> question.options
+                }
+
                 QuestionStep(
-                    question = question.text,
-                    options = question.options,
+                    question = questionText,
+                    options = localizedOptions,
                     onAnswer = { index ->
                         riskScore += index
                         step++
@@ -112,28 +138,28 @@ fun AuthChoiceStep(isGuest: Boolean, onRequireAuth: () -> Unit, onNext: () -> Un
 
         if (!isGuest) {
             Text(
-                "Welcome Back!",
+                stringResource(Res.string.onboarding_welcome_back_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                "You are signed in.",
+                stringResource(Res.string.onboarding_signed_in_body),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.secondary,
                 modifier = Modifier.padding(vertical = 16.dp),
             )
             Spacer(modifier = Modifier.height(32.dp))
             Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(50.dp)) {
-                Text("Continue")
+                Text(stringResource(Res.string.onboarding_continue))
             }
         } else {
             Text(
-                "Create an Account",
+                stringResource(Res.string.onboarding_create_account_title),
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                "Sign up to save your progress and access all features.",
+                stringResource(Res.string.onboarding_sign_up_body),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.secondary,
@@ -144,14 +170,14 @@ fun AuthChoiceStep(isGuest: Boolean, onRequireAuth: () -> Unit, onNext: () -> Un
             Button(
                 onClick = onRequireAuth,
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-            ) { Text("Sign Up / Log In") }
+            ) { Text(stringResource(Res.string.onboarding_sign_up_log_in)) }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
                 onClick = onNext,
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-            ) { Text("Continue as Guest") }
+            ) { Text(stringResource(Res.string.onboarding_continue_as_guest)) }
         }
     }
 }
@@ -171,12 +197,12 @@ fun WelcomeStep(onNext: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            "Welcome to Vita",
+            stringResource(Res.string.onboarding_welcome_vita),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
         )
         Text(
-            "Your private, judgment-free space for sexual health.",
+            stringResource(Res.string.onboarding_welcome_desc),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.secondary,
@@ -184,7 +210,7 @@ fun WelcomeStep(onNext: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(50.dp)) {
-            Text("Get Started")
+            Text(stringResource(Res.string.onboarding_get_started))
         }
     }
 }
@@ -216,12 +242,12 @@ fun PinStep(pinLength: Int = 4, onCompleted: (String) -> Unit) {
         Spacer(Modifier.height(24.dp))
 
         Text(
-            text = "Create a Privacy PIN",
+            text = stringResource(Res.string.onboarding_create_pin_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
         )
         Text(
-            text = "We'll ask for this whenever you open the app.",
+            text = stringResource(Res.string.onboarding_create_pin_desc),
             color = MaterialTheme.colorScheme.secondary,
         )
 
@@ -358,7 +384,13 @@ fun QuestionStep(question: String, options: List<String>, onAnswer: (Int) -> Uni
 @Composable
 fun ResultStep(riskScore: Int, onFinish: () -> Unit) {
     // Mock Logic: Higher score = higher risk recommendation
-    val recommendation = if (riskScore > 2) "Every 3 Months" else "Every 6 Months"
+    val recommendation = if (riskScore >
+        2
+    ) {
+        stringResource(Res.string.onboarding_every_3_months)
+    } else {
+        stringResource(Res.string.onboarding_every_6_months)
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -376,7 +408,7 @@ fun ResultStep(riskScore: Int, onFinish: () -> Unit) {
         )
         Spacer(Modifier.height(32.dp))
         Text(
-            "You're all set!",
+            stringResource(Res.string.onboarding_all_set),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
         )
@@ -393,12 +425,12 @@ fun ResultStep(riskScore: Int, onFinish: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    "Recommended Plan",
+                    stringResource(Res.string.onboarding_recommended_plan),
                     style = MaterialTheme.typography.labelLarge,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "HIV/STI Screening",
+                    stringResource(Res.string.onboarding_screening_title),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
@@ -411,7 +443,7 @@ fun ResultStep(riskScore: Int, onFinish: () -> Unit) {
         }
 
         Button(onClick = onFinish, modifier = Modifier.fillMaxWidth().height(56.dp)) {
-            Text("Go to Dashboard")
+            Text(stringResource(Res.string.onboarding_go_to_dashboard))
             Spacer(Modifier.width(8.dp))
             Icon(Icons.AutoMirrored.Filled.ArrowForward, null)
         }

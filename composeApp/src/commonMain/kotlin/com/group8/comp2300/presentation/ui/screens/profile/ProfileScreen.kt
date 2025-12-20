@@ -24,31 +24,36 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.symbols.icons.materialsymbols.icons.ChevronRightW400Outlined
 import com.group8.comp2300.domain.model.medical.LabResult
+import com.group8.comp2300.domain.model.medical.LabStatus
+import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
 
 // Helper to format timestamp for display
+@Composable
 private fun formatDate(timestamp: Long): String {
     val instant = Instant.fromEpochMilliseconds(timestamp)
     val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-    val months =
-        listOf(
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-        )
-    return "${months[localDateTime.month.number - 1]} ${localDateTime.day}, ${localDateTime.year}"
+    val monthRes =
+        when (localDateTime.month.number) {
+            1 -> Res.string.month_jan
+            2 -> Res.string.month_feb
+            3 -> Res.string.month_mar
+            4 -> Res.string.month_apr
+            5 -> Res.string.month_may
+            6 -> Res.string.month_jun
+            7 -> Res.string.month_jul
+            8 -> Res.string.month_aug
+            9 -> Res.string.month_sep
+            10 -> Res.string.month_oct
+            11 -> Res.string.month_nov
+            12 -> Res.string.month_dec
+            else -> Res.string.month_jan
+        }
+    return "${stringResource(monthRes)} ${localDateTime.day}, ${localDateTime.year}"
 }
 
 @Composable
@@ -103,7 +108,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
 
         // Feature Preview Cards
         Text(
-            "Why Create an Account?",
+            stringResource(Res.string.profile_why_account_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.Start),
@@ -113,32 +118,32 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
 
         FeatureCard(
             icon = Icons.Default.CheckCircle,
-            title = "Track Your Results",
-            description = "View your lab results history and monitor your health over time",
+            title = stringResource(Res.string.profile_track_results_title),
+            description = stringResource(Res.string.profile_track_results_desc),
         )
 
         Spacer(Modifier.height(12.dp))
 
         FeatureCard(
             icon = Icons.Default.DateRange,
-            title = "Schedule Screenings",
-            description = "Book appointments and receive reminders for regular testing",
+            title = stringResource(Res.string.profile_schedule_screenings_title),
+            description = stringResource(Res.string.profile_schedule_screenings_desc),
         )
 
         Spacer(Modifier.height(12.dp))
 
         FeatureCard(
             icon = Icons.Default.Lock,
-            title = "Private & Secure",
-            description = "Your health data is encrypted and protected with biometric security",
+            title = stringResource(Res.string.profile_private_secure_title),
+            description = stringResource(Res.string.profile_private_secure_desc),
         )
 
         Spacer(Modifier.height(12.dp))
 
         FeatureCard(
             icon = Icons.AutoMirrored.Filled.Send,
-            title = "Anonymous Partner Notifications",
-            description = "Discreetly notify partners through TellYourPartner.org",
+            title = stringResource(Res.string.profile_anonymous_partner_title),
+            description = stringResource(Res.string.profile_anonymous_partner_desc),
         )
 
         Spacer(Modifier.height(32.dp))
@@ -153,7 +158,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
             ),
         ) {
             Text(
-                "Sign In",
+                stringResource(Res.string.profile_sign_in),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
             )
@@ -162,13 +167,13 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
         Spacer(Modifier.height(12.dp))
 
         OutlinedButton(onClick = onRequireAuth, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-            Text("Create Account", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(Res.string.profile_create_account), style = MaterialTheme.typography.titleMedium)
         }
 
         Spacer(Modifier.height(24.dp))
 
         Text(
-            "Guest users have limited access to features",
+            stringResource(Res.string.profile_guest_limited_access),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.secondary,
         )
@@ -200,7 +205,7 @@ private fun HeroSection(modifier: Modifier = Modifier) {
 
         // Hero Text
         Text(
-            text = "Your Health Profile Awaits",
+            text = stringResource(Res.string.profile_hero_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface,
@@ -209,8 +214,7 @@ private fun HeroSection(modifier: Modifier = Modifier) {
         Spacer(Modifier.height(12.dp))
 
         Text(
-            text =
-            "Sign in to access your personalized health dashboard, track lab results, and stay on top of your sexual health",
+            text = stringResource(Res.string.profile_hero_desc),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -278,7 +282,7 @@ private fun InsetContent(
         CommunityCard()
         Spacer(Modifier.height(24.dp))
         Text(
-            "Settings",
+            stringResource(Res.string.profile_settings_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp),
@@ -290,7 +294,15 @@ private fun InsetContent(
 @Composable
 private fun Header(state: ProfileViewModel.State) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        Avatar(state.userInitials)
+        Avatar(
+            if (state.userInitials.isEmpty()) {
+                stringResource(
+                    Res.string.profile_default_user_initials,
+                )
+            } else {
+                state.userInitials
+            },
+        )
         Spacer(Modifier.width(16.dp))
         UserInfo(state.userName, state.memberSince)
     }
@@ -316,9 +328,17 @@ private fun Avatar(initials: String, modifier: Modifier = Modifier) {
 @Composable
 private fun UserInfo(name: String, memberSince: String, modifier: Modifier = Modifier) {
     Column(modifier) {
-        Text(name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text(
-            memberSince,
+            if (name.isEmpty()) stringResource(Res.string.profile_default_user_name) else name,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            if (memberSince.isEmpty()) {
+                stringResource(Res.string.profile_member_since_format, "2024")
+            } else {
+                memberSince
+            },
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.secondary,
         )
@@ -342,7 +362,7 @@ private fun RecentResultsCard(
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
-                "Recent Results",
+                stringResource(Res.string.profile_recent_results_title),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
             )
@@ -364,7 +384,7 @@ private fun RecentResultsCard(
                 ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                 ),
-            ) { Text("Schedule Next Screening") }
+            ) { Text(stringResource(Res.string.profile_schedule_next_screening)) }
         }
     }
 }
@@ -397,9 +417,16 @@ private fun StatusSurface(result: LabResult) {
     val bgColor =
         if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
     val textColor = if (result.isPositive) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
+    val statusRes =
+        when (result.status) {
+            LabStatus.PENDING -> Res.string.lab_status_pending
+            LabStatus.NEGATIVE -> Res.string.lab_status_negative
+            LabStatus.POSITIVE -> Res.string.lab_status_positive
+            LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
+        }
     Surface(color = bgColor, shape = RoundedCornerShape(8.dp)) {
         Text(
-            result.status.displayName,
+            stringResource(statusRes),
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelMedium,
             color = textColor,
@@ -428,13 +455,13 @@ private fun CommunityCard(modifier: Modifier = Modifier) {
             Spacer(Modifier.width(16.dp))
             Column {
                 Text(
-                    "Notify Partners Anonymously",
+                    stringResource(Res.string.profile_notify_partners_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onTertiaryContainer,
                 )
                 Text(
-                    "Send discreet SMS alerts via TellYourPartner.org",
+                    stringResource(Res.string.profile_notify_partners_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onTertiaryContainer,
                 )
@@ -454,20 +481,20 @@ private fun EdgeToEdgeSettings(
     Column(modifier) {
         SettingsItem(
             icon = Icons.Default.Lock,
-            title = "Privacy & Security",
-            subtitle = "Biometrics enabled",
+            title = stringResource(Res.string.profile_privacy_security_title),
+            subtitle = stringResource(Res.string.profile_biometrics_enabled),
             onClick = onNavigateToPrivacySecurity,
         )
         SettingsItem(
             icon = Icons.Default.Notifications,
-            title = "Notifications",
-            subtitle = "Discreet mode on",
+            title = stringResource(Res.string.profile_notifications_title),
+            subtitle = stringResource(Res.string.profile_notifications_desc),
             onClick = onNavigateToNotifications,
         )
         SettingsItem(
             icon = Icons.Outlined.Info,
-            title = "Help & Support",
-            subtitle = "FAQs",
+            title = stringResource(Res.string.profile_help_support_title),
+            subtitle = stringResource(Res.string.profile_faqs_desc),
             onClick = onNavigateToHelpSupport,
         )
     }

@@ -13,9 +13,9 @@ class ProfileViewModel : ViewModel() {
 
     @Immutable
     data class State(
-        val userInitials: String = "JP",
-        val userName: String = "Vita User",
-        val memberSince: String = "Member since 2024",
+        val userInitials: String = "",
+        val userName: String = "",
+        val memberSince: String = "",
         val recentResults: List<LabResult> = emptyList(),
     )
 }

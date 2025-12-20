@@ -18,7 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.domain.model.education.ContentCategory
 import com.group8.comp2300.presentation.ui.screens.auth.components.color
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,7 +47,7 @@ fun VideoDetailScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            "Back",
+                            stringResource(Res.string.education_video_back_desc),
                             tint = Color.White,
                         )
                     }
@@ -66,7 +69,7 @@ fun VideoDetailScreen(
                 // Placeholder for ExoPlayer
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
-                    contentDescription = "Play",
+                    contentDescription = stringResource(Res.string.education_video_play_desc),
                     tint = Color.White,
                     modifier =
                     Modifier.size(64.dp)
@@ -74,7 +77,7 @@ fun VideoDetailScreen(
                         .padding(8.dp),
                 )
                 Text(
-                    "Video Player Placeholder",
+                    stringResource(Res.string.education_video_player_placeholder),
                     color = Color.Gray,
                     modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
                 )
@@ -90,7 +93,14 @@ fun VideoDetailScreen(
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Badge(containerColor = item.category.color, contentColor = Color.White) {
-                            Text(item.category.label, modifier = Modifier.padding(4.dp))
+                            val labelRes = when (item.category) {
+                                ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                                ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                                ContentCategory.STI -> Res.string.education_category_sti
+                                ContentCategory.IDENTITY -> Res.string.education_category_identity
+                                ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                            }
+                            Text(stringResource(labelRes), modifier = Modifier.padding(4.dp))
                         }
                         Spacer(Modifier.width(8.dp))
                         Text(item.formattedDuration, color = Color.Gray)
@@ -119,7 +129,7 @@ fun VideoDetailScreen(
                 // The "Knowledge" (Transcript)
                 item {
                     Text(
-                        text = "Transcript & Key Points",
+                        text = stringResource(Res.string.education_video_transcript_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -148,7 +158,13 @@ fun VideoDetailScreen(
                         ) {
                             Icon(Icons.Default.ThumbUp, null)
                             Spacer(Modifier.width(8.dp))
-                            Text(relatedAction)
+                            val actionRes = when (relatedAction) {
+                                "Take Consent Quiz" -> Res.string.education_video_action_take_quiz
+                                "Find PrEP Clinic" -> Res.string.education_video_action_find_clinic
+                                "Start Quiz" -> Res.string.education_video_action_start_quiz
+                                else -> null
+                            }
+                            Text(actionRes?.let { stringResource(it) } ?: relatedAction)
                         }
                     }
                 }

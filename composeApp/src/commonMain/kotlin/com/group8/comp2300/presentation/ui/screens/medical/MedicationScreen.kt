@@ -25,6 +25,8 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.mock.sampleMedications
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 
 // --- Data Models ---
@@ -109,7 +111,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Medicine Cabinet", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(Res.string.medical_medication_title), fontWeight = FontWeight.Bold) },
                 colors =
                 TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -127,7 +129,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
-            ) { Icon(Icons.Default.Add, contentDescription = "Add Medication") }
+            ) { Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.medical_medication_add_desc)) }
         },
     ) { innerPadding ->
         LazyColumn(
@@ -140,10 +142,15 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
         ) {
             // 1. Active Medications Section
             val activeMeds = medications.filter { it.status == MedicationStatus.Active }
-            item { SectionHeader(title = "Active", count = activeMeds.size) }
+            item {
+                SectionHeader(
+                    title = stringResource(Res.string.medical_medication_section_active),
+                    count = activeMeds.size,
+                )
+            }
 
             if (activeMeds.isEmpty()) {
-                item { EmptyStateMessage("No active medications.") }
+                item { EmptyStateMessage(stringResource(Res.string.medical_medication_empty_active)) }
             } else {
                 items(activeMeds, key = { it.id }) { med ->
                     MedicationCard(
@@ -161,7 +168,10 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
             if (archivedMeds.isNotEmpty()) {
                 item {
                     Spacer(Modifier.height(16.dp))
-                    SectionHeader(title = "Archived", count = archivedMeds.size)
+                    SectionHeader(
+                        title = stringResource(Res.string.medical_medication_section_archived),
+                        count = archivedMeds.size,
+                    )
                 }
                 items(archivedMeds, key = { it.id }) { med ->
                     MedicationCard(
@@ -296,7 +306,7 @@ fun MedicationCard(medication: Medication, onClick: () -> Unit, isArchived: Bool
                 if (medication.instructions.isNotEmpty()) {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "Note: ${medication.instructions}",
+                        text = stringResource(Res.string.medical_medication_note_format, medication.instructions),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.tertiary,
                         maxLines = 1,
@@ -306,7 +316,7 @@ fun MedicationCard(medication: Medication, onClick: () -> Unit, isArchived: Bool
 
             Icon(
                 Icons.Default.Edit,
-                contentDescription = "Edit",
+                contentDescription = stringResource(Res.string.medical_medication_edit_desc),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp),
             )
@@ -356,7 +366,13 @@ fun MedicationFormSheet(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = if (isEditMode) "Edit Medication" else "Add Medication",
+                text = if (isEditMode) {
+                    stringResource(
+                        Res.string.medical_medication_form_edit_title,
+                    )
+                } else {
+                    stringResource(Res.string.medical_medication_form_add_title)
+                },
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
             )
@@ -364,7 +380,7 @@ fun MedicationFormSheet(
                 IconButton(onClick = { onDelete(medicationToEdit.id) }) {
                     Icon(
                         Icons.Outlined.Delete,
-                        contentDescription = "Delete",
+                        contentDescription = stringResource(Res.string.medical_medication_delete_desc),
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -375,8 +391,8 @@ fun MedicationFormSheet(
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
-            label = { Text("Medication Name") },
-            placeholder = { Text("e.g. Truvada") },
+            label = { Text(stringResource(Res.string.medical_medication_form_name_label)) },
+            placeholder = { Text(stringResource(Res.string.medical_medication_form_name_placeholder)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions =
@@ -389,8 +405,8 @@ fun MedicationFormSheet(
         OutlinedTextField(
             value = dosage,
             onValueChange = { dosage = it },
-            label = { Text("Dosage / Strength") },
-            placeholder = { Text("e.g. 200mg or 1 Pill") },
+            label = { Text(stringResource(Res.string.medical_medication_form_dosage_label)) },
+            placeholder = { Text(stringResource(Res.string.medical_medication_form_dosage_placeholder)) },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
@@ -399,7 +415,7 @@ fun MedicationFormSheet(
         // Frequency Selection
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                "Frequency",
+                stringResource(Res.string.medical_medication_form_frequency_label),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.secondary,
             )
@@ -408,10 +424,17 @@ fun MedicationFormSheet(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 MedConstants.Frequencies.forEach { freq ->
+                    val freqRes = when (freq) {
+                        "Daily" -> Res.string.medical_medication_freq_daily
+                        "Twice Daily" -> Res.string.medical_medication_freq_twice_daily
+                        "Weekly" -> Res.string.medical_medication_freq_weekly
+                        "On Demand" -> Res.string.medical_medication_freq_on_demand
+                        else -> Res.string.medical_medication_freq_daily // Fallback
+                    }
                     FilterChip(
                         selected = frequency == freq,
                         onClick = { frequency = freq },
-                        label = { Text(freq) },
+                        label = { Text(stringResource(freqRes)) },
                         leadingIcon = {
                             if (frequency == freq) {
                                 Icon(Icons.Default.Check, null, Modifier.size(18.dp))
@@ -425,7 +448,7 @@ fun MedicationFormSheet(
         // Color Picker
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                "Color Tag",
+                stringResource(Res.string.medical_medication_form_color_tag_label),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.secondary,
             )
@@ -458,8 +481,8 @@ fun MedicationFormSheet(
         OutlinedTextField(
             value = instructions,
             onValueChange = { instructions = it },
-            label = { Text("Instructions (Optional)") },
-            placeholder = { Text("e.g. Take with food") },
+            label = { Text(stringResource(Res.string.medical_medication_form_instructions_label)) },
+            placeholder = { Text(stringResource(Res.string.medical_medication_form_instructions_placeholder)) },
             modifier = Modifier.fillMaxWidth(),
             maxLines = 3,
         )
@@ -486,15 +509,15 @@ fun MedicationFormSheet(
                 ) {
                     Column {
                         Text(
-                            "Archive Medication",
+                            stringResource(Res.string.medical_medication_form_archive_title),
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
                         )
                         Text(
                             if (status == MedicationStatus.Archived) {
-                                "Currently Archived"
+                                stringResource(Res.string.medical_medication_form_archive_status_on)
                             } else {
-                                "Move to archive to hide from active list"
+                                stringResource(Res.string.medical_medication_form_archive_status_off)
                             },
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.secondary,
@@ -536,10 +559,23 @@ fun MedicationFormSheet(
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = isFormValid,
-        ) { Text(if (isEditMode) "Save Changes" else "Add Medication") }
+        ) {
+            Text(
+                if (isEditMode) {
+                    stringResource(
+                        Res.string.medical_medication_form_save_button,
+                    )
+                } else {
+                    stringResource(Res.string.medical_medication_form_add_title)
+                },
+            )
+        }
 
         TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
-            Text("Cancel", color = MaterialTheme.colorScheme.secondary)
+            Text(
+                stringResource(Res.string.medical_medication_form_cancel_button),
+                color = MaterialTheme.colorScheme.secondary,
+            )
         }
     }
 }

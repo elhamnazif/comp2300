@@ -58,14 +58,13 @@ kotlin {
     }
 
     sourceSets {
-        all {
-            languageSettings.optIn("kotlin.time.ExperimentalTime")
-        }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.appcompat)
         }
         commonMain.dependencies {
+            implementation(projects.i18n)
+
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
@@ -90,7 +89,7 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.material.icons.core)
 
-            // Map Libre
+            // MapLibre
             implementation(libs.maplibre.compose)
             implementation(libs.maplibre.composeMaterial3)
 

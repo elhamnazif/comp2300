@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.mock.faqs
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,10 +25,10 @@ fun HelpSupportScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Help & Support") },
+                title = { Text(stringResource(Res.string.help_support_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.auth_back_desc))
                     }
                 },
             )
@@ -40,7 +42,7 @@ fun HelpSupportScreen(onBack: () -> Unit) {
                 .padding(16.dp),
         ) {
             Text(
-                "Frequently Asked Questions",
+                stringResource(Res.string.help_support_faq_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp),
@@ -70,7 +72,7 @@ fun HelpSupportScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(24.dp))
 
             Text(
-                "Contact Support",
+                stringResource(Res.string.help_support_contact_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp),
@@ -78,8 +80,8 @@ fun HelpSupportScreen(onBack: () -> Unit) {
 
             SupportOptionCard(
                 icon = Icons.Default.Email,
-                title = "Email Support",
-                description = "support@sexualhealthapp.com",
+                title = stringResource(Res.string.help_support_email_label),
+                description = stringResource(Res.string.help_support_email_val),
                 onClick = {},
             )
 
@@ -87,8 +89,8 @@ fun HelpSupportScreen(onBack: () -> Unit) {
 
             SupportOptionCard(
                 icon = Icons.Default.Phone,
-                title = "Phone Support",
-                description = "1-800-HEALTH (24/7)",
+                title = stringResource(Res.string.help_support_phone_label),
+                description = stringResource(Res.string.help_support_phone_val),
                 onClick = {},
             )
 
@@ -96,8 +98,8 @@ fun HelpSupportScreen(onBack: () -> Unit) {
 
             SupportOptionCard(
                 icon = Icons.Default.Info,
-                title = "Resources",
-                description = "Visit our knowledge base",
+                title = stringResource(Res.string.help_support_resources_label),
+                description = stringResource(Res.string.help_support_resources_desc),
                 onClick = {},
             )
 
@@ -112,7 +114,7 @@ fun HelpSupportScreen(onBack: () -> Unit) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        "Need Immediate Help?",
+                        stringResource(Res.string.help_support_emergency_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color =
@@ -121,7 +123,7 @@ fun HelpSupportScreen(onBack: () -> Unit) {
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "If you're experiencing a medical emergency, please call 911 or visit your nearest emergency room immediately.",
+                        stringResource(Res.string.help_support_emergency_desc),
                         style = MaterialTheme.typography.bodyMedium,
                         color =
                         MaterialTheme.colorScheme
@@ -167,7 +169,13 @@ private fun FaqItem(
                     } else {
                         Icons.Default.KeyboardArrowDown
                     },
-                    contentDescription = if (expanded) "Collapse" else "Expand",
+                    contentDescription = if (expanded) {
+                        stringResource(
+                            Res.string.help_support_collapse_desc,
+                        )
+                    } else {
+                        stringResource(Res.string.help_support_expand_desc)
+                    },
                     tint = MaterialTheme.colorScheme.secondary,
                 )
             }

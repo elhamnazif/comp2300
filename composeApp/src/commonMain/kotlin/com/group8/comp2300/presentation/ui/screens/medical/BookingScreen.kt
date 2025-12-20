@@ -17,6 +17,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.presentation.ui.screens.medical.components.ClinicMap
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /** Pure UI component for the Booking screen. Takes state and callbacks, no ViewModel dependency. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +53,7 @@ fun BookingScreen(
             ) {
                 item {
                     Text(
-                        "Nearby Locations",
+                        stringResource(Res.string.medical_booking_nearby_title),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -99,12 +101,12 @@ fun BookingScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
+                        contentDescription = stringResource(Res.string.medical_booking_search_desc),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
-                        text = "Search for clinics...",
+                        text = stringResource(Res.string.medical_booking_search_placeholder),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -157,7 +159,7 @@ fun ClinicCompactRow(clinic: Clinic, isSelected: Boolean, onClick: () -> Unit, o
         IconButton(onClick = onNavigate) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "View Details",
+                contentDescription = stringResource(Res.string.medical_booking_view_details_desc),
                 tint =
                 if (isSelected) {
                     MaterialTheme.colorScheme.primary

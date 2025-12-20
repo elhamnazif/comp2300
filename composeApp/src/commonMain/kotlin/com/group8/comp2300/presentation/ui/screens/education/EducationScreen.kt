@@ -25,6 +25,8 @@ import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.ContentType
 import com.group8.comp2300.presentation.ui.screens.auth.components.color
 import com.group8.comp2300.presentation.ui.screens.auth.components.icon
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Pure UI component for the Education screen. Takes state and callbacks, no ViewModel dependency.
@@ -46,7 +48,7 @@ fun EducationScreen(
     ) {
         // 1. Search Header
         SearchBar(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-            Text("Search topics, e.g., 'PrEP'")
+            Text(stringResource(Res.string.education_search_placeholder))
         }
 
         // 2. Category Pills (The "Spokes")
@@ -59,7 +61,7 @@ fun EducationScreen(
                 FilterChip(
                     selected = selectedCategory == null,
                     onClick = { onCategorySelect(null) },
-                    label = { Text("All") },
+                    label = { Text(stringResource(Res.string.education_category_all)) },
                 )
             }
             items(ContentCategory.values()) { category ->
@@ -69,7 +71,16 @@ fun EducationScreen(
                         // Toggle logic
                         onCategorySelect(if (selectedCategory == category) null else category)
                     },
-                    label = { Text(category.label) },
+                    label = {
+                        val labelRes = when (category) {
+                            ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                            ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                            ContentCategory.STI -> Res.string.education_category_sti
+                            ContentCategory.IDENTITY -> Res.string.education_category_identity
+                            ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                        }
+                        Text(stringResource(labelRes))
+                    },
                     leadingIcon = {
                         Icon(
                             category.icon,
@@ -89,7 +100,7 @@ fun EducationScreen(
             if (selectedCategory == null && featuredItem != null) {
                 item {
                     Text(
-                        "Featured Insight",
+                        stringResource(Res.string.education_featured_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 8.dp),
@@ -102,9 +113,16 @@ fun EducationScreen(
             item {
                 Text(
                     if (selectedCategory == null) {
-                        "Latest Updates"
+                        stringResource(Res.string.education_latest_updates)
                     } else {
-                        "${selectedCategory.label} Library"
+                        val labelRes = when (selectedCategory) {
+                            ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                            ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                            ContentCategory.STI -> Res.string.education_category_sti
+                            ContentCategory.IDENTITY -> Res.string.education_category_identity
+                            ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                        }
+                        stringResource(Res.string.education_library_format, stringResource(labelRes))
                     },
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
@@ -184,7 +202,14 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit) {
             // Text Content
             Column(modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)) {
                 Badge(containerColor = Color.White, contentColor = Color.Black) {
-                    Text(item.category.label, modifier = Modifier.padding(4.dp))
+                    val labelRes = when (item.category) {
+                        ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                        ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                        ContentCategory.STI -> Res.string.education_category_sti
+                        ContentCategory.IDENTITY -> Res.string.education_category_identity
+                        ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                    }
+                    Text(stringResource(labelRes), modifier = Modifier.padding(4.dp))
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -257,8 +282,15 @@ fun StandardContentCard(item: ContentItem, onClick: () -> Unit) {
                     maxLines = 2,
                 )
                 Spacer(Modifier.height(4.dp))
+                val labelRes = when (item.category) {
+                    ContentCategory.PUBERTY -> Res.string.education_category_puberty
+                    ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
+                    ContentCategory.STI -> Res.string.education_category_sti
+                    ContentCategory.IDENTITY -> Res.string.education_category_identity
+                    ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                }
                 Text(
-                    "${item.category.label} • ${item.formattedDuration}",
+                    "${stringResource(labelRes)} • ${item.formattedDuration}",
                     style = MaterialTheme.typography.labelSmall,
                     color = item.category.color,
                 )

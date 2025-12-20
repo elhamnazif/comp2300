@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Instant
 
 /**
@@ -27,13 +28,13 @@ abstract class AuthViewModel : ViewModel() {
         val isRegistering: Boolean = false,
         val step: Int = 0,
         val isLoading: Boolean = false,
-        val errorMessage: String? = null,
+        val errorMessage: StringResource? = null,
 
         // Step 1: Credentials
         val email: String = "",
-        val emailError: String? = null,
+        val emailError: StringResource? = null,
         val password: String = "",
-        val passwordError: String? = null,
+        val passwordError: StringResource? = null,
         val isPasswordVisible: Boolean = false,
         val termsAccepted: Boolean = false,
 

@@ -15,6 +15,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.education.Quiz
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 private val CorrectGreen = Color(0xFF4CAF50) // Material green 500
@@ -57,7 +59,11 @@ fun QuizScreen(viewModel: EducationViewModel = koinViewModel(), quizId: String, 
                         Text(quiz.title)
                         if (!showResults) {
                             Text(
-                                "Question ${currentQuestionIndex + 1} of ${quiz.questions.size}",
+                                stringResource(
+                                    Res.string.education_quiz_progress_format,
+                                    currentQuestionIndex + 1,
+                                    quiz.questions.size,
+                                ),
                                 style = MaterialTheme.typography.labelSmall,
                             )
                         }
@@ -67,7 +73,7 @@ fun QuizScreen(viewModel: EducationViewModel = koinViewModel(), quizId: String, 
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(Res.string.education_quiz_back_desc),
                         )
                     }
                 },
@@ -163,9 +169,9 @@ fun QuizScreen(viewModel: EducationViewModel = koinViewModel(), quizId: String, 
                                     if (selectedAnswerIndex ==
                                         currentQuestion.correctAnswerIndex
                                     ) {
-                                        "✓ Correct!"
+                                        stringResource(Res.string.education_quiz_correct)
                                     } else {
-                                        "✗ Incorrect"
+                                        stringResource(Res.string.education_quiz_incorrect)
                                     },
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
@@ -203,9 +209,9 @@ fun QuizScreen(viewModel: EducationViewModel = koinViewModel(), quizId: String, 
                 ) {
                     Text(
                         if (currentQuestionIndex < quiz.questions.size - 1) {
-                            "Next Question"
+                            stringResource(Res.string.education_quiz_next_question)
                         } else {
-                            "See Results"
+                            stringResource(Res.string.education_quiz_see_results)
                         },
                     )
                 }
@@ -300,12 +306,16 @@ private fun ResultsScreen(quiz: Quiz, correctAnswersCount: Int, onRetake: () -> 
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "$percentage%",
+                        text = stringResource(Res.string.education_quiz_score_format, percentage),
                         style = MaterialTheme.typography.displayLarge,
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        text = "$correctAnswersCount/${quiz.questions.size}",
+                        text = stringResource(
+                            Res.string.education_quiz_count_format,
+                            correctAnswersCount,
+                            quiz.questions.size,
+                        ),
                         style = MaterialTheme.typography.titleMedium,
                     )
                 }
@@ -315,9 +325,9 @@ private fun ResultsScreen(quiz: Quiz, correctAnswersCount: Int, onRetake: () -> 
         Text(
             text =
             when {
-                percentage >= 80 -> "Excellent!"
-                percentage >= 60 -> "Good job!"
-                else -> "Keep learning!"
+                percentage >= 80 -> stringResource(Res.string.education_quiz_result_excellent)
+                percentage >= 60 -> stringResource(Res.string.education_quiz_result_good)
+                else -> stringResource(Res.string.education_quiz_result_keep_learning)
             },
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
@@ -332,7 +342,7 @@ private fun ResultsScreen(quiz: Quiz, correctAnswersCount: Int, onRetake: () -> 
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Feedback",
+                    text = stringResource(Res.string.education_quiz_feedback_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -341,23 +351,24 @@ private fun ResultsScreen(quiz: Quiz, correctAnswersCount: Int, onRetake: () -> 
                     text =
                     when {
                         percentage >= 80 ->
-                            "Great work! You have a strong understanding of ${quiz.title.lowercase()}. " +
-                                "Continue to stay informed about your sexual health."
+                            stringResource(Res.string.education_quiz_feedback_excellent, quiz.title.lowercase())
 
                         percentage >= 60 ->
-                            "You're on the right track! Review the explanations for questions you missed " +
-                                "to strengthen your knowledge."
+                            stringResource(Res.string.education_quiz_feedback_good)
 
                         else ->
-                            "Learning is a journey! Take time to review the material and retake the quiz " +
-                                "to improve your understanding."
+                            stringResource(Res.string.education_quiz_feedback_low)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
 
-        Button(onClick = onRetake, modifier = Modifier.fillMaxWidth()) { Text("Retake Quiz") }
-        OutlinedButton(onClick = onClose, modifier = Modifier.fillMaxWidth()) { Text("Close") }
+        Button(onClick = onRetake, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(Res.string.education_quiz_retake_button))
+        }
+        OutlinedButton(onClick = onClose, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(Res.string.education_quiz_close_button))
+        }
     }
 }

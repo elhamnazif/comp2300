@@ -22,6 +22,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.app.symbols.icons.materialsymbols.icons.*
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -37,9 +39,7 @@ fun HomeScreen(
     var isPrivacyMode by remember { mutableStateOf(false) }
 
     // STATE: Mock "Daily Insight" Data
-    val dailyFact = remember {
-        "Did you know? PrEP is over 99% effective at preventing HIV when taken daily."
-    }
+    val dailyFact = stringResource(Res.string.home_daily_insight_content)
 
     // Scroll state for smaller screens
     val scrollState = rememberScrollState()
@@ -65,7 +65,7 @@ fun HomeScreen(
                         com.app.symbols.icons.materialsymbols.Icons
                             .VisibilityOffW500Outlined
                     },
-                    contentDescription = "Toggle Privacy",
+                    contentDescription = stringResource(Res.string.home_toggle_privacy_desc),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -99,14 +99,14 @@ fun HomeScreen(
                 val blurRadius by animateFloatAsState(if (isPrivacyMode) 10f else 0f)
 
                 Text(
-                    text = "Protected",
+                    text = stringResource(Res.string.home_protected_label),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.blur(blurRadius.dp),
                 )
                 Text(
-                    text = "12 Day Streak",
+                    text = stringResource(Res.string.home_streak_label_format, 12),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.secondary,
                     modifier = Modifier.blur(blurRadius.dp),
@@ -148,7 +148,7 @@ fun HomeScreen(
 
                 Column {
                     Text(
-                        text = "Daily Insight",
+                        text = stringResource(Res.string.home_daily_insight_title),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.tertiary,
                     )
@@ -171,7 +171,7 @@ fun HomeScreen(
         ) {
             SmartActionButton(
                 icon = Icons.Outlined.Add,
-                label = "Log Pill",
+                label = stringResource(Res.string.home_menu_log_pill),
                 color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToMedication,
@@ -179,7 +179,7 @@ fun HomeScreen(
 
             SmartActionButton(
                 icon = com.app.symbols.icons.materialsymbols.Icons.LocalPharmacyW500Outlined,
-                label = "Shop",
+                label = stringResource(Res.string.home_menu_shop),
                 color = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToShop,
@@ -187,7 +187,7 @@ fun HomeScreen(
 
             SmartActionButton(
                 icon = com.app.symbols.icons.materialsymbols.Icons.CalendarMonthW500Outlined,
-                label = "History",
+                label = stringResource(Res.string.home_menu_history),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToCalendar,
@@ -204,7 +204,7 @@ fun HomeScreen(
             // 1. STI Self Check (User Request)
             SmartActionButton(
                 icon = Icons.Outlined.Search, // Or use a custom stethoscope icon
-                label = "Symptom\nCheck",
+                label = stringResource(Res.string.home_menu_symptom_check),
                 color = MaterialTheme.colorScheme.tertiaryContainer,
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToSymptomChecker,
@@ -213,7 +213,7 @@ fun HomeScreen(
             // 2. Find Clinic (Location based)
             SmartActionButton(
                 icon = Icons.Outlined.LocationOn,
-                label = "Find\nClinic",
+                label = stringResource(Res.string.home_menu_find_clinic),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToClinicMap,
@@ -222,7 +222,7 @@ fun HomeScreen(
             // 3. Partner Notify (Anonymous SMS tool)
             SmartActionButton(
                 icon = Icons.AutoMirrored.Outlined.Send,
-                label = "Partner\nNotify",
+                label = stringResource(Res.string.home_menu_partner_notify),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.weight(1f),
             )
