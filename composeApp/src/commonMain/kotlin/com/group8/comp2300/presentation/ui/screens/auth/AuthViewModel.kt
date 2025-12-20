@@ -11,15 +11,17 @@ import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Instant
 
 /**
- * Interface for AuthViewModel to allow fake implementations for previews. This abstraction avoids
- * triggering viewModelScope/Dispatchers.Main in layout previews.
+ * Interface for AuthViewModel to allow fake implementations for previews. This abstraction avoids triggering
+ * viewModelScope/Dispatchers.Main in layout previews.
  */
 abstract class AuthViewModel : ViewModel() {
     abstract val state: StateFlow<State>
     abstract val currentUser: StateFlow<User?>
 
     abstract fun onEvent(event: AuthUiEvent)
+
     abstract fun logout()
+
     abstract fun isGuest(): Boolean
 
     @Immutable
@@ -75,19 +77,33 @@ abstract class AuthViewModel : ViewModel() {
 
     sealed interface AuthUiEvent {
         data class EmailChanged(val email: String) : AuthUiEvent
+
         data class PasswordChanged(val password: String) : AuthUiEvent
+
         data object TogglePasswordVisibility : AuthUiEvent
+
         data object ToggleTerms : AuthUiEvent
+
         data class FirstNameChanged(val name: String) : AuthUiEvent
+
         data class LastNameChanged(val name: String) : AuthUiEvent
+
         data class GenderChanged(val gender: String) : AuthUiEvent
+
         data class OrientationChanged(val orientation: String) : AuthUiEvent
+
         data class DateOfBirthChanged(val dateMillis: Long?) : AuthUiEvent
+
         data class ShowDatePicker(val show: Boolean) : AuthUiEvent
+
         data object ToggleAuthMode : AuthUiEvent
+
         data object NextStep : AuthUiEvent
+
         data object PrevStep : AuthUiEvent
+
         data class Submit(val onSuccess: () -> Unit) : AuthUiEvent
+
         data object ClearError : AuthUiEvent
     }
 }

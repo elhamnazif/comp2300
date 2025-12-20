@@ -42,15 +42,15 @@ class FakeEducationRepository : EducationRepository {
 }
 
 class FakeShopRepository : ShopRepository {
-    override fun getAllProducts(): List<Product> = sampleProducts
-    override fun getProductsByCategory(category: ProductCategory): List<Product> =
+    override suspend fun getAllProducts(): List<Product> = sampleProducts
+    override suspend fun getProductsByCategory(category: ProductCategory): List<Product> =
         if (category == ProductCategory.ALL) {
             sampleProducts
         } else {
             sampleProducts.filter { it.category == category }
         }
 
-    override fun getProductById(id: String): Product? = sampleProducts.find { it.id == id }
+    override suspend fun getProductById(id: String): Product? = sampleProducts.find { it.id == id }
 }
 
 class FakeAuthRepository : AuthRepository {
@@ -123,10 +123,10 @@ class FakeAuthViewModel : AuthViewModel() {
 
 val previewModule = module {
     // Fake Repositories
-    singleOf(::FakeClinicRepository)
-    singleOf(::FakeEducationRepository)
-    singleOf(::FakeShopRepository)
-    singleOf(::FakeAuthRepository)
+    singleOf(::FakeClinicRepository) { bind<ClinicRepository>() }
+    singleOf(::FakeEducationRepository) { bind<EducationRepository>() }
+    singleOf(::FakeShopRepository) { bind<ShopRepository>() }
+    singleOf(::FakeAuthRepository) { bind<AuthRepository>() }
 
     viewModelOf(::FakeAuthViewModel) { bind<AuthViewModel>() }
     viewModelOf(::ShopViewModel)

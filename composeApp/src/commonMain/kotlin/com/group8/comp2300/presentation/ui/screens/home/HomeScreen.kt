@@ -59,11 +59,9 @@ fun HomeScreen(
                 Icon(
                     imageVector =
                     if (isPrivacyMode) {
-                        com.app.symbols.icons.materialsymbols.Icons
-                            .VisibilityW500Outlined
+                        com.app.symbols.icons.materialsymbols.Icons.VisibilityW500Outlined
                     } else {
-                        com.app.symbols.icons.materialsymbols.Icons
-                            .VisibilityOffW500Outlined
+                        com.app.symbols.icons.materialsymbols.Icons.VisibilityOffW500Outlined
                     },
                     contentDescription = stringResource(Res.string.home_toggle_privacy_desc),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -88,8 +86,7 @@ fun HomeScreen(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
-                    imageVector =
-                    com.app.symbols.icons.materialsymbols.Icons.ShieldW500Outlined,
+                    imageVector = com.app.symbols.icons.materialsymbols.Icons.ShieldW500Outlined,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(48.dp),
@@ -119,22 +116,14 @@ fun HomeScreen(
         // 3. DAILY INSIGHT CARD
         Card(
             onClick = onNavigateToEducation,
-            colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
             shape = RoundedCornerShape(16.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+            Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier =
-                    Modifier.size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.tertiaryContainer),
+                    Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.tertiaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
@@ -152,11 +141,7 @@ fun HomeScreen(
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.tertiary,
                     )
-                    Text(
-                        text = dailyFact,
-                        style = MaterialTheme.typography.bodyMedium,
-                        maxLines = 2,
-                    )
+                    Text(text = dailyFact, style = MaterialTheme.typography.bodyMedium, maxLines = 2)
                 }
             }
         }
@@ -165,10 +150,7 @@ fun HomeScreen(
 
         // 4. SMART ACTIONS GRID
         // Row 1: Daily Management
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             SmartActionButton(
                 icon = Icons.Outlined.Add,
                 label = stringResource(Res.string.home_menu_log_pill),
@@ -197,10 +179,7 @@ fun HomeScreen(
         Spacer(Modifier.height(12.dp))
 
         // Row 2: Health Services (New)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             // 1. STI Self Check (User Request)
             SmartActionButton(
                 icon = Icons.Outlined.Search, // Or use a custom stethoscope icon

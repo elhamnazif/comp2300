@@ -38,10 +38,7 @@ fun NotificationsScreen(onBack: () -> Unit) {
     ) { paddingValues ->
         Column(
             modifier =
-            Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+            Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp),
         ) {
             Text(
                 stringResource(Res.string.notifications_general_title),
@@ -118,12 +115,7 @@ fun NotificationsScreen(onBack: () -> Unit) {
 
             Spacer(Modifier.height(24.dp))
 
-            Card(
-                colors =
-                CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                ),
-            ) {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         stringResource(Res.string.notifications_discreet_mode_title),
@@ -152,10 +144,7 @@ private fun SettingToggleItem(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier.fillMaxWidth(),
     ) {
         Row(
@@ -164,11 +153,7 @@ private fun SettingToggleItem(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     description,

@@ -38,10 +38,7 @@ val navigationModule = module {
 
     navigation<Screen.Login> {
         val navigator = LocalNavigator.current
-        LoginScreen(
-            onLoginSuccess = navigator::goBack,
-            onDismiss = navigator::goBack,
-        )
+        LoginScreen(onLoginSuccess = navigator::goBack, onDismiss = navigator::goBack)
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -62,10 +59,7 @@ val navigationModule = module {
 
     navigation<Screen.Calendar> {
         val navigator = LocalNavigator.current
-        CalendarScreen(
-            isGuest = navigator.isGuest,
-            onRequireAuth = navigator::requireAuth,
-        )
+        CalendarScreen(isGuest = navigator.isGuest, onRequireAuth = navigator::requireAuth)
     }
 
     navigation<Screen.Profile> {
@@ -82,41 +76,19 @@ val navigationModule = module {
 
     navigation<Screen.Medication> {
         val navigator = LocalNavigator.current
-        MedicationScreen(
-            isGuest = navigator.isGuest,
-            onRequireAuth = navigator::requireAuth,
-        )
+        MedicationScreen(isGuest = navigator.isGuest, onRequireAuth = navigator::requireAuth)
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // SHOP (Adaptive List/Detail)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    navigation<Screen.Shop>(metadata = ListDetailSceneStrategy.listPane()) {
-        val navigator = LocalNavigator.current
-        val viewModel = koinViewModel<ShopViewModel>()
-        val uiState by viewModel.state.collectAsState()
-
-        ShopScreen(
-            products = uiState.products,
-            selectedCategory = uiState.selectedCategory,
-            cartItemCount = uiState.cartItemCount,
-            // When clicking a product, the Navigator should know to show the Detail pane
-            onProductClick = { prodId -> navigator.navigate(Screen.ProductDetail(prodId)) },
-            onCategorySelect = viewModel::selectCategory,
-            onAddToCart = viewModel::addToCart,
-            isGuest = navigator.isGuest,
-            onRequireAuth = navigator::requireAuth,
-        )
-    }
+    navigation<Screen.Shop>(metadata = ListDetailSceneStrategy.listPane()) { ShopScreen() }
 
     navigation<Screen.ProductDetail>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         val navigator = LocalNavigator.current
 
-        ProductDetailScreen(
-            productId = route.productId,
-            onBack = navigator::goBack,
-        )
+        ProductDetailScreen(productId = route.productId, onBack = navigator::goBack)
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -201,11 +173,7 @@ val navigationModule = module {
         val navigator = LocalNavigator.current
         val viewModel = koinViewModel<EducationViewModel> { parametersOf(route.quizId) }
 
-        QuizScreen(
-            viewModel = viewModel,
-            quizId = route.quizId,
-            onBack = navigator::goBack,
-        )
+        QuizScreen(viewModel = viewModel, quizId = route.quizId, onBack = navigator::goBack)
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -214,18 +182,12 @@ val navigationModule = module {
 
     navigation<Screen.SelfDiagnosis> {
         val navigator = LocalNavigator.current
-        SelfDiagnosisScreen(
-            onBack = navigator::goBack,
-            onNavigateToBooking = { navigator.navigate(Screen.Booking) },
-        )
+        SelfDiagnosisScreen(onBack = navigator::goBack, onNavigateToBooking = { navigator.navigate(Screen.Booking) })
     }
 
     navigation<Screen.LabResults> {
         val navigator = LocalNavigator.current
-        LabResultsScreen(
-            onBack = navigator::goBack,
-            onScheduleTest = { navigator.navigate(Screen.Booking) },
-        )
+        LabResultsScreen(onBack = navigator::goBack, onScheduleTest = { navigator.navigate(Screen.Booking) })
     }
 
     navigation<Screen.PrivacySecurity> {

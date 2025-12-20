@@ -1,4 +1,3 @@
-import com.android.build.api.dsl.androidLibrary
 import io.github.kingsword09.symbolcraft.model.SymbolVariant
 import io.github.kingsword09.symbolcraft.model.SymbolWeight
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
@@ -71,6 +70,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.appcompat)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(projects.shared)
@@ -97,7 +97,7 @@ kotlin {
             implementation(libs.material3.adaptive.layout)
             implementation(libs.material3.adaptive.navigation.suite)
 
-            implementation(libs.material.icons.core) // TODO: Remove
+            implementation(libs.material.icons.core) // TODO: Remove and only use
 
             // MapLibre
             implementation(libs.maplibre.compose)
@@ -111,10 +111,17 @@ kotlin {
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
             implementation(libs.koin.compose.navigation3)
+
+            // Ktor
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
         }
+        iosTest.dependencies { implementation(libs.ktor.client.darwin) }
         commonTest.dependencies { implementation(libs.kotlin.test) }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
+            implementation(libs.ktor.client.okhttp)
             implementation(libs.kotlinx.coroutinesSwing)
             runtimeOnly("org.maplibre.compose:maplibre-native-bindings-jni:0.12.1") {
                 capabilities {
@@ -127,21 +134,12 @@ kotlin {
 
 android {
     namespace = "com.group8.comp2300"
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
+    compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "com.group8.comp2300"
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
-        targetSdk =
-            libs.versions.android.targetSdk
-                .get()
-                .toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
     }
@@ -185,7 +183,9 @@ symbolCraft {
         "visibility_off",
         "calendar_month",
         "local_pharmacy",
-    ) { weights(SymbolWeight.W500, variant = SymbolVariant.OUTLINED) }
+    ) {
+        weights(SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
+    }
 
     // Local SVG files stored in the repository
     //    localIcons {

@@ -89,10 +89,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                             MedConstants.PresetColors.first()
                         },
                         status =
-                        if (domainMed.status ==
-                            com.group8.comp2300.domain.model.medical
-                                .MedicationStatus.ACTIVE
-                        ) {
+                        if (domainMed.status == com.group8.comp2300.domain.model.medical.MedicationStatus.ACTIVE) {
                             MedicationStatus.Active
                         } else {
                             MedicationStatus.Archived
@@ -112,10 +109,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(Res.string.medical_medication_title), fontWeight = FontWeight.Bold) },
-                colors =
-                TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                ),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
             )
         },
         floatingActionButton = {
@@ -129,14 +123,13 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                     }
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
-            ) { Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.medical_medication_add_desc)) }
+            ) {
+                Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.medical_medication_add_desc))
+            }
         },
     ) { innerPadding ->
         LazyColumn(
-            modifier =
-            Modifier.fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.surface),
+            modifier = Modifier.fillMaxSize().padding(innerPadding).background(MaterialTheme.colorScheme.surface),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
@@ -189,10 +182,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
         }
 
         if (showBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showBottomSheet = false },
-                sheetState = sheetState,
-            ) {
+            ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, sheetState = sheetState) {
                 MedicationFormSheet(
                     medicationToEdit = editingMedication,
                     onSave = { med ->
@@ -214,6 +204,7 @@ fun MedicationScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
         }
     }
 }
+
 // --- Components ---
 
 @Composable
@@ -234,15 +225,8 @@ fun SectionHeader(title: String, count: Int) {
 
 @Composable
 fun EmptyStateMessage(msg: String) {
-    Box(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            msg,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
+        Text(msg, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -264,10 +248,7 @@ fun MedicationCard(medication: Medication, onClick: () -> Unit, isArchived: Bool
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             // Color Indicator
             Box(
-                modifier =
-                Modifier.size(48.dp)
-                    .clip(CircleShape)
-                    .background(medication.color.copy(alpha = 0.2f)),
+                modifier = Modifier.size(48.dp).clip(CircleShape).background(medication.color.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(medication.color))
@@ -338,13 +319,9 @@ fun MedicationFormSheet(
     // Form State
     var name by remember { mutableStateOf(medicationToEdit?.name ?: "") }
     var dosage by remember { mutableStateOf(medicationToEdit?.dosage ?: "") }
-    var frequency by remember {
-        mutableStateOf(medicationToEdit?.frequency ?: MedConstants.Frequencies.first())
-    }
+    var frequency by remember { mutableStateOf(medicationToEdit?.frequency ?: MedConstants.Frequencies.first()) }
     var instructions by remember { mutableStateOf(medicationToEdit?.instructions ?: "") }
-    var selectedColor by remember {
-        mutableStateOf(medicationToEdit?.color ?: MedConstants.PresetColors.first())
-    }
+    var selectedColor by remember { mutableStateOf(medicationToEdit?.color ?: MedConstants.PresetColors.first()) }
     var status by remember { mutableStateOf(medicationToEdit?.status ?: MedicationStatus.Active) }
 
     // Validation
@@ -366,10 +343,9 @@ fun MedicationFormSheet(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = if (isEditMode) {
-                    stringResource(
-                        Res.string.medical_medication_form_edit_title,
-                    )
+                text =
+                if (isEditMode) {
+                    stringResource(Res.string.medical_medication_form_edit_title)
                 } else {
                     stringResource(Res.string.medical_medication_form_add_title)
                 },
@@ -396,10 +372,7 @@ fun MedicationFormSheet(
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions =
-            KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences,
-                imeAction = ImeAction.Next,
-            ),
+            KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Next),
         )
 
         OutlinedTextField(
@@ -424,13 +397,14 @@ fun MedicationFormSheet(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 MedConstants.Frequencies.forEach { freq ->
-                    val freqRes = when (freq) {
-                        "Daily" -> Res.string.medical_medication_freq_daily
-                        "Twice Daily" -> Res.string.medical_medication_freq_twice_daily
-                        "Weekly" -> Res.string.medical_medication_freq_weekly
-                        "On Demand" -> Res.string.medical_medication_freq_on_demand
-                        else -> Res.string.medical_medication_freq_daily // Fallback
-                    }
+                    val freqRes =
+                        when (freq) {
+                            "Daily" -> Res.string.medical_medication_freq_daily
+                            "Twice Daily" -> Res.string.medical_medication_freq_twice_daily
+                            "Weekly" -> Res.string.medical_medication_freq_weekly
+                            "On Demand" -> Res.string.medical_medication_freq_on_demand
+                            else -> Res.string.medical_medication_freq_daily // Fallback
+                        }
                     FilterChip(
                         selected = frequency == freq,
                         onClick = { frequency = freq },
@@ -464,8 +438,7 @@ fun MedicationFormSheet(
                                 width = if (isSelected) 3.dp else 0.dp,
                                 color =
                                 if (isSelected) {
-                                    MaterialTheme.colorScheme
-                                        .onSurface
+                                    MaterialTheme.colorScheme.onSurface
                                 } else {
                                     Color.Transparent
                                 },
@@ -545,9 +518,7 @@ fun MedicationFormSheet(
             onClick = {
                 val newMed =
                     Medication(
-                        id = medicationToEdit?.id
-                            ?: Clock.System.now()
-                                .toString(), // Simple ID generation
+                        id = medicationToEdit?.id ?: Clock.System.now().toString(), // Simple ID generation
                         name = name,
                         dosage = dosage,
                         frequency = frequency,
@@ -562,9 +533,7 @@ fun MedicationFormSheet(
         ) {
             Text(
                 if (isEditMode) {
-                    stringResource(
-                        Res.string.medical_medication_form_save_button,
-                    )
+                    stringResource(Res.string.medical_medication_form_save_button)
                 } else {
                     stringResource(Res.string.medical_medication_form_add_title)
                 },

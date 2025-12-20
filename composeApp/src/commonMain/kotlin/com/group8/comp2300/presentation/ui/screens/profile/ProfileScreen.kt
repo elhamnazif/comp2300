@@ -92,7 +92,8 @@ fun ProfileScreen(
 private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier =
-        modifier.fillMaxSize()
+        modifier
+            .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
             .systemBarsPadding()
             .verticalScroll(rememberScrollState())
@@ -152,10 +153,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
         Button(
             onClick = onRequireAuth,
             modifier = Modifier.fillMaxWidth().height(48.dp),
-            colors =
-            ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-            ),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
         ) {
             Text(
                 stringResource(Res.string.profile_sign_in),
@@ -225,10 +223,7 @@ private fun HeroSection(modifier: Modifier = Modifier) {
 @Composable
 private fun FeatureCard(icon: ImageVector, title: String, description: String, modifier: Modifier = Modifier) {
     Card(
-        colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier.fillMaxWidth(),
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -296,9 +291,7 @@ private fun Header(state: ProfileViewModel.State) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Avatar(
             if (state.userInitials.isEmpty()) {
-                stringResource(
-                    Res.string.profile_default_user_initials,
-                )
+                stringResource(Res.string.profile_default_user_initials)
             } else {
                 state.userInitials
             },
@@ -310,11 +303,7 @@ private fun Header(state: ProfileViewModel.State) {
 
 @Composable
 private fun Avatar(initials: String, modifier: Modifier = Modifier) {
-    Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.primaryContainer,
-        modifier = modifier.size(80.dp),
-    ) {
+    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = modifier.size(80.dp)) {
         Box(contentAlignment = Alignment.Center) {
             Text(
                 initials,
@@ -353,10 +342,7 @@ private fun RecentResultsCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier.fillMaxWidth(),
         onClick = onNavigateToLabResults,
     ) {
@@ -380,11 +366,10 @@ private fun RecentResultsCard(
             Button(
                 onClick = {},
                 modifier = Modifier.fillMaxWidth(),
-                colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                ),
-            ) { Text(stringResource(Res.string.profile_schedule_next_screening)) }
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            ) {
+                Text(stringResource(Res.string.profile_schedule_next_screening))
+            }
         }
     }
 }
@@ -397,11 +382,7 @@ private fun ResultRow(result: LabResult, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(Modifier.weight(1f)) {
-            Text(
-                result.testName,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Text(result.testName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
             Text(
                 formatDate(result.testDate),
                 style = MaterialTheme.typography.bodySmall,
@@ -414,8 +395,7 @@ private fun ResultRow(result: LabResult, modifier: Modifier = Modifier) {
 
 @Composable
 private fun StatusSurface(result: LabResult) {
-    val bgColor =
-        if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
+    val bgColor = if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
     val textColor = if (result.isPositive) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
     val statusRes =
         when (result.status) {
@@ -439,19 +419,12 @@ private fun StatusSurface(result: LabResult) {
 @Composable
 private fun CommunityCard(modifier: Modifier = Modifier) {
     Card(
-        colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
         onClick = {},
         modifier = modifier.fillMaxWidth(),
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                Icons.AutoMirrored.Filled.Send,
-                null,
-                tint = MaterialTheme.colorScheme.onTertiaryContainer,
-            )
+            Icon(Icons.AutoMirrored.Filled.Send, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
             Spacer(Modifier.width(16.dp))
             Column {
                 Text(
@@ -502,28 +475,13 @@ private fun EdgeToEdgeSettings(
 
 @Composable
 private fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
-    Surface(
-        color = Color.Transparent,
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-    ) {
-        Row(
-            Modifier.padding(vertical = 12.dp, horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Icon(
-                icon,
-                null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(24.dp),
-            )
+    Surface(color = Color.Transparent, modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
+        Row(Modifier.padding(vertical = 12.dp, horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.bodyLarge)
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
             }
             Icon(
                 com.app.symbols.icons.materialsymbols.Icons.ChevronRightW400Outlined,

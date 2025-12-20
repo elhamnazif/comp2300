@@ -1,5 +1,8 @@
 package com.group8.comp2300.di
 
+import com.group8.comp2300.data.remote.ApiService
+import com.group8.comp2300.data.remote.ApiServiceImpl
+import com.group8.comp2300.data.remote.createHttpClient
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicRepositoryImpl
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
@@ -17,6 +20,7 @@ import com.group8.comp2300.presentation.ui.screens.education.EducationViewModel
 import com.group8.comp2300.presentation.ui.screens.medical.BookingViewModel
 import com.group8.comp2300.presentation.ui.screens.shop.ShopViewModel
 import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -25,9 +29,13 @@ import org.koin.dsl.module
 val appModule = module {
     viewModel<Navigator> { RealNavigator(get(), Screen.Onboarding) }
 
+    // Network
+    single { createHttpClient() }
+    singleOf(::ApiServiceImpl) { bind<ApiService>() }
+
     // Repositories
-    single<ShopRepository> { ShopRepositoryImpl() }
-    single<AuthRepository> { AuthRepositoryImpl() }
+    singleOf(::ShopRepositoryImpl) { bind<ShopRepository>() }
+    singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
     single<ClinicRepository> { ClinicRepositoryImpl() }
     single<EducationRepository> { EducationRepositoryImpl() }
 

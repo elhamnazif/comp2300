@@ -1,19 +1,25 @@
 package com.group8.comp2300.data.repository
 
+import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
 import com.group8.comp2300.domain.repository.ShopRepository
-import com.group8.comp2300.mock.sampleProducts
 
-class ShopRepositoryImpl : ShopRepository {
-    override fun getAllProducts(): List<Product> = sampleProducts
+class ShopRepositoryImpl(private val apiService: ApiService) : ShopRepository {
+    override suspend fun getAllProducts(): List<Product> = apiService.getProducts()
 
-    override fun getProductsByCategory(category: ProductCategory): List<Product> =
-        if (category == ProductCategory.ALL) {
-            sampleProducts
+    override suspend fun getProductsByCategory(category: ProductCategory): List<Product> {
+        val allProducts = getAllProducts()
+        return if (category == ProductCategory.ALL) {
+            allProducts
         } else {
-            sampleProducts.filter { it.category == category }
+            allProducts.filter { it.category == category }
         }
+    }
 
-    override fun getProductById(id: String): Product? = sampleProducts.find { it.id == id }
+    override suspend fun getProductById(id: String): Product? = try {
+        apiService.getProduct(id)
+    } catch (e: Exception) {
+        null
+    }
 }

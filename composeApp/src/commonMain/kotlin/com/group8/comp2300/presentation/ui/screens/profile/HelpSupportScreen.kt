@@ -36,10 +36,7 @@ fun HelpSupportScreen(onBack: () -> Unit) {
     ) { paddingValues ->
         Column(
             modifier =
-            Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+            Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp),
         ) {
             Text(
                 stringResource(Res.string.help_support_faq_title),
@@ -105,29 +102,19 @@ fun HelpSupportScreen(onBack: () -> Unit) {
 
             Spacer(Modifier.height(24.dp))
 
-            Card(
-                colors =
-                CardDefaults.cardColors(
-                    containerColor =
-                    MaterialTheme.colorScheme.secondaryContainer,
-                ),
-            ) {
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         stringResource(Res.string.help_support_emergency_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color =
-                        MaterialTheme.colorScheme
-                            .onSecondaryContainer,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(Res.string.help_support_emergency_desc),
                         style = MaterialTheme.typography.bodyMedium,
-                        color =
-                        MaterialTheme.colorScheme
-                            .onSecondaryContainer,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                 }
             }
@@ -144,10 +131,7 @@ private fun FaqItem(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.clickable(onClick = onClick).padding(16.dp)) {
@@ -169,10 +153,9 @@ private fun FaqItem(
                     } else {
                         Icons.Default.KeyboardArrowDown
                     },
-                    contentDescription = if (expanded) {
-                        stringResource(
-                            Res.string.help_support_collapse_desc,
-                        )
+                    contentDescription =
+                    if (expanded) {
+                        stringResource(Res.string.help_support_collapse_desc)
                     } else {
                         stringResource(Res.string.help_support_expand_desc)
                     },
@@ -181,11 +164,7 @@ private fun FaqItem(
             }
             if (expanded) {
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    answer,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
+                Text(answer, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.secondary)
             }
         }
     }
@@ -200,17 +179,11 @@ private fun SupportOptionCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 icon,
                 contentDescription = null,
@@ -219,11 +192,7 @@ private fun SupportOptionCard(
             )
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     description,
