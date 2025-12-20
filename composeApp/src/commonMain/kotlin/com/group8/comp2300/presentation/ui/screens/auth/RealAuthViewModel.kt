@@ -8,7 +8,6 @@ import com.group8.comp2300.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -95,13 +94,12 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
     }
 
     private fun submitData(onSuccess: () -> Unit) {
-        val state = state.value
         state.update { it.copy(isLoading = true, errorMessage = null) }
 
-        if (state.isRegistering) {
-            performRegister(state, onSuccess)
+        if (state.value.isRegistering) {
+            performRegister(state.value, onSuccess)
         } else {
-            performLogin(state, onSuccess)
+            performLogin(state.value, onSuccess)
         }
     }
 
