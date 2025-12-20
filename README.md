@@ -64,24 +64,4 @@ in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and r
 
 ---
 
-### Project architecture (MVVM)
-
-This project follows a simple MVVM layering inside `composeApp/src/commonMain/kotlin/com/group8/comp2300`:
-
-- Presentation
-  - `ui/**` — All Compose UI (screens, components, motion helpers, maps). Although the package name is `ui`, it is part of the MVVM presentation layer.
-  - `presentation/viewmodel/**` — ViewModels and their UI state data classes.
-
-- Domain
-  - `domain/repository/**` — Repository interfaces (app-facing contracts).
-  - Note: Domain models currently live under `model/**`. We can move them to `domain/model/**` later if we want a stricter split.
-
-- Data
-  - `data/repository/**` — Data-layer implementations of domain repositories.
-  - `data/**` — Local/sample data sources and fixtures used by the app (e.g., `sampleProducts`).
-
-#### Current repository wiring
-
-- Domain: `domain/repository/ShopRepository.kt`
-- Data: `data/repository/ShopRepositoryImpl.kt`
-- Presentation: `presentation/viewmodel/ShopViewModel.kt` depends on `ShopRepository` (defaulting to `ShopRepositoryImpl`).
+Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
