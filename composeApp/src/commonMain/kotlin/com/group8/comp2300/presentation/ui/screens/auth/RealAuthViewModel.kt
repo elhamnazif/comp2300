@@ -5,6 +5,7 @@ import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
+import comp2300.i18n.generated.resources.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,7 +37,7 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
                         if (isValid || event.email.isEmpty()) {
                             null
                         } else {
-                            "Invalid email format"
+                            Res.string.auth_error_invalid_email
                         },
                     )
                 }
@@ -48,7 +49,7 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
                     it.copy(
                         password = event.password,
                         passwordError =
-                        if (isValid || event.password.isEmpty()) null else "Min 8 chars",
+                        if (isValid || event.password.isEmpty()) null else Res.string.auth_error_password_too_short,
                     )
                 }
             }
@@ -155,7 +156,7 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
             state.update {
                 it.copy(
                     isLoading = false,
-                    errorMessage = result.exceptionOrNull()?.message ?: "Authentication failed",
+                    errorMessage = Res.string.auth_error_authentication_failed,
                 )
             }
         }

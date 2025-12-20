@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -23,10 +25,10 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Privacy & Security") },
+                title = { Text(stringResource(Res.string.privacy_security_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.auth_back_desc))
                     }
                 },
             )
@@ -40,15 +42,15 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
                 .padding(16.dp),
         ) {
             Text(
-                "Security Settings",
+                stringResource(Res.string.privacy_security_settings_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
-                title = "Biometric Authentication",
-                description = "Use fingerprint or face recognition to secure your data",
+                title = stringResource(Res.string.privacy_security_biometrics_title),
+                description = stringResource(Res.string.privacy_security_biometrics_desc),
                 checked = biometricsEnabled,
                 onCheckedChange = { biometricsEnabled = it },
             )
@@ -56,8 +58,8 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(8.dp))
 
             SettingToggleItem(
-                title = "Data Encryption",
-                description = "Encrypt all health records stored on device",
+                title = stringResource(Res.string.privacy_security_encryption_title),
+                description = stringResource(Res.string.privacy_security_encryption_desc),
                 checked = dataEncryptionEnabled,
                 onCheckedChange = { dataEncryptionEnabled = it },
             )
@@ -65,15 +67,15 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(24.dp))
 
             Text(
-                "Privacy Settings",
+                stringResource(Res.string.privacy_security_privacy_settings_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
-                title = "Anonymous Reporting",
-                description = "Share anonymous health trends to help public health research",
+                title = stringResource(Res.string.privacy_security_anonymous_reporting_title),
+                description = stringResource(Res.string.privacy_security_anonymous_reporting_desc),
                 checked = anonymousReporting,
                 onCheckedChange = { anonymousReporting = it },
             )
@@ -81,8 +83,8 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(8.dp))
 
             SettingToggleItem(
-                title = "Share Data for Research",
-                description = "Allow anonymized data to be used in medical studies",
+                title = stringResource(Res.string.privacy_security_share_data_title),
+                description = stringResource(Res.string.privacy_security_share_data_desc),
                 checked = shareDataForResearch,
                 onCheckedChange = { shareDataForResearch = it },
             )
@@ -97,14 +99,14 @@ fun PrivacySecurityScreen(onBack: () -> Unit) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        "Your Privacy Matters",
+                        stringResource(Res.string.privacy_security_info_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "All your health data is encrypted and stored securely. We will never share your personal information without your explicit consent.",
+                        stringResource(Res.string.privacy_security_info_body),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )

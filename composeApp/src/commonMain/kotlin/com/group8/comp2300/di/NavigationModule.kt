@@ -1,6 +1,5 @@
 package com.group8.comp2300.di
 
-// ViewModels are now in their respective screen packages and picked up by wildcards above
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.collectAsState

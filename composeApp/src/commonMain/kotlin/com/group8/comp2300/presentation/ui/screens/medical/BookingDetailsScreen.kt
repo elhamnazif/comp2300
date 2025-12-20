@@ -31,9 +31,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.mock.baseTimeSlots
+import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.*
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.number
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 
@@ -97,22 +99,25 @@ fun BookingDetailsScreen(
     val focusManager = LocalFocusManager.current
     val contextString =
         when {
-            selectedTimeSlot == null -> "Choose a time"
-            reasonText.isBlank() -> "Add a reason"
-            else -> "Confirm $85.00"
+            selectedTimeSlot == null -> stringResource(Res.string.medical_booking_details_choose_time)
+            reasonText.isBlank() -> stringResource(Res.string.medical_booking_details_add_reason)
+            else -> stringResource(Res.string.medical_booking_details_confirm_format, "$85.00")
         }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Book Appointment", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        stringResource(Res.string.medical_booking_details_title),
+                        style = MaterialTheme.typography.titleMedium,
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(Res.string.medical_booking_back_desc),
                         )
                     }
                 },
@@ -131,12 +136,12 @@ fun BookingDetailsScreen(
                 ) {
                     Column {
                         Text(
-                            "Total",
+                            stringResource(Res.string.medical_booking_details_total_label),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.secondary,
                         )
                         Text(
-                            "$85.00",
+                            stringResource(Res.string.medical_booking_details_price_format, "85.00"),
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                         )
@@ -163,7 +168,10 @@ fun BookingDetailsScreen(
 
             item {
                 Column {
-                    SectionHeader("Select Date", Icons.Default.DateRange)
+                    SectionHeader(
+                        stringResource(Res.string.medical_booking_details_select_date),
+                        Icons.Default.DateRange,
+                    )
                     Spacer(Modifier.height(12.dp))
                     CalendarGrid(
                         baseDate = today,
@@ -176,7 +184,10 @@ fun BookingDetailsScreen(
 
             item {
                 Column {
-                    SectionHeader("Select Time", Icons.Default.DateRange)
+                    SectionHeader(
+                        stringResource(Res.string.medical_booking_details_select_time),
+                        Icons.Default.DateRange,
+                    )
                     Spacer(Modifier.height(12.dp))
                     if (availableSlots.isEmpty()) {
                         Card(
@@ -188,7 +199,7 @@ fun BookingDetailsScreen(
                             ),
                         ) {
                             Text(
-                                "No slots left on this day",
+                                stringResource(Res.string.medical_booking_details_no_slots),
                                 modifier = Modifier.padding(12.dp),
                                 color = MaterialTheme.colorScheme.onErrorContainer,
                             )
@@ -201,7 +212,7 @@ fun BookingDetailsScreen(
                                 checked = showNotifyToggle,
                                 onCheckedChange = { showNotifyToggle = it },
                             )
-                            Text("Notify me if a slot opens")
+                            Text(stringResource(Res.string.medical_booking_details_notify_on_slot))
                         }
                     } else {
                         TimeGrid(availableSlots, selectedTimeSlot) { selectedTimeSlot = it }
@@ -211,7 +222,7 @@ fun BookingDetailsScreen(
 
             item {
                 Column {
-                    SectionHeader("Reason for Visit", Icons.Outlined.Info)
+                    SectionHeader(stringResource(Res.string.medical_booking_details_reason_title), Icons.Outlined.Info)
                     Spacer(Modifier.height(12.dp))
                     var expanded by remember { mutableStateOf(false) }
                     OutlinedTextField(
@@ -219,7 +230,7 @@ fun BookingDetailsScreen(
                         onValueChange = { reasonText = it },
                         modifier =
                         Modifier.fillMaxWidth().height(if (expanded) 100.dp else 56.dp),
-                        placeholder = { Text("e.g., Fever, Headache") },
+                        placeholder = { Text(stringResource(Res.string.medical_booking_details_reason_placeholder)) },
                         singleLine = !expanded,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions =
@@ -228,7 +239,7 @@ fun BookingDetailsScreen(
                     )
                     if (!expanded && reasonText.isBlank()) {
                         Text(
-                            "Tap to expand",
+                            stringResource(Res.string.medical_booking_details_expand_desc),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.secondary,
                             modifier = Modifier.padding(top = 4.dp),
@@ -308,11 +319,14 @@ private fun ClinicSummaryHeader(clinic: Clinic) {
                         modifier = Modifier.size(16.dp),
                     )
                     Spacer(Modifier.width(4.dp))
-                    Text("4.8 (Verified Clinic)", style = MaterialTheme.typography.labelSmall)
+                    Text(
+                        stringResource(Res.string.medical_booking_details_verified_clinic),
+                        style = MaterialTheme.typography.labelSmall,
+                    )
                 }
             }
             Text(
-                "$85.00",
+                stringResource(Res.string.medical_booking_details_price_format, "85.00"),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
@@ -344,27 +358,53 @@ private fun CalendarGrid(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = { monthOffset-- }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(Res.string.medical_booking_details_prev_month),
+                )
+            }
+            val monthRes = when (displayDate.month.number) {
+                1 -> Res.string.month_jan
+                2 -> Res.string.month_feb
+                3 -> Res.string.month_mar
+                4 -> Res.string.month_apr
+                5 -> Res.string.month_may
+                6 -> Res.string.month_jun
+                7 -> Res.string.month_jul
+                8 -> Res.string.month_aug
+                9 -> Res.string.month_sep
+                10 -> Res.string.month_oct
+                11 -> Res.string.month_nov
+                12 -> Res.string.month_dec
+                else -> Res.string.month_jan
             }
             Text(
-                "${displayDate.month}",
+                "${stringResource(monthRes)} ${displayDate.year}",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
             )
             IconButton(onClick = { monthOffset++ }) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Next",
+                    contentDescription = stringResource(Res.string.medical_booking_details_next_month),
                     modifier = Modifier.rotate(180f),
                 )
             }
         }
         Spacer(Modifier.height(8.dp))
         Row(modifier = Modifier.fillMaxWidth()) {
-            listOf("M", "T", "W", "T", "F", "S", "S").forEach {
+            listOf(
+                Res.string.day_initial_mon,
+                Res.string.day_initial_tue,
+                Res.string.day_initial_wed,
+                Res.string.day_initial_thu,
+                Res.string.day_initial_fri,
+                Res.string.day_initial_sat,
+                Res.string.day_initial_sun,
+            ).forEach {
                 Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     Text(
-                        it,
+                        stringResource(it),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.secondary,
                     )

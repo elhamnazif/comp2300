@@ -46,6 +46,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /** Pure UI component for the Shop screen. Takes state and callbacks, no ViewModel dependency. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,7 +77,7 @@ fun ShopScreen(
                 Icon(Icons.Default.ShoppingCart, null, Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "100% Discreet, Unbranded Packaging",
+                    stringResource(Res.string.shop_discreet_packaging),
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -88,12 +90,12 @@ fun ShopScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    "Prevention Store",
+                    stringResource(Res.string.shop_title),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                 )
                 BadgedBox(badge = { Badge { Text(cartItemCount.toString()) } }) {
-                    Icon(Icons.Default.ShoppingCart, "Cart")
+                    Icon(Icons.Default.ShoppingCart, stringResource(Res.string.shop_cart_desc))
                 }
             }
             Spacer(Modifier.height(16.dp))
@@ -102,10 +104,16 @@ fun ShopScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 ProductCategory.entries.forEach { category ->
+                    val categoryRes = when (category) {
+                        ProductCategory.ALL -> Res.string.shop_category_all
+                        ProductCategory.MEDICATION -> Res.string.shop_category_medication
+                        ProductCategory.TESTING -> Res.string.shop_category_testing
+                        ProductCategory.PREVENTION -> Res.string.shop_category_prevention
+                    }
                     FilterChip(
                         selected = selectedCategory == category,
                         onClick = { onCategorySelect(category) },
-                        label = { Text(category.displayName) },
+                        label = { Text(stringResource(categoryRes)) },
                         leadingIcon =
                         if (selectedCategory == category) {
                             { Icon(Icons.Filled.Check, null, Modifier.size(16.dp)) }
@@ -187,7 +195,13 @@ fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    if (product.insuranceCovered) "$0 (Insured)" else product.formattedPrice,
+                    if (product.insuranceCovered) {
+                        stringResource(
+                            Res.string.shop_product_insured_price,
+                        )
+                    } else {
+                        product.formattedPrice
+                    },
                     style = MaterialTheme.typography.labelLarge,
                     color =
                     if (product.insuranceCovered) {

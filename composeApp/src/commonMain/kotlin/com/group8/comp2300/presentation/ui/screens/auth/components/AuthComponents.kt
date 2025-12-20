@@ -13,6 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.VisualTransformation
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Standard text input for the app with consistent styling
@@ -24,7 +27,7 @@ fun AuthTextField(
     label: String,
     leadingIcon: ImageVector? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
-    errorMessage: String? = null,
+    errorMessage: StringResource? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
@@ -38,8 +41,8 @@ fun AuthTextField(
         trailingIcon = trailingIcon,
         isError = errorMessage != null,
         supportingText = {
-            if (errorMessage != null) {
-                Text(errorMessage, color = MaterialTheme.colorScheme.error)
+            errorMessage?.let { res: StringResource ->
+                Text(stringResource(res), color = MaterialTheme.colorScheme.error)
             }
         },
         singleLine = true,

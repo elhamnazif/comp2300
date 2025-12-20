@@ -1,0 +1,374 @@
+<resources>
+    <string name="library_screen_label">Library</string>
+    <string name="explore_screen_label">Sources</string>
+    <string name="setting_screen_label">Setting</string>
+    <string name="delete_all_downloads">Delete all downloads</string>
+    <string name="cancel_all">Cancel all</string>
+    <string name="cancel">Cancel</string>
+    <string name="apply">Apply</string>
+    <string name="common_back_desc">Back</string>
+    <string name="common_ok">OK</string>
+    <string name="common_cancel">Cancel</string>
+
+    <!-- Auth Module -->
+    <string name="auth_ok">OK</string>
+    <string name="auth_cancel">Cancel</string>
+    <string name="auth_back_desc">Back</string>
+    <string name="auth_create_account">Create Account</string>
+    <string name="auth_welcome_back">Welcome Back</string>
+    <string name="auth_join_desc">Join to access full features</string>
+    <string name="auth_sign_in_desc">Sign in to continue</string>
+    <string name="auth_email_label">Email</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_toggle_password_desc">Toggle password visibility</string>
+    <string name="auth_agree_to">I agree to the </string>
+    <string name="auth_terms">Terms</string>
+    <string name="auth_and"> and </string>
+    <string name="auth_privacy_policy">Privacy Policy</string>
+    <string name="auth_first_name_label">First Name</string>
+    <string name="auth_last_name_label">Last Name</string>
+    <string name="auth_dob_label">Date of Birth</string>
+    <string name="auth_optional_info">Optional Information</string>
+    <string name="auth_gender_label">Gender</string>
+    <string name="auth_gender_male">Male</string>
+    <string name="auth_gender_female">Female</string>
+    <string name="auth_gender_non_binary">Non-binary</string>
+    <string name="auth_gender_prefer_not_to_say">Prefer not to say</string>
+    <string name="auth_orientation_label">Sexual Orientation</string>
+    <string name="auth_orientation_heterosexual">Heterosexual</string>
+    <string name="auth_orientation_gay">Gay</string>
+    <string name="auth_orientation_lesbian">Lesbian</string>
+    <string name="auth_orientation_bisexual">Bisexual</string>
+    <string name="auth_orientation_pansexual">Pansexual</string>
+    <string name="auth_orientation_asexual">Asexual</string>
+    <string name="auth_continue">Continue</string>
+    <string name="auth_sign_up">Sign Up</string>
+    <string name="auth_sign_in">Sign In</string>
+    <string name="auth_already_have_account">Already have an account? Sign In</string>
+    <string name="auth_no_account">Don't have an account? Sign Up</string>
+    <string name="auth_error_invalid_email">Invalid email format</string>
+    <string name="auth_error_password_too_short">Min 8 chars</string>
+    <string name="auth_error_authentication_failed">Authentication failed</string>
+    <string name="auth_error_terms_required">Please accept the Terms &amp; Conditions</string>
+    <string name="auth_continue_as_guest">Continue as Guest</string>
+
+    <!-- Onboarding Module -->
+    <string name="onboarding_welcome_back_title">Welcome Back!</string>
+    <string name="onboarding_signed_in_body">You are signed in.</string>
+    <string name="onboarding_continue">Continue</string>
+    <string name="onboarding_create_account_title">Create an Account</string>
+    <string name="onboarding_sign_up_body">Sign up to save your progress and access all features.</string>
+    <string name="onboarding_sign_up_log_in">Sign Up / Log In</string>
+    <string name="onboarding_continue_as_guest">Continue as Guest</string>
+    <string name="onboarding_welcome_vita">Welcome to Vita</string>
+    <string name="onboarding_welcome_desc">Your private, judgment-free space for sexual health.</string>
+    <string name="onboarding_get_started">Get Started</string>
+    <string name="onboarding_create_pin_title">Create a Privacy PIN</string>
+    <string name="onboarding_create_pin_desc">We'll ask for this whenever you open the app.</string>
+    <string name="onboarding_all_set">You're all set!</string>
+    <string name="onboarding_recommended_plan">Recommended Plan</string>
+    <string name="onboarding_screening_title">Screening Schedule</string>
+    <string name="onboarding_go_to_dashboard">Go to Dashboard</string>
+    <string name="onboarding_every_3_months">Every 3 Months</string>
+    <string name="onboarding_every_6_months">Every 6 Months</string>
+
+    <!-- Onboarding Questions -->
+    <string name="onboarding_q1_text">In the last 3 months, how many sexual partners have you had?</string>
+    <string name="onboarding_q1_op1">0</string>
+    <string name="onboarding_q1_op2">1</string>
+    <string name="onboarding_q1_op3">2-5</string>
+    <string name="onboarding_q1_op4">5+</string>
+    <string name="onboarding_q2_text">How often do you use protection (condoms/PrEP)?</string>
+    <string name="onboarding_q2_op1">Always</string>
+    <string name="onboarding_q2_op2">Sometimes</string>
+    <string name="onboarding_q2_op3">Never</string>
+
+    <!-- Home Module -->
+    <string name="home_daily_insight_content">Did you know? PrEP is over 99% effective at preventing HIV when taken daily.</string>
+    <string name="home_toggle_privacy_desc">Toggle Privacy</string>
+    <string name="home_protected_label">Protected</string>
+    <string name="home_streak_label_format">%d Day Streak</string>
+    <string name="home_daily_insight_title">Daily Insight</string>
+    <string name="home_menu_log_pill">Log Pill</string>
+    <string name="home_menu_shop">Shop</string>
+    <string name="home_menu_history">History</string>
+    <string name="home_menu_symptom_check">Symptom\nCheck</string>
+    <string name="home_menu_find_clinic">Find\nClinic</string>
+    <string name="home_menu_partner_notify">Partner\nNotify</string>
+
+    <!-- Medical Module -->
+    <string name="medical_lab_results_title">Lab Results</string>
+    <string name="medical_lab_results_history_header">Complete Test History</string>
+    <string name="medical_lab_results_history_desc">View all your lab results and testing history</string>
+    <string name="medical_lab_results_filter_all">All</string>
+    <string name="medical_lab_results_filter_hiv">HIV</string>
+    <string name="medical_lab_results_filter_sti">STI Panel</string>
+    <string name="medical_lab_results_filter_hepatitis">Hepatitis</string>
+    <string name="medical_lab_results_count_single">%d result</string>
+    <string name="medical_lab_results_count_multiple">%d results</string>
+    <string name="medical_lab_results_schedule_next">Schedule Next Test</string>
+    <string name="medical_lab_results_recommendations_title">Testing Recommendations</string>
+    <string name="medical_lab_results_recommendations_content">• HIV testing: Every 3-6 months for sexually active individuals\n• STI screening: Every 3-6 months or as recommended\n• Hepatitis: Annually or as recommended by your provider</string>
+    <string name="medical_lab_results_detail_type">Test Type</string>
+    <string name="medical_lab_results_detail_date">Date Performed</string>
+    <string name="medical_lab_results_detail_status">Result Status</string>
+    <string name="medical_lab_results_detail_location">Testing Location</string>
+    <string name="medical_lab_results_detail_next">Next Scheduled</string>
+    <string name="medical_lab_results_next_test_date">February 28, 2025</string>
+    <string name="medical_lab_results_review_notice">All results are reviewed by a board-certified physician. You will be notified of any critical findings.</string>
+    <string name="medical_lab_results_location_default">HealthPlus Clinic</string>
+    <string name="medical_lab_results_back_desc">Back</string>
+
+    <!-- Medical Booking -->
+    <string name="medical_booking_nearby_title">Nearby Locations</string>
+    <string name="medical_booking_search_placeholder">Search for clinics...</string>
+    <string name="medical_booking_view_details_desc">View Details</string>
+    <string name="medical_booking_search_desc">Search</string>
+
+    <!-- Medical Booking Details -->
+    <string name="medical_booking_details_title">Book Appointment</string>
+    <string name="medical_booking_details_total_label">Total Price</string>
+    <string name="medical_booking_details_price_format">$%s</string>
+    <string name="medical_booking_details_choose_time">Choose a time slot</string>
+    <string name="medical_booking_details_add_reason">Add a reason</string>
+    <string name="medical_booking_details_confirm_format">Confirm %s</string>
+    <string name="medical_booking_details_select_date">Select Date</string>
+    <string name="medical_booking_details_select_time">Select Time</string>
+    <string name="medical_booking_details_no_slots">No slots left on this day</string>
+    <string name="medical_booking_details_notify_on_slot">Notify me if a slot opens</string>
+    <string name="medical_booking_details_reason_title">Reason for Visit</string>
+    <string name="medical_booking_details_reason_placeholder">e.g., Fever, Headache</string>
+    <string name="medical_booking_details_expand_desc">Tap to expand</string>
+    <string name="medical_booking_details_verified_clinic">4.8 (Verified Clinic)</string>
+    <string name="medical_booking_details_prev_month">Previous</string>
+    <string name="medical_booking_details_next_month">Next</string>
+    <string name="medical_booking_back_desc">Back</string>
+    <string name="day_initial_mon">M</string>
+    <string name="day_initial_tue">T</string>
+    <string name="day_initial_wed">W</string>
+    <string name="day_initial_thu">T</string>
+    <string name="day_initial_fri">F</string>
+    <string name="day_initial_sat">S</string>
+    <string name="day_initial_sun">S</string>
+
+    <!-- Medication Module -->
+    <string name="medical_medication_title">My Medicine Cabinet</string>
+    <string name="medical_medication_add_desc">Add Medication</string>
+    <string name="medical_medication_section_active">Active</string>
+    <string name="medical_medication_section_archived">Archived</string>
+    <string name="medical_medication_empty_active">No active medications.</string>
+    <string name="medical_medication_edit_desc">Edit</string>
+    <string name="medical_medication_note_format">Note: %s</string>
+    <string name="medical_medication_form_edit_title">Edit Medication</string>
+    <string name="medical_medication_form_add_title">Add Medication</string>
+    <string name="medical_medication_delete_desc">Delete</string>
+    <string name="medical_medication_form_name_label">Medication Name</string>
+    <string name="medical_medication_form_name_placeholder">e.g. Truvada</string>
+    <string name="medical_medication_form_dosage_label">Dosage / Strength</string>
+    <string name="medical_medication_form_dosage_placeholder">e.g. 200mg or 1 Pill</string>
+    <string name="medical_medication_form_frequency_label">Frequency</string>
+    <string name="medical_medication_form_color_tag_label">Color Tag</string>
+    <string name="medical_medication_freq_daily">Daily</string>
+    <string name="medical_medication_freq_twice_daily">Twice Daily</string>
+    <string name="medical_medication_freq_weekly">Weekly</string>
+    <string name="medical_medication_freq_on_demand">On Demand</string>
+    <string name="medical_medication_form_instructions_label">Instructions (Optional)</string>
+    <string name="medical_medication_form_instructions_placeholder">e.g. Take with food</string>
+    <string name="medical_medication_form_archive_title">Archive Medication</string>
+    <string name="medical_medication_form_archive_status_on">Currently Archived</string>
+    <string name="medical_medication_form_archive_status_off">Move to archive to hide from active list</string>
+    <string name="medical_medication_form_save_button">Save Changes</string>
+    <string name="medical_medication_form_cancel_button">Cancel</string>
+
+    <!-- Self Diagnosis Module -->
+    <string name="medical_self_diagnosis_title">Self Diagnosis: HIV</string>
+    <string name="medical_self_diagnosis_back_desc">Back</string>
+    <string name="medical_self_diagnosis_header">HIV Risk Assessment</string>
+    <string name="medical_self_diagnosis_desc">Please answer the following questions to assess your risk.</string>
+    <string name="medical_self_diagnosis_q1">Have you had unprotected sex in the last 3 months?</string>
+    <string name="medical_self_diagnosis_q2">Have you shared needles or injection equipment?</string>
+    <string name="medical_self_diagnosis_submit_button">Get Results</string>
+    <string name="medical_self_diagnosis_disclaimer">Note: This is a preliminary self-assessment and does not replace professional medical advice.</string>
+    <string name="medical_self_diagnosis_result_dialog_title">Assessment Result</string>
+    <string name="medical_self_diagnosis_risk_high">High Risk</string>
+    <string name="medical_self_diagnosis_risk_low">Low Risk</string>
+    <string name="medical_self_diagnosis_feedback_high">Based on your answers, you may be at higher risk for HIV. We recommend consulting a healthcare provider for further testing.</string>
+    <string name="medical_self_diagnosis_feedback_low">Based on your answers, your risk appears to be low. However, regular screening is always recommended for sexual health.</string>
+    <string name="medical_self_diagnosis_book_button">Book Appointment</string>
+    <string name="medical_self_diagnosis_close_button">Close</string>
+
+    <!-- Common -->
+    <string name="common_yes">Yes</string>
+    <string name="common_no">No</string>
+
+    <!-- Shop Module -->
+    <string name="shop_discreet_packaging">100% Discreet, Unbranded Packaging</string>
+    <string name="shop_title">Prevention Store</string>
+    <string name="shop_cart_desc">Cart</string>
+    <string name="shop_product_insured_price">$0 (Insured)</string>
+    <string name="shop_category_all">All</string>
+    <string name="shop_category_medication">Medication</string>
+    <string name="shop_category_testing">At-Home Kits</string>
+    <string name="shop_category_prevention">Prevention</string>
+
+    <!-- Shop Details -->
+    <string name="shop_details_total_label">Total</string>
+    <string name="shop_details_add_to_cart_button">Add to Cart</string>
+    <string name="shop_details_insurance_badge">Covered by Insurance</string>
+    <string name="shop_details_feature_packaging_title">Discrete Packaging</string>
+    <string name="shop_details_feature_packaging_desc">Shipped in a plain, unbranded box.</string>
+    <string name="shop_details_feature_delivery_title">Free Delivery</string>
+    <string name="shop_details_feature_delivery_desc">Arrives in 2-3 business days.</string>
+    <string name="shop_details_feature_refills_title">Automatic Refills</string>
+    <string name="shop_details_feature_refills_desc">Never run out of your prevention.</string>
+
+    <!-- Education Module -->
+    <string name="education_search_placeholder">Search topics, e.g., \'PrEP\'</string>
+    <string name="education_category_all">All</string>
+    <string name="education_featured_title">Featured Insight</string>
+    <string name="education_latest_updates">Latest Updates</string>
+    <string name="education_library_format">%s Library</string>
+    <string name="education_category_puberty">Puberty</string>
+    <string name="education_category_relationships">Relationships</string>
+    <string name="education_category_sti">STIs &amp; Safety</string>
+    <string name="education_category_identity">Identity</string>
+    <string name="education_category_sexual_health">Sexual Health</string>
+
+    <!-- Education Video Details -->
+    <string name="education_video_player_placeholder">Video Player Placeholder</string>
+    <string name="education_video_back_desc">Back</string>
+    <string name="education_video_play_desc">Play</string>
+    <string name="education_video_transcript_title">Transcript &amp; Key Points</string>
+    <string name="education_video_action_take_quiz">Take Consent Quiz</string>
+    <string name="education_video_action_find_clinic">Find PrEP Clinic</string>
+    <string name="education_video_action_start_quiz">Start Quiz</string>
+
+    <!-- Education Quiz -->
+    <string name="education_quiz_progress_format">Question %1$d of %2$d</string>
+    <string name="education_quiz_back_desc">Back</string>
+    <string name="education_quiz_correct">✓ Correct!</string>
+    <string name="education_quiz_incorrect">✗ Incorrect</string>
+    <string name="education_quiz_next_question">Next Question</string>
+    <string name="education_quiz_see_results">See Results</string>
+    <string name="education_quiz_score_format">%d%%</string>
+    <string name="education_quiz_count_format">%1$d/%2$d</string>
+    <string name="education_quiz_result_excellent">Excellent!</string>
+    <string name="education_quiz_result_good">Good job!</string>
+    <string name="education_quiz_result_keep_learning">Keep learning!</string>
+    <string name="education_quiz_feedback_title">Feedback</string>
+    <string name="education_quiz_feedback_excellent">Great work! You have a strong understanding of %s. Continue to stay informed about your sexual health.</string>
+    <string name="education_quiz_feedback_good">You\'re on the right track! Review the explanations for questions you missed to strengthen your knowledge.</string>
+    <string name="education_quiz_feedback_low">Learning is a journey! Take time to review the material and retake the quiz to improve your understanding.</string>
+    <string name="education_quiz_retake_button">Retake Quiz</string>
+    <string name="education_quiz_close_button">Close</string>
+
+    <!-- Profile Module -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_default_user_name">Vita User</string>
+    <string name="profile_default_user_initials">JP</string>
+    <string name="profile_member_since_format">Member since %s</string>
+    <string name="profile_edit_label">Edit Profile</string>
+    <string name="profile_hero_title">Your Health Profile Awaits</string>
+    <string name="profile_hero_desc">Sign in to access your personalized health dashboard, track lab results, and stay on top of your sexual health</string>
+    <string name="profile_sign_in">Sign In</string>
+    <string name="profile_create_account">Create Account</string>
+    <string name="profile_sign_in_label">Sign In / Sign Up</string>
+    <string name="profile_guest_title">Join Vita</string>
+    <string name="profile_guest_desc">Sign up to save your health records and access all features securely.</string>
+    <string name="profile_guest_limited_access">Guest users have limited access to features</string>
+    <string name="profile_health_records_title">Health Records</string>
+    <string name="profile_lab_results_label">Lab Results</string>
+    <string name="profile_prescriptions_label">Prescriptions</string>
+    <string name="profile_vaccinations_label">Vaccination History</string>
+    <string name="profile_recent_results_title">Recent Results</string>
+    <string name="profile_schedule_next_screening">Schedule Next Screening</string>
+    <string name="profile_notify_partners_title">Notify Partners Anonymously</string>
+    <string name="profile_notify_partners_desc">Send discreet SMS alerts via TellYourPartner.org</string>
+    <string name="profile_why_account_title">Why Create an Account?</string>
+    <string name="profile_track_results_title">Track Your Results</string>
+    <string name="profile_track_results_desc">View your lab results history and monitor your health over time</string>
+    <string name="profile_schedule_screenings_title">Schedule Screenings</string>
+    <string name="profile_schedule_screenings_desc">Book appointments and receive reminders for regular testing</string>
+    <string name="profile_private_secure_title">Private &amp; Secure</string>
+    <string name="profile_private_secure_desc">Your health data is encrypted and protected with biometric security</string>
+    <string name="profile_anonymous_partner_title">Anonymous Partner Notifications</string>
+    <string name="profile_anonymous_partner_desc">Discreetly notify partners through TellYourPartner.org</string>
+    <string name="profile_settings_title">App Settings</string>
+    <string name="profile_notifications_title">Notifications</string>
+    <string name="profile_notifications_desc">Discreet mode on</string>
+    <string name="profile_privacy_security_title">Privacy &amp; Security</string>
+    <string name="profile_biometrics_enabled">Biometrics enabled</string>
+    <string name="profile_help_support_title">Help &amp; Support</string>
+    <string name="profile_faqs_desc">FAQs</string>
+    <string name="profile_language_label">Language</string>
+    <string name="profile_logout_label">Logout</string>
+
+    <!-- Months -->
+    <string name="month_jan">Jan</string>
+    <string name="month_feb">Feb</string>
+    <string name="month_mar">Mar</string>
+    <string name="month_apr">Apr</string>
+    <string name="month_may">May</string>
+    <string name="month_jun">Jun</string>
+    <string name="month_jul">Jul</string>
+    <string name="month_aug">Aug</string>
+    <string name="month_sep">Sep</string>
+    <string name="month_oct">Oct</string>
+    <string name="month_nov">Nov</string>
+    <string name="month_dec">Dec</string>
+
+    <!-- Help & Support -->
+    <string name="help_support_title">Help &amp; Support</string>
+    <string name="help_support_faq_title">Frequently Asked Questions</string>
+    <string name="help_support_contact_title">Contact Support</string>
+    <string name="help_support_email_label">Email Support</string>
+    <string name="help_support_email_val">support@sexualhealthapp.com</string>
+    <string name="help_support_phone_label">Phone Support</string>
+    <string name="help_support_phone_val">1-800-HEALTH (24/7)</string>
+    <string name="help_support_resources_label">Resources</string>
+    <string name="help_support_resources_desc">Visit our knowledge base</string>
+    <string name="help_support_emergency_title">Need Immediate Help?</string>
+    <string name="help_support_emergency_desc">If you're experiencing a medical emergency, please call 911 or visit your nearest emergency room immediately.</string>
+    <string name="help_support_collapse_desc">Collapse</string>
+    <string name="help_support_expand_desc">Expand</string>
+
+    <!-- Notifications -->
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_general_title">General</string>
+    <string name="notifications_discreet_mode_title">Discreet Mode</string>
+    <string name="notifications_discreet_mode_desc">Hide sensitive information in notifications</string>
+    <string name="notifications_health_reminders_title">Health Reminders</string>
+    <string name="notifications_appointment_reminders_title">Appointment Reminders</string>
+    <string name="notifications_appointment_reminders_desc">Get notified 24 hours before scheduled appointments</string>
+    <string name="notifications_test_results_title">Test Results</string>
+    <string name="notifications_test_results_desc">Get notified when lab results are available</string>
+    <string name="notifications_testing_reminders_title">Regular Testing Reminders</string>
+    <string name="notifications_testing_reminders_desc">Remind me to schedule screenings every 3 months</string>
+    <string name="notifications_content_updates_title">Content &amp; Updates</string>
+    <string name="notifications_educational_content_title">Educational Content</string>
+    <string name="notifications_educational_content_desc">Weekly tips and articles about sexual health</string>
+    <string name="notifications_product_deals_title">Product Deals</string>
+    <string name="notifications_product_deals_desc">Special offers on protection and testing kits</string>
+    <string name="notifications_discreet_mode_info">When enabled, notifications will not show specific details about appointments or test results. You'll receive a generic reminder to check the app.</string>
+
+    <!-- Privacy & Security -->
+    <string name="privacy_security_title">Privacy &amp; Security</string>
+    <string name="privacy_security_settings_title">Security Settings</string>
+    <string name="privacy_security_biometrics_title">Biometric Authentication</string>
+    <string name="privacy_security_biometrics_desc">Use fingerprint or face recognition to secure your data</string>
+    <string name="privacy_security_encryption_title">Data Encryption</string>
+    <string name="privacy_security_encryption_desc">Encrypt all health records stored on device</string>
+    <string name="privacy_security_privacy_settings_title">Privacy Settings</string>
+    <string name="privacy_security_anonymous_reporting_title">Anonymous Reporting</string>
+    <string name="privacy_security_anonymous_reporting_desc">Share anonymous health trends to help public health research</string>
+    <string name="privacy_security_share_data_title">Share Data for Research</string>
+    <string name="privacy_security_share_data_desc">Allow anonymized data to be used in medical studies</string>
+    <string name="privacy_security_info_title">Your Privacy Matters</string>
+    <string name="privacy_security_info_body">All your health data is encrypted and stored securely. We will never share your personal information without your explicit consent.</string>
+
+    <!-- Lab Status -->
+    <string name="lab_status_pending">Pending</string>
+    <string name="lab_status_negative">Negative</string>
+    <string name="lab_status_positive">Positive</string>
+    <string name="lab_status_inconclusive">Inconclusive</string>
+</resources>

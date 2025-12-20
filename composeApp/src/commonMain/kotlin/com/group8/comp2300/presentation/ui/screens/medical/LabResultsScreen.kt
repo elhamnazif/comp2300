@@ -14,33 +14,38 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.LabResult
+import com.group8.comp2300.domain.model.medical.LabStatus
 import com.group8.comp2300.mock.sampleResults
+import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
 
 // Helper to format timestamp for display
+@Composable
 private fun formatDate(timestamp: Long): String {
     val instant = Instant.fromEpochMilliseconds(timestamp)
     val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-    val months =
-        listOf(
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
-        )
-    return "${months[localDateTime.month.number - 1]} ${localDateTime.day}, ${localDateTime.year}"
+    val monthRes =
+        when (localDateTime.month.number) {
+            1 -> Res.string.month_jan
+            2 -> Res.string.month_feb
+            3 -> Res.string.month_mar
+            4 -> Res.string.month_apr
+            5 -> Res.string.month_may
+            6 -> Res.string.month_jun
+            7 -> Res.string.month_jul
+            8 -> Res.string.month_aug
+            9 -> Res.string.month_sep
+            10 -> Res.string.month_oct
+            11 -> Res.string.month_nov
+            12 -> Res.string.month_dec
+            else -> Res.string.month_jan
+        }
+    return "${stringResource(monthRes)} ${localDateTime.dayOfMonth}, ${localDateTime.year}"
 }
 
 // Helper to create timestamp from date components
@@ -55,22 +60,27 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
     // Mock complete lab results data using proper types
     val allResults = remember { sampleResults }
 
-    var selectedFilter by remember { mutableStateOf("All") }
-    val filterOptions = listOf("All", "HIV", "STI Panel", "Hepatitis")
+    val filterAll = stringResource(Res.string.medical_lab_results_filter_all)
+    val filterHiv = stringResource(Res.string.medical_lab_results_filter_hiv)
+    val filterSti = stringResource(Res.string.medical_lab_results_filter_sti)
+    val filterHepatitis = stringResource(Res.string.medical_lab_results_filter_hepatitis)
+
+    var selectedFilter by remember { mutableStateOf(filterAll) }
+    val filterOptions = listOf(filterAll, filterHiv, filterSti, filterHepatitis)
 
     val filteredResults =
         remember(selectedFilter) {
             when (selectedFilter) {
-                "HIV" -> allResults.filter { it.testName.contains("HIV", ignoreCase = true) }
+                filterHiv -> allResults.filter { it.testName.contains("HIV", ignoreCase = true) }
 
-                "STI Panel" ->
+                filterSti ->
                     allResults.filter {
                         it.testName.contains("Chlamydia", ignoreCase = true) ||
                             it.testName.contains("Gonorrhea", ignoreCase = true) ||
                             it.testName.contains("Syphilis", ignoreCase = true)
                     }
 
-                "Hepatitis" ->
+                filterHepatitis ->
                     allResults.filter {
                         it.testName.contains("Hepatitis", ignoreCase = true)
                     }
@@ -82,12 +92,12 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Lab Results") },
+                title = { Text(stringResource(Res.string.medical_lab_results_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(Res.string.medical_lab_results_back_desc),
                         )
                     }
                 },
@@ -103,12 +113,12 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
         ) {
             // Header
             Text(
-                text = "Complete Test History",
+                text = stringResource(Res.string.medical_lab_results_history_header),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = "View all your lab results and testing history",
+                text = stringResource(Res.string.medical_lab_results_history_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -129,8 +139,11 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
 
             // Results count
             Text(
-                text =
-                "${filteredResults.size} ${if (filteredResults.size == 1) "result" else "results"}",
+                text = if (filteredResults.size == 1) {
+                    stringResource(Res.string.medical_lab_results_count_single, filteredResults.size)
+                } else {
+                    stringResource(Res.string.medical_lab_results_count_multiple, filteredResults.size)
+                },
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.secondary,
             )
@@ -146,7 +159,7 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
                 ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                 ),
-            ) { Text("Schedule Next Test") }
+            ) { Text(stringResource(Res.string.medical_lab_results_schedule_next)) }
 
             // Educational info
             Card(
@@ -158,16 +171,13 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Testing Recommendations",
+                        text = stringResource(Res.string.medical_lab_results_recommendations_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text =
-                        "• HIV testing: Every 3-6 months for sexually active individuals\n" +
-                            "• STI screening: Every 3-6 months or as recommended\n" +
-                            "• Hepatitis: Annually or as recommended by your provider",
+                        text = stringResource(Res.string.medical_lab_results_recommendations_content),
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -216,15 +226,27 @@ private fun LabResultCard(result: LabResult) {
                 HorizontalDivider()
                 Spacer(modifier = Modifier.height(12.dp))
 
-                DetailRow("Test Type", result.testName)
-                DetailRow("Date Performed", formatDate(result.testDate))
-                DetailRow("Result Status", result.status.displayName)
-                DetailRow("Testing Location", "HealthPlus Clinic")
-                DetailRow("Next Recommended", "February 28, 2025")
+                DetailRow(stringResource(Res.string.medical_lab_results_detail_type), result.testName)
+                DetailRow(stringResource(Res.string.medical_lab_results_detail_date), formatDate(result.testDate))
+                val statusRes = when (result.status) {
+                    LabStatus.PENDING -> Res.string.lab_status_pending
+                    LabStatus.NEGATIVE -> Res.string.lab_status_negative
+                    LabStatus.POSITIVE -> Res.string.lab_status_positive
+                    LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
+                }
+                DetailRow(stringResource(Res.string.medical_lab_results_detail_status), stringResource(statusRes))
+                DetailRow(
+                    stringResource(Res.string.medical_lab_results_detail_location),
+                    stringResource(Res.string.medical_lab_results_location_default),
+                )
+                DetailRow(
+                    stringResource(Res.string.medical_lab_results_detail_next),
+                    stringResource(Res.string.medical_lab_results_next_test_date),
+                )
 
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = "All test results are reviewed by licensed healthcare providers.",
+                    text = stringResource(Res.string.medical_lab_results_review_notice),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -239,9 +261,16 @@ private fun StatusBadge(result: LabResult) {
         if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
     val textColor = if (result.isPositive) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
 
+    val statusRes =
+        when (result.status) {
+            LabStatus.PENDING -> Res.string.lab_status_pending
+            LabStatus.NEGATIVE -> Res.string.lab_status_negative
+            LabStatus.POSITIVE -> Res.string.lab_status_positive
+            LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
+        }
     Surface(color = bgColor, shape = RoundedCornerShape(8.dp)) {
         Text(
-            result.status.displayName,
+            stringResource(statusRes),
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             style = MaterialTheme.typography.labelMedium,
             color = textColor,

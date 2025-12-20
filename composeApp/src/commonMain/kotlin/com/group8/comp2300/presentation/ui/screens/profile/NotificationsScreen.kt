@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,10 +27,10 @@ fun NotificationsScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Notifications") },
+                title = { Text(stringResource(Res.string.notifications_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(Res.string.auth_back_desc))
                     }
                 },
             )
@@ -42,15 +44,15 @@ fun NotificationsScreen(onBack: () -> Unit) {
                 .padding(16.dp),
         ) {
             Text(
-                "General",
+                stringResource(Res.string.notifications_general_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
-                title = "Discreet Mode",
-                description = "Hide sensitive information in notifications",
+                title = stringResource(Res.string.notifications_discreet_mode_title),
+                description = stringResource(Res.string.notifications_discreet_mode_desc),
                 checked = discreetMode,
                 onCheckedChange = { discreetMode = it },
             )
@@ -58,15 +60,15 @@ fun NotificationsScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(24.dp))
 
             Text(
-                "Health Reminders",
+                stringResource(Res.string.notifications_health_reminders_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
-                title = "Appointment Reminders",
-                description = "Get notified 24 hours before scheduled appointments",
+                title = stringResource(Res.string.notifications_appointment_reminders_title),
+                description = stringResource(Res.string.notifications_appointment_reminders_desc),
                 checked = appointmentReminders,
                 onCheckedChange = { appointmentReminders = it },
             )
@@ -74,8 +76,8 @@ fun NotificationsScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(8.dp))
 
             SettingToggleItem(
-                title = "Test Results",
-                description = "Get notified when lab results are available",
+                title = stringResource(Res.string.notifications_test_results_title),
+                description = stringResource(Res.string.notifications_test_results_desc),
                 checked = testResults,
                 onCheckedChange = { testResults = it },
             )
@@ -83,8 +85,8 @@ fun NotificationsScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(8.dp))
 
             SettingToggleItem(
-                title = "Regular Testing Reminders",
-                description = "Remind me to schedule screenings every 3 months",
+                title = stringResource(Res.string.notifications_testing_reminders_title),
+                description = stringResource(Res.string.notifications_testing_reminders_desc),
                 checked = testReminders,
                 onCheckedChange = { testReminders = it },
             )
@@ -92,15 +94,15 @@ fun NotificationsScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(24.dp))
 
             Text(
-                "Content & Updates",
+                stringResource(Res.string.notifications_content_updates_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
-                title = "Educational Content",
-                description = "Weekly tips and articles about sexual health",
+                title = stringResource(Res.string.notifications_educational_content_title),
+                description = stringResource(Res.string.notifications_educational_content_desc),
                 checked = educationContent,
                 onCheckedChange = { educationContent = it },
             )
@@ -108,8 +110,8 @@ fun NotificationsScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(8.dp))
 
             SettingToggleItem(
-                title = "Product Deals",
-                description = "Special offers on protection and testing kits",
+                title = stringResource(Res.string.notifications_product_deals_title),
+                description = stringResource(Res.string.notifications_product_deals_desc),
                 checked = productDeals,
                 onCheckedChange = { productDeals = it },
             )
@@ -124,14 +126,14 @@ fun NotificationsScreen(onBack: () -> Unit) {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        "Discreet Mode",
+                        stringResource(Res.string.notifications_discreet_mode_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "When enabled, notifications will not show specific details about appointments or test results. You'll receive a generic reminder to check the app.",
+                        stringResource(Res.string.notifications_discreet_mode_info),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onTertiaryContainer,
                     )

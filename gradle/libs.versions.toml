@@ -31,9 +31,11 @@ maplibre = "0.12.1"
 koin = "4.2.0-beta2"
 mpStools = "1.6.3"
 detekt = "2.0.0-alpha.1"
+kotlinStdlib = "2.3.0"
+runner = "1.5.2"
+core = "1.5.0"
 
 [libraries]
-compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "foundation" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
@@ -67,6 +69,7 @@ compose-material3 = { module = "org.jetbrains.compose.material3:material3", vers
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeMultiplatform" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "composeMultiplatform" }
 compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "composeMultiplatform" }
+compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeMultiplatform" }
 compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "composeMultiplatform" }
 
 material-icons-core = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "materialIconsCore" }
@@ -95,6 +98,9 @@ spotless-gradlePlugin = { module = "com.diffplug.spotless:spotless-plugin-gradle
 detekt-compose = { module = "io.nlopez.compose.rules:detekt", version = "0.5.3" }
 detekt-formatting = { module = "dev.detekt:detekt-rules-ktlint-wrapper", version.ref = "detekt" }
 detekt-gradlePlugin = { module = "dev.detekt:detekt-gradle-plugin", version.ref = "detekt" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlinStdlib" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }
+androidx-core = { group = "androidx.test", name = "core", version.ref = "core" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -128,3 +134,4 @@ comp2300-detekt = { id = "comp2300.detekt" }
 #comp2300-kmp-library = { id = "comp2300.kmp.library" }
 #comp2300-root = { id = "comp2300.root" }
 comp2300-spotless = { id = "comp2300.spotless" }
+android-lint = { id = "com.android.lint", version.ref = "agp" }

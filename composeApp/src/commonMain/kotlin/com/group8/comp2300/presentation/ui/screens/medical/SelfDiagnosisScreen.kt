@@ -13,6 +13,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 /**
  * Self Diagnosis Screen
@@ -32,9 +34,9 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
     fun calculateRisk() {
         diagnosisResult =
             if (unprotectedSex == true || sharedNeedles == true) {
-                "High Risk"
+                "High Risk" // internal key for logic
             } else {
-                "Low Risk"
+                "Low Risk" // internal key for logic
             }
         showResultDialog = true
     }
@@ -42,11 +44,15 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
     if (showResultDialog) {
         AlertDialog(
             onDismissRequest = { showResultDialog = false },
-            title = { Text("Assessment Result") },
+            title = { Text(stringResource(Res.string.medical_self_diagnosis_result_dialog_title)) },
             text = {
                 Column {
                     Text(
-                        text = diagnosisResult,
+                        text = if (diagnosisResult == "High Risk") {
+                            stringResource(Res.string.medical_self_diagnosis_risk_high)
+                        } else {
+                            stringResource(Res.string.medical_self_diagnosis_risk_low)
+                        },
                         style = MaterialTheme.typography.headlineMedium,
                         color =
                         if (diagnosisResult == "High Risk") {
@@ -59,9 +65,9 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                     Text(
                         text =
                         if (diagnosisResult == "High Risk") {
-                            "Based on your answers, you may be at higher risk for HIV. We recommend consulting a healthcare provider for further testing."
+                            stringResource(Res.string.medical_self_diagnosis_feedback_high)
                         } else {
-                            "Based on your answers, your risk appears to be low. However, regular screening is always recommended for sexual health."
+                            stringResource(Res.string.medical_self_diagnosis_feedback_low)
                         },
                     )
                 }
@@ -72,10 +78,12 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                         showResultDialog = false
                         onNavigateToBooking()
                     },
-                ) { Text("Book Appointment") }
+                ) { Text(stringResource(Res.string.medical_self_diagnosis_book_button)) }
             },
             dismissButton = {
-                TextButton(onClick = { showResultDialog = false }) { Text("Close") }
+                TextButton(onClick = {
+                    showResultDialog = false
+                }) { Text(stringResource(Res.string.medical_self_diagnosis_close_button)) }
             },
         )
     }
@@ -83,12 +91,12 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Self Diagnosis: HIV") },
+                title = { Text(stringResource(Res.string.medical_self_diagnosis_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(Res.string.medical_self_diagnosis_back_desc),
                         )
                     }
                 },
@@ -102,10 +110,13 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(text = "HIV Risk Assessment", style = MaterialTheme.typography.headlineSmall)
+            Text(
+                text = stringResource(Res.string.medical_self_diagnosis_header),
+                style = MaterialTheme.typography.headlineSmall,
+            )
 
             Text(
-                text = "Please answer the following questions to assess your risk.",
+                text = stringResource(Res.string.medical_self_diagnosis_desc),
                 style = MaterialTheme.typography.bodyMedium,
             )
 
@@ -113,7 +124,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Have you had unprotected sex in the last 3 months?",
+                        text = stringResource(Res.string.medical_self_diagnosis_q1),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -166,7 +177,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
             Card(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Have you shared needles or injection equipment?",
+                        text = stringResource(Res.string.medical_self_diagnosis_q2),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -221,11 +232,10 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit) {
                 onClick = { calculateRisk() },
                 enabled = unprotectedSex != null && sharedNeedles != null,
                 modifier = Modifier.fillMaxWidth(),
-            ) { Text("Get Results") }
+            ) { Text(stringResource(Res.string.medical_self_diagnosis_submit_button)) }
 
             Text(
-                text =
-                "Note: This is a preliminary self-assessment and does not replace professional medical advice.",
+                text = stringResource(Res.string.medical_self_diagnosis_disclaimer),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

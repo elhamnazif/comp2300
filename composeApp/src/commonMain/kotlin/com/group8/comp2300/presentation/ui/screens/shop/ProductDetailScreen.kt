@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,10 +48,13 @@ fun ProductDetailScreen(viewModel: ShopViewModel = koinViewModel(), productId: S
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("Total", style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            stringResource(Res.string.shop_details_total_label),
+                            style = MaterialTheme.typography.labelLarge,
+                        )
                         Text(
                             if (product.insuranceCovered) {
-                                "$0 (Insured)"
+                                stringResource(Res.string.shop_product_insured_price)
                             } else {
                                 product.formattedPrice
                             },
@@ -65,7 +70,7 @@ fun ProductDetailScreen(viewModel: ShopViewModel = koinViewModel(), productId: S
                     Button(
                         onClick = { /* Add to Cart Logic */ },
                         modifier = Modifier.weight(1f).height(50.dp),
-                    ) { Text("Add to Cart") }
+                    ) { Text(stringResource(Res.string.shop_details_add_to_cart_button)) }
                 }
             }
         },
@@ -92,7 +97,7 @@ fun ProductDetailScreen(viewModel: ShopViewModel = koinViewModel(), productId: S
                 if (product.insuranceCovered) {
                     AssistChip(
                         onClick = {},
-                        label = { Text("Covered by Insurance") },
+                        label = { Text(stringResource(Res.string.shop_details_insurance_badge)) },
                         leadingIcon = { Icon(Icons.Default.CheckCircle, null) },
                         colors =
                         AssistChipDefaults.assistChipColors(
@@ -113,9 +118,18 @@ fun ProductDetailScreen(viewModel: ShopViewModel = koinViewModel(), productId: S
                 Spacer(Modifier.height(24.dp))
 
                 // 3. Features List
-                FeatureRow("Discrete Packaging", "Shipped in a plain, unbranded box.")
-                FeatureRow("Free Delivery", "Arrives in 2-3 business days.")
-                FeatureRow("Automatic Refills", "Never run out of your prevention.")
+                FeatureRow(
+                    stringResource(Res.string.shop_details_feature_packaging_title),
+                    stringResource(Res.string.shop_details_feature_packaging_desc),
+                )
+                FeatureRow(
+                    stringResource(Res.string.shop_details_feature_delivery_title),
+                    stringResource(Res.string.shop_details_feature_delivery_desc),
+                )
+                FeatureRow(
+                    stringResource(Res.string.shop_details_feature_refills_title),
+                    stringResource(Res.string.shop_details_feature_refills_desc),
+                )
             }
         }
     }
