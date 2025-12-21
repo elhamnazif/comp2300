@@ -59,9 +59,7 @@ abstract class AuthViewModel : ViewModel() {
         val isStep2Valid: Boolean
             get() = firstName.isNotBlank() && lastName.isNotBlank() && dateOfBirth != null
 
-        fun getFormattedDate(): String {
-            return dateOfBirth?.let { DateFormatter.formatDayMonthYear(it) } ?: ""
-        }
+        fun getFormattedDate(): String = dateOfBirth?.let { DateFormatter.formatDayMonthYear(it) } ?: ""
     }
 
     sealed interface AuthUiEvent {

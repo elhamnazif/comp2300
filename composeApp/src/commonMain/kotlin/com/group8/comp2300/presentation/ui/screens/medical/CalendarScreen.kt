@@ -28,6 +28,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.presentation.util.DateFormatter
+import comp2300.i18n.generated.resources.*
+import comp2300.i18n.generated.resources.Res
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
@@ -35,9 +38,10 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
-import com.group8.comp2300.presentation.util.DateFormatter
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import org.jetbrains.compose.resources.pluralStringResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -75,7 +79,6 @@ val sampleAppointments =
 val sampleDoctors = com.group8.comp2300.mock.sampleCalendarDoctors.map { Doctor(it.name) }
 
 // --- Helper Functions ---
-
 
 /**
  * Generates a 6-week (42 day) grid for the given month/year. Includes padding days from previous
@@ -128,13 +131,44 @@ private enum class SheetView {
 }
 
 private object FormConstants {
-    val CommonMeds = listOf("PrEP", "Truvada", "Descovy", "DoxyPEP", "Multivitamin")
-    val ApptTypes = listOf("Consultation", "Lab Work", "Follow-up")
+    @Composable
+    fun commonMeds() = listOf(
+        stringResource(Res.string.medication_prep),
+        stringResource(Res.string.medication_truvada),
+        stringResource(Res.string.medication_descovy),
+        stringResource(Res.string.medication_doxypep),
+        stringResource(Res.string.medication_multivitamin),
+    )
+
+    @Composable
+    fun apptTypes() = listOf(
+        stringResource(Res.string.appt_type_consultation),
+        stringResource(Res.string.appt_type_labwork),
+        stringResource(Res.string.appt_type_followup),
+    )
+
     val Dosages = listOf(1, 2, 3)
     val MoodEmojis = listOf("😢", "😕", "😐", "🙂", "🤩")
-    val MoodLabels = listOf("Very Sad", "Sad", "Neutral", "Happy", "Great")
-    val MoodTags =
-        listOf("Anxious", "Calm", "Irritable", "Energetic", "Tired", "Stressed", "Focused")
+
+    @Composable
+    fun moodLabels() = listOf(
+        stringResource(Res.string.form_mood_very_sad),
+        stringResource(Res.string.form_mood_sad),
+        stringResource(Res.string.form_mood_neutral),
+        stringResource(Res.string.form_mood_happy),
+        stringResource(Res.string.form_mood_great),
+    )
+
+    @Composable
+    fun moodTags() = listOf(
+        stringResource(Res.string.form_mood_tag_anxious),
+        stringResource(Res.string.form_mood_tag_calm),
+        stringResource(Res.string.form_mood_tag_irritable),
+        stringResource(Res.string.form_mood_tag_energetic),
+        stringResource(Res.string.form_mood_tag_tired),
+        stringResource(Res.string.form_mood_tag_stressed),
+        stringResource(Res.string.form_mood_tag_focused),
+    )
 }
 
 // --- Main Screen ---
@@ -172,7 +206,7 @@ fun CalendarScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                 onClick = {
                     // Default to today if nothing selected
                     val defaultDay =
-                        CalendarDay(today.day, today, AdherenceStatus.NONE, true, true)
+                        CalendarDay(today.day, today, AdherenceStatus.NONE, isToday = true, isCurrentMonth = true)
                     val dateToUse = selectedDateForEntry ?: defaultDay
 
                     selectedDateForEntry = dateToUse
@@ -188,7 +222,7 @@ fun CalendarScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-            ) { Icon(Icons.Default.Add, contentDescription = "Add Entry") }
+            ) { Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.calendar_add_entry_desc)) }
         },
     ) { innerPadding ->
         LazyColumn(
@@ -201,7 +235,7 @@ fun CalendarScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
         ) {
             item {
                 Text(
-                    text = "Your Schedule",
+                    text = stringResource(Res.string.calendar_title),
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -231,7 +265,7 @@ fun CalendarScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
             item {
                 Column {
                     Text(
-                        text = "Today's Action",
+                        text = stringResource(Res.string.calendar_today_action),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.padding(bottom = 8.dp),
@@ -245,7 +279,7 @@ fun CalendarScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
 
             item {
                 Text(
-                    "Upcoming",
+                    stringResource(Res.string.calendar_upcoming),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.secondary,
                 )
@@ -278,7 +312,7 @@ fun CalendarScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
 
                         SheetView.FORM_MED ->
                             WrapperFormLayout(
-                                title = "Log Medication",
+                                title = stringResource(Res.string.form_medication_title),
                                 entryDate = entryDate,
                                 entryTime = entryTime,
                                 onDateChange = { entryDate = it },
@@ -293,7 +327,7 @@ fun CalendarScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
 
                         SheetView.FORM_APPT ->
                             WrapperFormLayout(
-                                title = "Track Appointment",
+                                title = stringResource(Res.string.form_appt_title),
                                 entryDate = entryDate,
                                 entryTime = entryTime,
                                 onDateChange = { entryDate = it },
@@ -308,7 +342,7 @@ fun CalendarScreen(isGuest: Boolean = false, onRequireAuth: () -> Unit = {}) {
 
                         SheetView.FORM_MOOD ->
                             WrapperFormLayout(
-                                title = "Track Mood",
+                                title = stringResource(Res.string.form_mood_title),
                                 entryDate = entryDate,
                                 entryTime = entryTime,
                                 onDateChange = { entryDate = it },
@@ -371,7 +405,10 @@ fun CalendarCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = { monthOffset-- }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
+                    Icon(
+                        Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(Res.string.calendar_prev_month_desc),
+                    )
                 }
 
                 Text(
@@ -383,7 +420,7 @@ fun CalendarCard(
                 IconButton(onClick = { monthOffset++ }) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Next Month",
+                        contentDescription = stringResource(Res.string.calendar_next_month_desc),
                         modifier = Modifier.rotate(180f),
                     )
                 }
@@ -394,7 +431,15 @@ fun CalendarCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
+                listOf(
+                    stringResource(Res.string.day_initial_sun),
+                    stringResource(Res.string.day_initial_mon),
+                    stringResource(Res.string.day_initial_tue),
+                    stringResource(Res.string.day_initial_wed),
+                    stringResource(Res.string.day_initial_thu),
+                    stringResource(Res.string.day_initial_fri),
+                    stringResource(Res.string.day_initial_sat),
+                ).forEach { day ->
                     Text(
                         day,
                         style = MaterialTheme.typography.labelMedium,
@@ -565,25 +610,34 @@ private fun FormChipGroup(
 
 @Composable
 fun MedicationForm(onSave: (String, Map<String, Any>) -> Unit) {
-    var name by remember { mutableStateOf("PrEP") }
+    val meds = FormConstants.commonMeds()
+    var name by remember(meds) { mutableStateOf(meds.firstOrNull() ?: "") }
     var dosage by remember { mutableIntStateOf(1) }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         FormDropdown(
-            label = "Medication",
-            options = FormConstants.CommonMeds,
+            label = stringResource(Res.string.form_medication_label),
+            options = FormConstants.commonMeds(),
             selectedOption = name,
             onOptionSelected = { name = it },
         )
 
         Column {
-            Text("Dosage", style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(Res.string.form_dosage_label), style = MaterialTheme.typography.labelMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FormConstants.Dosages.forEach { count ->
                     FilterChip(
                         selected = dosage == count,
                         onClick = { dosage = count },
-                        label = { Text("$count pill${if (count > 1) "s" else ""}") },
+                        label = {
+                            Text(
+                                pluralStringResource(
+                                    Res.plurals.form_dosage_pill,
+                                    count,
+                                    count,
+                                ),
+                            )
+                        },
                         leadingIcon = {
                             if (dosage == count) {
                                 Icon(Icons.Default.Check, null, Modifier.size(16.dp))
@@ -598,27 +652,28 @@ fun MedicationForm(onSave: (String, Map<String, Any>) -> Unit) {
             onClick = { onSave(name, mapOf("dosage" to dosage)) },
             modifier = Modifier.fillMaxWidth(),
             enabled = name.isNotEmpty(),
-        ) { Text("Log Medication") }
+        ) { Text(stringResource(Res.string.form_medication_title)) }
     }
 }
 
 @Composable
 fun AppointmentForm(onSave: (String, Map<String, Any>) -> Unit) {
     var doctorName by remember { mutableStateOf("") }
-    var type by remember { mutableStateOf(FormConstants.ApptTypes.first()) }
+    val apptTypes = FormConstants.apptTypes()
+    var type by remember(apptTypes) { mutableStateOf(apptTypes.firstOrNull() ?: "") }
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         FormDropdown(
-            label = "Doctor / Clinic",
+            label = stringResource(Res.string.form_appt_doctor_label),
             options = sampleDoctors.map { it.name },
             selectedOption = doctorName,
             onOptionSelected = { doctorName = it },
         )
 
         Column {
-            Text("Type", style = MaterialTheme.typography.labelMedium)
+            Text(stringResource(Res.string.form_appt_type_label), style = MaterialTheme.typography.labelMedium)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FormConstants.ApptTypes.forEach { t ->
+                FormConstants.apptTypes().forEach { t ->
                     FilterChip(
                         selected = type == t,
                         onClick = { type = t },
@@ -635,7 +690,7 @@ fun AppointmentForm(onSave: (String, Map<String, Any>) -> Unit) {
             onClick = { onSave(doctorName, mapOf("type" to type)) },
             modifier = Modifier.fillMaxWidth(),
             enabled = doctorName.isNotEmpty(),
-        ) { Text("Schedule Appointment") }
+        ) { Text(stringResource(Res.string.form_appt_schedule_button)) }
     }
 }
 
@@ -653,7 +708,7 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit) {
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(
-                text = FormConstants.MoodLabels[moodScore - 1],
+                text = FormConstants.moodLabels()[moodScore - 1],
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold,
@@ -694,8 +749,8 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit) {
 
         // 2. Feelings Tags
         FormChipGroup(
-            title = "How are you feeling?",
-            options = FormConstants.MoodTags,
+            title = stringResource(Res.string.form_mood_question),
+            options = FormConstants.moodTags(),
             selectedOptions = selectedTags,
             onOptionToggle = {
                 if (selectedTags.contains(it)) selectedTags.remove(it) else selectedTags.add(it)
@@ -706,7 +761,7 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit) {
         OutlinedTextField(
             value = notes,
             onValueChange = { notes = it },
-            label = { Text("Journal / Notes") },
+            label = { Text(stringResource(Res.string.form_mood_journal_label)) },
             modifier = Modifier.fillMaxWidth(),
             minLines = 3,
         )
@@ -714,7 +769,7 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit) {
         Button(
             onClick = { onSave(moodScore, selectedTags, selectedSymptoms, notes) },
             modifier = Modifier.fillMaxWidth(),
-        ) { Text("Log Mood") }
+        ) { Text(stringResource(Res.string.form_mood_log_button)) }
     }
 }
 
@@ -730,25 +785,25 @@ private fun AddEntryMenu(onSelectType: (SheetView) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(
-            "What would you like to add?",
+            stringResource(Res.string.calendar_menu_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
         MenuSelectionCard(
-            "Log Medication",
-            "Track your daily intake",
+            stringResource(Res.string.calendar_menu_log_med),
+            stringResource(Res.string.calendar_menu_log_med_desc),
             Icons.Default.Edit,
             MaterialTheme.colorScheme.primaryContainer,
         ) { onSelectType(SheetView.FORM_MED) }
         MenuSelectionCard(
-            "Track Appointment",
-            "Track your visit or lab work",
+            stringResource(Res.string.calendar_menu_track_appt),
+            stringResource(Res.string.calendar_menu_track_appt_desc),
             Icons.Default.DateRange,
             MaterialTheme.colorScheme.secondaryContainer,
         ) { onSelectType(SheetView.FORM_APPT) }
         MenuSelectionCard(
-            "Track Mood",
-            "Log how you're feeling today",
+            stringResource(Res.string.calendar_menu_track_mood),
+            stringResource(Res.string.calendar_menu_track_mood_desc),
             Icons.Outlined.Face,
             MaterialTheme.colorScheme.tertiaryContainer,
         ) { onSelectType(SheetView.FORM_MOOD) }
@@ -826,7 +881,10 @@ fun WrapperFormLayout(
             modifier = Modifier.padding(bottom = 24.dp),
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(Res.string.common_back_desc),
+                )
             }
             Spacer(Modifier.width(8.dp))
             Text(
@@ -843,7 +901,7 @@ fun WrapperFormLayout(
             OutlinedTextField(
                 value = DateFormatter.formatDayMonthYear(entryDate),
                 onValueChange = {},
-                label = { Text("Date") },
+                label = { Text(stringResource(Res.string.form_date_label)) },
                 modifier = Modifier.weight(1f).clickable { showDatePicker = true },
                 enabled = false,
                 colors =
@@ -856,7 +914,7 @@ fun WrapperFormLayout(
             OutlinedTextField(
                 value = DateFormatter.formatTime(entryTime.first, entryTime.second),
                 onValueChange = {},
-                label = { Text("Time") },
+                label = { Text(stringResource(Res.string.form_time_label)) },
                 modifier = Modifier.weight(1f).clickable { showTimePicker = true },
                 enabled = false,
                 colors =
@@ -885,10 +943,10 @@ fun WrapperFormLayout(
                             }
                             showDatePicker = false
                         },
-                    ) { Text("OK") }
+                    ) { Text(stringResource(Res.string.common_ok)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                    TextButton(onClick = { showDatePicker = false }) { Text(stringResource(Res.string.common_cancel)) }
                 },
             ) { DatePicker(state = datePickerState) }
         }
@@ -902,10 +960,10 @@ fun WrapperFormLayout(
                             onTimeChange(timePickerState.hour, timePickerState.minute)
                             showTimePicker = false
                         },
-                    ) { Text("OK") }
+                    ) { Text(stringResource(Res.string.common_ok)) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showTimePicker = false }) { Text("Cancel") }
+                    TextButton(onClick = { showTimePicker = false }) { Text(stringResource(Res.string.common_cancel)) }
                 },
                 text = { TimePicker(state = timePickerState) },
             )
@@ -929,12 +987,16 @@ fun AppointmentDetailSheetContent(appointment: Appointment, onEdit: () -> Unit, 
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                "Appointment Details",
+                stringResource(Res.string.calendar_appt_details_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
             )
             IconButton(onClick = onEdit) {
-                Icon(Icons.Default.Edit, "Edit", tint = MaterialTheme.colorScheme.primary)
+                Icon(
+                    Icons.Default.Edit,
+                    stringResource(Res.string.calendar_appt_edit_desc),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
             }
         }
         Spacer(Modifier.height(24.dp))
@@ -956,13 +1018,18 @@ fun AppointmentDetailSheetContent(appointment: Appointment, onEdit: () -> Unit, 
             }
         }
         Spacer(Modifier.height(24.dp))
-        DetailRow(Icons.Default.DateRange, "Date", appointment.date)
+        DetailRow(Icons.Default.DateRange, stringResource(Res.string.form_date_label), appointment.date)
         Spacer(Modifier.height(16.dp))
-        DetailRow(Icons.Default.CheckCircle, "Time", appointment.time)
+        DetailRow(Icons.Default.CheckCircle, stringResource(Res.string.form_time_label), appointment.time)
         Spacer(Modifier.height(16.dp))
-        DetailRow(Icons.Outlined.LocationOn, "Location", "Room 304, Sexual Health Clinic")
+        DetailRow(
+            Icons.Outlined.LocationOn,
+            stringResource(Res.string.calendar_appt_location_label),
+            stringResource(Res.string.calendar_appt_location_value),
+        )
         Spacer(Modifier.height(32.dp))
-        Button(onClick = {}, modifier = Modifier.fillMaxWidth()) { Text("Get Directions") }
+        Button(onClick = {
+        }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.calendar_appt_directions_button)) }
         TextButton(
             onClick = onDelete,
             modifier = Modifier.fillMaxWidth(),
@@ -973,7 +1040,7 @@ fun AppointmentDetailSheetContent(appointment: Appointment, onEdit: () -> Unit, 
         ) {
             Icon(Icons.Outlined.Delete, null, Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Cancel Appointment")
+            Text(stringResource(Res.string.calendar_appt_cancel_button))
         }
         Spacer(Modifier.height(16.dp))
     }
@@ -1023,12 +1090,22 @@ fun DailyActionCard(isTaken: Boolean, onToggle: () -> Unit) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    if (isTaken) "All done!" else "Take PrEP",
+                    if (isTaken) {
+                        stringResource(
+                            Res.string.calendar_action_all_done,
+                        )
+                    } else {
+                        stringResource(Res.string.calendar_action_take_prep)
+                    },
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    if (isTaken) "Streak: 12 Days" else "Scheduled for 9:00 AM",
+                    if (isTaken) {
+                        stringResource(Res.string.calendar_action_streak_format, 12)
+                    } else {
+                        stringResource(Res.string.calendar_action_scheduled_format, "9:00 AM")
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
