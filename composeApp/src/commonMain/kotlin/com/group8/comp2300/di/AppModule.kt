@@ -12,8 +12,11 @@ import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
 import com.group8.comp2300.domain.repository.ShopRepository
-import com.group8.comp2300.navigation.Navigator
-import com.group8.comp2300.navigation.RealNavigator
+import com.group8.comp2300.domain.usecase.auth.LoginUseCase
+import com.group8.comp2300.domain.usecase.auth.RegisterUseCase
+import com.group8.comp2300.domain.usecase.shop.GetProductsUseCase
+import com.group8.comp2300.presentation.navigation.Navigator
+import com.group8.comp2300.presentation.navigation.RealNavigator
 import com.group8.comp2300.presentation.ui.screens.auth.AuthViewModel
 import com.group8.comp2300.presentation.ui.screens.auth.RealAuthViewModel
 import com.group8.comp2300.presentation.ui.screens.education.EducationViewModel
@@ -38,6 +41,11 @@ val appModule = module {
     singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
     single<ClinicRepository> { ClinicRepositoryImpl() }
     single<EducationRepository> { EducationRepositoryImpl() }
+
+    // Use Cases
+    singleOf(::GetProductsUseCase)
+    singleOf(::LoginUseCase)
+    singleOf(::RegisterUseCase)
 
     // ViewModels
     viewModelOf(::RealAuthViewModel) { bind<AuthViewModel>() }

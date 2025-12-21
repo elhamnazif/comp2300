@@ -1,4 +1,4 @@
-package com.group8.comp2300.navigation
+package com.group8.comp2300.presentation.navigation
 
 import androidx.compose.runtime.staticCompositionLocalOf
 

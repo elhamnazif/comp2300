@@ -1,4 +1,4 @@
-package com.group8.comp2300.navigation
+package com.group8.comp2300.presentation.navigation
 
 import androidx.compose.animation.togetherWith
 import com.group8.comp2300.presentation.motion.materialSharedAxisXIn

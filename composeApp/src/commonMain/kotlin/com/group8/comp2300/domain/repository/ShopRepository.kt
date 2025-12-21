@@ -10,6 +10,6 @@ interface ShopRepository {
     /** Return products filtered by category. If category is [ProductCategory.ALL], returns all products. */
     suspend fun getProductsByCategory(category: ProductCategory): List<Product>
 
-    /** Return a single product by its ID, or null if not found. */
-    suspend fun getProductById(id: String): Product?
+    /** Return a single product by its ID. */
+    suspend fun getProductById(id: String): Product
 }

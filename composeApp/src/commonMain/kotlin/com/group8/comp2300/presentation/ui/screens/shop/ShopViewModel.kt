@@ -3,10 +3,12 @@ package com.group8.comp2300.presentation.ui.screens.shop
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.group8.comp2300.core.NetworkResult
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ShopRepository
+import com.group8.comp2300.domain.usecase.shop.GetProductsUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,10 +23,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ShopViewModel(private val repository: ShopRepository, private val authRepository: AuthRepository) : ViewModel() {
+class ShopViewModel(
+    private val getProductsUseCase: GetProductsUseCase,
+    private val repository: ShopRepository, // Still needed for getProductById or other direct calls if not in usecases
+    private val authRepository: AuthRepository
+) : ViewModel() {
 
     // INPUT 1: Category Selection
-    // Changing this automatically triggers the data pipeline below
     val selectedCategory: StateFlow<ProductCategory>
         field: MutableStateFlow<ProductCategory> = MutableStateFlow(ProductCategory.ALL)
 
@@ -32,51 +37,40 @@ class ShopViewModel(private val repository: ShopRepository, private val authRepo
     val cartItemCount: StateFlow<Int>
         field: MutableStateFlow<Int> = MutableStateFlow(0)
 
-    // INPUT 3: Refresh Signal (Swipe to refresh / Retry)
+    // INPUT 3: Refresh Signal
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
 
     // INTERNAL: The Data Loading Pipeline
-    // This flow manages the network state (Loading -> Data/Error)
-    private val productsResultFlow = combine(selectedCategory, refreshTrigger.onStart { emit(Unit) }) { category, _ ->
+    private val productsResultFlow = combine(
+        selectedCategory,
+        refreshTrigger.onStart { emit(Unit) }
+    ) { category, _ ->
         category
     }.flatMapLatest { category ->
-        flow {
-            emit(FetchResult.Loading)
-            try {
-                val products = if (category == ProductCategory.ALL) {
-                    repository.getAllProducts()
-                } else {
-                    repository.getProductsByCategory(category)
-                }
-                emit(FetchResult.Success(products))
-            } catch (e: Exception) {
-                emit(FetchResult.Error(e.message ?: "Unknown error"))
-            }
-        }
+        getProductsUseCase(category)
     }
 
     // OUTPUT: Final State
-    // Combines the Network result + The Selected Category + The Local Cart Count
     val state: StateFlow<State> = combine(
         productsResultFlow,
         selectedCategory,
         cartItemCount,
     ) { result, category, count ->
         when (result) {
-            is FetchResult.Loading -> State(
+            is NetworkResult.Loading -> State(
                 isLoading = true,
                 selectedCategory = category,
                 cartItemCount = count,
             )
 
-            is FetchResult.Success -> State(
+            is NetworkResult.Success -> State(
                 isLoading = false,
                 products = result.data,
                 selectedCategory = category,
                 cartItemCount = count,
             )
 
-            is FetchResult.Error -> State(
+            is NetworkResult.Error -> State(
                 isLoading = false,
                 error = result.message,
                 selectedCategory = category,
@@ -105,12 +99,10 @@ class ShopViewModel(private val repository: ShopRepository, private val authRepo
         }
     }
 
-    suspend fun getProductById(id: String): Product? = repository.getProductById(id)
-
-    private sealed interface FetchResult {
-        data object Loading : FetchResult
-        data class Success(val data: List<Product>) : FetchResult
-        data class Error(val message: String) : FetchResult
+    suspend fun getProductById(id: String): Product? = try {
+        repository.getProductById(id)
+    } catch (e: Exception) {
+        null
     }
 
     @Immutable

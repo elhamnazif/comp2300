@@ -6,7 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.domain.model.Screen
 import com.group8.comp2300.domain.model.education.ContentType
-import com.group8.comp2300.navigation.LocalNavigator
+import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.ui.screens.auth.*
 import com.group8.comp2300.presentation.ui.screens.education.*
 import com.group8.comp2300.presentation.ui.screens.home.*
