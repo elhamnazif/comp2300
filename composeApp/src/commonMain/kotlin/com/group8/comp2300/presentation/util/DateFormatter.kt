@@ -7,9 +7,11 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
 
+// TODO: Replace with moko-resources
 object DateFormatter {
 
     /**
@@ -22,6 +24,14 @@ object DateFormatter {
         val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
         val monthRes = getMonthResource(localDateTime.month.number)
         return "${stringResource(monthRes)} ${localDateTime.day}, ${localDateTime.year}"
+    }
+
+    suspend fun formatMonthDayYearSuspend(timestamp: Long): String {
+        val instant = Instant.fromEpochMilliseconds(timestamp)
+        val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+        val monthRes = getMonthResource(localDateTime.month.number)
+
+        return "${getString(monthRes)} ${localDateTime.day}, ${localDateTime.year}"
     }
 
     /**
