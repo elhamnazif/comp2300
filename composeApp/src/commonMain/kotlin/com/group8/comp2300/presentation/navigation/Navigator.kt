@@ -2,10 +2,7 @@ package com.group8.comp2300.presentation.navigation
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -14,15 +11,19 @@ import androidx.lifecycle.viewmodel.compose.saveable
 import com.group8.comp2300.domain.model.Screen
 import kotlinx.serialization.json.Json
 
-interface Navigator {
-    val backStack: SnapshotStateList<Screen>
-    val currentScreen: Screen?
-    var isGuest: Boolean
-    
-    fun navigate(screen: Screen)
-    fun goBack()
-    fun clearAndGoTo(screen: Screen)
-    fun requireAuth()
+abstract class Navigator : ViewModel() {
+    abstract val backStack: MutableList<Screen>
+    abstract val currentScreen: Screen?
+
+    abstract var isGuest: Boolean
+
+    abstract fun navigate(screen: Screen)
+
+    abstract fun goBack()
+
+    abstract fun clearAndGoTo(screen: Screen)
+
+    abstract fun requireAuth()
 }
 
 @OptIn(SavedStateHandleSaveableApi::class)
