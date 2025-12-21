@@ -35,7 +35,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
-import kotlinx.datetime.number
+import com.group8.comp2300.presentation.util.DateFormatter
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
@@ -76,14 +76,6 @@ val sampleDoctors = com.group8.comp2300.mock.sampleCalendarDoctors.map { Doctor(
 
 // --- Helper Functions ---
 
-private fun LocalDate.formatToDisplay(): String =
-    "${day.toString().padStart(2, '0')}/${month.number.toString().padStart(2, '0')}/$year"
-
-private fun formatTime(hour: Int, minute: Int): String {
-    val amPm = if (hour < 12) "AM" else "PM"
-    val hour12 = if (hour == 0 || hour == 12) 12 else hour % 12
-    return "$hour12:${minute.toString().padStart(2, '0')} $amPm"
-}
 
 /**
  * Generates a 6-week (42 day) grid for the given month/year. Includes padding days from previous
@@ -383,10 +375,7 @@ fun CalendarCard(
                 }
 
                 Text(
-                    text =
-                    "${displayDate.month.name.lowercase().replaceFirstChar {
-                        it.titlecase()
-                    }} ${displayDate.year}",
+                    text = DateFormatter.formatMonthYear(displayDate),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -852,7 +841,7 @@ fun WrapperFormLayout(
             modifier = Modifier.padding(bottom = 24.dp),
         ) {
             OutlinedTextField(
-                value = entryDate.formatToDisplay(),
+                value = DateFormatter.formatDayMonthYear(entryDate),
                 onValueChange = {},
                 label = { Text("Date") },
                 modifier = Modifier.weight(1f).clickable { showDatePicker = true },
@@ -865,7 +854,7 @@ fun WrapperFormLayout(
                 trailingIcon = { Icon(Icons.Default.DateRange, null) },
             )
             OutlinedTextField(
-                value = formatTime(entryTime.first, entryTime.second),
+                value = DateFormatter.formatTime(entryTime.first, entryTime.second),
                 onValueChange = {},
                 label = { Text("Time") },
                 modifier = Modifier.weight(1f).clickable { showTimePicker = true },

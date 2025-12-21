@@ -19,34 +19,9 @@ import com.group8.comp2300.mock.sampleResults
 import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
-import kotlinx.datetime.number
-import kotlinx.datetime.toLocalDateTime
+import com.group8.comp2300.presentation.util.DateFormatter
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
-
-// Helper to format timestamp for display
-@Composable
-private fun formatDate(timestamp: Long): String {
-    val instant = Instant.fromEpochMilliseconds(timestamp)
-    val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-    val monthRes =
-        when (localDateTime.month.number) {
-            1 -> Res.string.month_jan
-            2 -> Res.string.month_feb
-            3 -> Res.string.month_mar
-            4 -> Res.string.month_apr
-            5 -> Res.string.month_may
-            6 -> Res.string.month_jun
-            7 -> Res.string.month_jul
-            8 -> Res.string.month_aug
-            9 -> Res.string.month_sep
-            10 -> Res.string.month_oct
-            11 -> Res.string.month_nov
-            12 -> Res.string.month_dec
-            else -> Res.string.month_jan
-        }
-    return "${stringResource(monthRes)} ${localDateTime.day}, ${localDateTime.year}"
-}
 
 // Helper to create timestamp from date components
 private fun dateToTimestamp(year: Int, month: Int, day: Int): Long =
@@ -197,7 +172,7 @@ private fun LabResultCard(result: LabResult) {
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
-                        text = formatDate(result.testDate),
+                        text = DateFormatter.formatMonthDayYear(result.testDate),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary,
                     )
@@ -211,7 +186,7 @@ private fun LabResultCard(result: LabResult) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 DetailRow(stringResource(Res.string.medical_lab_results_detail_type), result.testName)
-                DetailRow(stringResource(Res.string.medical_lab_results_detail_date), formatDate(result.testDate))
+                DetailRow(stringResource(Res.string.medical_lab_results_detail_date), DateFormatter.formatMonthDayYear(result.testDate))
                 val statusRes =
                     when (result.status) {
                         LabStatus.PENDING -> Res.string.lab_status_pending
