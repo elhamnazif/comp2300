@@ -3,12 +3,9 @@ package com.group8.comp2300.presentation.ui.screens.auth
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import com.group8.comp2300.domain.model.user.User
+import com.group8.comp2300.presentation.util.DateFormatter
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.number
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
-import kotlin.time.Instant
 
 /**
  * Interface for AuthViewModel to allow fake implementations for previews. This abstraction avoids triggering
@@ -63,15 +60,7 @@ abstract class AuthViewModel : ViewModel() {
             get() = firstName.isNotBlank() && lastName.isNotBlank() && dateOfBirth != null
 
         fun getFormattedDate(): String {
-            if (dateOfBirth == null) return ""
-
-            val instant = Instant.fromEpochMilliseconds(dateOfBirth)
-            val date = instant.toLocalDateTime(TimeZone.currentSystemDefault()).date
-
-            val day = date.day.toString().padStart(2, '0')
-            val month = date.month.number.toString().padStart(2, '0')
-
-            return "$day/$month/${date.year}"
+            return dateOfBirth?.let { DateFormatter.formatDayMonthYear(it) } ?: ""
         }
     }
 

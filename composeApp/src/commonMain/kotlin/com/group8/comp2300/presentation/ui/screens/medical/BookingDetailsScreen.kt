@@ -31,10 +31,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.mock.baseTimeSlots
+import com.group8.comp2300.presentation.util.DateFormatter
 import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.*
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.number
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
@@ -330,24 +330,8 @@ private fun CalendarGrid(
                     contentDescription = stringResource(Res.string.medical_booking_details_prev_month),
                 )
             }
-            val monthRes =
-                when (displayDate.month.number) {
-                    1 -> Res.string.month_jan
-                    2 -> Res.string.month_feb
-                    3 -> Res.string.month_mar
-                    4 -> Res.string.month_apr
-                    5 -> Res.string.month_may
-                    6 -> Res.string.month_jun
-                    7 -> Res.string.month_jul
-                    8 -> Res.string.month_aug
-                    9 -> Res.string.month_sep
-                    10 -> Res.string.month_oct
-                    11 -> Res.string.month_nov
-                    12 -> Res.string.month_dec
-                    else -> Res.string.month_jan
-                }
             Text(
-                "${stringResource(monthRes)} ${displayDate.year}",
+                DateFormatter.formatMonthYear(displayDate),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
             )
