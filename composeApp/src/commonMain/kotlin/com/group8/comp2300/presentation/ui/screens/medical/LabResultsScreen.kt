@@ -16,10 +16,10 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
 import com.group8.comp2300.mock.sampleResults
+import com.group8.comp2300.presentation.util.DateFormatter
 import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
-import com.group8.comp2300.presentation.util.DateFormatter
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
 
@@ -186,7 +186,10 @@ private fun LabResultCard(result: LabResult) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 DetailRow(stringResource(Res.string.medical_lab_results_detail_type), result.testName)
-                DetailRow(stringResource(Res.string.medical_lab_results_detail_date), DateFormatter.formatMonthDayYear(result.testDate))
+                DetailRow(
+                    stringResource(Res.string.medical_lab_results_detail_date),
+                    DateFormatter.formatMonthDayYear(result.testDate),
+                )
                 val statusRes =
                     when (result.status) {
                         LabStatus.PENDING -> Res.string.lab_status_pending

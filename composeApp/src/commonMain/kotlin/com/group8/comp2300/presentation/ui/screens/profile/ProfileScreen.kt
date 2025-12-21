@@ -25,11 +25,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.symbols.icons.materialsymbols.icons.ChevronRightW400Outlined
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
-import comp2300.i18n.generated.resources.*
 import com.group8.comp2300.presentation.util.DateFormatter
+import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
-
 
 @Composable
 fun ProfileScreen(

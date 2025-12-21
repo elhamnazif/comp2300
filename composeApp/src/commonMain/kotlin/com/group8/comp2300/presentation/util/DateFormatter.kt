@@ -38,7 +38,7 @@ object DateFormatter {
      * Formats a LocalDate to "DD/MM/YYYY" (e.g., "21/01/2024").
      */
     fun formatDayMonthYear(date: LocalDate): String {
-        val day = date.dayOfMonth.toString().padStart(2, '0')
+        val day = date.day.toString().padStart(2, '0')
         val month = date.month.number.toString().padStart(2, '0')
         return "$day/$month/${date.year}"
     }
@@ -61,21 +61,19 @@ object DateFormatter {
         return "$hour12:${minute.toString().padStart(2, '0')} $amPm"
     }
 
-    private fun getMonthResource(monthNumber: Int): StringResource {
-        return when (monthNumber) {
-            1 -> Res.string.month_jan
-            2 -> Res.string.month_feb
-            3 -> Res.string.month_mar
-            4 -> Res.string.month_apr
-            5 -> Res.string.month_may
-            6 -> Res.string.month_jun
-            7 -> Res.string.month_jul
-            8 -> Res.string.month_aug
-            9 -> Res.string.month_sep
-            10 -> Res.string.month_oct
-            11 -> Res.string.month_nov
-            12 -> Res.string.month_dec
-            else -> Res.string.month_jan
-        }
+    private fun getMonthResource(monthNumber: Int): StringResource = when (monthNumber) {
+        1 -> Res.string.month_jan
+        2 -> Res.string.month_feb
+        3 -> Res.string.month_mar
+        4 -> Res.string.month_apr
+        5 -> Res.string.month_may
+        6 -> Res.string.month_jun
+        7 -> Res.string.month_jul
+        8 -> Res.string.month_aug
+        9 -> Res.string.month_sep
+        10 -> Res.string.month_oct
+        11 -> Res.string.month_nov
+        12 -> Res.string.month_dec
+        else -> Res.string.month_jan
     }
 }

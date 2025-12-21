@@ -191,6 +191,86 @@
     <string name="medical_self_diagnosis_feedback_low">Based on your answers, your risk appears to be low. However, regular screening is always recommended for sexual health.</string>
     <string name="medical_self_diagnosis_book_button">Book Appointment</string>
     <string name="medical_self_diagnosis_close_button">Close</string>
+    
+    <!-- Calendar Module -->
+    <string name="calendar_title">Your Schedule</string>
+    <string name="calendar_add_entry_desc">Add Entry</string>
+    <string name="calendar_today_action">Today\'s Action</string>
+    <string name="calendar_upcoming">Upcoming</string>
+    <string name="calendar_prev_month_desc">Previous Month</string>
+    <string name="calendar_next_month_desc">Next Month</string>
+    
+    <!-- Add Entry Menu -->
+    <string name="calendar_menu_title">What would you like to add?</string>
+    <string name="calendar_menu_log_med">Log Medication</string>
+    <string name="calendar_menu_log_med_desc">Track your daily intake</string>
+    <string name="calendar_menu_track_appt">Track Appointment</string>
+    <string name="calendar_menu_track_appt_desc">Track your visit or lab work</string>
+    <string name="calendar_menu_track_mood">Track Mood</string>
+    <string name="calendar_menu_track_mood_desc">Log how you\'re feeling today</string>
+
+    <!-- Medication Form -->
+    <string name="form_medication_title">Log Medication</string>
+    <string name="form_medication_label">Medication</string>
+    <string name="form_dosage_label">Dosage</string>
+    <plurals name="form_dosage_pill">
+        <item quantity="one">%1$d pill</item>
+        <item quantity="other">%1$d pills</item>
+    </plurals>
+    
+    <!-- Appointment Form -->
+    <string name="form_appt_title">Track Appointment</string>
+    <string name="form_appt_doctor_label">Doctor / Clinic</string>
+    <string name="form_appt_type_label">Type</string>
+    <string name="form_appt_schedule_button">Schedule Appointment</string>
+
+    <!-- Mood Form -->
+    <string name="form_mood_very_sad">Very Sad</string>
+    <string name="form_mood_sad">Sad</string>
+    <string name="form_mood_neutral">Neutral</string>
+    <string name="form_mood_happy">Happy</string>
+    <string name="form_mood_great">Great</string>
+    <string name="form_mood_title">Track Mood</string>
+    <string name="form_mood_question">How are you feeling?</string>
+    <string name="form_mood_journal_label">Journal / Notes</string>
+    <string name="form_mood_log_button">Log Mood</string>
+    <string name="form_mood_tag_anxious">Anxious</string>
+    <string name="form_mood_tag_calm">Calm</string>
+    <string name="form_mood_tag_irritable">Irritable</string>
+    <string name="form_mood_tag_energetic">Energetic</string>
+    <string name="form_mood_tag_tired">Tired</string>
+    <string name="form_mood_tag_stressed">Stressed</string>
+    <string name="form_mood_tag_focused">Focused</string>
+    
+    <!-- Form Common -->
+    <string name="form_date_label">Date</string>
+    <string name="form_time_label">Time</string>
+
+    <!-- Appointment Details -->
+    <string name="calendar_appt_details_title">Appointment Details</string>
+    <string name="calendar_appt_edit_desc">Edit</string>
+    <string name="calendar_appt_location_label">Location</string>
+    <string name="calendar_appt_location_value">Room 304, Sexual Health Clinic</string>
+    <string name="calendar_appt_directions_button">Get Directions</string>
+    <string name="calendar_appt_cancel_button">Cancel Appointment</string>
+    
+    <!-- Daily Action -->
+    <string name="calendar_action_all_done">All done!</string>
+    <string name="calendar_action_take_prep">Take PrEP</string>
+    <string name="calendar_action_streak_format">Streak: %1$d Days</string>
+    <string name="calendar_action_scheduled_format">Scheduled for %1$s</string>
+
+    <!-- Medication Names -->
+    <string name="medication_prep">PrEP</string>
+    <string name="medication_truvada">Truvada</string>
+    <string name="medication_descovy">Descovy</string>
+    <string name="medication_doxypep">DoxyPEP</string>
+    <string name="medication_multivitamin">Multivitamin</string>
+    
+    <!-- Appointment Types -->
+    <string name="appt_type_consultation">Consultation</string>
+    <string name="appt_type_labwork">Lab Work</string>
+    <string name="appt_type_followup">Follow-up</string>
 
     <!-- Common -->
     <string name="common_yes">Yes</string>
