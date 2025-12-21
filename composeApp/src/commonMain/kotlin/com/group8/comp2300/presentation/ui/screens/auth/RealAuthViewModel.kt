@@ -12,11 +12,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.group8.comp2300.domain.usecase.auth.LoginUseCase
+import com.group8.comp2300.domain.usecase.auth.RegisterUseCase
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Instant
 
-class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewModel() {
+class RealAuthViewModel(
+    private val loginUseCase: LoginUseCase,
+    private val registerUseCase: RegisterUseCase,
+    private val authRepository: AuthRepository
+) : AuthViewModel() {
 
     final override val state: StateFlow<State>
         field = MutableStateFlow(State())
@@ -106,7 +112,7 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
 
     private fun performLogin(state: State, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            val result = authRepository.login(state.email, state.password)
+            val result = loginUseCase(state.email, state.password)
             handleResult(result, onSuccess)
         }
     }
@@ -130,7 +136,7 @@ class RealAuthViewModel(private val authRepository: AuthRepository) : AuthViewMo
                 }
 
             val result =
-                authRepository.register(
+                registerUseCase(
                     state.email,
                     state.password,
                     firstName = state.firstName,

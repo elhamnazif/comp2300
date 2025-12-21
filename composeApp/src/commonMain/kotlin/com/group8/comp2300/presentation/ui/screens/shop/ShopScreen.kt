@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.Screen
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
-import com.group8.comp2300.navigation.LocalNavigator
+import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.ui.components.shimmerEffect
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource

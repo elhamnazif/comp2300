@@ -87,9 +87,9 @@
     <string name="home_menu_log_pill">Log Pill</string>
     <string name="home_menu_shop">Shop</string>
     <string name="home_menu_history">History</string>
-    <string name="home_menu_symptom_check">Symptom\nCheck</string>
-    <string name="home_menu_find_clinic">Find\nClinic</string>
-    <string name="home_menu_partner_notify">Partner\nNotify</string>
+    <string name="home_menu_symptom_check">Symptom Check</string>
+    <string name="home_menu_find_clinic">Find Clinic</string>
+    <string name="home_menu_partner_notify">Partner Notify</string>
 
     <!-- Medical Module -->
     <string name="medical_lab_results_title">Lab Results</string>
@@ -218,7 +218,7 @@
     <string name="shop_details_feature_refills_desc">Never run out of your prevention.</string>
 
     <!-- Education Module -->
-    <string name="education_search_placeholder">Search topics, e.g., \'PrEP\'</string>
+    <string name="education_search_placeholder">Search topics, e.g., 'PrEP'</string>
     <string name="education_category_all">All</string>
     <string name="education_featured_title">Featured Insight</string>
     <string name="education_latest_updates">Latest Updates</string>
@@ -252,7 +252,7 @@
     <string name="education_quiz_result_keep_learning">Keep learning!</string>
     <string name="education_quiz_feedback_title">Feedback</string>
     <string name="education_quiz_feedback_excellent">Great work! You have a strong understanding of %1$s. Continue to stay informed about your sexual health.</string>
-    <string name="education_quiz_feedback_good">You\'re on the right track! Review the explanations for questions you missed to strengthen your knowledge.</string>
+    <string name="education_quiz_feedback_good">You're on the right track! Review the explanations for questions you missed to strengthen your knowledge.</string>
     <string name="education_quiz_feedback_low">Learning is a journey! Take time to review the material and retake the quiz to improve your understanding.</string>
     <string name="education_quiz_retake_button">Retake Quiz</string>
     <string name="education_quiz_close_button">Close</string>

@@ -50,7 +50,7 @@ class FakeShopRepository : ShopRepository {
             sampleProducts.filter { it.category == category }
         }
 
-    override suspend fun getProductById(id: String): Product? = sampleProducts.find { it.id == id }
+    override suspend fun getProductById(id: String): Product = sampleProducts.find { it.id == id } ?: sampleProducts[0]
 }
 
 class FakeAuthRepository : AuthRepository {

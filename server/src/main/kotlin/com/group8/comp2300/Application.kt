@@ -40,6 +40,8 @@ fun Application.module() {
             if (product != null) {
                 call.respond(product)
             } else {
+                // FIXME: The error message 'Product not found' is generic and doesn't include the requested product ID,
+                //        making debugging more difficult. Consider including the ID in the error response
                 call.respond(io.ktor.http.HttpStatusCode.NotFound, "Product not found")
             }
         }
