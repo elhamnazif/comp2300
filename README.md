@@ -1,6 +1,7 @@
 # Vita (COMP2300 Project)
 
-- To examiners, the deliverable for D4 can be found here: `./docs/deliverables/Group 8 - D4 Deliverable Report.pdf`
+- To examiners, the deliverable for D4 can be found here: [./docs/deliverables/Group 8 - Deliverable Report.pdf](./docs/deliverables/Group%208%20-%20D4%20Deliverable%20Report.pdf)
+
 
 This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM), Server.
 
