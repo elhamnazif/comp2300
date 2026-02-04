@@ -1,5 +1,6 @@
 package com.group8.comp2300.presentation.ui.screens.profile
 
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,27 +13,33 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.app.symbols.icons.materialsymbols.icons.ChevronRightW400Outlined
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
+import com.group8.comp2300.presentation.ui.components.shimmerEffect
 import com.group8.comp2300.presentation.util.DateFormatter
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Instant
+import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel = viewModel { ProfileViewModel() },
+    viewModel: ProfileViewModel = koinViewModel(),
     isGuest: Boolean = false,
     onRequireAuth: () -> Unit = {},
     onNavigateToLabResults: () -> Unit = {},
@@ -44,19 +51,48 @@ fun ProfileScreen(
         NotLoggedInContent(onRequireAuth = onRequireAuth)
     } else {
         val uiState by viewModel.state.collectAsState()
+        val pullToRefreshState = rememberPullToRefreshState()
 
-        Column(
+        val scaleFraction = {
+            if (uiState.isLoading) {
+                1f
+            } else {
+                LinearOutSlowInEasing.transform(pullToRefreshState.distanceFraction).coerceIn(0f, 1f)
+            }
+        }
+
+        Box(
             Modifier.fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
                 .systemBarsPadding()
-                .verticalScroll(rememberScrollState()),
+                .pullToRefresh(
+                    state = pullToRefreshState,
+                    isRefreshing = uiState.isLoading,
+                    onRefresh = viewModel::refresh,
+                ),
         ) {
-            InsetContent(uiState, onNavigateToLabResults)
-            EdgeToEdgeSettings(
-                onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
-                onNavigateToNotifications = onNavigateToNotifications,
-                onNavigateToHelpSupport = onNavigateToHelpSupport,
-            )
+            Column(
+                Modifier.fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                InsetContent(uiState, onNavigateToLabResults)
+                EdgeToEdgeSettings(
+                    onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
+                    onNavigateToNotifications = onNavigateToNotifications,
+                    onNavigateToHelpSupport = onNavigateToHelpSupport,
+                )
+            }
+
+            Box(
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .graphicsLayer {
+                        scaleX = scaleFraction()
+                        scaleY = scaleFraction()
+                    },
+            ) {
+                PullToRefreshDefaults.LoadingIndicator(state = pullToRefreshState, isRefreshing = uiState.isLoading)
+            }
         }
     }
 }
@@ -264,47 +300,56 @@ private fun InsetContent(
 private fun Header(state: ProfileViewModel.State) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Avatar(
-            if (state.userInitials.isEmpty()) {
+            state.userInitials.ifEmpty {
                 stringResource(Res.string.profile_default_user_initials)
-            } else {
-                state.userInitials
             },
+            isLoading = state.isLoading
         )
         Spacer(Modifier.width(16.dp))
-        UserInfo(state.userName, state.memberSince)
+        UserInfo(state.userName, state.memberSince, isLoading = state.isLoading)
     }
 }
 
 @Composable
-private fun Avatar(initials: String, modifier: Modifier = Modifier) {
-    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, modifier = modifier.size(80.dp)) {
+private fun Avatar(initials: String, isLoading: Boolean = false, modifier: Modifier = Modifier) {
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primaryContainer,
+        modifier = modifier.size(80.dp).then(if (isLoading && initials.isEmpty()) Modifier.shimmerEffect() else Modifier)
+    ) {
         Box(contentAlignment = Alignment.Center) {
-            Text(
-                initials,
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-            )
+            if (!isLoading || initials.isNotEmpty()) {
+                Text(
+                    initials,
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun UserInfo(name: String, memberSince: String, modifier: Modifier = Modifier) {
+private fun UserInfo(name: String, memberSince: String, isLoading: Boolean = false, modifier: Modifier = Modifier) {
     Column(modifier) {
-        Text(
-            if (name.isEmpty()) stringResource(Res.string.profile_default_user_name) else name,
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            if (memberSince.isEmpty()) {
-                stringResource(Res.string.profile_member_since_format, "2024")
-            } else {
-                memberSince
-            },
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.secondary,
-        )
+        if (isLoading && name.isEmpty()) {
+            Box(Modifier.width(120.dp).height(24.dp).shimmerEffect())
+            Spacer(Modifier.height(8.dp))
+            Box(Modifier.width(80.dp).height(16.dp).shimmerEffect())
+        } else {
+            Text(
+                name.ifEmpty { stringResource(Res.string.profile_default_user_name) },
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                memberSince.ifEmpty {
+                    stringResource(Res.string.profile_member_since_format, "2024")
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.secondary,
+            )
+        }
     }
 }
 
@@ -327,13 +372,21 @@ private fun RecentResultsCard(
                 fontWeight = FontWeight.Bold,
             )
             Spacer(Modifier.height(12.dp))
-            results.forEachIndexed { index, result ->
-                ResultRow(result)
-                if (index < results.size - 1) {
-                    HorizontalDivider(
-                        Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.outlineVariant,
-                    )
+            if (results.isEmpty()) {
+                // Simplified loading state for results
+                repeat(2) {
+                    ResultShimmer()
+                    Spacer(Modifier.height(12.dp))
+                }
+            } else {
+                results.forEachIndexed { index, result ->
+                    ResultRow(result)
+                    if (index < results.size - 1) {
+                        HorizontalDivider(
+                            Modifier.padding(vertical = 12.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(16.dp))
@@ -364,6 +417,22 @@ private fun ResultRow(result: LabResult, modifier: Modifier = Modifier) {
             )
         }
         StatusSurface(result)
+    }
+}
+
+@Composable
+private fun ResultShimmer() {
+    Row(
+        Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Box(Modifier.fillMaxWidth(0.6f).height(16.dp).shimmerEffect())
+            Spacer(Modifier.height(4.dp))
+            Box(Modifier.fillMaxWidth(0.3f).height(12.dp).shimmerEffect())
+        }
+        Box(Modifier.width(80.dp).height(24.dp).clip(RoundedCornerShape(8.dp)).shimmerEffect())
     }
 }
 
