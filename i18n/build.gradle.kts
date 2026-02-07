@@ -1,36 +1,23 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidKotlinMultiplatformLibrary)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.android.lint)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.kmp.library)
+    alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.compose.compiler)
 }
 
 kotlin {
-
-    jvmToolchain(21)
-
-    androidLibrary {
+    android {
         namespace = "com.group8.comp2300.i18n"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        // https://youtrack.jetbrains.com/projects/CMP/issues/CMP-8232/org.jetbrains.compose.resources.MissingResourceException-Missing-resource-with-path-composeResources
-        experimentalProperties["android.experimental.kmp.enableAndroidResources"] = true
-
-        compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
-        }
+        compileSdk = 36
+        minSdk = 24
+        androidResources.enable = true
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
     }
 
-     listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
-         iosTarget.binaries.framework {
-             baseName = "i18nKit"
-             isStatic = true
-         }
-     }
+    iosArm64()
+    iosSimulatorArm64()
 
     jvm()
 
@@ -38,7 +25,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
+            implementation(libs.compose.resources)
         }
 
         commonTest.dependencies {
@@ -52,6 +39,17 @@ kotlin {
         jvmMain.dependencies {}
     }
 
+    targets
+        .withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>()
+        .matching { it.konanTarget.family.isAppleFamily }
+        .configureEach {
+            binaries {
+                framework {
+                    baseName = "i18nKit"
+                    isStatic = true
+                }
+            }
+        }
 }
 
 compose.resources {
