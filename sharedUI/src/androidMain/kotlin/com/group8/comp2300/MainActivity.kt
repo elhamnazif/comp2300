@@ -36,7 +36,7 @@ private fun AppTheme(content: @Composable () -> Unit) {
     MaterialExpressiveTheme(
         colorScheme = colorScheme,
         motionScheme = MotionScheme.expressive(),
-        content = content,
+        content = content
     )
 }
 

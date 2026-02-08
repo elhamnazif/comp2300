@@ -5,11 +5,11 @@ import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
+import kotlin.time.Clock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.LocalDate
-import kotlin.time.Clock
 
 class AuthRepositoryImpl(private val apiService: ApiService) : AuthRepository {
     private val _currentUser = MutableStateFlow<User?>(null)
@@ -25,7 +25,7 @@ class AuthRepositoryImpl(private val apiService: ApiService) : AuthRepository {
                     lastName = "Doe",
                     gender = Gender.FEMALE,
                     sexualOrientation = SexualOrientation.HETEROSEXUAL,
-                    dateOfBirth = LocalDate(2000, 1, 1),
+                    dateOfBirth = LocalDate(2000, 1, 1)
                 )
             _currentUser.value = user
             Result.success(user)
@@ -40,7 +40,7 @@ class AuthRepositoryImpl(private val apiService: ApiService) : AuthRepository {
         lastName: String,
         gender: Gender,
         sexualOrientation: SexualOrientation,
-        dateOfBirth: LocalDate?,
+        dateOfBirth: LocalDate?
     ): Result<User> {
         val user =
             User(
@@ -50,7 +50,7 @@ class AuthRepositoryImpl(private val apiService: ApiService) : AuthRepository {
                 lastName = lastName,
                 gender = gender,
                 sexualOrientation = sexualOrientation,
-                dateOfBirth = dateOfBirth,
+                dateOfBirth = dateOfBirth
             )
         _currentUser.value = user
         return Result.success(user)

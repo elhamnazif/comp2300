@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModel(
     private val authRepository: AuthRepository,
-    private val getRecentLabResultsUseCase: GetRecentLabResultsUseCase,
+    private val getRecentLabResultsUseCase: GetRecentLabResultsUseCase
 ) : ViewModel() {
 
     // INPUT: Explicit trigger for Pull-to-Refresh
@@ -31,7 +31,7 @@ class ProfileViewModel(
     // OUTPUT: The single source of truth
     val state: StateFlow<State> = combine(
         authRepository.currentUser,
-        refreshTrigger.onStart { emit(Unit) }, // Ensure it runs at least once on start
+        refreshTrigger.onStart { emit(Unit) } // Ensure it runs at least once on start
     ) { user, _ ->
         user
     }.flatMapLatest { user ->
@@ -51,7 +51,7 @@ class ProfileViewModel(
                     isLoading = true, // Start loading the async parts (Lab Results)
                     userInitials = initials,
                     userName = "$firstName $lastName".trim(),
-                    memberSince = user.createdAt.let { DateFormatter.formatMonthDayYearSuspend(it) },
+                    memberSince = user.createdAt.let { DateFormatter.formatMonthDayYearSuspend(it) }
                 )
                 emit(baseState)
 
@@ -68,7 +68,7 @@ class ProfileViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = State(isLoading = true),
+        initialValue = State(isLoading = true)
     )
 
     fun refresh() {
@@ -84,6 +84,6 @@ class ProfileViewModel(
         val userInitials: String = "",
         val userName: String = "",
         val memberSince: String = "",
-        val recentResults: List<LabResult> = emptyList(),
+        val recentResults: List<LabResult> = emptyList()
     )
 }

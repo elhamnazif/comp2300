@@ -35,6 +35,8 @@ import com.app.symbols.icons.materialsymbols.icons.*
 import com.group8.comp2300.presentation.util.DateFormatter
 import comp2300.i18n.generated.resources.*
 import comp2300.i18n.generated.resources.Res
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
@@ -46,8 +48,6 @@ import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Clock
-import kotlin.time.Instant
 
 // --- Mock Data Models (Replacing external imports for self-contained file) ---
 
@@ -55,7 +55,7 @@ enum class AdherenceStatus {
     TAKEN,
     MISSED,
     NONE,
-    APPOINTMENT,
+    APPOINTMENT
 }
 
 data class CalendarDay(
@@ -64,7 +64,7 @@ data class CalendarDay(
     val status: AdherenceStatus,
     val isToday: Boolean,
     /** Added to visually dim days from prev/next months */
-    val isCurrentMonth: Boolean,
+    val isCurrentMonth: Boolean
 )
 
 data class Appointment(val id: String, val title: String, val type: String, val date: String, val time: String)
@@ -119,7 +119,7 @@ fun generateCalendarDays(year: Int, month: Month): List<CalendarDay> {
             date = date,
             status = status,
             isToday = isToday,
-            isCurrentMonth = isCurrentMonth,
+            isCurrentMonth = isCurrentMonth
         )
     }
 }
@@ -131,7 +131,7 @@ private enum class SheetView {
     FORM_MED,
     FORM_APPT,
     FORM_MOOD,
-    DETAILS_APPT,
+    DETAILS_APPT
 }
 
 private object FormConstants {
@@ -141,14 +141,14 @@ private object FormConstants {
         stringResource(Res.string.medication_truvada),
         stringResource(Res.string.medication_descovy),
         stringResource(Res.string.medication_doxypep),
-        stringResource(Res.string.medication_multivitamin),
+        stringResource(Res.string.medication_multivitamin)
     )
 
     @Composable
     fun apptTypes() = listOf(
         stringResource(Res.string.appt_type_consultation),
         stringResource(Res.string.appt_type_labwork),
-        stringResource(Res.string.appt_type_followup),
+        stringResource(Res.string.appt_type_followup)
     )
 
     val Dosages = listOf(1, 2, 3)
@@ -160,7 +160,7 @@ private object FormConstants {
         stringResource(Res.string.form_mood_sad),
         stringResource(Res.string.form_mood_neutral),
         stringResource(Res.string.form_mood_happy),
-        stringResource(Res.string.form_mood_great),
+        stringResource(Res.string.form_mood_great)
     )
 
     @Composable
@@ -171,7 +171,7 @@ private object FormConstants {
         stringResource(Res.string.form_mood_tag_energetic),
         stringResource(Res.string.form_mood_tag_tired),
         stringResource(Res.string.form_mood_tag_stressed),
-        stringResource(Res.string.form_mood_tag_focused),
+        stringResource(Res.string.form_mood_tag_focused)
     )
 }
 
@@ -226,28 +226,28 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                     showBottomSheet = true
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 Icon(
                     Icons.AddW400Outlinedfill1,
-                    contentDescription = stringResource(Res.string.calendar_add_entry_desc),
+                    contentDescription = stringResource(Res.string.calendar_add_entry_desc)
                 )
             }
-        },
+        }
     ) { innerPadding ->
         LazyColumn(
             modifier =
-            Modifier.fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.surface),
+                Modifier.fillMaxSize()
+                    .padding(innerPadding)
+                    .background(MaterialTheme.colorScheme.surface),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
                 Text(
                     text = stringResource(Res.string.calendar_title),
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
@@ -268,7 +268,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                         currentSheetView = SheetView.MENU
                         selectedAppointment = null
                         showBottomSheet = true
-                    },
+                    }
                 )
             }
 
@@ -278,11 +278,11 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                         text = stringResource(Res.string.calendar_today_action),
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(bottom = 8.dp),
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
                     DailyActionCard(
                         isTaken = isMedicationTaken,
-                        onToggle = { isMedicationTaken = !isMedicationTaken },
+                        onToggle = { isMedicationTaken = !isMedicationTaken }
                     )
                 }
             }
@@ -291,7 +291,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                 Text(
                     stringResource(Res.string.calendar_upcoming),
                     style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
 
@@ -302,7 +302,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                         selectedAppointment = appointment
                         currentSheetView = SheetView.DETAILS_APPT
                         showBottomSheet = true
-                    },
+                    }
                 )
                 Spacer(modifier = Modifier.height(6.dp))
             }
@@ -314,7 +314,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
             ModalBottomSheet(
                 onDismissRequest = closeSheet,
                 sheetState = sheetState,
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = MaterialTheme.colorScheme.surface
             ) {
                 AnimatedContent(targetState = currentSheetView, label = "SheetTransition") { view ->
                     when (view) {
@@ -333,7 +333,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                         println("Saved: $name, $extras")
                                         closeSheet()
                                     })
-                                },
+                                }
                             )
 
                         SheetView.FORM_APPT ->
@@ -349,7 +349,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                         println("Saved: $doc, $extras")
                                         closeSheet()
                                     })
-                                },
+                                }
                             )
 
                         SheetView.FORM_MOOD ->
@@ -365,7 +365,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                         println("Mood: $score, $tags, $symptoms, $notes")
                                         closeSheet()
                                     })
-                                },
+                                }
                             )
 
                         SheetView.DETAILS_APPT ->
@@ -373,7 +373,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                 AppointmentDetailSheetContent(
                                     appt,
                                     onEdit = {},
-                                    onDelete = { closeSheet() },
+                                    onDelete = { closeSheet() }
                                 )
                             }
                     }
@@ -391,7 +391,7 @@ fun CalendarCard(
     isMedicationTaken: Boolean,
     selectedDate: CalendarDay?,
     onDayClick: (CalendarDay) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     // State for navigation
     var monthOffset by remember { mutableIntStateOf(0) }
@@ -406,36 +406,36 @@ fun CalendarCard(
 
     Card(
         colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
-        modifier = modifier.fillMaxWidth(),
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainer
+            ),
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(Modifier.padding(16.dp)) {
             // Header with Navigation
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = { monthOffset-- }) {
                     Icon(
                         Icons.ArrowBackW400Outlinedfill1,
-                        contentDescription = stringResource(Res.string.calendar_prev_month_desc),
+                        contentDescription = stringResource(Res.string.calendar_prev_month_desc)
                     )
                 }
 
                 Text(
                     text = DateFormatter.formatMonthYear(displayDate),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
 
                 IconButton(onClick = { monthOffset++ }) {
                     Icon(
                         Icons.ArrowBackW400Outlinedfill1,
                         contentDescription = stringResource(Res.string.calendar_next_month_desc),
-                        modifier = Modifier.rotate(180f),
+                        modifier = Modifier.rotate(180f)
                     )
                 }
             }
@@ -443,7 +443,7 @@ fun CalendarCard(
             // Days of Week Header
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 listOf(
                     stringResource(Res.string.day_initial_sun),
@@ -452,14 +452,14 @@ fun CalendarCard(
                     stringResource(Res.string.day_initial_wed),
                     stringResource(Res.string.day_initial_thu),
                     stringResource(Res.string.day_initial_fri),
-                    stringResource(Res.string.day_initial_sat),
+                    stringResource(Res.string.day_initial_sat)
                 ).forEach { day ->
                     Text(
                         day,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Center,
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -470,7 +470,7 @@ fun CalendarCard(
             weeks.forEach { week ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     week.forEach { day ->
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
@@ -478,7 +478,7 @@ fun CalendarCard(
                                 day = day,
                                 todayTaken = isMedicationTaken,
                                 isSelected = selectedDate?.date == day.date,
-                                onClick = { onDayClick(day) },
+                                onClick = { onDayClick(day) }
                             )
                         }
                     }
@@ -497,7 +497,7 @@ fun DayCell(
     todayTaken: Boolean,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val actualStatus = if (day.isToday && todayTaken) AdherenceStatus.TAKEN else day.status
 
@@ -524,25 +524,25 @@ fun DayCell(
 
     Box(
         modifier =
-        modifier
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(8.dp))
-            .background(backgroundColor)
-            .border(
-                if (isSelected) 2.dp else 1.dp,
-                borderColor,
-                RoundedCornerShape(8.dp),
-            )
-            .clickable { onClick() }
-            .alpha(alpha),
-        contentAlignment = Alignment.Center,
+            modifier
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(8.dp))
+                .background(backgroundColor)
+                .border(
+                    if (isSelected) 2.dp else 1.dp,
+                    borderColor,
+                    RoundedCornerShape(8.dp)
+                )
+                .clickable { onClick() }
+                .alpha(alpha),
+        contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 day.dayOfMonth.toString(),
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight =
-                if (day.isToday || isSelected) FontWeight.Bold else FontWeight.Normal,
+                    if (day.isToday || isSelected) FontWeight.Bold else FontWeight.Normal
             )
             if (actualStatus != AdherenceStatus.NONE && day.isCurrentMonth) {
                 Spacer(Modifier.height(4.dp))
@@ -560,7 +560,7 @@ private fun FormDropdown(
     label: String,
     options: List<String>,
     selectedOption: String,
-    onSelectOption: (String) -> Unit,
+    onSelectOption: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
@@ -570,14 +570,14 @@ private fun FormDropdown(
             label = { Text(label) },
             readOnly = true,
             modifier =
-            Modifier.fillMaxWidth()
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true),
+                Modifier.fillMaxWidth()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true),
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             colors =
-            OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-            ),
+                OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                )
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { option ->
@@ -586,7 +586,7 @@ private fun FormDropdown(
                     onClick = {
                         onSelectOption(option)
                         expanded = false
-                    },
+                    }
                 )
             }
         }
@@ -599,14 +599,14 @@ private fun FormChipGroup(
     title: String,
     options: List<String>,
     selectedOptions: List<String>,
-    onOptionToggle: (String) -> Unit,
+    onOptionToggle: (String) -> Unit
 ) {
     Column {
         Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             options.forEach { option ->
                 val isSelected = selectedOptions.contains(option)
@@ -615,12 +615,12 @@ private fun FormChipGroup(
                     onClick = { onOptionToggle(option) },
                     label = { Text(option) },
                     leadingIcon =
-                    if (isSelected) {
-                        { Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp)) }
-                    } else {
-                        null
-                    },
-                    colors = FilterChipDefaults.filterChipColors(),
+                        if (isSelected) {
+                            { Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp)) }
+                        } else {
+                            null
+                        },
+                    colors = FilterChipDefaults.filterChipColors()
                 )
             }
         }
@@ -637,13 +637,13 @@ fun MedicationForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifie
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         FormDropdown(
             label = stringResource(Res.string.form_medication_label),
             options = FormConstants.commonMeds(),
             selectedOption = name,
-            onSelectOption = { name = it },
+            onSelectOption = { name = it }
         )
 
         Column {
@@ -658,15 +658,15 @@ fun MedicationForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifie
                                 pluralStringResource(
                                     Res.plurals.form_dosage_pill,
                                     count,
-                                    count,
-                                ),
+                                    count
+                                )
                             )
                         },
                         leadingIcon = {
                             if (dosage == count) {
                                 Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp))
                             }
-                        },
+                        }
                     )
                 }
             }
@@ -675,7 +675,7 @@ fun MedicationForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifie
         Button(
             onClick = { onSave(name, mapOf("dosage" to dosage)) },
             modifier = Modifier.fillMaxWidth(),
-            enabled = name.isNotEmpty(),
+            enabled = name.isNotEmpty()
         ) { Text(stringResource(Res.string.form_medication_title)) }
     }
 }
@@ -688,13 +688,13 @@ fun AppointmentForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifi
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         FormDropdown(
             label = stringResource(Res.string.form_appt_doctor_label),
             options = sampleDoctors.map { it.name },
             selectedOption = doctorName,
-            onSelectOption = { doctorName = it },
+            onSelectOption = { doctorName = it }
         )
 
         Column {
@@ -707,7 +707,7 @@ fun AppointmentForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifi
                         label = { Text(t) },
                         leadingIcon = {
                             if (type == t) Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp))
-                        },
+                        }
                     )
                 }
             }
@@ -716,7 +716,7 @@ fun AppointmentForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifi
         Button(
             onClick = { onSave(doctorName, mapOf("type" to type)) },
             modifier = Modifier.fillMaxWidth(),
-            enabled = doctorName.isNotEmpty(),
+            enabled = doctorName.isNotEmpty()
         ) { Text(stringResource(Res.string.form_appt_schedule_button)) }
     }
 }
@@ -730,23 +730,23 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         // 1. Mood Slider
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(
                 text = FormConstants.moodLabels()[moodScore - 1],
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(16.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 FormConstants.MoodEmojis.forEachIndexed { index, emoji ->
                     val score = index + 1
@@ -758,12 +758,12 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
                         text = emoji,
                         style = MaterialTheme.typography.headlineLarge,
                         modifier =
-                        Modifier.graphicsLayer(scaleX = scale, scaleY = scale)
-                            .clickable(
-                                interactionSource =
-                                remember { MutableInteractionSource() },
-                                indication = null,
-                            ) { moodScore = score },
+                            Modifier.graphicsLayer(scaleX = scale, scaleY = scale)
+                                .clickable(
+                                    interactionSource =
+                                        remember { MutableInteractionSource() },
+                                    indication = null
+                                ) { moodScore = score }
                     )
                 }
             }
@@ -771,7 +771,7 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
                 value = moodScore.toFloat(),
                 onValueChange = { moodScore = it.toInt() },
                 valueRange = 1f..5f,
-                steps = 3,
+                steps = 3
             )
         }
 
@@ -784,7 +784,7 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
             selectedOptions = selectedTags,
             onOptionToggle = {
                 if (selectedTags.contains(it)) selectedTags.remove(it) else selectedTags.add(it)
-            },
+            }
         )
 
         // 4. Notes
@@ -793,12 +793,12 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
             onValueChange = { notes = it },
             label = { Text(stringResource(Res.string.form_mood_journal_label)) },
             modifier = Modifier.fillMaxWidth(),
-            minLines = 3,
+            minLines = 3
         )
 
         Button(
             onClick = { onSave(moodScore, selectedTags, selectedSymptoms, notes) },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         ) { Text(stringResource(Res.string.form_mood_log_button)) }
     }
 }
@@ -809,36 +809,36 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
 private fun AddEntryMenu(onSelectType: (SheetView) -> Unit) {
     Column(
         modifier =
-        Modifier.fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(bottom = 32.dp, top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            Modifier.fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp, top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             stringResource(Res.string.calendar_menu_title),
             style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Bold
         )
         MenuSelectionCard(
             title = stringResource(Res.string.calendar_menu_log_med),
             subtitle = stringResource(Res.string.calendar_menu_log_med_desc),
             icon = Icons.EditW400Outlinedfill1,
             color = MaterialTheme.colorScheme.primaryContainer,
-            onClick = { onSelectType(SheetView.FORM_MED) },
+            onClick = { onSelectType(SheetView.FORM_MED) }
         )
         MenuSelectionCard(
             title = stringResource(Res.string.calendar_menu_track_appt),
             subtitle = stringResource(Res.string.calendar_menu_track_appt_desc),
             icon = Icons.DateRangeW400Outlinedfill1,
             color = MaterialTheme.colorScheme.secondaryContainer,
-            onClick = { onSelectType(SheetView.FORM_APPT) },
+            onClick = { onSelectType(SheetView.FORM_APPT) }
         )
         MenuSelectionCard(
             title = stringResource(Res.string.calendar_menu_track_mood),
             subtitle = stringResource(Res.string.calendar_menu_track_mood_desc),
             icon = Icons.FaceW400Outlined,
             color = MaterialTheme.colorScheme.tertiaryContainer,
-            onClick = { onSelectType(SheetView.FORM_MOOD) },
+            onClick = { onSelectType(SheetView.FORM_MOOD) }
         )
     }
 }
@@ -850,31 +850,31 @@ fun MenuSelectionCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     color: Color,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = color),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier =
-                Modifier.size(48.dp)
-                    .background(Color.White.copy(alpha = 0.5f), CircleShape),
-                contentAlignment = Alignment.Center,
+                    Modifier.size(48.dp)
+                        .background(Color.White.copy(alpha = 0.5f), CircleShape),
+                contentAlignment = Alignment.Center
             ) { Icon(icon, null, tint = MaterialTheme.colorScheme.onSurface) }
             Spacer(Modifier.width(16.dp))
             Column {
                 Text(
                     title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     subtitle,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -891,7 +891,7 @@ fun WrapperFormLayout(
     onTimeChange: (Int, Int) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -899,40 +899,40 @@ fun WrapperFormLayout(
     val datePickerState =
         rememberDatePickerState(
             initialSelectedDateMillis =
-            entryDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
+                entryDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
         )
     val timePickerState =
         rememberTimePickerState(initialHour = entryTime.first, initialMinute = entryTime.second)
 
     Column(
         modifier =
-        modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(bottom = 32.dp)
-            .verticalScroll(rememberScrollState()),
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp)
+                .verticalScroll(rememberScrollState())
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 24.dp),
+            modifier = Modifier.padding(bottom = 24.dp)
         ) {
             IconButton(onClick = onBack) {
                 Icon(
                     Icons.ArrowBackW400Outlinedfill1,
-                    contentDescription = stringResource(Res.string.common_back_desc),
+                    contentDescription = stringResource(Res.string.common_back_desc)
                 )
             }
             Spacer(Modifier.width(8.dp))
             Text(
                 title,
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Bold
             )
         }
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(bottom = 24.dp),
+            modifier = Modifier.padding(bottom = 24.dp)
         ) {
             OutlinedTextField(
                 value = DateFormatter.formatDayMonthYear(entryDate),
@@ -941,11 +941,11 @@ fun WrapperFormLayout(
                 modifier = Modifier.weight(1f).clickable { showDatePicker = true },
                 enabled = false,
                 colors =
-                OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                ),
-                trailingIcon = { Icon(Icons.DateRangeW400Outlinedfill1, null) },
+                    OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline
+                    ),
+                trailingIcon = { Icon(Icons.DateRangeW400Outlinedfill1, null) }
             )
             OutlinedTextField(
                 value = DateFormatter.formatTime(entryTime.first, entryTime.second),
@@ -954,11 +954,11 @@ fun WrapperFormLayout(
                 modifier = Modifier.weight(1f).clickable { showTimePicker = true },
                 enabled = false,
                 colors =
-                OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                ),
-                trailingIcon = { Icon(Icons.CheckCircleW400Outlinedfill1, null) },
+                    OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline
+                    ),
+                trailingIcon = { Icon(Icons.CheckCircleW400Outlinedfill1, null) }
             )
         }
 
@@ -974,16 +974,16 @@ fun WrapperFormLayout(
                                 onDateChange(
                                     Instant.fromEpochMilliseconds(it)
                                         .toLocalDateTime(TimeZone.UTC)
-                                        .date,
+                                        .date
                                 )
                             }
                             showDatePicker = false
-                        },
+                        }
                     ) { Text(stringResource(Res.string.common_ok)) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) { Text(stringResource(Res.string.common_cancel)) }
-                },
+                }
             ) { DatePicker(state = datePickerState) }
         }
 
@@ -995,13 +995,13 @@ fun WrapperFormLayout(
                         onClick = {
                             onTimeChange(timePickerState.hour, timePickerState.minute)
                             showTimePicker = false
-                        },
+                        }
                     ) { Text(stringResource(Res.string.common_ok)) }
                 },
                 dismissButton = {
                     TextButton(onClick = { showTimePicker = false }) { Text(stringResource(Res.string.common_cancel)) }
                 },
-                text = { TimePicker(state = timePickerState) },
+                text = { TimePicker(state = timePickerState) }
             )
         }
     }
@@ -1014,46 +1014,46 @@ fun AppointmentDetailSheetContent(
     appointment: Appointment,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier =
-        modifier
-            .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 16.dp)
-            .fillMaxWidth(),
+            modifier
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp, vertical = 16.dp)
+                .fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 stringResource(Res.string.calendar_appt_details_title),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Bold
             )
             IconButton(onClick = onEdit) {
                 Icon(
                     Icons.EditW400Outlinedfill1,
                     stringResource(Res.string.calendar_appt_edit_desc),
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
         Spacer(Modifier.height(24.dp))
         Card(
             colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-            ),
-            modifier = Modifier.fillMaxWidth(),
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(Modifier.padding(16.dp)) {
                 Text(
                     appointment.title,
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(appointment.type, style = MaterialTheme.typography.bodyMedium)
@@ -1067,7 +1067,7 @@ fun AppointmentDetailSheetContent(
         DetailRow(
             Icons.LocationOnW400Outlined,
             stringResource(Res.string.calendar_appt_location_label),
-            stringResource(Res.string.calendar_appt_location_value),
+            stringResource(Res.string.calendar_appt_location_value)
         )
         Spacer(Modifier.height(32.dp))
         Button(onClick = {
@@ -1076,9 +1076,9 @@ fun AppointmentDetailSheetContent(
             onClick = onDelete,
             modifier = Modifier.fillMaxWidth(),
             colors =
-            ButtonDefaults.textButtonColors(
-                contentColor = MaterialTheme.colorScheme.error,
-            ),
+                ButtonDefaults.textButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
         ) {
             Icon(Icons.DeleteW400Outlined, null, Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
@@ -1093,18 +1093,18 @@ fun DetailRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     value: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier =
-            Modifier.size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-            contentAlignment = Alignment.Center,
+                Modifier.size(40.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            contentAlignment = Alignment.Center
         ) {
             Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -1113,7 +1113,7 @@ fun DetailRow(
             Text(
                 label,
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.secondary
             )
             Text(value, style = MaterialTheme.typography.bodyLarge)
         }
@@ -1126,31 +1126,31 @@ fun DailyActionCard(isTaken: Boolean, onToggle: () -> Unit, modifier: Modifier =
         onClick = onToggle,
         modifier = modifier.fillMaxWidth(),
         colors =
-        CardDefaults.cardColors(
-            containerColor =
-            if (isTaken) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceContainerHigh
-            },
-        ),
+            CardDefaults.cardColors(
+                containerColor =
+                    if (isTaken) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceContainerHigh
+                    }
+            )
     ) {
         Row(
             modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     if (isTaken) {
                         stringResource(
-                            Res.string.calendar_action_all_done,
+                            Res.string.calendar_action_all_done
                         )
                     } else {
                         stringResource(Res.string.calendar_action_take_prep)
                     },
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.SemiBold
                 )
                 Text(
                     if (isTaken) {
@@ -1158,19 +1158,19 @@ fun DailyActionCard(isTaken: Boolean, onToggle: () -> Unit, modifier: Modifier =
                     } else {
                         stringResource(Res.string.calendar_action_scheduled_format, "9:00 AM")
                     },
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
             Icon(
                 if (isTaken) Icons.CheckCircleW400Outlinedfill1 else Icons.CheckCircleW400Outlined,
                 null,
                 tint =
-                if (isTaken) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier.size(40.dp),
+                    if (isTaken) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                modifier = Modifier.size(40.dp)
             )
         }
     }
@@ -1182,28 +1182,28 @@ fun AppointmentCard(appointment: Appointment, onClick: () -> Unit = {}, modifier
     val month = appointment.date.split(" ").getOrNull(0) ?: ""
     Row(
         modifier =
-        modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .clickable { onClick() }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                .clickable { onClick() }
+                .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier =
-            Modifier.background(
-                MaterialTheme.colorScheme.surface,
-                RoundedCornerShape(8.dp),
-            )
-                .padding(vertical = 8.dp, horizontal = 12.dp),
+                Modifier.background(
+                    MaterialTheme.colorScheme.surface,
+                    RoundedCornerShape(8.dp)
+                )
+                    .padding(vertical = 8.dp, horizontal = 12.dp)
         ) {
             Text(
                 month,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.error,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Bold
             )
             Text(day, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
@@ -1212,12 +1212,12 @@ fun AppointmentCard(appointment: Appointment, onClick: () -> Unit = {}, modifier
             Text(
                 appointment.title,
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.SemiBold
             )
             Text(
                 "${appointment.type} • ${appointment.time}",
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
     }

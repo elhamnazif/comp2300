@@ -16,7 +16,7 @@ fun createHttpClient(): HttpClient = HttpClient {
                 ignoreUnknownKeys = true
                 prettyPrint = true
                 isLenient = true
-            },
+            }
         )
     }
     defaultRequest {

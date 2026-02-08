@@ -46,7 +46,7 @@ fun ProfileScreen(
     onNavigateToPrivacySecurity: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToHelpSupport: () -> Unit = {},
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     if (isGuest) {
         NotLoggedInContent(onRequireAuth = onRequireAuth)
@@ -70,18 +70,18 @@ fun ProfileScreen(
                 .pullToRefresh(
                     state = pullToRefreshState,
                     isRefreshing = uiState.isLoading,
-                    onRefresh = viewModel::refresh,
-                ),
+                    onRefresh = viewModel::refresh
+                )
         ) {
             Column(
                 Modifier.fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
             ) {
                 InsetContent(uiState, onNavigateToLabResults)
                 EdgeToEdgeSettings(
                     onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
                     onNavigateToNotifications = onNavigateToNotifications,
-                    onNavigateToHelpSupport = onNavigateToHelpSupport,
+                    onNavigateToHelpSupport = onNavigateToHelpSupport
                 )
             }
 
@@ -91,7 +91,7 @@ fun ProfileScreen(
                     .graphicsLayer {
                         scaleX = scaleFraction()
                         scaleY = scaleFraction()
-                    },
+                    }
             ) {
                 PullToRefreshDefaults.LoadingIndicator(state = pullToRefreshState, isRefreshing = uiState.isLoading)
             }
@@ -104,13 +104,13 @@ fun ProfileScreen(
 private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier =
-        modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .systemBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .systemBarsPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(Modifier.height(24.dp))
 
@@ -124,7 +124,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
             stringResource(Res.string.profile_why_account_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Start),
+            modifier = Modifier.align(Alignment.Start)
         )
 
         Spacer(Modifier.height(16.dp))
@@ -132,7 +132,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
         FeatureCard(
             icon = Icons.CheckCircleW400Outlinedfill1,
             title = stringResource(Res.string.profile_track_results_title),
-            description = stringResource(Res.string.profile_track_results_desc),
+            description = stringResource(Res.string.profile_track_results_desc)
         )
 
         Spacer(Modifier.height(12.dp))
@@ -140,7 +140,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
         FeatureCard(
             icon = Icons.DateRangeW400Outlinedfill1,
             title = stringResource(Res.string.profile_schedule_screenings_title),
-            description = stringResource(Res.string.profile_schedule_screenings_desc),
+            description = stringResource(Res.string.profile_schedule_screenings_desc)
         )
 
         Spacer(Modifier.height(12.dp))
@@ -148,7 +148,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
         FeatureCard(
             icon = Icons.LockW400Outlinedfill1,
             title = stringResource(Res.string.profile_private_secure_title),
-            description = stringResource(Res.string.profile_private_secure_desc),
+            description = stringResource(Res.string.profile_private_secure_desc)
         )
 
         Spacer(Modifier.height(12.dp))
@@ -156,7 +156,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
         FeatureCard(
             icon = Icons.SendW400Outlinedfill1,
             title = stringResource(Res.string.profile_anonymous_partner_title),
-            description = stringResource(Res.string.profile_anonymous_partner_desc),
+            description = stringResource(Res.string.profile_anonymous_partner_desc)
         )
 
         Spacer(Modifier.height(32.dp))
@@ -165,12 +165,12 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
         Button(
             onClick = onRequireAuth,
             modifier = Modifier.fillMaxWidth().height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
             Text(
                 stringResource(Res.string.profile_sign_in),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Bold
             )
         }
 
@@ -185,7 +185,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
         Text(
             stringResource(Res.string.profile_guest_limited_access),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.secondary,
+            color = MaterialTheme.colorScheme.secondary
         )
 
         Spacer(Modifier.height(32.dp))
@@ -199,14 +199,14 @@ private fun HeroSection(modifier: Modifier = Modifier) {
         Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.size(120.dp),
+            modifier = Modifier.size(120.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     Icons.PersonW400Outlinedfill1,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier.size(64.dp)
                 )
             }
         }
@@ -218,7 +218,7 @@ private fun HeroSection(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.profile_hero_title),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Spacer(Modifier.height(12.dp))
@@ -227,7 +227,7 @@ private fun HeroSection(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.profile_hero_desc),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(horizontal = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
     }
 }
@@ -236,20 +236,20 @@ private fun HeroSection(modifier: Modifier = Modifier) {
 private fun FeatureCard(icon: ImageVector, title: String, description: String, modifier: Modifier = Modifier) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(48.dp),
+                modifier = Modifier.size(48.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         icon,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(24.dp)
                     )
                 }
             }
@@ -261,13 +261,13 @@ private fun FeatureCard(icon: ImageVector, title: String, description: String, m
                     title,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
         }
@@ -279,7 +279,7 @@ private fun FeatureCard(icon: ImageVector, title: String, description: String, m
 private fun InsetContent(
     state: ProfileViewModel.State,
     onNavigateToLabResults: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Column(modifier.padding(horizontal = 16.dp)) {
         Header(state)
@@ -292,7 +292,7 @@ private fun InsetContent(
             stringResource(Res.string.profile_settings_title),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp),
+            modifier = Modifier.padding(bottom = 8.dp)
         )
     }
 }
@@ -305,7 +305,7 @@ private fun Header(state: ProfileViewModel.State) {
             state.userInitials.ifEmpty {
                 stringResource(Res.string.profile_default_user_initials)
             },
-            isLoading = state.isLoading,
+            isLoading = state.isLoading
         )
         Spacer(Modifier.width(16.dp))
         UserInfo(state.userName, state.memberSince, isLoading = state.isLoading)
@@ -318,14 +318,14 @@ private fun Avatar(initials: String, modifier: Modifier = Modifier, isLoading: B
         shape = CircleShape,
         color = MaterialTheme.colorScheme.primaryContainer,
         modifier =
-        modifier.size(80.dp).then(if (isLoading && initials.isEmpty()) Modifier.shimmerEffect() else Modifier),
+            modifier.size(80.dp).then(if (isLoading && initials.isEmpty()) Modifier.shimmerEffect() else Modifier)
     ) {
         Box(contentAlignment = Alignment.Center) {
             if (!isLoading || initials.isNotEmpty()) {
                 Text(
                     initials,
                     style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
         }
@@ -343,14 +343,14 @@ private fun UserInfo(name: String, memberSince: String, modifier: Modifier = Mod
             Text(
                 name.ifEmpty { stringResource(Res.string.profile_default_user_name) },
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Bold
             )
             Text(
                 memberSince.ifEmpty {
                     stringResource(Res.string.profile_member_since_format, "2024")
                 },
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
     }
@@ -361,18 +361,18 @@ private fun UserInfo(name: String, memberSince: String, modifier: Modifier = Mod
 private fun RecentResultsCard(
     results: List<LabResult>,
     onNavigateToLabResults: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier.fillMaxWidth(),
-        onClick = onNavigateToLabResults,
+        onClick = onNavigateToLabResults
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
                 stringResource(Res.string.profile_recent_results_title),
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(12.dp))
             if (results.isEmpty()) {
@@ -387,7 +387,7 @@ private fun RecentResultsCard(
                     if (index < results.size - 1) {
                         HorizontalDivider(
                             Modifier.padding(vertical = 12.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant,
+                            color = MaterialTheme.colorScheme.outlineVariant
                         )
                     }
                 }
@@ -396,7 +396,7 @@ private fun RecentResultsCard(
             Button(
                 onClick = {},
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(stringResource(Res.string.profile_schedule_next_screening))
             }
@@ -409,14 +409,14 @@ private fun ResultRow(result: LabResult, modifier: Modifier = Modifier) {
     Row(
         modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1f)) {
             Text(result.testName, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
             Text(
                 DateFormatter.formatMonthDayYear(result.testDate),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondary,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
         StatusSurface(result)
@@ -428,7 +428,7 @@ private fun ResultShimmer() {
     Row(
         Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(Modifier.weight(1f)) {
             Box(Modifier.fillMaxWidth(0.6f).height(16.dp).shimmerEffect())
@@ -456,7 +456,7 @@ private fun StatusSurface(result: LabResult) {
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelMedium,
             color = textColor,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -467,7 +467,7 @@ private fun CommunityCard(modifier: Modifier = Modifier) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
         onClick = {},
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.SendW400Outlinedfill1, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
@@ -477,12 +477,12 @@ private fun CommunityCard(modifier: Modifier = Modifier) {
                     stringResource(Res.string.profile_notify_partners_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
                 Text(
                     stringResource(Res.string.profile_notify_partners_desc),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
+                    color = MaterialTheme.colorScheme.onTertiaryContainer
                 )
             }
         }
@@ -495,26 +495,26 @@ private fun EdgeToEdgeSettings(
     onNavigateToPrivacySecurity: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToHelpSupport: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Column(modifier) {
         SettingsItem(
             icon = Icons.LockW400Outlinedfill1,
             title = stringResource(Res.string.profile_privacy_security_title),
             subtitle = stringResource(Res.string.profile_biometrics_enabled),
-            onClick = onNavigateToPrivacySecurity,
+            onClick = onNavigateToPrivacySecurity
         )
         SettingsItem(
             icon = Icons.NotificationsW400Outlinedfill1,
             title = stringResource(Res.string.profile_notifications_title),
             subtitle = stringResource(Res.string.profile_notifications_desc),
-            onClick = onNavigateToNotifications,
+            onClick = onNavigateToNotifications
         )
         SettingsItem(
             icon = Icons.InfoW400Outlined,
             title = stringResource(Res.string.profile_help_support_title),
             subtitle = stringResource(Res.string.profile_faqs_desc),
-            onClick = onNavigateToHelpSupport,
+            onClick = onNavigateToHelpSupport
         )
     }
 }
@@ -532,7 +532,7 @@ private fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onC
             Icon(
                 com.app.symbols.icons.materialsymbols.Icons.ChevronRightW400Outlined,
                 null,
-                tint = MaterialTheme.colorScheme.outline,
+                tint = MaterialTheme.colorScheme.outline
             )
         }
     }

@@ -40,26 +40,26 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                     IconButton(onClick = onBack) {
                         Icon(Icons.ArrowBackW400Outlinedfill1, stringResource(Res.string.auth_back_desc))
                     }
-                },
+                }
             )
-        },
+        }
     ) { paddingValues ->
         Column(
             modifier =
-            Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp),
+                Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp)
         ) {
             Text(
                 stringResource(Res.string.notifications_general_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
             SettingToggleItem(
                 title = stringResource(Res.string.notifications_discreet_mode_title),
                 description = stringResource(Res.string.notifications_discreet_mode_desc),
                 checked = discreetMode,
-                onCheckedChange = { discreetMode = it },
+                onCheckedChange = { discreetMode = it }
             )
 
             Spacer(Modifier.height(24.dp))
@@ -68,14 +68,14 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 stringResource(Res.string.notifications_health_reminders_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
             SettingToggleItem(
                 title = stringResource(Res.string.notifications_appointment_reminders_title),
                 description = stringResource(Res.string.notifications_appointment_reminders_desc),
                 checked = appointmentReminders,
-                onCheckedChange = { appointmentReminders = it },
+                onCheckedChange = { appointmentReminders = it }
             )
 
             Spacer(Modifier.height(8.dp))
@@ -84,7 +84,7 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 title = stringResource(Res.string.notifications_test_results_title),
                 description = stringResource(Res.string.notifications_test_results_desc),
                 checked = testResults,
-                onCheckedChange = { testResults = it },
+                onCheckedChange = { testResults = it }
             )
 
             Spacer(Modifier.height(8.dp))
@@ -93,7 +93,7 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 title = stringResource(Res.string.notifications_testing_reminders_title),
                 description = stringResource(Res.string.notifications_testing_reminders_desc),
                 checked = testReminders,
-                onCheckedChange = { testReminders = it },
+                onCheckedChange = { testReminders = it }
             )
 
             Spacer(Modifier.height(24.dp))
@@ -102,14 +102,14 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 stringResource(Res.string.notifications_content_updates_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
             SettingToggleItem(
                 title = stringResource(Res.string.notifications_educational_content_title),
                 description = stringResource(Res.string.notifications_educational_content_desc),
                 checked = educationContent,
-                onCheckedChange = { educationContent = it },
+                onCheckedChange = { educationContent = it }
             )
 
             Spacer(Modifier.height(8.dp))
@@ -118,7 +118,7 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 title = stringResource(Res.string.notifications_product_deals_title),
                 description = stringResource(Res.string.notifications_product_deals_desc),
                 checked = productDeals,
-                onCheckedChange = { productDeals = it },
+                onCheckedChange = { productDeals = it }
             )
 
             Spacer(Modifier.height(24.dp))
@@ -129,13 +129,13 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                         stringResource(Res.string.notifications_discreet_mode_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(Res.string.notifications_discreet_mode_info),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                 }
             }
@@ -149,16 +149,16 @@ private fun SettingToggleItem(
     description: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
@@ -166,7 +166,7 @@ private fun SettingToggleItem(
                 Text(
                     description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
             Spacer(Modifier.width(16.dp))

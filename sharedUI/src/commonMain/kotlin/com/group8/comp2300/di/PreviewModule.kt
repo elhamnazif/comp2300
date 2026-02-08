@@ -66,7 +66,7 @@ class FakeAuthRepository : AuthRepository {
                 lastName = "User",
                 gender = Gender.PREFER_NOT_TO_SAY,
                 sexualOrientation = SexualOrientation.PREFER_NOT_TO_SAY,
-                dateOfBirth = null,
+                dateOfBirth = null
             )
         _currentUser.value = user
         return Result.success(user)
@@ -79,7 +79,7 @@ class FakeAuthRepository : AuthRepository {
         lastName: String,
         gender: Gender,
         sexualOrientation: SexualOrientation,
-        dateOfBirth: LocalDate?,
+        dateOfBirth: LocalDate?
     ): Result<User> {
         val user =
             User(
@@ -89,7 +89,7 @@ class FakeAuthRepository : AuthRepository {
                 lastName = lastName,
                 gender = gender,
                 sexualOrientation = sexualOrientation,
-                dateOfBirth = dateOfBirth,
+                dateOfBirth = dateOfBirth
             )
         _currentUser.value = user
         return Result.success(user)

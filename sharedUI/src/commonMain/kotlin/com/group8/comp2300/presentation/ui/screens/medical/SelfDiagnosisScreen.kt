@@ -51,27 +51,27 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                 Column {
                     Text(
                         text =
-                        if (diagnosisResult == "High Risk") {
-                            stringResource(Res.string.medical_self_diagnosis_risk_high)
-                        } else {
-                            stringResource(Res.string.medical_self_diagnosis_risk_low)
-                        },
+                            if (diagnosisResult == "High Risk") {
+                                stringResource(Res.string.medical_self_diagnosis_risk_high)
+                            } else {
+                                stringResource(Res.string.medical_self_diagnosis_risk_low)
+                            },
                         style = MaterialTheme.typography.headlineMedium,
                         color =
-                        if (diagnosisResult == "High Risk") {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.primary
-                        },
+                            if (diagnosisResult == "High Risk") {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text =
-                        if (diagnosisResult == "High Risk") {
-                            stringResource(Res.string.medical_self_diagnosis_feedback_high)
-                        } else {
-                            stringResource(Res.string.medical_self_diagnosis_feedback_low)
-                        },
+                            if (diagnosisResult == "High Risk") {
+                                stringResource(Res.string.medical_self_diagnosis_feedback_high)
+                            } else {
+                                stringResource(Res.string.medical_self_diagnosis_feedback_low)
+                            }
                     )
                 }
             },
@@ -80,7 +80,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                     onClick = {
                         showResultDialog = false
                         onNavigateToBooking()
-                    },
+                    }
                 ) {
                     Text(stringResource(Res.string.medical_self_diagnosis_book_button))
                 }
@@ -89,7 +89,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                 TextButton(onClick = { showResultDialog = false }) {
                     Text(stringResource(Res.string.medical_self_diagnosis_close_button))
                 }
-            },
+            }
         )
     }
 
@@ -102,25 +102,25 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.ArrowBackW400Outlinedfill1,
-                            contentDescription = stringResource(Res.string.medical_self_diagnosis_back_desc),
+                            contentDescription = stringResource(Res.string.medical_self_diagnosis_back_desc)
                         )
                     }
-                },
+                }
             )
-        },
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = stringResource(Res.string.medical_self_diagnosis_header),
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.headlineSmall
             )
 
             Text(
                 text = stringResource(Res.string.medical_self_diagnosis_desc),
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium
             )
 
             // Question 1
@@ -128,47 +128,47 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = stringResource(Res.string.medical_self_diagnosis_q1),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
                             onClick = { unprotectedSex = true },
                             colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                if (unprotectedSex == true) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                },
-                                contentColor =
-                                if (unprotectedSex == true) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ),
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        if (unprotectedSex == true) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                        },
+                                    contentColor =
+                                        if (unprotectedSex == true) {
+                                            MaterialTheme.colorScheme.onPrimary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        }
+                                )
                         ) {
                             Text("Yes")
                         }
                         Button(
                             onClick = { unprotectedSex = false },
                             colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                if (unprotectedSex == false) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                },
-                                contentColor =
-                                if (unprotectedSex == false) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ),
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        if (unprotectedSex == false) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                        },
+                                    contentColor =
+                                        if (unprotectedSex == false) {
+                                            MaterialTheme.colorScheme.onPrimary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        }
+                                )
                         ) {
                             Text("No")
                         }
@@ -181,47 +181,47 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = stringResource(Res.string.medical_self_diagnosis_q2),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
                             onClick = { sharedNeedles = true },
                             colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                if (sharedNeedles == true) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                },
-                                contentColor =
-                                if (sharedNeedles == true) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ),
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        if (sharedNeedles == true) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                        },
+                                    contentColor =
+                                        if (sharedNeedles == true) {
+                                            MaterialTheme.colorScheme.onPrimary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        }
+                                )
                         ) {
                             Text("Yes")
                         }
                         Button(
                             onClick = { sharedNeedles = false },
                             colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                if (sharedNeedles == false) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                },
-                                contentColor =
-                                if (sharedNeedles == false) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ),
+                                ButtonDefaults.buttonColors(
+                                    containerColor =
+                                        if (sharedNeedles == false) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                        },
+                                    contentColor =
+                                        if (sharedNeedles == false) {
+                                            MaterialTheme.colorScheme.onPrimary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        }
+                                )
                         ) {
                             Text("No")
                         }
@@ -234,7 +234,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
             Button(
                 onClick = { calculateRisk() },
                 enabled = unprotectedSex != null && sharedNeedles != null,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text(stringResource(Res.string.medical_self_diagnosis_submit_button))
             }
@@ -242,7 +242,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
             Text(
                 text = stringResource(Res.string.medical_self_diagnosis_disclaimer),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

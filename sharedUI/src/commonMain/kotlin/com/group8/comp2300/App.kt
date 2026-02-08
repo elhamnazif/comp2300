@@ -18,10 +18,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +33,7 @@ import com.app.symbols.icons.materialsymbols.Icons
 import com.app.symbols.icons.materialsymbols.icons.*
 import com.group8.comp2300.di.appModule
 import com.group8.comp2300.di.navigationModule
+import com.group8.comp2300.di.platformModule
 import com.group8.comp2300.di.previewModule
 import com.group8.comp2300.domain.model.Screen
 import com.group8.comp2300.presentation.navigation.*
@@ -54,12 +52,12 @@ import org.koin.dsl.module
 @OptIn(
     KoinExperimentalAPI::class,
     ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class,
+    ExperimentalMaterial3ExpressiveApi::class
 )
 @Composable
 fun App() {
     KoinApplication(
-        configuration = koinConfiguration { modules(appModule, navigationModule) },
+        configuration = koinConfiguration { modules(appModule, platformModule, navigationModule) }
     ) {
         AppTheme {
             MainApp()
@@ -80,7 +78,7 @@ private fun AppTheme(content: @Composable () -> Unit) {
         isAmoled = false,
         style = PaletteStyle.TonalSpot,
         animate = true,
-        content = content,
+        content = content
     )
 }
 
@@ -91,13 +89,13 @@ expect fun getWallpaperSeedColor(): Color?
     KoinExperimentalAPI::class,
     ExperimentalMaterial3Api::class,
     ExperimentalMaterial3ExpressiveApi::class,
-    ExperimentalMaterial3AdaptiveApi::class,
+    ExperimentalMaterial3AdaptiveApi::class
 )
 @Composable
 fun MainApp(
     modifier: Modifier = Modifier,
     authViewModel: AuthViewModel = koinViewModel(),
-    navigator: Navigator = koinViewModel(),
+    navigator: Navigator = koinViewModel()
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
 
@@ -113,7 +111,7 @@ fun MainApp(
             Triple(Screen.Booking, Icons.LocationOnW400Outlinedfill1, "Care"),
             Triple(Screen.Calendar, Icons.DateRangeW400Outlinedfill1, "Track"),
             Triple(Screen.Education, Icons.InfoW400Outlinedfill1, "Education"),
-            Triple(Screen.Profile, Icons.PersonW400Outlinedfill1, "Me"),
+            Triple(Screen.Profile, Icons.PersonW400Outlinedfill1, "Me")
         )
     val showNavBar = currentScreen in mainTabs.map { it.first }
 
@@ -121,7 +119,7 @@ fun MainApp(
     val layoutType =
         if (showNavBar) {
             NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(
-                windowAdaptiveInfo,
+                windowAdaptiveInfo
             )
         } else {
             NavigationSuiteType.None
@@ -138,8 +136,8 @@ fun MainApp(
     val supportingPaneStrategy =
         rememberListDetailSceneStrategy<Any>(
             backNavigationBehavior =
-            BackNavigationBehavior.PopUntilCurrentDestinationChange,
-            directive = directive,
+                BackNavigationBehavior.PopUntilCurrentDestinationChange,
+            directive = directive
         )
 
     CompositionLocalProvider(LocalNavigator provides navigator) {
@@ -152,17 +150,17 @@ fun MainApp(
                             icon = { Icon(icon, label) },
                             label = { Text(label) },
                             selected = currentScreen == screen,
-                            onClick = { navigator.clearAndGoTo(screen) },
+                            onClick = { navigator.clearAndGoTo(screen) }
                         )
                     }
                 }
             },
             layoutType = layoutType,
-            state = navigationSuiteScaffoldState,
+            state = navigationSuiteScaffoldState
         ) {
             Scaffold(
                 containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onBackground,
+                contentColor = MaterialTheme.colorScheme.onBackground
             ) { _ ->
                 NavDisplay(
                     backStack = navigator.backStack,
@@ -172,11 +170,11 @@ fun MainApp(
                     popTransitionSpec = { popAnimation },
                     predictivePopTransitionSpec = { popAnimation },
                     entryDecorators =
-                    listOf(
-                        rememberSaveableStateHolderNavEntryDecorator(),
-                        rememberViewModelStoreNavEntryDecorator(),
-                    ),
-                    entryProvider = koinEntryProvider(),
+                        listOf(
+                            rememberSaveableStateHolderNavEntryDecorator(),
+                            rememberViewModelStoreNavEntryDecorator()
+                        ),
+                    entryProvider = koinEntryProvider()
                 )
             }
         }
@@ -192,9 +190,9 @@ internal fun PreviewMainApp() {
             modules(
                 previewModule,
                 navigationModule,
-                module { viewModel<Navigator> { FakeNavigator(Screen.Onboarding) } },
+                module { viewModel<Navigator> { FakeNavigator(Screen.Onboarding) } }
             )
-        },
+        }
     ) {
         val dispatcherOwner = rememberNavigationEventDispatcherOwner(parent = null)
         CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides dispatcherOwner) {
@@ -212,9 +210,9 @@ internal fun PreviewNavigationTabs() {
             modules(
                 previewModule,
                 navigationModule,
-                module { viewModel<Navigator> { FakeNavigator(Screen.Home) } },
+                module { viewModel<Navigator> { FakeNavigator(Screen.Home) } }
             )
-        },
+        }
     ) {
         val dispatcherOwner = rememberNavigationEventDispatcherOwner(parent = null)
         CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides dispatcherOwner) {

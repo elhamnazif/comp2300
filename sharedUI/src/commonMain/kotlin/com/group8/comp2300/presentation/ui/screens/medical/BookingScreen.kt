@@ -34,7 +34,7 @@ fun BookingScreen(
     selectedClinic: Clinic?,
     onClinicClick: (String) -> Unit,
     onClinicSelect: (Clinic) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
 
@@ -45,15 +45,15 @@ fun BookingScreen(
         sheetContainerColor = MaterialTheme.colorScheme.surface,
         sheetShadowElevation = 16.dp,
         sheetShape =
-        MaterialTheme.shapes.extraLarge.copy(
-            bottomStart = androidx.compose.foundation.shape.CornerSize(0.dp),
-            bottomEnd = androidx.compose.foundation.shape.CornerSize(0.dp),
-        ),
+            MaterialTheme.shapes.extraLarge.copy(
+                bottomStart = androidx.compose.foundation.shape.CornerSize(0.dp),
+                bottomEnd = androidx.compose.foundation.shape.CornerSize(0.dp)
+            ),
         sheetContent = {
             LazyColumn(
                 contentPadding = PaddingValues(bottom = 24.dp, start = 16.dp, end = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 item {
                     Text(
@@ -61,7 +61,7 @@ fun BookingScreen(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 12.dp),
+                        modifier = Modifier.padding(horizontal = 12.dp)
                     )
                 }
 
@@ -70,15 +70,15 @@ fun BookingScreen(
                         clinic = clinic,
                         isSelected = selectedClinic?.id == clinic.id,
                         onClick = { onClinicSelect(clinic) },
-                        onNavigate = { onClinicClick(clinic.id) },
+                        onNavigate = { onClinicClick(clinic.id) }
                     )
                     HorizontalDivider(
                         modifier = Modifier.padding(top = 8.dp),
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     )
                 }
             }
-        },
+        }
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
             ClinicMap(clinics = clinics, selectedClinic = selectedClinic)
@@ -86,30 +86,30 @@ fun BookingScreen(
             // Search Bar (Floating at Top)
             Surface(
                 modifier =
-                Modifier.align(Alignment.TopCenter)
-                    .statusBarsPadding()
-                    .padding(top = 8.dp, start = 16.dp, end = 16.dp)
-                    .fillMaxWidth(),
+                    Modifier.align(Alignment.TopCenter)
+                        .statusBarsPadding()
+                        .padding(top = 8.dp, start = 16.dp, end = 16.dp)
+                        .fillMaxWidth(),
                 shape = MaterialTheme.shapes.extraLarge,
                 shadowElevation = 4.dp,
-                color = MaterialTheme.colorScheme.surface,
+                color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier =
-                    Modifier.clickable { /* TODO: Open Search Screen */ }
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                        Modifier.clickable { /* TODO: Open Search Screen */ }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         imageVector = Icons.SearchW400Outlinedfill1,
                         contentDescription = stringResource(Res.string.medical_booking_search_desc),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(Modifier.width(12.dp))
                     Text(
                         text = stringResource(Res.string.medical_booking_search_placeholder),
                         style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -123,19 +123,19 @@ fun ClinicCompactRow(
     isSelected: Boolean,
     onClick: () -> Unit,
     onNavigate: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
 
     Row(
         modifier =
-        modifier
-            .fillMaxWidth()
-            .background(containerColor, MaterialTheme.shapes.medium)
-            .clickable { onClick() }
-            .padding(vertical = 12.dp, horizontal = 12.dp),
+            modifier
+                .fillMaxWidth()
+                .background(containerColor, MaterialTheme.shapes.medium)
+                .clickable { onClick() }
+                .padding(vertical = 12.dp, horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -143,23 +143,23 @@ fun ClinicCompactRow(
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color =
-                if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = "${clinic.formattedDistance} • ${clinic.tags.joinToString()}",
                 style = MaterialTheme.typography.bodySmall,
                 color =
-                if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                } else {
-                    MaterialTheme.colorScheme.secondary
-                },
-                maxLines = 1,
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                    } else {
+                        MaterialTheme.colorScheme.secondary
+                    },
+                maxLines = 1
             )
         }
 
@@ -168,11 +168,11 @@ fun ClinicCompactRow(
                 imageVector = Icons.ArrowForwardW400Outlinedfill1,
                 contentDescription = stringResource(Res.string.medical_booking_view_details_desc),
                 tint =
-                if (isSelected) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.primary
-                },
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    }
             )
         }
     }

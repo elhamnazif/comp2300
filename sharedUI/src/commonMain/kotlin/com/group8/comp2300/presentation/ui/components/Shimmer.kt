@@ -14,9 +14,7 @@ import kotlinx.coroutines.launch
 
 fun Modifier.shimmerEffect(): Modifier = this then ShimmerNodeElement()
 
-private data class ShimmerNodeElement(
-    val durationMillis: Int = 1000
-) : ModifierNodeElement<ShimmerNode>() {
+private data class ShimmerNodeElement(val durationMillis: Int = 1000) : ModifierNodeElement<ShimmerNode>() {
     override fun create(): ShimmerNode = ShimmerNode(durationMillis)
 
     override fun update(node: ShimmerNode) {
@@ -24,7 +22,9 @@ private data class ShimmerNodeElement(
     }
 }
 
-private class ShimmerNode(var durationMillis: Int) : Modifier.Node(), DrawModifierNode {
+private class ShimmerNode(var durationMillis: Int) :
+    Modifier.Node(),
+    DrawModifierNode {
     // Animates from 0f to 1f
     private val progress = Animatable(0f)
 

@@ -2,6 +2,7 @@ package com.group8.comp2300.presentation.util
 
 import androidx.compose.runtime.Composable
 import comp2300.i18n.generated.resources.*
+import kotlin.time.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -9,7 +10,6 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Instant
 
 // TODO: Replace with moko-resources
 object DateFormatter {

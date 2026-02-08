@@ -8,6 +8,7 @@ import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.usecase.auth.LoginUseCase
 import com.group8.comp2300.domain.usecase.auth.RegisterUseCase
 import comp2300.i18n.generated.resources.*
+import kotlin.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +17,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Instant
 
 class RealAuthViewModel(
     private val loginUseCase: LoginUseCase,
     private val registerUseCase: RegisterUseCase,
-    private val authRepository: AuthRepository,
+    private val authRepository: AuthRepository
 ) : AuthViewModel() {
 
     final override val state: StateFlow<State>
@@ -40,11 +40,11 @@ class RealAuthViewModel(
                     it.copy(
                         email = event.email,
                         emailError =
-                        if (isValid || event.email.isEmpty()) {
-                            null
-                        } else {
-                            Res.string.auth_error_invalid_email
-                        },
+                            if (isValid || event.email.isEmpty()) {
+                                null
+                            } else {
+                                Res.string.auth_error_invalid_email
+                            }
                     )
                 }
             }
@@ -55,7 +55,7 @@ class RealAuthViewModel(
                     it.copy(
                         password = event.password,
                         passwordError =
-                        if (isValid || event.password.isEmpty()) null else Res.string.auth_error_password_too_short,
+                            if (isValid || event.password.isEmpty()) null else Res.string.auth_error_password_too_short
                     )
                 }
             }
@@ -144,11 +144,11 @@ class RealAuthViewModel(
                     gender = gender,
                     sexualOrientation = orientation,
                     dateOfBirth =
-                    state.dateOfBirth?.let {
-                        Instant.fromEpochMilliseconds(it)
-                            .toLocalDateTime(TimeZone.currentSystemDefault())
-                            .date
-                    },
+                        state.dateOfBirth?.let {
+                            Instant.fromEpochMilliseconds(it)
+                                .toLocalDateTime(TimeZone.currentSystemDefault())
+                                .date
+                        }
                 )
             handleResult(result, onSuccess)
         }
@@ -162,7 +162,7 @@ class RealAuthViewModel(
             state.update {
                 it.copy(
                     isLoading = false,
-                    errorMessage = Res.string.auth_error_authentication_failed,
+                    errorMessage = Res.string.auth_error_authentication_failed
                 )
             }
         }

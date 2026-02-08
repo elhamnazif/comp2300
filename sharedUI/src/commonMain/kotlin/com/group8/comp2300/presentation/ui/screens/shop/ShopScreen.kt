@@ -75,7 +75,7 @@ fun ShopScreen(viewModel: ShopViewModel = koinViewModel()) {
         onAddToCart = viewModel::addToCart,
         onRefresh = viewModel::refreshProducts,
         isGuest = navigator.isGuest,
-        onRequireAuth = navigator::requireAuth,
+        onRequireAuth = navigator::requireAuth
     )
 }
 
@@ -92,7 +92,7 @@ private fun ShopContent(
     onAddToCart: (Product) -> Unit,
     onRefresh: () -> Unit,
     isGuest: Boolean = false,
-    onRequireAuth: () -> Unit = {},
+    onRequireAuth: () -> Unit = {}
 ) {
     val state = rememberPullToRefreshState()
     val scaleFraction = {
@@ -108,19 +108,19 @@ private fun ShopContent(
             .pullToRefresh(
                 state = state,
                 isRefreshing = isLoading,
-                onRefresh = onRefresh,
-            ),
+                onRefresh = onRefresh
+            )
     ) {
         Column(Modifier.padding(16.dp).weight(1f)) {
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     stringResource(Res.string.shop_title),
                     style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
                 BadgedBox(badge = { Badge { Text(cartItemCount.toString()) } }) {
                     Icon(Icons.ShoppingCartW400Outlinedfill1, stringResource(Res.string.shop_cart_desc))
@@ -141,11 +141,11 @@ private fun ShopContent(
                         onClick = { onCategorySelect(category) },
                         label = { Text(stringResource(categoryRes)) },
                         leadingIcon =
-                        if (selectedCategory == category) {
-                            { Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp)) }
-                        } else {
-                            null
-                        },
+                            if (selectedCategory == category) {
+                                { Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp)) }
+                            } else {
+                                null
+                            }
                     )
                 }
             }
@@ -166,7 +166,7 @@ private fun ShopContent(
                         columns = GridCells.Adaptive(150.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         if (isLoading) {
                             items(6) { ShimmerProductCard() }
@@ -181,7 +181,7 @@ private fun ShopContent(
                                         } else {
                                             onAddToCart(product)
                                         }
-                                    },
+                                    }
                                 )
                             }
                         }
@@ -190,19 +190,19 @@ private fun ShopContent(
                             Row(
                                 Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center,
+                                horizontalArrangement = Arrangement.Center
                             ) {
                                 Icon(
                                     Icons.InfoW400Outlinedfill1,
                                     null,
                                     Modifier.size(14.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                                 )
                                 Spacer(Modifier.width(6.dp))
                                 Text(
                                     stringResource(Res.string.shop_discreet_packaging),
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                                 )
                             }
                         }
@@ -215,7 +215,7 @@ private fun ShopContent(
                             .graphicsLayer {
                                 scaleX = scaleFraction()
                                 scaleY = scaleFraction()
-                            },
+                            }
                     ) {
                         PullToRefreshDefaults.LoadingIndicator(state = state, isRefreshing = isLoading)
                     }
@@ -229,7 +229,7 @@ private fun ShopContent(
 fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = modifier.fillMaxWidth().clickable { onClick() },
+        modifier = modifier.fillMaxWidth().clickable { onClick() }
     ) {
         Column(Modifier.padding(12.dp)) {
             Box(
@@ -237,7 +237,7 @@ fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit, m
                     .height(100.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     if (product.category == ProductCategory.MEDICATION) {
@@ -247,7 +247,7 @@ fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit, m
                     },
                     null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(48.dp),
+                    modifier = Modifier.size(48.dp)
                 )
             }
             Spacer(Modifier.height(12.dp))
@@ -256,13 +256,13 @@ fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit, m
                 product.description,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary,
-                maxLines = 1,
+                maxLines = 1
             )
             Spacer(Modifier.height(8.dp))
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     if (product.insuranceCovered) {
@@ -272,11 +272,11 @@ fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit, m
                     },
                     style = MaterialTheme.typography.labelLarge,
                     color =
-                    if (product.insuranceCovered) {
-                        MaterialTheme.colorScheme.primary
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
+                        if (product.insuranceCovered) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        }
                 )
                 FilledTonalIconButton(onClick = onAddClick, modifier = Modifier.size(32.dp)) {
                     Icon(Icons.AddW400Outlinedfill1, null, Modifier.size(16.dp))
@@ -290,7 +290,7 @@ fun ProductCard(product: Product, onClick: () -> Unit, onAddClick: () -> Unit, m
 fun ShimmerProductCard(modifier: Modifier = Modifier) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(Modifier.padding(12.dp)) {
             Box(Modifier.fillMaxWidth().height(100.dp).clip(RoundedCornerShape(8.dp)).shimmerEffect())
@@ -302,7 +302,7 @@ fun ShimmerProductCard(modifier: Modifier = Modifier) {
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(Modifier.width(60.dp).height(20.dp).shimmerEffect())
                 Box(Modifier.size(32.dp).clip(RoundedCornerShape(8.dp)).shimmerEffect())

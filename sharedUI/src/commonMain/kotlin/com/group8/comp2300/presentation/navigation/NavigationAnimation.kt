@@ -8,20 +8,20 @@ private const val InitialOffsetFactor = 0.10f
 
 val pushAnimation =
     materialSharedAxisXIn(
-        initialOffsetX = { (it * InitialOffsetFactor).toInt() },
+        initialOffsetX = { (it * InitialOffsetFactor).toInt() }
     ) togetherWith
         materialSharedAxisXOut(
             targetOffsetX = {
                 -(it * InitialOffsetFactor).toInt()
-            },
+            }
         )
 
 val popAnimation =
     materialSharedAxisXIn(
-        initialOffsetX = { -(it * InitialOffsetFactor).toInt() },
+        initialOffsetX = { -(it * InitialOffsetFactor).toInt() }
     ) togetherWith
         materialSharedAxisXOut(
             targetOffsetX = {
                 (it * InitialOffsetFactor).toInt()
-            },
+            }
         )

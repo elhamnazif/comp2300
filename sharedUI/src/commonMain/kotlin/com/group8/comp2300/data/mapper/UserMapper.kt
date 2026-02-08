@@ -30,7 +30,7 @@ fun UserDto.toDomain(): User = User(
         try {
             SexualOrientation.valueOf(it.uppercase())
         } catch (
-            e: Exception,
+            e: Exception
         ) {
             SexualOrientation.PREFER_NOT_TO_SAY
         }
@@ -39,5 +39,5 @@ fun UserDto.toDomain(): User = User(
     createdAt = createdAt,
     isAnonymous = isAnonymous,
     hasCompletedOnboarding = hasCompletedOnboarding,
-    preferredLanguage = preferredLanguage,
+    preferredLanguage = preferredLanguage
 )

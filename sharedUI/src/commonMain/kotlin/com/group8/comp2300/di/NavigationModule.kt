@@ -32,7 +32,7 @@ val navigationModule = module {
         OnboardingScreen(
             onFinish = { navigator.clearAndGoTo(Screen.Home) },
             isGuest = navigator.isGuest,
-            onRequireAuth = navigator::requireAuth,
+            onRequireAuth = navigator::requireAuth
         )
     }
 
@@ -53,12 +53,11 @@ val navigationModule = module {
             onNavigateToEducation = { navigator.navigate(Screen.Education) },
             onNavigateToMedication = { navigator.navigate(Screen.Medication) },
             onNavigateToSymptomChecker = { navigator.navigate(Screen.SelfDiagnosis) },
-            onNavigateToClinicMap = { navigator.navigate(Screen.Booking) },
+            onNavigateToClinicMap = { navigator.navigate(Screen.Booking) }
         )
     }
 
     navigation<Screen.Calendar> {
-        val navigator = LocalNavigator.current
         CalendarScreen()
     }
 
@@ -70,7 +69,7 @@ val navigationModule = module {
             onNavigateToLabResults = { navigator.navigate(Screen.LabResults) },
             onNavigateToPrivacySecurity = { navigator.navigate(Screen.PrivacySecurity) },
             onNavigateToNotifications = { navigator.navigate(Screen.Notifications) },
-            onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) },
+            onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) }
         )
     }
 
@@ -104,7 +103,7 @@ val navigationModule = module {
             clinics = uiState.clinics,
             selectedClinic = uiState.selectedClinic,
             onClinicClick = { clinicId -> navigator.navigate(Screen.ClinicDetail(clinicId)) },
-            onClinicSelect = viewModel::selectClinic,
+            onClinicSelect = viewModel::selectClinic
         )
     }
 
@@ -120,7 +119,7 @@ val navigationModule = module {
                 } else {
                     // TODO: Handle booking confirmation
                 }
-            },
+            }
         )
     }
 
@@ -147,7 +146,7 @@ val navigationModule = module {
                     navigator.navigate(Screen.VideoDetail(id))
                 }
             },
-            onCategorySelect = viewModel::selectCategory,
+            onCategorySelect = viewModel::selectCategory
         )
     }
 
@@ -163,7 +162,7 @@ val navigationModule = module {
                 if (action.contains("Clinic")) {
                     navigator.clearAndGoTo(Screen.Booking)
                 }
-            },
+            }
         )
     }
 

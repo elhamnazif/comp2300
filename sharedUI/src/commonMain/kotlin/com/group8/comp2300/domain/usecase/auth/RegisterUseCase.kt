@@ -14,6 +14,6 @@ class RegisterUseCase(private val repository: AuthRepository) {
         lastName: String,
         gender: Gender,
         sexualOrientation: SexualOrientation,
-        dateOfBirth: LocalDate?,
+        dateOfBirth: LocalDate?
     ): Result<User> = repository.register(email, password, firstName, lastName, gender, sexualOrientation, dateOfBirth)
 }

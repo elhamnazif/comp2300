@@ -14,6 +14,15 @@ plugins {
     alias(libs.plugins.symbolCraft)
     alias(libs.plugins.comp2300.spotless)
     alias(libs.plugins.comp2300.detekt)
+    alias(libs.plugins.sqlDelight)
+}
+
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.group8.comp2300.data.database")
+        }
+    }
 }
 
 kotlin {
@@ -37,7 +46,7 @@ kotlin {
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
             "-Xexpect-actual-classes",
             "-Xannotation-default-target=param-property",
-            "-Xexplicit-backing-fields",
+            "-Xexplicit-backing-fields"
         )
     }
 
@@ -114,6 +123,9 @@ kotlin {
                 implementation(libs.ktor.client.core)
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.json)
+
+                // SQLDelight (coroutines extensions only - drivers are platform-specific)
+                implementation(libs.sqlDelight.coroutines)
             }
         }
 
@@ -125,6 +137,9 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
+
+            // SQLDelight Android Driver
+            implementation(libs.sqlDelight.driver.android)
         }
 
         jvmMain.dependencies {
@@ -137,10 +152,16 @@ kotlin {
                     requireCapability("org.maplibre.compose:maplibre-native-bindings-jni-$target")
                 }
             }
+
+            // SQLDelight (uses sqlite driver on JVM which includes JDBC support)
+            implementation(libs.sqlDelight.driver.sqlite)
         }
 
         iosMain.dependencies {
             implementation(libs.ktor.client.darwin)
+
+            // SQLDelight Native Driver
+            implementation(libs.sqlDelight.driver.native)
         }
     }
 
@@ -202,7 +223,7 @@ symbolCraft {
         "visibility",
         "visibility_off",
         "calendar_month",
-        "local_pharmacy",
+        "local_pharmacy"
     ) {
         weights(SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
     }
@@ -254,7 +275,7 @@ symbolCraft {
         "face",
 
         // Misc
-        "favorite",
+        "favorite"
     ) {
         weights(SymbolWeight.W400, SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
         bothFills(weight = SymbolWeight.W400, variant = SymbolVariant.OUTLINED)

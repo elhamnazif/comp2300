@@ -36,7 +36,7 @@ fun QuizScreen(
     quizId: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: EducationViewModel = koinViewModel(),
+    viewModel: EducationViewModel = koinViewModel()
 ) {
     val quiz = viewModel.getQuizById(quizId)
     if (quiz == null) {
@@ -76,9 +76,9 @@ fun QuizScreen(
                                 stringResource(
                                     Res.string.education_quiz_progress_format,
                                     currentQuestionIndex + 1,
-                                    quiz.questions.size,
+                                    quiz.questions.size
                                 ),
-                                style = MaterialTheme.typography.labelSmall,
+                                style = MaterialTheme.typography.labelSmall
                             )
                         }
                     }
@@ -87,12 +87,12 @@ fun QuizScreen(
                     IconButton(onClick = onBack) {
                         Icon(
                             Icons.ArrowBackW400Outlinedfill1,
-                            contentDescription = stringResource(Res.string.education_quiz_back_desc),
+                            contentDescription = stringResource(Res.string.education_quiz_back_desc)
                         )
                     }
-                },
+                }
             )
-        },
+        }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
             if (!showResults) {
@@ -110,21 +110,21 @@ fun QuizScreen(
                         correctAnswersCount = 0
                         showResults = false
                     },
-                    onClose = onBack,
+                    onClose = onBack
                 )
             } else if (currentQuestion != null) {
                 Column(
                     modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
                     ) {
                         Text(
                             text = currentQuestion.question,
                             style = MaterialTheme.typography.headlineSmall,
-                            modifier = Modifier.padding(20.dp),
+                            modifier = Modifier.padding(20.dp)
                         )
                     }
 
@@ -134,17 +134,17 @@ fun QuizScreen(
                             index = index,
                             selectedIndex = selectedAnswerIndex,
                             correctIndex =
-                            if (showFeedback) {
-                                currentQuestion.correctAnswerIndex
-                            } else {
-                                null
-                            },
+                                if (showFeedback) {
+                                    currentQuestion.correctAnswerIndex
+                                } else {
+                                    null
+                                },
                             onClick = {
                                 if (!showFeedback) {
                                     selectedAnswerIndex = index
                                     showFeedback = true
                                 }
-                            },
+                            }
                         )
                     }
 
@@ -152,42 +152,42 @@ fun QuizScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors =
-                            CardDefaults.cardColors(
-                                containerColor =
-                                if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
-                                    CorrectGreen.copy(alpha = 0.9f) // theme-adaptive green
-                                } else {
-                                    MaterialTheme.colorScheme.errorContainer
-                                },
-                            ),
+                                CardDefaults.cardColors(
+                                    containerColor =
+                                        if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
+                                            CorrectGreen.copy(alpha = 0.9f) // theme-adaptive green
+                                        } else {
+                                            MaterialTheme.colorScheme.errorContainer
+                                        }
+                                )
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Text(
                                     text =
-                                    if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
-                                        stringResource(Res.string.education_quiz_correct)
-                                    } else {
-                                        stringResource(Res.string.education_quiz_incorrect)
-                                    },
+                                        if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
+                                            stringResource(Res.string.education_quiz_correct)
+                                        } else {
+                                            stringResource(Res.string.education_quiz_incorrect)
+                                        },
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color =
-                                    if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
-                                        CorrectOnGreen
-                                    } else {
-                                        MaterialTheme.colorScheme.onErrorContainer
-                                    },
+                                        if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
+                                            CorrectOnGreen
+                                        } else {
+                                            MaterialTheme.colorScheme.onErrorContainer
+                                        }
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = currentQuestion.explanation,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color =
-                                    if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
-                                        CorrectOnGreen
-                                    } else {
-                                        Color.Unspecified
-                                    },
+                                        if (selectedAnswerIndex == currentQuestion.correctAnswerIndex) {
+                                            CorrectOnGreen
+                                        } else {
+                                            Color.Unspecified
+                                        }
                                 )
                             }
                         }
@@ -197,14 +197,14 @@ fun QuizScreen(
                 Button(
                     onClick = { handleNextQuestion() },
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    enabled = showFeedback,
+                    enabled = showFeedback
                 ) {
                     Text(
                         if (currentQuestionIndex < quiz.questions.size - 1) {
                             stringResource(Res.string.education_quiz_next_question)
                         } else {
                             stringResource(Res.string.education_quiz_see_results)
-                        },
+                        }
                     )
                 }
             }
@@ -222,39 +222,39 @@ private fun OptionCard(option: String, index: Int, selectedIndex: Int?, correctI
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         colors =
-        CardDefaults.cardColors(
-            containerColor =
-            when {
-                showResult && isCorrect -> CorrectGreen.copy(alpha = 0.9f)
-                showResult && isSelected && !isCorrect -> MaterialTheme.colorScheme.errorContainer
-                isSelected -> MaterialTheme.colorScheme.secondaryContainer
-                else -> MaterialTheme.colorScheme.surfaceVariant
-            },
-        ),
+            CardDefaults.cardColors(
+                containerColor =
+                    when {
+                        showResult && isCorrect -> CorrectGreen.copy(alpha = 0.9f)
+                        showResult && isSelected && !isCorrect -> MaterialTheme.colorScheme.errorContainer
+                        isSelected -> MaterialTheme.colorScheme.secondaryContainer
+                        else -> MaterialTheme.colorScheme.surfaceVariant
+                    }
+            ),
         border =
-        BorderStroke(
-            width = if (isSelected && !showResult) 2.dp else 0.dp,
-            color =
-            if (isSelected && !showResult) {
-                MaterialTheme.colorScheme.primary
-            } else {
-                Color.Transparent
-            },
-        ),
+            BorderStroke(
+                width = if (isSelected && !showResult) 2.dp else 0.dp,
+                color =
+                    if (isSelected && !showResult) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        Color.Transparent
+                    }
+            )
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = option,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.weight(1f),
-                color = if (showResult && isCorrect) CorrectOnGreen else Color.Unspecified,
+                color = if (showResult && isCorrect) CorrectOnGreen else Color.Unspecified
             )
             if (showResult && isCorrect) {
                 Text(
                     text = "✓",
                     color = CorrectOnGreen,
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
             }
         }
@@ -268,7 +268,7 @@ private fun ResultsScreen(quiz: Quiz, correctAnswersCount: Int, onRetake: () -> 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -276,30 +276,30 @@ private fun ResultsScreen(quiz: Quiz, correctAnswersCount: Int, onRetake: () -> 
             modifier = Modifier.size(200.dp),
             shape = RoundedCornerShape(100.dp),
             colors =
-            CardDefaults.cardColors(
-                containerColor =
-                when {
-                    percentage >= 80 -> CorrectGreen.copy(alpha = 0.9f)
-                    percentage >= 60 -> MaterialTheme.colorScheme.secondaryContainer
-                    else -> MaterialTheme.colorScheme.errorContainer
-                },
-            ),
+                CardDefaults.cardColors(
+                    containerColor =
+                        when {
+                            percentage >= 80 -> CorrectGreen.copy(alpha = 0.9f)
+                            percentage >= 60 -> MaterialTheme.colorScheme.secondaryContainer
+                            else -> MaterialTheme.colorScheme.errorContainer
+                        }
+                )
         ) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = stringResource(Res.string.education_quiz_score_format, percentage),
                         style = MaterialTheme.typography.displayLarge,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
                         text =
-                        stringResource(
-                            Res.string.education_quiz_count_format,
-                            correctAnswersCount,
-                            quiz.questions.size,
-                        ),
-                        style = MaterialTheme.typography.titleMedium,
+                            stringResource(
+                                Res.string.education_quiz_count_format,
+                                correctAnswersCount,
+                                quiz.questions.size
+                            ),
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
@@ -307,37 +307,37 @@ private fun ResultsScreen(quiz: Quiz, correctAnswersCount: Int, onRetake: () -> 
 
         Text(
             text =
-            when {
-                percentage >= 80 -> stringResource(Res.string.education_quiz_result_excellent)
-                percentage >= 60 -> stringResource(Res.string.education_quiz_result_good)
-                else -> stringResource(Res.string.education_quiz_result_keep_learning)
-            },
+                when {
+                    percentage >= 80 -> stringResource(Res.string.education_quiz_result_excellent)
+                    percentage >= 60 -> stringResource(Res.string.education_quiz_result_good)
+                    else -> stringResource(Res.string.education_quiz_result_keep_learning)
+                },
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Bold
         )
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = stringResource(Res.string.education_quiz_feedback_title),
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text =
-                    when {
-                        percentage >= 80 ->
-                            stringResource(Res.string.education_quiz_feedback_excellent, quiz.title.lowercase())
+                        when {
+                            percentage >= 80 ->
+                                stringResource(Res.string.education_quiz_feedback_excellent, quiz.title.lowercase())
 
-                        percentage >= 60 -> stringResource(Res.string.education_quiz_feedback_good)
+                            percentage >= 60 -> stringResource(Res.string.education_quiz_feedback_good)
 
-                        else -> stringResource(Res.string.education_quiz_feedback_low)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
+                            else -> stringResource(Res.string.education_quiz_feedback_low)
+                        },
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
         }

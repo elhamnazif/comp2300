@@ -10,5 +10,5 @@ data class ProductDto(
     val price: Double,
     val category: String, // String category in API
     val insuranceCovered: Boolean = false,
-    val imageUrl: String? = null,
+    val imageUrl: String? = null
 )

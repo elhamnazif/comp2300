@@ -1,0 +1,29 @@
+CREATE TABLE ReminderEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT,
+    reminderTime INTEGER NOT NULL,
+    type TEXT NOT NULL,
+    frequency TEXT NOT NULL,
+    isEnabled INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL,
+    updatedAt INTEGER NOT NULL
+);
+
+selectAll:
+SELECT * FROM ReminderEntity ORDER BY reminderTime ASC;
+
+selectById:
+SELECT * FROM ReminderEntity WHERE id = ?;
+
+insert:
+INSERT INTO ReminderEntity (id, title, description, reminderTime, type, frequency, isEnabled, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+update:
+UPDATE ReminderEntity
+SET title = ?, description = ?, reminderTime = ?, type = ?, frequency = ?, isEnabled = ?, updatedAt = ?
+WHERE id = ?;
+
+delete:
+DELETE FROM ReminderEntity WHERE id = ?;
