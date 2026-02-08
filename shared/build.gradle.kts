@@ -1,30 +1,23 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
-    alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidKotlinMultiplatformLibrary)
-    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.kmp.library)
+    alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.comp2300.spotless)
     alias(libs.plugins.comp2300.detekt)
 }
 
 kotlin {
-    jvmToolchain(21)
-
-    androidLibrary {
+    android {
         namespace = "com.group8.comp2300.shared"
-        compileSdk = libs.versions.android.compileSdk.get().toInt()
-        minSdk = libs.versions.android.minSdk.get().toInt()
-
-        compilerOptions { jvmTarget.set(JvmTarget.JVM_11) }
+        compileSdk = 36
+        minSdk = 24
+        compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
     }
 
-    listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "sharedKit"
-            isStatic = true
-        }
-    }
+    iosArm64()
+    iosSimulatorArm64()
 
     jvm()
 
@@ -44,20 +37,20 @@ kotlin {
             implementation(libs.mp.stools)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.serialization.json)
         }
         commonTest.dependencies { implementation(libs.kotlin.test) }
     }
-}
 
-// android {
-//    namespace = "com.group8.comp2300.shared"
-//    compileSdk = libs.versions.android.compileSdk.get().toInt()
-//    compileOptions {
-//        sourceCompatibility = JavaVersion.VERSION_11
-//        targetCompatibility = JavaVersion.VERSION_11
-//    }
-//    defaultConfig {
-//        minSdk = libs.versions.android.minSdk.get().toInt()
-//    }
-// }
+    targets
+        .withType<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>()
+        .matching { it.konanTarget.family.isAppleFamily }
+        .configureEach {
+            binaries {
+                framework {
+                    baseName = "sharedKit"
+                    isStatic = true
+                }
+            }
+        }
+}

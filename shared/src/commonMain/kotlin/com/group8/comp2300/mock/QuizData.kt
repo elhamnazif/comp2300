@@ -25,7 +25,9 @@ val allQuizzes =
                     ),
                     correctAnswerIndex = 1,
                     explanation =
-                    "Sperm can survive 5-7 days in the reproductive tract, and ovulation is when an egg is released. The fertile window is the days when sperm can meet an egg.",
+                    "Sperm can survive 5-7 days in the reproductive tract, and ovulation is " +
+                        "when an egg is released. The fertile window is the days when sperm can " +
+                        "meet an egg.",
                 ),
                 QuizQuestion(
                     question =
@@ -39,7 +41,8 @@ val allQuizzes =
                     ),
                     correctAnswerIndex = 3,
                     explanation =
-                    "While 28 days is often cited as average, normal menstrual cycles can range from 21-35 days. Every person's cycle is unique and can vary month to month.",
+                    "While 28 days is often cited as average, normal menstrual cycles can range " +
+                        "from 21-35 days. Every person's cycle is unique and can vary month to month.",
                 ),
                 QuizQuestion(
                     question =
@@ -53,7 +56,9 @@ val allQuizzes =
                     ),
                     correctAnswerIndex = 2,
                     explanation =
-                    "Long-acting reversible contraception (LARC) like IUDs and implants are over 99% effective. Pills are 91% effective with typical use, condoms 85%, and withdrawal only 78%.",
+                    "Long-acting reversible contraception (LARC) like IUDs and implants are over " +
+                        "99% effective. Pills are 91% effective with typical use, condoms 85%, " +
+                        "and withdrawal only 78%.",
                 ),
                 QuizQuestion(
                     question = "What is ovulation?",
@@ -66,7 +71,8 @@ val allQuizzes =
                     ),
                     correctAnswerIndex = 1,
                     explanation =
-                    "Ovulation is when a mature egg is released from the ovary and travels down the fallopian tube, where it can potentially be fertilized by sperm.",
+                    "Ovulation is when a mature egg is released from the ovary and travels down " +
+                        "the fallopian tube, where it can potentially be fertilized by sperm.",
                 ),
                 QuizQuestion(
                     question =
@@ -80,7 +86,8 @@ val allQuizzes =
                     ),
                     correctAnswerIndex = 1,
                     explanation =
-                    "Yes, pre-ejaculate can contain sperm, especially if there has been a recent ejaculation. This is why withdrawal is not a reliable contraception method.",
+                    "Yes, pre-ejaculate can contain sperm, especially if there has been a recent " +
+                        "ejaculation. This is why withdrawal is not a reliable contraception method.",
                 ),
                 QuizQuestion(
                     question =
@@ -94,7 +101,9 @@ val allQuizzes =
                     ),
                     correctAnswerIndex = 2,
                     explanation =
-                    "Pregnancy tests detect hCG hormone, which is produced after the fertilized egg implants in the uterus, typically 6-12 days after conception. However, tests are most accurate after a missed period.",
+                    "Pregnancy tests detect hCG hormone, which is produced after the fertilized " +
+                        "egg implants in the uterus, typically 6-12 days after conception. However, " +
+                        "tests are most accurate after a missed period.",
                 ),
                 QuizQuestion(
                     question =
@@ -108,7 +117,9 @@ val allQuizzes =
                     ),
                     correctAnswerIndex = 2,
                     explanation =
-                    "Age, stress, and smoking can all impact fertility. Hair color has no known effect on fertility. Other factors include weight, certain medications, and underlying health conditions.",
+                    "Age, stress, and smoking can all impact fertility. Hair color has no known " +
+                        "effect on fertility. Other factors include weight, certain medications, " +
+                        "and underlying health conditions.",
                 ),
             ),
         ),

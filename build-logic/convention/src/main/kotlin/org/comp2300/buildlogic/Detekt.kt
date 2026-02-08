@@ -8,16 +8,19 @@ import org.gradle.kotlin.dsl.named
 import java.io.File
 
 internal fun Project.configureDetekt(extension: DetektExtension) = extension.apply {
-    toolVersion.set(libs.versions.detekt.get().toString())
+    toolVersion.set(libs.versions.detekt.get())
     config.setFrom("$rootDir/config/detekt/detekt.yml")
     buildUponDefaultConfig.set(true)
     allRules.set(false)
+
+    // KMP: All source sets use src/[sourceSetName]/kotlin, excluding generated code
     source.setFrom(
-        files(
-            "src/main/java",
-            "src/main/kotlin",
-        ),
+        project.fileTree(project.projectDir) {
+            include("src/*/kotlin/**/*.kt")
+            exclude("**/generated/**")
+        }
     )
+
     tasks.named<Detekt>("detekt") {
         reports {
             checkstyle.required.set(true)
@@ -30,8 +33,9 @@ internal fun Project.configureDetekt(extension: DetektExtension) = extension.app
         reports.sarif.outputLocation.set(File("$rootDir/build/reports/detekt/detekt.sarif"))
         reports.markdown.outputLocation.set(File("$rootDir/build/reports/detekt/detekt.md"))
     }
+
     dependencies {
-        "detektPlugins"(libs.detekt.formatting.get())
-        "detektPlugins"(libs.detekt.compose.get())
+        "detektPlugins"(libs.detekt.formatting)
+        "detektPlugins"(libs.detekt.compose)
     }
 }
