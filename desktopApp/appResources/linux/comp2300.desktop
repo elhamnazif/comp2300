@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Comp2300
+Comment=Healthcare management application
+Exec=comp2300 %u
+Icon=comp2300
+Type=Application
+Terminal=false
+Categories=Healthcare;Utility;
+StartupNotify=true
