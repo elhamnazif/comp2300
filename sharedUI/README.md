@@ -1,10 +1,10 @@
-# ComposeApp Module
+# SharedUI Module
 
 This is the main application module, containing the UI and presentation logic for the cross-platform application.
 
 ## Purpose
 
-The `composeApp` module implements the user interface using Jetpack Compose Multiplatform. It handles navigation, state management (ViewModels), and interacts with the `shared` and `i18n` modules.
+The `sharedUI` module implements the user interface using Jetpack Compose Multiplatform. It handles navigation, state management (ViewModels), and interacts with the `shared` and `i18n` modules.
 
 ## Architecture
 
@@ -27,6 +27,6 @@ Screens are organized by feature area in `presentation/ui/screens/`:
 ## Getting Started
 
 To run the application, use the Gradle tasks for the specific platform:
-- Android: `./gradlew :composeApp:installDebug`
-- Desktop: `./gradlew :composeApp:run`
+- Android: `./gradlew :sharedUI:assembleDebug`
+- Desktop: `./gradlew :sharedUI:run`
 - iOS: Opening the `iosApp` Xcode project.
