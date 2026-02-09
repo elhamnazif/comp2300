@@ -17,42 +17,42 @@ val sampleResults =
             id = "1",
             testName = "HIV 4th Gen",
             testDate = dateToTimestamp(2024, 11, 28),
-            status = LabStatus.NEGATIVE,
+            status = LabStatus.NEGATIVE
         ),
         LabResult(
             id = "2",
             testName = "Chlamydia",
             testDate = dateToTimestamp(2024, 11, 28),
-            status = LabStatus.NEGATIVE,
+            status = LabStatus.NEGATIVE
         ),
         LabResult(
             id = "3",
             testName = "Gonorrhea",
             testDate = dateToTimestamp(2024, 11, 28),
-            status = LabStatus.NEGATIVE,
+            status = LabStatus.NEGATIVE
         ),
         LabResult(
             id = "4",
             testName = "Syphilis",
             testDate = dateToTimestamp(2024, 10, 15),
-            status = LabStatus.NEGATIVE,
+            status = LabStatus.NEGATIVE
         ),
         LabResult(
             id = "5",
             testName = "HIV Test",
             testDate = dateToTimestamp(2024, 9, 10),
-            status = LabStatus.NEGATIVE,
+            status = LabStatus.NEGATIVE
         ),
         LabResult(
             id = "6",
             testName = "Hepatitis B",
             testDate = dateToTimestamp(2024, 8, 5),
-            status = LabStatus.NEGATIVE,
+            status = LabStatus.NEGATIVE
         ),
         LabResult(
             id = "7",
             testName = "Hepatitis C",
             testDate = dateToTimestamp(2024, 8, 5),
-            status = LabStatus.NEGATIVE,
-        ),
+            status = LabStatus.NEGATIVE
+        )
     )

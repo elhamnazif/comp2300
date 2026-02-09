@@ -9,5 +9,5 @@ enum class OrderStatus(val displayName: String) {
     PROCESSING("Processing"),
     SHIPPED("Shipped"),
     DELIVERED("Delivered"),
-    CANCELLED("Cancelled"),
+    CANCELLED("Cancelled")
 }

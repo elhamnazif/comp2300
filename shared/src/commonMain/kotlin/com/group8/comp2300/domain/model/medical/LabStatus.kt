@@ -7,5 +7,5 @@ enum class LabStatus(val displayName: String) {
     PENDING("Pending"),
     NEGATIVE("Negative"),
     POSITIVE("Positive"),
-    INCONCLUSIVE("Inconclusive"),
+    INCONCLUSIVE("Inconclusive")
 }

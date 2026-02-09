@@ -16,7 +16,7 @@ data class ContentItem(
     val tags: List<String> = emptyList(),
     val relatedAction: String? = null,
     val thumbnailUrl: String? = null,
-    val publishedAt: Long = 0L,
+    val publishedAt: Long = 0L
 ) {
     /** Formatted duration for display */
     val formattedDuration: String

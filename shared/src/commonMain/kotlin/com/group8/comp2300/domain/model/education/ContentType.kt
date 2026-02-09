@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 enum class ContentType {
     VIDEO,
     ARTICLE,
-    QUIZ,
+    QUIZ
 }

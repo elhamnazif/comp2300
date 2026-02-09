@@ -45,7 +45,7 @@ kotlin {
 
         freeCompilerArgs.addAll(
             "-Xexpect-actual-classes",
-            "-Xexplicit-backing-fields",
+            "-Xexplicit-backing-fields"
         )
     }
 }

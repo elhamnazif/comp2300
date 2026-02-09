@@ -10,7 +10,7 @@ data class QuizResult(
     val score: Int,
     val totalQuestions: Int,
     val completedAt: Long,
-    val answers: List<Int> = emptyList(),
+    val answers: List<Int> = emptyList()
 ) {
     val percentage: Int
         get() = if (totalQuestions > 0) (score * 100) / totalQuestions else 0

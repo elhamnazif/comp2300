@@ -124,7 +124,7 @@ kotlin {
                 implementation(libs.ktor.client.content.negotiation)
                 implementation(libs.ktor.serialization.json)
 
-                // SQLDelight (coroutines extensions only - drivers are platform-specific)
+                // SQLDelight
                 implementation(libs.sqlDelight.coroutines)
             }
         }
@@ -138,7 +138,6 @@ kotlin {
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
 
-            // SQLDelight Android Driver
             implementation(libs.sqlDelight.driver.android)
         }
 
@@ -153,7 +152,6 @@ kotlin {
                 }
             }
 
-            // SQLDelight (uses sqlite driver on JVM which includes JDBC support)
             implementation(libs.sqlDelight.driver.sqlite)
         }
 

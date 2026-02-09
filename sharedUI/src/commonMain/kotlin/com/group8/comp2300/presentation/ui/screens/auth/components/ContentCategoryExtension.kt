@@ -7,7 +7,7 @@ import com.app.symbols.icons.materialsymbols.icons.*
 import com.group8.comp2300.domain.model.education.ContentCategory
 
 /**
- * UI-specific extension properties for ContentCategory. These are kept in composeApp since they
+ * UI-specific extension properties for ContentCategory. These are kept in sharedUI since they
  * depend on Compose (Color, ImageVector).
  */
 val ContentCategory.color: Color

@@ -18,7 +18,7 @@ val sampleClinics =
             lat = 3.1390,
             lng = 101.6869,
             address = "123 Jalan Bukit Bintang, Kuala Lumpur",
-            phone = "+60 3-1234-5678",
+            phone = "+60 3-1234-5678"
         ),
         Clinic(
             id = "2",
@@ -28,7 +28,7 @@ val sampleClinics =
             nextAvailableSlot = hoursFromNow(24),
             lat = 3.1424,
             lng = 101.6827,
-            address = "Universiti Malaya Campus, Petaling Jaya",
+            address = "Universiti Malaya Campus, Petaling Jaya"
         ),
         Clinic(
             id = "3",
@@ -37,8 +37,8 @@ val sampleClinics =
             tags = listOf("Anonymous", "Late Hours"),
             nextAvailableSlot = hoursFromNow(6),
             lat = 3.1400,
-            lng = 101.6850,
-        ),
+            lng = 101.6850
+        )
     )
 
 val sampleDoctors =
@@ -49,8 +49,8 @@ val sampleDoctors =
             role = "Sexual Health Specialist",
             isOnline = true,
             nextAvailableSlot =
-            Clock.System.now().toEpochMilliseconds(), // Available now
-            specializations = listOf("HIV/AIDS", "PrEP", "STI Testing"),
+                Clock.System.now().toEpochMilliseconds(), // Available now
+            specializations = listOf("HIV/AIDS", "PrEP", "STI Testing")
         ),
         Doctor(
             id = "d2",
@@ -58,13 +58,13 @@ val sampleDoctors =
             role = "Infectious Disease",
             isOnline = false,
             nextAvailableSlot = hoursFromNow(4),
-            specializations = listOf("Hepatitis", "HIV Treatment"),
+            specializations = listOf("Hepatitis", "HIV Treatment")
         ),
         Doctor(
             id = "d3",
             name = "Nurse Alex",
             role = "PrEP Counselor",
             isOnline = true,
-            nextAvailableSlot = Clock.System.now().toEpochMilliseconds(),
-        ),
+            nextAvailableSlot = Clock.System.now().toEpochMilliseconds()
+        )
     )

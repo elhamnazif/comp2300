@@ -46,7 +46,7 @@ Consistent linting helps keep the codebase clean and maintainable.
 Vita uses both unit tests and instrumented UI tests to ensure code quality and reliability.
 
 - **Unit tests** are located in `shared/src/commonTest/kotlin/` and should be written for all new logic where possible.
-- **Instrumented tests** (including UI tests using Jetpack Compose) are located in `composeApp/src/commonTest/kotlin/`. For Compose UI, use the [Jetpack Compose Testing APIs](https://developer.android.com/jetpack/compose/testing).
+- **Instrumented tests** (including UI tests using Jetpack Compose) are located in `sharedUI/src/commonTest/kotlin/`. For Compose UI, use the [Jetpack Compose Testing APIs](https://developer.android.com/jetpack/compose/testing).
 
 #### Guidelines for Testing
 

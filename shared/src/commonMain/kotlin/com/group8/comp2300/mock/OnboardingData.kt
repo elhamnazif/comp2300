@@ -7,11 +7,11 @@ val sampleOnboardingQuestions =
         OnboardingQuestion(
             id = 1,
             text = "In the last 3 months, how many sexual partners have you had?",
-            options = listOf("0", "1", "2-5", "5+"),
+            options = listOf("0", "1", "2-5", "5+")
         ),
         OnboardingQuestion(
             id = 2,
             text = "How often do you use protection (condoms/PrEP)?",
-            options = listOf("Always", "Sometimes", "Never"),
-        ),
+            options = listOf("Always", "Sometimes", "Never")
+        )
     )

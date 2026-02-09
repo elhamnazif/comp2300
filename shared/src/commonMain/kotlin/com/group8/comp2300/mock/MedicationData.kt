@@ -13,7 +13,7 @@ val sampleMedications =
             frequency = MedicationFrequency.DAILY,
             instructions = "Take with food",
             colorHex = "#42A5F5", // Blue
-            status = MedicationStatus.ACTIVE,
+            status = MedicationStatus.ACTIVE
         ),
         Medication(
             id = "2",
@@ -22,7 +22,7 @@ val sampleMedications =
             frequency = MedicationFrequency.DAILY,
             instructions = "",
             colorHex = "#66BB6A", // Green
-            status = MedicationStatus.ACTIVE,
+            status = MedicationStatus.ACTIVE
         ),
         Medication(
             id = "3",
@@ -31,6 +31,6 @@ val sampleMedications =
             frequency = MedicationFrequency.ON_DEMAND,
             instructions = "For headache",
             colorHex = "#FFA726", // Orange
-            status = MedicationStatus.ARCHIVED,
-        ),
+            status = MedicationStatus.ARCHIVED
+        )
     )

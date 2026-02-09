@@ -17,5 +17,5 @@ data class User(
     val createdAt: Long = 0L,
     val isAnonymous: Boolean = false,
     val hasCompletedOnboarding: Boolean = false,
-    val preferredLanguage: String = "en",
+    val preferredLanguage: String = "en"
 )

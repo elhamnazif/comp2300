@@ -4,7 +4,7 @@ The `shared` module contains common business logic, domain models, and platform-
 
 ## Purpose
 
-To provide a single source of truth for the domain layer and any reusable logic that should be shared between the client (`composeApp`) and potentially the `server`.
+To provide a single source of truth for the domain layer and any reusable logic that should be shared between the client (`sharedUI`) and potentially the `server`.
 
 ## Contents
 
@@ -14,4 +14,4 @@ To provide a single source of truth for the domain layer and any reusable logic 
 
 ## Usage
 
-This module is a dependency for `composeApp` and `server`. It ensures that both the frontend and backend share the same data structures.
+This module is a dependency for `sharedUI` and `server`. It ensures that both the frontend and backend share the same data structures.

@@ -12,5 +12,5 @@ data class Article(
     val publishedAt: Long,
     val updatedAt: Long = publishedAt,
     val readTimeMinutes: Int = 5,
-    val tags: List<String> = emptyList(),
+    val tags: List<String> = emptyList()
 )

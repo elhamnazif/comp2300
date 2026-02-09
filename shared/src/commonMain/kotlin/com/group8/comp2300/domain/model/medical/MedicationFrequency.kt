@@ -7,5 +7,5 @@ enum class MedicationFrequency(val displayName: String) {
     DAILY("Daily"),
     TWICE_DAILY("Twice Daily"),
     WEEKLY("Weekly"),
-    ON_DEMAND("On Demand"),
+    ON_DEMAND("On Demand")
 }

@@ -4,6 +4,7 @@ import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentType
 import com.group8.comp2300.domain.model.reminder.AdherenceStatus
 import com.group8.comp2300.domain.model.reminder.CalendarDay
+import kotlin.time.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
@@ -11,7 +12,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Clock
 
 val sampleAppointments =
     listOf(
@@ -21,7 +21,7 @@ val sampleAppointments =
             date = LocalDate(2024, 10, 24),
             time = LocalTime(10, 0),
             type = AppointmentType.SCREENING,
-            clinicId = "1",
+            clinicId = "1"
         ),
         Appointment(
             id = "2",
@@ -29,8 +29,8 @@ val sampleAppointments =
             date = LocalDate(2024, 11, 12),
             time = LocalTime(14, 30),
             type = AppointmentType.FOLLOW_UP,
-            doctorId = "d1",
-        ),
+            doctorId = "d1"
+        )
     )
 
 // Helper: Date Generator

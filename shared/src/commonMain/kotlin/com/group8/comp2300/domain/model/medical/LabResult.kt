@@ -8,7 +8,7 @@ data class LabResult(
     val testName: String,
     val testDate: Long, // Unix timestamp
     val status: LabStatus,
-    val notes: String? = null,
+    val notes: String? = null
 ) {
     val isPositive: Boolean
         get() = status == LabStatus.POSITIVE

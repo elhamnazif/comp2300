@@ -5,13 +5,13 @@
 
 This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM), Server.
 
-- [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
+- [/sharedUI](./sharedUI/src) is for code that will be shared across your Compose Multiplatform applications.
   It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
+  - [commonMain](./sharedUI/src/commonMain/kotlin) is for code that's common for all targets.
   - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
+    For example, if you want to use Apple's CoreCrypto for the iOS part of your Kotlin app,
+    the [iosMain](./sharedUI/src/iosMain/kotlin) folder would be the right place for such calls.
+    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./sharedUI/src/jvmMain/kotlin)
     folder is the appropriate location.
 
 - [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
@@ -31,13 +31,13 @@ in your IDE’s toolbar or build it directly from the terminal:
 - on macOS/Linux
 
   ```shell
-  ./gradlew :composeApp:assembleDebug
+  ./gradlew :sharedUI:assembleDebug
   ```
 
 - on Windows
 
   ```shell
-  .\gradlew.bat :composeApp:assembleDebug
+  .\gradlew.bat :sharedUI:assembleDebug
   ```
 
 ### Build and Run Desktop (JVM) Application
@@ -48,13 +48,13 @@ in your IDE’s toolbar or run it directly from the terminal:
 - on macOS/Linux
 
   ```shell
-  ./gradlew :composeApp:run
+  ./gradlew :sharedUI:run
   ```
 
 - on Windows
 
   ```shell
-  .\gradlew.bat :composeApp:run
+  .\gradlew.bat :sharedUI:run
   ```
 
 ### Build and Run Server

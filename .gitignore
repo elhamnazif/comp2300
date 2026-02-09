@@ -20,3 +20,4 @@ node_modules/
 **/com/app/symbols/
 kls.database.db
 kls_database.db
+*.db

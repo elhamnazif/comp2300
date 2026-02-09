@@ -14,5 +14,5 @@ val baseTimeSlots =
         "03:00 PM",
         "03:30 PM",
         "04:00 PM",
-        "04:30 PM",
+        "04:30 PM"
     )
