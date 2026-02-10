@@ -49,7 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.app.symbols.icons.materialsymbols.Icons
 import com.app.symbols.icons.materialsymbols.icons.*
-import com.group8.comp2300.domain.model.Screen
+import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
 import com.group8.comp2300.presentation.navigation.LocalNavigator

@@ -1,4 +1,4 @@
-package com.group8.comp2300.domain.model
+package com.group8.comp2300.presentation.navigation
 
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable

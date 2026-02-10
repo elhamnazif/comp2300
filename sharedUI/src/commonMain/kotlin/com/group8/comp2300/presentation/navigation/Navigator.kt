@@ -8,7 +8,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
-import com.group8.comp2300.domain.model.Screen
 import kotlinx.serialization.json.Json
 
 abstract class Navigator : ViewModel() {

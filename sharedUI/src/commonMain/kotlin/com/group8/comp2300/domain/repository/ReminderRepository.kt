@@ -1,6 +1,6 @@
 package com.group8.comp2300.domain.repository
 
-import com.group8.comp2300.domain.model.Reminder
+import com.group8.comp2300.domain.model.reminder.Reminder
 import kotlinx.coroutines.flow.Flow
 
 interface ReminderRepository {

@@ -35,8 +35,12 @@ import com.group8.comp2300.di.appModule
 import com.group8.comp2300.di.navigationModule
 import com.group8.comp2300.di.platformModule
 import com.group8.comp2300.di.previewModule
-import com.group8.comp2300.domain.model.Screen
-import com.group8.comp2300.presentation.navigation.*
+import com.group8.comp2300.presentation.navigation.FakeNavigator
+import com.group8.comp2300.presentation.navigation.LocalNavigator
+import com.group8.comp2300.presentation.navigation.Navigator
+import com.group8.comp2300.presentation.navigation.Screen
+import com.group8.comp2300.presentation.navigation.popAnimation
+import com.group8.comp2300.presentation.navigation.pushAnimation
 import com.group8.comp2300.presentation.ui.screens.auth.AuthViewModel
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle

@@ -4,9 +4,9 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.group8.comp2300.`data`.database.AppDatabase
 import com.group8.comp2300.`data`.database.ReminderEntity
-import com.group8.comp2300.domain.model.Reminder
-import com.group8.comp2300.domain.model.ReminderFrequency
-import com.group8.comp2300.domain.model.ReminderType
+import com.group8.comp2300.domain.model.reminder.Reminder
+import com.group8.comp2300.domain.model.reminder.ReminderFrequency
+import com.group8.comp2300.domain.model.reminder.ReminderType
 import com.group8.comp2300.domain.repository.ReminderRepository
 import kotlin.time.Clock
 import kotlinx.coroutines.Dispatchers
@@ -29,8 +29,8 @@ class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderReposi
         database.appDatabaseQueries.insert(
             id = reminder.id,
             title = reminder.title,
-            description = reminder.description,
-            reminderTime = reminder.reminderTime,
+            description = reminder.message,
+            reminderTime = reminder.scheduledTime,
             type = reminder.type.name,
             frequency = reminder.frequency.name,
             isEnabled = if (reminder.isEnabled) 1L else 0L,
@@ -43,8 +43,8 @@ class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderReposi
     override suspend fun update(reminder: Reminder) = withContext(Dispatchers.Default) {
         database.appDatabaseQueries.update(
             title = reminder.title,
-            description = reminder.description,
-            reminderTime = reminder.reminderTime,
+            description = reminder.message,
+            reminderTime = reminder.scheduledTime,
             type = reminder.type.name,
             frequency = reminder.frequency.name,
             isEnabled = if (reminder.isEnabled) 1L else 0L,
@@ -62,12 +62,24 @@ class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderReposi
 
 private fun ReminderEntity.toDomain() = Reminder(
     id = id,
+    userId = "",
     title = title,
-    description = description,
-    reminderTime = reminderTime,
-    type = ReminderType.valueOf(type),
-    frequency = ReminderFrequency.valueOf(frequency),
+    message = description.orEmpty(),
+    scheduledTime = reminderTime,
+    type = parseReminderType(type),
+    frequency = parseReminderFrequency(frequency),
     isEnabled = isEnabled == 1L,
-    createdAt = createdAt,
-    updatedAt = updatedAt
+    relatedEntityId = null,
+    createdAt = createdAt
 )
+
+private fun parseReminderType(type: String): ReminderType = when (type) {
+    "LAB_TEST" -> ReminderType.SCREENING
+    "EDUCATION", "GENERAL" -> ReminderType.CUSTOM
+    else -> ReminderType.entries.firstOrNull { it.name == type } ?: ReminderType.CUSTOM
+}
+
+private fun parseReminderFrequency(frequency: String): ReminderFrequency = when (frequency) {
+    "YEARLY" -> ReminderFrequency.MONTHLY
+    else -> ReminderFrequency.entries.firstOrNull { it.name == frequency } ?: ReminderFrequency.ONCE
+}

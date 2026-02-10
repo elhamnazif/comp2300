@@ -12,7 +12,7 @@ import com.group8.comp2300.data.repository.EducationRepositoryImpl
 import com.group8.comp2300.data.repository.MedicalRepositoryImpl
 import com.group8.comp2300.data.repository.ReminderRepositoryImpl
 import com.group8.comp2300.data.repository.ShopRepositoryImpl
-import com.group8.comp2300.domain.model.Screen
+import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
