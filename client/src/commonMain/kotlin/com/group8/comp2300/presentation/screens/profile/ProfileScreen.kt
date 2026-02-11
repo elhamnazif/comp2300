@@ -25,13 +25,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ChevronRightW400Outlined
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
 import com.group8.comp2300.presentation.components.shimmerEffect
 import com.group8.comp2300.presentation.util.DateFormatter
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ChevronRightW400Outlined
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -530,7 +530,7 @@ private fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onC
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
             }
             Icon(
-                com.group8.comp2300.symbols.icons.materialsymbols.Icons.ChevronRightW400Outlined,
+                Icons.ChevronRightW400Outlined,
                 null,
                 tint = MaterialTheme.colorScheme.outline
             )

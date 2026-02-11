@@ -66,9 +66,9 @@ fun HomeScreen(
                 Icon(
                     imageVector =
                         if (isPrivacyMode) {
-                            com.group8.comp2300.symbols.icons.materialsymbols.Icons.VisibilityW500Outlined
+                            Icons.VisibilityW500Outlined
                         } else {
-                            com.group8.comp2300.symbols.icons.materialsymbols.Icons.VisibilityOffW500Outlined
+                            Icons.VisibilityOffW500Outlined
                         },
                     contentDescription = stringResource(Res.string.home_toggle_privacy_desc),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -93,7 +93,7 @@ fun HomeScreen(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
-                    imageVector = com.group8.comp2300.symbols.icons.materialsymbols.Icons.ShieldW500Outlined,
+                    imageVector = Icons.ShieldW500Outlined,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(48.dp)
@@ -134,7 +134,7 @@ fun HomeScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        com.group8.comp2300.symbols.icons.materialsymbols.Icons.LightbulbW500Outlined,
+                        Icons.LightbulbW500Outlined,
                         null,
                         tint = MaterialTheme.colorScheme.onTertiaryContainer
                     )
@@ -167,7 +167,7 @@ fun HomeScreen(
             )
 
             SmartActionButton(
-                icon = com.group8.comp2300.symbols.icons.materialsymbols.Icons.LocalPharmacyW500Outlined,
+                icon = Icons.LocalPharmacyW500Outlined,
                 label = stringResource(Res.string.home_menu_shop),
                 color = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.weight(1f),
@@ -175,7 +175,7 @@ fun HomeScreen(
             )
 
             SmartActionButton(
-                icon = com.group8.comp2300.symbols.icons.materialsymbols.Icons.CalendarMonthW500Outlined,
+                icon = Icons.CalendarMonthW500Outlined,
                 label = stringResource(Res.string.home_menu_history),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.weight(1f),

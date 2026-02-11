@@ -29,8 +29,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
-import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.group8.comp2300.di.appModule
 import com.group8.comp2300.di.coreModule
 import com.group8.comp2300.di.navigationModule
@@ -43,6 +41,8 @@ import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.presentation.navigation.popAnimation
 import com.group8.comp2300.presentation.navigation.pushAnimation
 import com.group8.comp2300.presentation.screens.auth.AuthViewModel
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
 import org.koin.compose.KoinApplication

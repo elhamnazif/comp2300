@@ -18,12 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
 import com.group8.comp2300.mock.sampleResults
 import com.group8.comp2300.presentation.util.DateFormatter
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
 import kotlin.time.Instant
 import kotlinx.datetime.TimeZone

@@ -47,13 +47,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.presentation.components.shimmerEffect
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
-import com.group8.comp2300.presentation.components.shimmerEffect
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
