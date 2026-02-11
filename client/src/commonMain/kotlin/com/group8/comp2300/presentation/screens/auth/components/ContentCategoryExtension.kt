@@ -2,8 +2,8 @@ package com.group8.comp2300.presentation.screens.auth.components
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.app.symbols.icons.materialsymbols.Icons as MaterialIcons
-import com.app.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons as MaterialIcons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.group8.comp2300.domain.model.education.ContentCategory
 
 /**

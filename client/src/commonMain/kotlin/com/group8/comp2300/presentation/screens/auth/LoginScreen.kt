@@ -31,10 +31,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.app.symbols.icons.materialsymbols.Icons
-import com.app.symbols.icons.materialsymbols.icons.*
-import com.app.symbols.icons.materialsymbols.icons.VisibilityOffW500Outlined
-import com.app.symbols.icons.materialsymbols.icons.VisibilityW500Outlined
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.VisibilityOffW500Outlined
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.VisibilityW500Outlined
 import com.group8.comp2300.presentation.screens.auth.components.AuthDropdown
 import com.group8.comp2300.presentation.screens.auth.components.AuthTextField
 import com.group8.comp2300.presentation.screens.auth.components.ClickableTextField

@@ -29,8 +29,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
-import com.app.symbols.icons.materialsymbols.Icons
-import com.app.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.group8.comp2300.di.appModule
 import com.group8.comp2300.di.coreModule
 import com.group8.comp2300.di.navigationModule

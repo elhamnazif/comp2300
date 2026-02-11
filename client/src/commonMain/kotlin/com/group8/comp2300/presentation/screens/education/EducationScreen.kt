@@ -22,11 +22,11 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.app.symbols.icons.materialsymbols.Icons
-import com.app.symbols.icons.materialsymbols.icons.*
-import com.app.symbols.icons.materialsymbols.icons.ArticleW500Outlined
-import com.app.symbols.icons.materialsymbols.icons.PlayCircleW500Outlined
-import com.app.symbols.icons.materialsymbols.icons.QuizW500Outlined
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArticleW500Outlined
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.PlayCircleW500Outlined
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.QuizW500Outlined
 import com.group8.comp2300.domain.model.education.ContentCategory
 import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.ContentType
@@ -197,7 +197,7 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
             // Play Icon Overlay
             if (item.type == ContentType.VIDEO) {
                 Icon(
-                    com.app.symbols.icons.materialsymbols.Icons.PlayCircleW500Outlined,
+                    com.group8.comp2300.symbols.icons.materialsymbols.Icons.PlayCircleW500Outlined,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(48.dp).align(Alignment.Center)
@@ -253,9 +253,9 @@ fun StandardContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
                 Icon(
                     imageVector =
                         when (item.type) {
-                            ContentType.VIDEO -> com.app.symbols.icons.materialsymbols.Icons.PlayCircleW500Outlined
-                            ContentType.QUIZ -> com.app.symbols.icons.materialsymbols.Icons.QuizW500Outlined
-                            ContentType.ARTICLE -> com.app.symbols.icons.materialsymbols.Icons.ArticleW500Outlined
+                            ContentType.VIDEO -> com.group8.comp2300.symbols.icons.materialsymbols.Icons.PlayCircleW500Outlined
+                            ContentType.QUIZ -> com.group8.comp2300.symbols.icons.materialsymbols.Icons.QuizW500Outlined
+                            ContentType.ARTICLE -> com.group8.comp2300.symbols.icons.materialsymbols.Icons.ArticleW500Outlined
                         },
                     contentDescription = null,
                     tint = item.category.color
