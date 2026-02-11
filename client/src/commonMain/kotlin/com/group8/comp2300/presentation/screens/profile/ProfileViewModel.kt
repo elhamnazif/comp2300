@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModel(
-    private val authRepository: AuthRepository,
+    authRepository: AuthRepository,
     private val getRecentLabResultsUseCase: GetRecentLabResultsUseCase
 ) : ViewModel() {
 

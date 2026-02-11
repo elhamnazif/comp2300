@@ -56,7 +56,7 @@ fun VideoDetailScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
             )
         }
-    ) { padding ->
+    ) { _ ->
         Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
             // 1. STICKY VIDEO PLAYER (Mock)
             // Stays pinned at the top, does not scroll with the text

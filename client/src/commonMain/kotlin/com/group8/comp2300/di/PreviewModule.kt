@@ -22,7 +22,6 @@ import com.group8.comp2300.presentation.screens.medical.BookingViewModel
 import com.group8.comp2300.presentation.screens.shop.ShopViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.LocalDate
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf

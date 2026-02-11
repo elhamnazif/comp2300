@@ -7,15 +7,7 @@ import com.group8.comp2300.domain.model.education.ContentCategory
 import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.Quiz
 import com.group8.comp2300.domain.repository.EducationRepository
-import com.group8.comp2300.presentation.screens.medical.BookingViewModel
-import com.group8.comp2300.presentation.screens.medical.BookingViewModel.State
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class EducationViewModel(private val repository: EducationRepository) : ViewModel() {

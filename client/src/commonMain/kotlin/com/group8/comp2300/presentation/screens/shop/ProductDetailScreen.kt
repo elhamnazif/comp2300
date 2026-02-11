@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName", "FunctionName")
-
 package com.group8.comp2300.presentation.screens.shop
 
 import androidx.compose.foundation.background

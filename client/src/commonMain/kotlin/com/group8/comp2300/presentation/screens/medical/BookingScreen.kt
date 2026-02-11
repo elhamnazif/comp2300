@@ -9,11 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,7 +17,8 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.presentation.screens.medical.components.ClinicMap
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowForwardW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.SearchW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 

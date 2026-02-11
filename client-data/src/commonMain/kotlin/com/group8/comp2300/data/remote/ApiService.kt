@@ -1,10 +1,9 @@
 package com.group8.comp2300.data.remote
 
 import com.group8.comp2300.data.remote.dto.ProductDto
-import com.group8.comp2300.data.remote.dto.UserDto
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
 
 interface ApiService {
     suspend fun getHealth(): Map<String, String>
