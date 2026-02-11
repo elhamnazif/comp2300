@@ -20,9 +20,7 @@ fun createHttpClient(): HttpClient = HttpClient {
         )
     }
     defaultRequest {
-        url("http://10.0.2.2:${ServerConfig.PORT}")
-        // NOTE: Use above until we figure out why expect/actual is breaking
-        // url(baseUrl)
+        url(ServerConfig.baseUrl)
         contentType(ContentType.Application.Json)
     }
 }

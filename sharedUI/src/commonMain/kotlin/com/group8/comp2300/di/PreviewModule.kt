@@ -16,10 +16,10 @@ import com.group8.comp2300.mock.allQuizzes
 import com.group8.comp2300.mock.educationContent
 import com.group8.comp2300.mock.sampleClinics
 import com.group8.comp2300.mock.sampleProducts
-import com.group8.comp2300.presentation.ui.screens.auth.AuthViewModel
-import com.group8.comp2300.presentation.ui.screens.education.EducationViewModel
-import com.group8.comp2300.presentation.ui.screens.medical.BookingViewModel
-import com.group8.comp2300.presentation.ui.screens.shop.ShopViewModel
+import com.group8.comp2300.presentation.screens.auth.AuthViewModel
+import com.group8.comp2300.presentation.screens.education.EducationViewModel
+import com.group8.comp2300.presentation.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.screens.shop.ShopViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -103,7 +103,7 @@ class FakeAuthRepository : AuthRepository {
 }
 
 /** Fake AuthViewModel for Compose Preview. */
-class FakeAuthViewModel : AuthViewModel() {
+class FakeAuthViewModel : com.group8.comp2300.presentation.screens.auth.AuthViewModel() {
     final override val state: StateFlow<State>
         field = MutableStateFlow(State())
 
@@ -128,7 +128,7 @@ val previewModule = module {
     singleOf(::FakeShopRepository) { bind<ShopRepository>() }
     singleOf(::FakeAuthRepository) { bind<AuthRepository>() }
 
-    viewModelOf(::FakeAuthViewModel) { bind<AuthViewModel>() }
+    viewModelOf(::FakeAuthViewModel) { bind<com.group8.comp2300.presentation.screens.auth.AuthViewModel>() }
     viewModelOf(::ShopViewModel)
     viewModelOf(::BookingViewModel)
     viewModelOf(::EducationViewModel)

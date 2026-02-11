@@ -7,10 +7,10 @@ import androidx.compose.runtime.getValue
 import com.group8.comp2300.domain.model.education.ContentType
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
-import com.group8.comp2300.presentation.ui.screens.education.EducationScreen
-import com.group8.comp2300.presentation.ui.screens.education.EducationViewModel
-import com.group8.comp2300.presentation.ui.screens.education.QuizScreen
-import com.group8.comp2300.presentation.ui.screens.education.VideoDetailScreen
+import com.group8.comp2300.presentation.screens.education.EducationScreen
+import com.group8.comp2300.presentation.screens.education.EducationViewModel
+import com.group8.comp2300.presentation.screens.education.QuizScreen
+import com.group8.comp2300.presentation.screens.education.VideoDetailScreen
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.parameter.parametersOf
@@ -21,10 +21,10 @@ import org.koin.dsl.navigation3.navigation
 val educationNavigationModule = module {
     navigation<Screen.Education>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current
-        val viewModel = koinViewModel<EducationViewModel>()
+        val viewModel = koinViewModel<com.group8.comp2300.presentation.screens.education.EducationViewModel>()
         val uiState by viewModel.state.collectAsState()
 
-        EducationScreen(
+        _root_ide_package_.com.group8.comp2300.presentation.screens.education.EducationScreen(
             filteredContent = uiState.filteredContent,
             featuredItem = uiState.featuredItem,
             selectedCategory = uiState.selectedCategory,
@@ -42,9 +42,12 @@ val educationNavigationModule = module {
 
     navigation<Screen.VideoDetail>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         val navigator = LocalNavigator.current
-        val viewModel = koinViewModel<EducationViewModel> { parametersOf(route.videoId) }
+        val viewModel =
+            koinViewModel<com.group8.comp2300.presentation.screens.education.EducationViewModel> {
+                parametersOf(route.videoId)
+            }
 
-        VideoDetailScreen(
+        _root_ide_package_.com.group8.comp2300.presentation.screens.education.VideoDetailScreen(
             viewModel = viewModel,
             videoId = route.videoId,
             onBack = navigator::goBack,
@@ -58,7 +61,14 @@ val educationNavigationModule = module {
 
     navigation<Screen.QuizScreen>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         val navigator = LocalNavigator.current
-        val viewModel = koinViewModel<EducationViewModel> { parametersOf(route.quizId) }
-        QuizScreen(viewModel = viewModel, quizId = route.quizId, onBack = navigator::goBack)
+        val viewModel =
+            koinViewModel<com.group8.comp2300.presentation.screens.education.EducationViewModel> {
+                parametersOf(route.quizId)
+            }
+        _root_ide_package_.com.group8.comp2300.presentation.screens.education.QuizScreen(
+            viewModel = viewModel,
+            quizId = route.quizId,
+            onBack = navigator::goBack
+        )
     }
 }

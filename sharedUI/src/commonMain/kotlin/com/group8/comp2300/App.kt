@@ -41,7 +41,7 @@ import com.group8.comp2300.presentation.navigation.Navigator
 import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.presentation.navigation.popAnimation
 import com.group8.comp2300.presentation.navigation.pushAnimation
-import com.group8.comp2300.presentation.ui.screens.auth.AuthViewModel
+import com.group8.comp2300.presentation.screens.auth.AuthViewModel
 import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
 import org.koin.compose.KoinApplication
@@ -98,7 +98,7 @@ expect fun getWallpaperSeedColor(): Color?
 @Composable
 fun MainApp(
     modifier: Modifier = Modifier,
-    authViewModel: AuthViewModel = koinViewModel(),
+    authViewModel: com.group8.comp2300.presentation.screens.auth.AuthViewModel = koinViewModel(),
     navigator: Navigator = koinViewModel()
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()

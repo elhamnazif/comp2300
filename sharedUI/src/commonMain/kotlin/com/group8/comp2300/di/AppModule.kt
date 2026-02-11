@@ -12,7 +12,6 @@ import com.group8.comp2300.data.repository.EducationRepositoryImpl
 import com.group8.comp2300.data.repository.MedicalRepositoryImpl
 import com.group8.comp2300.data.repository.ReminderRepositoryImpl
 import com.group8.comp2300.data.repository.ShopRepositoryImpl
-import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
@@ -25,12 +24,13 @@ import com.group8.comp2300.domain.usecase.medical.GetRecentLabResultsUseCase
 import com.group8.comp2300.domain.usecase.shop.GetProductsUseCase
 import com.group8.comp2300.presentation.navigation.Navigator
 import com.group8.comp2300.presentation.navigation.RealNavigator
-import com.group8.comp2300.presentation.ui.screens.auth.AuthViewModel
-import com.group8.comp2300.presentation.ui.screens.auth.RealAuthViewModel
-import com.group8.comp2300.presentation.ui.screens.education.EducationViewModel
-import com.group8.comp2300.presentation.ui.screens.medical.BookingViewModel
-import com.group8.comp2300.presentation.ui.screens.profile.ProfileViewModel
-import com.group8.comp2300.presentation.ui.screens.shop.ShopViewModel
+import com.group8.comp2300.presentation.navigation.Screen
+import com.group8.comp2300.presentation.screens.auth.AuthViewModel
+import com.group8.comp2300.presentation.screens.auth.RealAuthViewModel
+import com.group8.comp2300.presentation.screens.education.EducationViewModel
+import com.group8.comp2300.presentation.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.screens.profile.ProfileViewModel
+import com.group8.comp2300.presentation.screens.shop.ShopViewModel
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
@@ -63,7 +63,7 @@ val appModule = module {
     singleOf(::GetRecentLabResultsUseCase)
 
     // ViewModels
-    viewModelOf(::RealAuthViewModel) { bind<AuthViewModel>() }
+    viewModelOf(::RealAuthViewModel) { bind<com.group8.comp2300.presentation.screens.auth.AuthViewModel>() }
     viewModelOf(::ShopViewModel)
     viewModelOf(::BookingViewModel)
     viewModelOf(::EducationViewModel)

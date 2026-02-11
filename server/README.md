@@ -1,24 +1,219 @@
-# Server Module
+# Vita Server
 
-The `server` module provides the backend implementation for the project.
+Ktor-based backend API for the Vita health application.
 
-## Purpose
+## Quick Start
 
-To host the API and server-side logic required by the application. Currently, it serves as a lightweight Ktor backend.
-
-## Technology
-
-- **Ktor**: A framework for building asynchronous servers in Kotlin.
-- **Netty**: The engine used to run the server.
-
-## Running the Server
-
-To start the server locally, run:
 ```bash
+# Run the server (default port 8080)
 ./gradlew :server:run
+
+# Run with custom port
+SERVER_PORT=3000 ./gradlew :server:run
+
+# Run tests
+./gradlew :server:test
 ```
-The server will be available at `http://0.0.0.0:8080` (or the configured `SERVER_PORT`).
 
-## Structure
+The server will be available at `http://localhost:8080`
 
-- `src/main/kotlin/com/group8/comp2300/Application.kt`: The main entry point and routing configuration.
+## Connecting from Mobile Devices
+
+### Android Emulator
+Works automatically - the emulator can access `localhost:8080` on your machine.
+
+### Real Android Device (via USB)
+Run this command once after connecting your device:
+```bash
+adb reverse tcp:8080 tcp:8080
+```
+This forwards port 8080 from the device to your development machine.
+
+### iOS Simulator
+Works automatically - the simulator can access `localhost:8080`.
+
+### Real iOS Device
+Connect your device and Mac to the same Wi-Fi network, then use your Mac's local IP address:
+```bash
+# Find your Mac's IP
+ipconfig getifaddr en0
+# Then use http://THAT_IP:8080 in the app
+```
+
+## Architecture
+
+The server follows **Clean Architecture** with layered separation:
+
+```
+server/
+├── src/main/kotlin/com/group8/comp2300/
+│   ├── Application.kt              # Main entry point, Ktor configuration
+│   ├── di/
+│   │   └── AppModule.kt            # Koin DI module
+│   ├── database/
+│   │   └── DatabaseFactory.kt      # SQLDelight setup, seeding
+│   ├── data/
+│   │   └── repository/
+│   │       └── ProductRepository.kt # Data access layer
+│   └── routes/
+│       └── Products.kt             # API endpoint handlers
+└── src/main/sqldelight/
+    └── com/group8/comp2300/database/
+        └── ServerDatabase.sq       # Database schema
+```
+
+## Technology Stack
+
+| Technology | Purpose | Version |
+|------------|---------|---------|
+| **Ktor** | Web framework | 3.4.0 |
+| **Netty** | Server engine | (via Ktor) |
+| **SQLDelight** | Database ORM | 2.2.1 |
+| **SQLite** | Embedded database | JDBC driver |
+| **Koin** | Dependency injection | 4.x |
+| **Kotlinx Serialization** | JSON handling | (via Ktor) |
+
+## API Endpoints
+
+### Health
+- `GET /` - Server greeting
+- `GET /api/health` - Health check
+
+### Products
+- `GET /api/products` - Get all products
+- `GET /api/products/{id}` - Get product by ID
+
+## Database
+
+The server uses **SQLite** with file storage (`vita.db` in working directory).
+
+### Schema (ServerDatabase.sq)
+
+```sql
+CREATE TABLE ProductEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price REAL NOT NULL,
+    category TEXT NOT NULL,
+    insuranceCovered INTEGER NOT NULL,
+    imageUrl TEXT
+);
+```
+
+### Seeding
+
+On first run, the database auto-seeds with sample products from the shared module:
+- HIV Self-Test, PrEP Refill, Full STI Panel
+- DoxyPEP, Premium Condoms, Lube
+
+## Adding New Features
+
+### 1. Add a New Route
+
+Create a new file in `routes/`:
+
+```kotlin
+// routes/Users.kt
+package com.group8.comp2300.routes
+
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import org.koin.ktor.ext.inject
+
+fun Route.userRoutes() {
+    get("/api/users") {
+        call.respond(mapOf("users" to listOf()))
+    }
+}
+```
+
+Register in `Application.kt`:
+
+```kotlin
+routing {
+    productRoutes()
+    userRoutes()  // Add here
+}
+```
+
+### 2. Add Database Table
+
+Edit `ServerDatabase.sq`:
+
+```sql
+CREATE TABLE UserEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL
+);
+
+selectAllUsers:
+SELECT * FROM UserEntity;
+```
+
+SQLDelight will generate the query methods automatically.
+
+### 3. Add Repository
+
+Create in `data/repository/`:
+
+```kotlin
+class UserRepository(private val database: ServerDatabase) {
+    fun getAll(): List<User> =
+        database.serverDatabaseQueries.selectAllUsers().executeAsList()
+}
+```
+
+Register in `AppModule.kt`:
+
+```kotlin
+val serverModule = module {
+    single<ServerDatabase> { createServerDatabase() }
+    single { ProductRepository(get()) }
+    single { UserRepository(get()) }  // Add here
+}
+```
+
+## Learning Resources
+
+### Ktor
+- [Official Documentation](https://ktor.io/docs/) - Complete Ktor reference
+- [Routing Guide](https://ktor.io/docs/routing.html) - How to define and organize routes
+- [Application Structure](https://ktor.io/docs/server-application-structure.html) - Best practices for organizing Ktor apps
+- [What's New in Ktor 3.4](https://ktor.io/docs/whats-new-340.html) - Latest features including OpenAPI support
+
+### Koin Dependency Injection
+- [Kotlin Quick Start](https://insert-koin.io/docs/quickstart/kotlin/) - Get started with Koin in 10 minutes
+- [Koin GitHub](https://github.com/InsertKoinIO/koin) - Source code and examples
+- [Dependency Injection with Koin](https://auth0.com/blog/dependency-injection-with-kotlin-and-koin/) - In-depth guide
+
+### SQLDelight
+- [SQLDelight Documentation](https://cashapp.github.io/sqldelight/) - Official docs
+- [GitHub](https://github.com/cashapp/sqldelight) - Source and examples
+
+### Best Practices
+- [Building Scalable APIs with Ktor](https://jamshidbekboynazarov.medium.com/best-practices-for-building-scalable-apis-with-ktor-and-kotlin-coroutines-1f773f288664)
+- [Domain-Driven Design with Ktor](https://blog.jetbrains.com/kotlin/2025/04/domain-driven-design-guide.html)
+
+## Development Tips
+
+1. **Hot Reload**: Use `./gradlew :server:run --continuous` for faster development
+2. **Logging**: Ktor uses Logback - configure in `src/main/resources/logback.xml`
+3. **Testing**: Use Ktor's test host for endpoint testing (see `ApplicationTest.kt`)
+4. **Code Style**: Run `./gradlew spotlessApply` before committing
+5. **Static Analysis**: Run `./gradlew detekt` to check code quality
+
+## Current Limitations
+
+- No authentication/authorization
+- Basic error handling
+- SQLite file storage (not production-ready for high traffic)
+- Limited to product endpoints
+
+## Next Steps for Your Team
+
+1. **Familiarize** with Ktor routing and Koin DI using the links above
+2. **Explore** the existing `Products.kt` route and `ProductRepository.kt`
+3. **Add** authentication middleware for protected endpoints
+4. **Implement** additional feature routes (bookings, medical records, etc.)
+5. **Consider** migrating to PostgreSQL/MySQL for production

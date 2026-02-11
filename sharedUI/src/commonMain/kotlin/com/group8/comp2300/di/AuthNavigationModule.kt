@@ -2,8 +2,8 @@ package com.group8.comp2300.di
 
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
-import com.group8.comp2300.presentation.ui.screens.auth.LoginScreen
-import com.group8.comp2300.presentation.ui.screens.auth.OnboardingScreen
+import com.group8.comp2300.presentation.screens.auth.LoginScreen
+import com.group8.comp2300.presentation.screens.auth.OnboardingScreen
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
@@ -12,7 +12,7 @@ import org.koin.dsl.navigation3.navigation
 val authNavigationModule = module {
     navigation<Screen.Onboarding> {
         val navigator = LocalNavigator.current
-        OnboardingScreen(
+        _root_ide_package_.com.group8.comp2300.presentation.screens.auth.OnboardingScreen(
             onFinish = { navigator.clearAndGoTo(Screen.Home) },
             isGuest = navigator.isGuest,
             onRequireAuth = navigator::requireAuth
@@ -21,6 +21,9 @@ val authNavigationModule = module {
 
     navigation<Screen.Login> {
         val navigator = LocalNavigator.current
-        LoginScreen(onLoginSuccess = navigator::goBack, onDismiss = navigator::goBack)
+        _root_ide_package_.com.group8.comp2300.presentation.screens.auth.LoginScreen(
+            onLoginSuccess = navigator::goBack,
+            onDismiss = navigator::goBack
+        )
     }
 }

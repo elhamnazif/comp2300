@@ -6,9 +6,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
-import com.group8.comp2300.presentation.ui.screens.medical.BookingDetailsScreen
-import com.group8.comp2300.presentation.ui.screens.medical.BookingScreen
-import com.group8.comp2300.presentation.ui.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.screens.medical.BookingDetailsScreen
+import com.group8.comp2300.presentation.screens.medical.BookingScreen
+import com.group8.comp2300.presentation.screens.medical.BookingViewModel
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
@@ -18,10 +18,10 @@ import org.koin.dsl.navigation3.navigation
 val medicalNavigationModule = module {
     navigation<Screen.Booking>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current
-        val viewModel = koinViewModel<BookingViewModel>()
+        val viewModel = koinViewModel<com.group8.comp2300.presentation.screens.medical.BookingViewModel>()
         val uiState by viewModel.state.collectAsState()
 
-        BookingScreen(
+        _root_ide_package_.com.group8.comp2300.presentation.screens.medical.BookingScreen(
             clinics = uiState.clinics,
             selectedClinic = uiState.selectedClinic,
             onClinicClick = { clinicId -> navigator.navigate(Screen.ClinicDetail(clinicId)) },
@@ -32,7 +32,7 @@ val medicalNavigationModule = module {
     navigation<Screen.ClinicDetail>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         val navigator = LocalNavigator.current
 
-        BookingDetailsScreen(
+        _root_ide_package_.com.group8.comp2300.presentation.screens.medical.BookingDetailsScreen(
             clinicId = route.clinicId,
             onBack = navigator::goBack,
             onConfirm = {
