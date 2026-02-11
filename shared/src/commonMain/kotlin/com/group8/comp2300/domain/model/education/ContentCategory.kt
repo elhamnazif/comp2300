@@ -2,7 +2,7 @@ package com.group8.comp2300.domain.model.education
 
 import kotlinx.serialization.Serializable
 
-/** Content category identifier - UI-specific properties (color, icon) are mapped in sharedUI */
+/** Content category identifier - UI-specific properties (color, icon) are mapped in client */
 @Serializable
 enum class ContentCategory(val label: String) {
     PUBERTY("Puberty"),

@@ -9,7 +9,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":sharedUI"))
+    implementation(project(":client"))
     implementation(libs.compose.nav3)
     implementation(libs.kermit)
 }

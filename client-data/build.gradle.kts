@@ -6,11 +6,20 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.comp2300.spotless)
     alias(libs.plugins.comp2300.detekt)
+    alias(libs.plugins.sqlDelight)
+}
+
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.group8.comp2300.data.database")
+        }
+    }
 }
 
 kotlin {
     android {
-        namespace = "com.group8.comp2300.shared"
+        namespace = "com.group8.comp2300.sharedclientdata"
         compileSdk = 36
         minSdk = 24
         compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
@@ -32,12 +41,33 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":shared"))
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.mp.stools)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.json)
+            implementation(libs.sqlDelight.coroutines)
+            implementation(libs.koin.core)
         }
+
         commonTest.dependencies { implementation(libs.kotlin.test) }
+
+        androidMain.dependencies {
+            implementation(libs.sqlDelight.driver.android)
+            implementation(libs.ktor.client.okhttp)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.sqlDelight.driver.sqlite)
+            implementation(libs.ktor.client.okhttp)
+        }
+
+        iosMain.dependencies {
+            implementation(libs.sqlDelight.driver.native)
+            implementation(libs.ktor.client.darwin)
+        }
     }
 
     targets
@@ -46,7 +76,7 @@ kotlin {
         .configureEach {
             binaries {
                 framework {
-                    baseName = "sharedKit"
+                    baseName = "ClientDataKit"
                     isStatic = true
                 }
             }

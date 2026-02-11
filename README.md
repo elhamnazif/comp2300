@@ -5,13 +5,13 @@
 
 This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM), Server.
 
-- [/sharedUI](./sharedUI/src) is for code that will be shared across your Compose Multiplatform applications.
+- [/client](./client/src) is for code that will be shared across your Compose Multiplatform client applications.
   It contains several subfolders:
-  - [commonMain](./sharedUI/src/commonMain/kotlin) is for code that's common for all targets.
+  - [commonMain](./client/src/commonMain/kotlin) is for code that's common for all targets.
   - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
     For example, if you want to use Apple's CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./sharedUI/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./sharedUI/src/jvmMain/kotlin)
+    the [iosMain](./client/src/iosMain/kotlin) folder would be the right place for such calls.
+    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./client/src/jvmMain/kotlin)
     folder is the appropriate location.
 
 - [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
@@ -19,9 +19,11 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM), Se
 
 - [/server](./server/src/main/kotlin) is for the Ktor server application.
 
-- [/shared](./shared/src) is for the code that will be shared between all targets in the project.
+- [/shared](./shared/src) is for domain/core code shared between client and server targets.
   The most important subfolder is [commonMain](./shared/src/commonMain/kotlin). If preferred, you
   can add code to the platform-specific folders here too.
+
+- [/client-data](./client-data/src) contains client-only data and infrastructure code (repositories, network, SQLDelight, DI for data wiring).
 
 ### Build and Run Android Application
 
@@ -31,13 +33,13 @@ in your IDE’s toolbar or build it directly from the terminal:
 - on macOS/Linux
 
   ```shell
-  ./gradlew :sharedUI:assembleDebug
+  ./gradlew :client:assembleDebug
   ```
 
 - on Windows
 
   ```shell
-  .\gradlew.bat :sharedUI:assembleDebug
+  .\gradlew.bat :client:assembleDebug
   ```
 
 ### Build and Run Desktop (JVM) Application
@@ -48,13 +50,13 @@ in your IDE’s toolbar or run it directly from the terminal:
 - on macOS/Linux
 
   ```shell
-  ./gradlew :sharedUI:run
+  ./gradlew :client:run
   ```
 
 - on Windows
 
   ```shell
-  .\gradlew.bat :sharedUI:run
+  .\gradlew.bat :client:run
   ```
 
 ### Build and Run Server

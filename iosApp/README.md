@@ -9,7 +9,7 @@ The `iosApp` module provides the entry point for running the application on iOS 
 ## Technology
 
 - **SwiftUI**: Used for the native wrapper and `ContentView`.
-- **Kotlin Multiplatform**: Integrates with the `shared` and `sharedUI` KMP modules.
+- **Kotlin Multiplatform**: Integrates with the `shared`, `client-data`, and `client` KMP modules.
 
 ## Getting Started
 
