@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:function-naming")
+
 package com.group8.comp2300.presentation.screens.shop
 
 import androidx.compose.foundation.background

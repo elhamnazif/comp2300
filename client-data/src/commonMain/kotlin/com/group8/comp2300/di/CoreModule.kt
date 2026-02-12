@@ -1,10 +1,17 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package com.group8.comp2300.di
 
+import com.group8.comp2300.data.auth.TokenManager
+import com.group8.comp2300.data.auth.TokenManagerImpl
 import com.group8.comp2300.data.database.DatabaseDriverFactory
 import com.group8.comp2300.data.database.createDatabase
+import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.ApiServiceImpl
+import com.group8.comp2300.data.remote.TokenProvider
 import com.group8.comp2300.data.remote.createHttpClient
+import com.group8.comp2300.data.remote.tokenProviderDelegate
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicRepositoryImpl
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
@@ -31,8 +38,37 @@ val coreModule = module {
 
     single { createDatabase(get<DatabaseDriverFactory>()) }
 
+    // Token management
+    single { SessionDataSource(get()) }
+    single<TokenManager> { TokenManagerImpl(get()) }
+
+    // Set up token provider delegate for HTTP client auth
+    // This connects the TokenManager to the HttpClient's Bearer auth
+    single<TokenProvider> {
+        object : TokenProvider {
+            private val tokenManager: TokenManager = get()
+
+            override suspend fun getAccessToken(): String? = tokenManager.getAccessToken()
+
+            override suspend fun getRefreshToken(): String? = tokenManager.getRefreshToken()
+
+            override suspend fun saveTokens(accessToken: String, refreshToken: String, expiresAt: Long) {
+                val userId = tokenManager.getUserId() ?: return
+                tokenManager.saveTokens(userId, accessToken, refreshToken, expiresAt)
+            }
+
+            override suspend fun clearTokens() = tokenManager.clearTokens()
+        }
+    }
+
+    // Initialize the delegate after all dependencies are available
+    single {
+        tokenProviderDelegate.setDelegate(get<TokenProvider>())
+        tokenProviderDelegate
+    }
+
     singleOf(::ShopRepositoryImpl) { bind<ShopRepository>() }
-    singleOf(::AuthRepositoryImpl) { bind<AuthRepository>() }
+    single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
     single<ClinicRepository> { ClinicRepositoryImpl() }
     single<EducationRepository> { EducationRepositoryImpl() }
     singleOf(::MedicalRepositoryImpl) { bind<MedicalRepository>() }

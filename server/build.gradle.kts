@@ -23,7 +23,7 @@ application {
     mainClass.set("com.group8.comp2300.ApplicationKt")
 
     val isDevelopment: Boolean = project.ext.has("development")
-    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
+    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment", "-DENV=development")
 }
 
 dependencies {
@@ -34,6 +34,13 @@ dependencies {
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.serialization.json)
     implementation(libs.sqlDelight.driver.sqlite)
+    implementation(libs.kotlinx.datetime)
+
+    // Auth
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.bcrypt)
+    implementation(libs.java.jwt)
 
     // Koin DI
     implementation(libs.koin.ktor)
@@ -41,4 +48,11 @@ dependencies {
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+}
+
+tasks.withType<Test>().configureEach {
+    // Set ENV=development for tests to allow default JWT secret
+    systemProperty("ENV", "development")
+    // Also set ktor.testing property as backup
+    systemProperty("ktor.testing", "true")
 }

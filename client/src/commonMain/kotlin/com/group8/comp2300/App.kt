@@ -47,6 +47,7 @@ import com.materialkolor.DynamicMaterialTheme
 import com.materialkolor.PaletteStyle
 import org.koin.compose.KoinApplication
 import org.koin.compose.KoinApplicationPreview
+import org.koin.compose.KoinMultiplatformApplication
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
@@ -54,20 +55,17 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.koinConfiguration
 import org.koin.dsl.module
 
-@OptIn(
-    KoinExperimentalAPI::class,
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class
-)
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun App() {
     KoinApplication(
-        configuration = koinConfiguration { modules(coreModule, appModule, platformModule, navigationModule) }
-    ) {
-        AppTheme {
-            MainApp()
+        configuration = koinConfiguration { modules(coreModule, appModule, platformModule, navigationModule) },
+        content = {
+            AppTheme {
+                MainApp()
+            }
         }
-    }
+    )
 }
 
 /* ------------------------------------------------------------------

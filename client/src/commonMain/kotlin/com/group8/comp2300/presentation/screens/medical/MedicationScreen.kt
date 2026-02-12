@@ -24,8 +24,8 @@ import com.group8.comp2300.mock.sampleMedications
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
-import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Clock
+import org.jetbrains.compose.resources.stringResource
 
 // --- Data Models ---
 

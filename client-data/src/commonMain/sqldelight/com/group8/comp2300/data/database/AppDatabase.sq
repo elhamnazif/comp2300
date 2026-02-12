@@ -1,3 +1,20 @@
+CREATE TABLE SessionEntity (
+    userId TEXT NOT NULL PRIMARY KEY,
+    accessToken TEXT NOT NULL,
+    refreshToken TEXT NOT NULL,
+    expiresAt INTEGER NOT NULL
+);
+
+selectSession:
+SELECT * FROM SessionEntity LIMIT 1;
+
+upsertSession:
+INSERT OR REPLACE INTO SessionEntity (userId, accessToken, refreshToken, expiresAt)
+VALUES (?, ?, ?, ?);
+
+deleteSession:
+DELETE FROM SessionEntity;
+
 CREATE TABLE ReminderEntity (
     id TEXT NOT NULL PRIMARY KEY,
     title TEXT NOT NULL,

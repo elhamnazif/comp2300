@@ -29,9 +29,9 @@ import com.group8.comp2300.presentation.screens.auth.components.ClickableTextFie
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
+import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.time.Clock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

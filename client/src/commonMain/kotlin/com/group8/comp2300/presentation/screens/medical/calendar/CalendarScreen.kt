@@ -27,11 +27,11 @@ import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
+import kotlin.time.Clock
+import kotlin.time.Instant
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
-import kotlin.time.Clock
-import kotlin.time.Instant
 
 // --- Main Screen ---
 
