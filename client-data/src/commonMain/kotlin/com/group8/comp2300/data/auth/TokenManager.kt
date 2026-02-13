@@ -1,7 +1,7 @@
 package com.group8.comp2300.data.auth
 
-import com.group8.comp2300.data.local.Session
 import com.group8.comp2300.data.local.SessionDataSource
+import kotlin.time.Clock
 
 interface TokenManager {
     suspend fun saveTokens(userId: String, accessToken: String, refreshToken: String, expiresAt: Long)
@@ -30,6 +30,6 @@ class TokenManagerImpl(private val sessionDataSource: SessionDataSource) : Token
 
     override suspend fun isTokenExpired(): Boolean {
         val session = sessionDataSource.getSession() ?: return true
-        return System.currentTimeMillis() >= session.expiresAt
+        return Clock.System.now().toEpochMilliseconds() >= session.expiresAt
     }
 }

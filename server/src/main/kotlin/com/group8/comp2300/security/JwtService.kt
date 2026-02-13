@@ -4,21 +4,21 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.algorithms.Algorithm
 import java.util.Date
+import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.toJavaDuration
 
 interface JwtService {
     fun generateAccessToken(userId: String): String
     fun generateRefreshToken(userId: String): String
     val verifier: JWTVerifier
+    val refreshVerifier: JWTVerifier
     val accessTokenExpiration: Duration
     val refreshTokenExpiration: Duration
 }
 
-class JwtServiceImpl(private val secret: String, private val issuer: String, private val audience: String) :
-    JwtService {
+class JwtServiceImpl(secret: String, private val issuer: String, private val audience: String) : JwtService {
 
     private val accessAlgorithm = Algorithm.HMAC256(secret)
     private val refreshAlgorithm = Algorithm.HMAC256(secret)
@@ -30,6 +30,7 @@ class JwtServiceImpl(private val secret: String, private val issuer: String, pri
         .withAudience(audience)
         .withIssuer(issuer)
         .withSubject(userId)
+        .withJWTId(UUID.randomUUID().toString())
         .withExpiresAt(Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION.inWholeMilliseconds))
         .withClaim("type", "access")
         .sign(accessAlgorithm)
@@ -37,6 +38,7 @@ class JwtServiceImpl(private val secret: String, private val issuer: String, pri
     override fun generateRefreshToken(userId: String): String = JWT.create()
         .withIssuer(issuer)
         .withSubject(userId)
+        .withJWTId(UUID.randomUUID().toString())
         .withExpiresAt(Date(System.currentTimeMillis() + REFRESH_TOKEN_EXPIRATION.inWholeMilliseconds))
         .withClaim("type", "refresh")
         .sign(refreshAlgorithm)
@@ -44,6 +46,11 @@ class JwtServiceImpl(private val secret: String, private val issuer: String, pri
     override val verifier: JWTVerifier =
         JWT.require(accessAlgorithm)
             .withAudience(audience)
+            .withIssuer(issuer)
+            .build()
+
+    override val refreshVerifier: JWTVerifier =
+        JWT.require(refreshAlgorithm)
             .withIssuer(issuer)
             .build()
 

@@ -12,7 +12,7 @@ fun createServerDatabase(databasePath: String = System.getenv("DB_PATH") ?: "jdb
 }
 
 private fun seedProducts(database: ServerDatabase) {
-    if (database.serverDatabaseQueries.selectAllProducts().executeAsList().isEmpty()) {
+    if (database.productQueries.selectAllProducts().executeAsList().isEmpty()) {
         val repository = ProductRepository(database)
         sampleProducts.forEach { repository.insert(it) }
     }

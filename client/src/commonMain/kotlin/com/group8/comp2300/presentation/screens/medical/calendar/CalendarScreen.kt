@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
@@ -64,6 +65,17 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
 
     Scaffold(
         modifier = modifier,
+        topBar = {
+            AppTopBar(
+                title = {
+                    Text(
+                        text = stringResource(Res.string.calendar_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -101,14 +113,6 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            item {
-                Text(
-                    text = stringResource(Res.string.calendar_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
             // Updated Calendar Card with Navigation Logic
             item {
                 CalendarCard(
@@ -770,23 +774,20 @@ fun WrapperFormLayout(
                 .padding(bottom = 32.dp)
                 .verticalScroll(rememberScrollState())
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(bottom = 24.dp)
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    Icons.ArrowBackW400Outlinedfill1,
-                    contentDescription = stringResource(Res.string.common_back_desc)
+        AppTopBar(
+            title = {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
                 )
-            }
-            Spacer(Modifier.width(8.dp))
-            Text(
-                title,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
-        }
+            },
+            onBackClick = onBack,
+            backContentDescription = stringResource(Res.string.common_back_desc),
+            containerColor = Color.Transparent
+        )
+
+        Spacer(Modifier.height(24.dp))
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(12.dp),

@@ -44,7 +44,8 @@ val mainNavigationModule = module {
         val navigator = LocalNavigator.current
         MedicationScreen(
             isGuest = navigator.isGuest,
-            onRequireAuth = navigator::requireAuth
+            onRequireAuth = navigator::requireAuth,
+            onBack = navigator::goBack
         )
     }
 }

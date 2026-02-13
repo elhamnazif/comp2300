@@ -27,7 +27,7 @@ abstract class AuthViewModel : ViewModel() {
         val isRegistering: Boolean = false,
         val step: Int = 0,
         val isLoading: Boolean = false,
-        val errorMessage: StringResource? = null,
+        val errorMessage: String? = null,
 
         // Step 1: Credentials
         val email: String = "",

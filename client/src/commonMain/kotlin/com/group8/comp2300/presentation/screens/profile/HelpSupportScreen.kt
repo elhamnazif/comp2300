@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.mock.faqs
+import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
@@ -30,13 +31,10 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = { Text(stringResource(Res.string.help_support_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.ArrowBackW400Outlinedfill1, stringResource(Res.string.auth_back_desc))
-                    }
-                }
+                onBackClick = onBack,
+                backContentDescription = stringResource(Res.string.auth_back_desc)
             )
         }
     ) { paddingValues ->

@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.ktor)
     alias(libs.plugins.comp2300.spotless)
     alias(libs.plugins.comp2300.detekt)
@@ -47,6 +48,7 @@ dependencies {
     implementation(libs.koin.logger.slf4j)
 
     testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.ktor.client.content.negotiation)
     testImplementation(libs.kotlin.test.junit)
 }
 

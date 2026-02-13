@@ -1,5 +1,6 @@
 package com.group8.comp2300.data.repository
 
+import co.touchlab.kermit.Logger
 import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.dto.LoginRequest
@@ -20,7 +21,11 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import kotlin.time.Clock
 
-class AuthRepositoryImpl(private val apiService: ApiService, private val tokenManager: TokenManager) : AuthRepository {
+class AuthRepositoryImpl(
+    private val apiService: ApiService,
+    private val tokenManager: TokenManager,
+    private val logger: Logger
+) : AuthRepository {
     private val _currentUser = MutableStateFlow<User?>(null)
     override val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
@@ -30,16 +35,20 @@ class AuthRepositoryImpl(private val apiService: ApiService, private val tokenMa
         // Auto-login: restore session from stored tokens on init
         // We do this in a non-blocking way - if tokens exist, we try to fetch the profile
         // If it fails, the user will need to login again
+        logger.d { "AuthRepository initialized" }
         tryRestoreSession()
     }
 
     override suspend fun login(email: String, password: String): Result<User> = try {
+        logger.i { "Login attempt for email: $email" }
         val response = apiService.login(LoginRequest(email, password))
         val expiresAt = Clock.System.now().toEpochMilliseconds() + ACCESS_TOKEN_EXPIRATION_MS
         tokenManager.saveTokens(response.user.id, response.accessToken, response.refreshToken, expiresAt)
         _currentUser.value = response.user
+        logger.i { "Login successful for user: ${response.user.id}" }
         Result.success(response.user)
     } catch (e: Exception) {
+        logger.e(e) { "Login failed for email: $email" }
         Result.failure(e)
     }
 
@@ -52,6 +61,7 @@ class AuthRepositoryImpl(private val apiService: ApiService, private val tokenMa
         sexualOrientation: SexualOrientation,
         dateOfBirth: LocalDate?
     ): Result<User> = try {
+        logger.i { "Registration attempt for email: $email, name: $firstName $lastName" }
         val request = RegisterRequest(
             email = email,
             password = password,
@@ -69,15 +79,20 @@ class AuthRepositoryImpl(private val apiService: ApiService, private val tokenMa
         val expiresAt = Clock.System.now().toEpochMilliseconds() + ACCESS_TOKEN_EXPIRATION_MS
         tokenManager.saveTokens(response.user.id, response.accessToken, response.refreshToken, expiresAt)
         _currentUser.value = response.user
+        logger.i { "Registration successful for user: ${response.user.id}" }
         Result.success(response.user)
     } catch (e: Exception) {
+        logger.e(e) { "Registration failed for email: $email" }
         Result.failure(e)
     }
 
     override suspend fun logout() {
         try {
+            logger.i { "Logout attempt for user: ${_currentUser.value?.id}" }
             apiService.logout()
+            logger.i { "Logout successful" }
         } catch (e: Exception) {
+            logger.w(e) { "Logout API call failed, clearing local session anyway" }
             // Ignore logout errors, just clear local session
         } finally {
             tokenManager.clearTokens()
@@ -90,10 +105,16 @@ class AuthRepositoryImpl(private val apiService: ApiService, private val tokenMa
     private fun tryRestoreSession() {
         repositoryScope.launch {
             try {
-                val userId = tokenManager.getUserId() ?: return@launch
+                val userId = tokenManager.getUserId()
+                logger.d { "Attempting to restore session for user: $userId" }
+                if (userId == null) {
+                    logger.d { "No stored user ID found, skipping session restore" }
+                    return@launch
+                }
 
                 // Check if token is expired before attempting to fetch profile
                 if (tokenManager.isTokenExpired()) {
+                    logger.d { "Stored token is expired, clearing tokens" }
                     tokenManager.clearTokens()
                     return@launch
                 }
@@ -101,9 +122,11 @@ class AuthRepositoryImpl(private val apiService: ApiService, private val tokenMa
                 // Fetch the user's profile from the server using the stored token
                 val user = apiService.getProfile()
                 _currentUser.value = user
+                logger.i { "Session restored successfully for user: ${user.id}" }
             } catch (e: Exception) {
                 // Session restore failed - tokens might be expired or invalid
                 // Clear tokens so user needs to login again
+                logger.w(e) { "Session restore failed, clearing tokens" }
                 tokenManager.clearTokens()
             }
         }

@@ -33,7 +33,11 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
 val coreModule = module {
-    single { createHttpClient() }
+    single {
+        val tokenProvider: TokenProvider = get()
+        tokenProviderDelegate.setDelegate(tokenProvider)
+        createHttpClient()
+    }
     singleOf(::ApiServiceImpl) { bind<ApiService>() }
 
     single { createDatabase(get<DatabaseDriverFactory>()) }
@@ -61,17 +65,17 @@ val coreModule = module {
         }
     }
 
-    // Initialize the delegate after all dependencies are available
-    single {
-        tokenProviderDelegate.setDelegate(get<TokenProvider>())
-        tokenProviderDelegate
-    }
-
     singleOf(::ShopRepositoryImpl) { bind<ShopRepository>() }
-    single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
+    singleOf(::MedicalRepositoryImpl) { bind<MedicalRepository>() }
+    single<AuthRepository> {
+        AuthRepositoryImpl(
+            get(),
+            get(),
+            co.touchlab.kermit.Logger.withTag("AuthRepository")
+        )
+    }
     single<ClinicRepository> { ClinicRepositoryImpl() }
     single<EducationRepository> { EducationRepositoryImpl() }
-    singleOf(::MedicalRepositoryImpl) { bind<MedicalRepository>() }
     single<ReminderRepository> { ReminderRepositoryImpl(get()) }
 
     singleOf(::GetProductsUseCase)

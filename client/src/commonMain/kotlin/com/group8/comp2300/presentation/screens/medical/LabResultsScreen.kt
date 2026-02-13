@@ -16,9 +16,8 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
 import com.group8.comp2300.mock.sampleResults
+import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.util.DateFormatter
-import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
@@ -64,16 +63,10 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: M
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = { Text(stringResource(Res.string.medical_lab_results_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.ArrowBackW400Outlinedfill1,
-                            contentDescription = stringResource(Res.string.medical_lab_results_back_desc)
-                        )
-                    }
-                }
+                onBackClick = onBack,
+                backContentDescription = stringResource(Res.string.medical_lab_results_back_desc)
             )
         }
     ) { innerPadding ->

@@ -159,10 +159,12 @@ class RealAuthViewModel(
             state.update { it.copy(isLoading = false) }
             onSuccess()
         } else {
+            val errorMessage = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() }
+                ?: "Authentication failed"
             state.update {
                 it.copy(
                     isLoading = false,
-                    errorMessage = Res.string.auth_error_authentication_failed
+                    errorMessage = errorMessage
                 )
             }
         }

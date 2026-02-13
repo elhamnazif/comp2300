@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.process.ExecOperations
 
 plugins {
     alias(libs.plugins.compose.compiler)
@@ -11,6 +12,36 @@ plugins {
 android {
     namespace = "com.group8.comp2300.androidApp"
     compileSdk = 36
+
+    // Automatically set up adb port reverse for local development server
+    // This allows the emulator to reach localhost:8080 on the host machine
+    afterEvaluate {
+        abstract class AdbReverseTask : DefaultTask() {
+            @get:Inject
+            abstract val execOperations: ExecOperations
+
+            @TaskAction
+            fun run() {
+                try {
+                    execOperations.exec {
+                        commandLine = listOf("adb", "reverse", "tcp:8080", "tcp:8080")
+                        isIgnoreExitValue = true
+                    }
+                } catch (_: Exception) {
+                    // Ignore if adb not available or no device connected
+                }
+            }
+        }
+
+        tasks.register("adbReverse", AdbReverseTask::class.java) {
+            group = "build"
+            description = "Set up adb port reverse for local development server"
+        }
+
+        tasks.named("preBuild").configure {
+            dependsOn(tasks.named("adbReverse"))
+        }
+    }
 
     defaultConfig {
         minSdk = 24

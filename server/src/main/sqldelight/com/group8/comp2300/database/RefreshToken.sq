@@ -1,0 +1,23 @@
+CREATE TABLE RefreshTokenEntity (
+    token TEXT NOT NULL PRIMARY KEY,
+    userId TEXT NOT NULL,
+    expiresAt INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL,
+    revoked INTEGER NOT NULL DEFAULT 0
+);
+
+insertRefreshToken:
+INSERT INTO RefreshTokenEntity (token, userId, expiresAt, createdAt, revoked)
+VALUES (?, ?, ?, ?, 0);
+
+revokeRefreshToken:
+UPDATE RefreshTokenEntity SET revoked = 1 WHERE token = ?;
+
+revokeAllUserRefreshTokens:
+UPDATE RefreshTokenEntity SET revoked = 1 WHERE userId = ?;
+
+isRefreshTokenValid:
+SELECT * FROM RefreshTokenEntity WHERE token = ? AND revoked = 0 AND expiresAt > ?;
+
+deleteExpiredTokens:
+DELETE FROM RefreshTokenEntity WHERE expiresAt < ?;

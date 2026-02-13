@@ -8,13 +8,13 @@ import com.group8.comp2300.domain.model.shop.ProductCategory
 class ProductRepository(private val database: ServerDatabase) {
 
     fun getAll(): List<Product> =
-        database.serverDatabaseQueries.selectAllProducts().executeAsList().map { it.toDomain() }
+        database.productQueries.selectAllProducts().executeAsList().map { it.toDomain() }
 
     fun getById(id: String): Product? =
-        database.serverDatabaseQueries.selectProductById(id).executeAsOneOrNull()?.toDomain()
+        database.productQueries.selectProductById(id).executeAsOneOrNull()?.toDomain()
 
     fun insert(product: Product) {
-        database.serverDatabaseQueries.insertProduct(
+        database.productQueries.insertProduct(
             id = product.id,
             name = product.name,
             description = product.description,
@@ -26,7 +26,7 @@ class ProductRepository(private val database: ServerDatabase) {
     }
 
     fun update(product: Product) {
-        database.serverDatabaseQueries.updateProduct(
+        database.productQueries.updateProduct(
             name = product.name,
             description = product.description,
             price = product.price,
@@ -38,7 +38,7 @@ class ProductRepository(private val database: ServerDatabase) {
     }
 
     fun delete(id: String) {
-        database.serverDatabaseQueries.deleteProduct(id)
+        database.productQueries.deleteProduct(id)
     }
 
     private fun ProductEntity.toDomain() = Product(
