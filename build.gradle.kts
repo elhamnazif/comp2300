@@ -13,4 +13,5 @@ plugins {
     alias(libs.plugins.spotless).apply(false)
     alias(libs.plugins.detekt).apply(false)
     alias(libs.plugins.symbolCraft).apply(false)
+    alias(libs.plugins.spmForKmp).apply(false)
 }
