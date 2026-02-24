@@ -230,10 +230,8 @@ CREATE TABLE MedicationLog (
 );
 
 insertMedLog:
-INSERT INTO MedicationLog (id, medication_id, scheduled_at, status)
-VALUES (?, ?, ?, ?)
-ON CONFLICT (medication_id, scheduled_at)
-DO UPDATE SET status = EXCLUDED.status;
+INSERT OR REPLACE INTO MedicationLog (id, medication_id, scheduled_at, status)
+VALUES (?, ?, ?, ?);
 
 selectLogsByMedication: -- All logs of a single pill
 SELECT * FROM MedicationLog WHERE medication_id = ?;
