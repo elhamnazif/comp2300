@@ -1,7 +1,6 @@
 -- Server Database Schema
 -- Add your tables and queries here
 
--- to enforce foreign keys
 
 -- 1. Refresh Token
 CREATE TABLE RefreshTokenEntity (
@@ -380,3 +379,91 @@ WHERE id = ?;
 
 deleteReminder:
 DELETE FROM Reminder WHERE id = ?;
+
+
+
+-- 5. Master Calendar (Virtual Table)
+CREATE VIEW MasterCalendar AS
+-- Appointments
+SELECT
+    a.id AS event_id, a.user_id, 'APPOINTMENT' AS event_type,
+    a.title AS display_title,
+    COALESCE(c.name || ' - ', '') || a.appointment_type AS subtitle,
+    a.appointment_time AS event_time,
+    a.status AS event_status
+FROM Appointment a
+LEFT JOIN Clinic c ON a.clinic_id = c.id
+WHERE a.status != 'CANCELLED'
+
+UNION ALL
+-- Scheduled MedicationLogs
+SELECT
+    l.id AS event_id, m.user_id, 'MEDICATION' AS event_type,
+    m.med_name AS display_title,
+    (m.dosage || ' Pill(s)') AS subtitle, -- "Pill(s)" as unit = gives "2 Pill(s)"
+    l.scheduled_at AS event_time,
+    l.status AS event_status
+FROM MedicationLog l
+JOIN Medication m ON l.medication_id = m.id
+
+UNION ALL
+-- Moods
+SELECT
+    id AS event_id, user_id, 'MOOD' AS event_type,
+    CASE mood_type
+        WHEN 'VERY_SAD' THEN 'Very Sad'
+        WHEN 'SAD' THEN 'Sad'
+        WHEN 'NEUTRAL' THEN 'Neutral'
+        WHEN 'GOOD' THEN 'Good'
+        WHEN 'GREAT' THEN 'Great'
+        ELSE mood_type END AS display_title,
+    feeling AS subtitle,
+    timestamp AS event_time,
+    'RECORDED' AS event_status
+FROM Moods;
+
+selectAllCalendarEventsOfUser:
+SELECT * FROM MasterCalendar
+WHERE user_id = ?
+ORDER BY event_time ASC;
+
+
+selectCalendarRange: --Weekly / Monthly View
+SELECT * FROM MasterCalendar
+WHERE user_id = ? AND date(event_time) BETWEEN date(?) AND date(?)
+ORDER BY event_time ASC;
+
+
+selectFilteredEvent: -- Meds only / Appointment only
+SELECT * FROM MasterCalendar
+WHERE user_id = ? AND event_type = ?
+ORDER BY event_time ASC;
+
+
+selectUpcomingEvents: -- Upcoming Events limit 5
+SELECT event_id, display_title, subtitle, event_time, event_type, event_status
+FROM MasterCalendar
+WHERE user_id = ?
+  AND event_status IN ('PENDING', 'CONFIRMED', 'SNOOZED')
+  AND datetime(event_time) > datetime('now', 'localtime')
+  AND date(event_time) <= date('now', 'localtime', '+7 days')
+ORDER BY event_time ASC
+LIMIT 5;
+
+selectTodayAction:
+SELECT event_id, display_title, subtitle, event_time, event_type, event_status
+FROM MasterCalendar
+WHERE user_id = ?
+  AND event_type IN ('MEDICATION', 'APPOINTMENT')
+  AND event_status IN ('PENDING', 'CONFIRMED', 'SNOOZED')
+  AND date(event_time) = date('now', 'localtime')
+  AND datetime(event_time) >= datetime('now', 'localtime')
+ORDER BY event_time ASC;
+
+
+selectCalendarIndicators:
+SELECT date(event_time) AS event_date, COUNT(*) AS total_events
+FROM MasterCalendar
+WHERE user_id = ? AND date(event_time) BETWEEN date(?) AND date(?)
+GROUP BY date(event_time);
+
