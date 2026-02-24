@@ -149,11 +149,12 @@ INSERT INTO ClinicTags (clinic_id, tag_name) VALUES (?, ?);
 selectAllTagsByClinicId:
 SELECT tag_name FROM ClinicTags WHERE clinic_id = ?;
 
-deleteTagByClinicId:
-DELETE FROM ClinicTags WHERE id = ? AND tag_name = ?;
+deleteClinicTag:
+DELETE FROM ClinicTags WHERE clinic_id = ? AND tag_name = ?;
 
 deleteAllTagsByClinicId:
-DELETE FROM ClinicTags WHERE id = ?;
+DELETE FROM ClinicTags WHERE clinic_id = ?;
+
 
 
 
@@ -275,7 +276,7 @@ UPDATE AppointmentSlots
 SET is_booked = ?
 WHERE id = ?;
 
-deleteAppt:
+deleteApptSlot:
 DELETE FROM AppointmentSlots WHERE id = ?;
 
 
@@ -305,10 +306,10 @@ ORDER BY a.appointment_time ASC;
 
 updateAppointmentDetails:
 UPDATE Appointment
-SET appointment_time = ?, booking_id = ?, status = ?, notes = ?, reminders_enabled = ?
+SET title = ?, appointment_time = ?, appointment_type = ?, clinic_id = ?, booking_id = ?, status = ?, notes = ?, reminders_enabled = ?
 WHERE id = ?;
 
-cancelAppointment:
+deleteAppointment:
 DELETE FROM Appointment WHERE id = ?;
 
 
@@ -444,7 +445,7 @@ SELECT event_id, display_title, subtitle, event_time, event_type, event_status
 FROM MasterCalendar
 WHERE user_id = ?
   AND event_status IN ('PENDING', 'CONFIRMED', 'SNOOZED')
-  AND datetime(event_time) > datetime('now', 'localtime')
+  AND event_time > strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
   AND date(event_time) <= date('now', 'localtime', '+7 days')
 ORDER BY event_time ASC
 LIMIT 5;
@@ -455,7 +456,7 @@ FROM MasterCalendar
 WHERE user_id = ?
   AND event_type IN ('MEDICATION', 'APPOINTMENT')
   AND event_status IN ('PENDING', 'CONFIRMED', 'SNOOZED')
-  AND date(event_time) = date('now', 'localtime')
+  AND event_time >= strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
   AND datetime(event_time) >= datetime('now', 'localtime')
 ORDER BY event_time ASC;
 
