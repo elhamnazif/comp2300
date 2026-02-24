@@ -21,3 +21,5 @@ node_modules/
 kls.database.db
 kls_database.db
 *.db
+*.log
+maplibre-cache

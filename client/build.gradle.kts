@@ -4,6 +4,7 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -14,6 +15,7 @@ plugins {
     alias(libs.plugins.symbolCraft)
     alias(libs.plugins.comp2300.spotless)
     alias(libs.plugins.comp2300.detekt)
+    alias(libs.plugins.spmForKmp)
 }
 
 kotlin {
@@ -61,6 +63,23 @@ kotlin {
             }
         return "$hostOs-$hostArch-$renderer"
     }
+
+    targets
+        .withType<KotlinNativeTarget>()
+        .matching { it.konanTarget.family.isAppleFamily }
+        .configureEach {
+            compilations {
+                getByName("main") {
+                    cinterops.create("spmMaplibre")
+                }
+            }
+            binaries {
+                framework {
+                    baseName = "clientKit"
+                    isStatic = true
+                }
+            }
+        }
 
     sourceSets {
         commonMain {
@@ -135,18 +154,6 @@ kotlin {
 
         iosMain.dependencies {}
     }
-
-    targets
-        .withType<KotlinNativeTarget>()
-        .matching { it.konanTarget.family.isAppleFamily }
-        .configureEach {
-            binaries {
-                framework {
-                    baseName = "SharedUI"
-                    isStatic = true
-                }
-            }
-        }
 }
 
 dependencies {
@@ -279,6 +286,18 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().con
 // Workaround for prepareAndroidMainArtProfile which doesn't seem to respect srcDir dependencies
 tasks.matching { it.name.contains("prepareAndroidMainArtProfile", ignoreCase = true) }.configureEach {
     dependsOn("generateSymbolCraftIcons")
+}
+
+swiftPackageConfig {
+    create("spmMaplibre") {
+        dependency {
+            remotePackageVersion(
+                url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
+                products = { add("MapLibre") },
+                version = "6.17.1",
+            )
+        }
+    }
 }
 
 compose.desktop {
