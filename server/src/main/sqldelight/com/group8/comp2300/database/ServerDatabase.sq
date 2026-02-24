@@ -1,6 +1,8 @@
 -- Server Database Schema
 -- Add your tables and queries here
 
+-- to enforce foreign keys
+
 -- 1. Refresh Token
 CREATE TABLE RefreshTokenEntity (
     token TEXT NOT NULL PRIMARY KEY,
@@ -92,8 +94,26 @@ CREATE TABLE Colour (
     hex_code TEXT NOT NULL -- format '#FF5733'
 );
 
+insertColour:
+INSERT INTO Colour (id, colour_name, hex_code)
+VALUES (?, ?, ?);
 
--- 5. Clinic Module
+selectAllColours:
+SELECT * FROM Colour;
+
+selectColourById:
+SELECT * FROM Colour WHERE id = ?;
+
+updateColourById:
+UPDATE Colour
+SET colour_name = ?, hex_code = ?
+WHERE id = ?;
+
+deleteColour:
+DELETE FROM Colour WHERE id = ?;
+
+
+-- 5. Clinic Module Tables - Clinic, ClinicTag
 CREATE TABLE Clinic (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -103,15 +123,43 @@ CREATE TABLE Clinic (
     longitude REAL
 );
 
+insertClinic:
+INSERT INTO Clinic (id, name, address, phone, latitude, longitude)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectClinicById:
+SELECT * FROM Clinic WHERE id = ?;
+
+updateClinicById:
+UPDATE Clinic
+SET name = ?, address = ?, phone = ?, latitude = ?, longitude = ?
+WHERE id = ?;
+
+deleteClinicById:
+DELETE FROM Clinic WHERE id = ?;
+
+
 CREATE TABLE ClinicTags (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     clinic_id TEXT NOT NULL REFERENCES Clinic(id) ON DELETE CASCADE,
     tag_name TEXT NOT NULL
 );
 
+addClinicTag:
+INSERT INTO ClinicTags (clinic_id, tag_name) VALUES (?, ?);
+
+selectAllTagsByClinicId:
+SELECT tag_name FROM ClinicTags WHERE clinic_id = ?;
+
+deleteTagByClinicId:
+DELETE FROM ClinicTags WHERE id = ? AND tag_name = ?;
+
+deleteAllTagsByClinicId:
+DELETE FROM ClinicTags WHERE id = ?;
 
 
--- 2. Medication Module
+
+-- 2. Medication Module Tables - Medication, MedicationSchedule, MedicationLog
 CREATE TABLE Medication (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
@@ -126,12 +174,52 @@ CREATE TABLE Medication (
     status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'ARCHIVED'))
 );
 
+insertMedication:
+INSERT INTO Medication (id, user_id, med_name, dosage, frequency, instruction, colour_id, start_date, end_date, reminders_enabled, status)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectMedById:
+SELECT * FROM Medication WHERE id = ?;
+
+selectActiveMedsByUserId:
+SELECT * FROM Medication WHERE user_id = ? AND status = 'ACTIVE';
+
+selectArchivedMedsByUserId:
+SELECT * FROM Medication WHERE user_id = ? AND status = 'ARCHIVED';
+
+selectAllMedsByUserId: --for Pill page
+SELECT * FROM Medication WHERE user_id = ? AND status IN ('ACTIVE', 'ARCHIVED');
+
+updateMedById:
+UPDATE Medication
+SET med_name = ?, dosage = ?, frequency = ?, instruction = ?, colour_id = ?, start_date = ?, end_date = ?, reminders_enabled = ?, status = ?
+WHERE id = ?;
+
+deleteMedById:
+DELETE FROM Medication WHERE id = ?;
+
+
 CREATE TABLE MedicationSchedule (
     id TEXT PRIMARY KEY,
     medication_id TEXT NOT NULL REFERENCES Medication(id) ON DELETE CASCADE,
     day_of_week INTEGER CHECK (day_of_week BETWEEN 0 AND 6),
     time_of_day TEXT NOT NULL -- HH:MM
 );
+
+insertMedSchedule:
+INSERT INTO MedicationSchedule (id, medication_id, day_of_week, time_of_day)
+VALUES (?, ?, ?, ?);
+
+selectAllSchedulesByMedId:
+SELECT * FROM MedicationSchedule WHERE medication_id = ?;
+
+updateMedScheduleById:
+UPDATE MedicationSchedule
+SET day_of_week = ?, time_of_day = ? WHERE id = ?;
+
+deleteMedScheduleById:
+DELETE FROM MedicationSchedule WHERE id = ?;
+
 
 CREATE TABLE MedicationLog (
     id TEXT PRIMARY KEY,
@@ -141,9 +229,31 @@ CREATE TABLE MedicationLog (
     UNIQUE(medication_id, scheduled_at)
 );
 
+insertMedLog:
+INSERT OR REPLACE INTO MedicationLog (id, medication_id, scheduled_at, status)
+VALUES (?, ?, ?, ?);
+
+selectLogsByMedication: -- All logs of a single pill
+SELECT * FROM MedicationLog WHERE medication_id = ?;
+
+selectLogDetails: -- Single log detail, for MasterCalendar
+SELECT * FROM MedicationLog WHERE id = ?;
+
+selectDailyMedicationAgenda:
+SELECT l.*, m.med_name
+FROM MedicationLog l JOIN Medication m ON l.medication_id = m.id
+WHERE m.user_id = ? AND date(l.scheduled_at) = date(?);
+
+updateMedicationStatus: --'TAKEN', 'SKIPPED', 'SNOOZED', 'PENDING'
+UPDATE MedicationLog
+SET status = ?
+WHERE id = ?;
+
+deleteMedicationLog:
+DELETE FROM MedicationLog WHERE id = ?;
 
 
--- 3. Appointment Module
+-- 3. Appointment Module - AppointmentSlots, Appointment
 CREATE TABLE AppointmentSlots (
     id TEXT PRIMARY KEY,
     clinic_id TEXT NOT NULL REFERENCES Clinic(id) ON DELETE CASCADE,
@@ -151,6 +261,25 @@ CREATE TABLE AppointmentSlots (
     end_time TEXT NOT NULL,   -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
     is_booked INTEGER DEFAULT 0 CHECK (is_booked IN (0, 1))
 );
+
+createApptSlot: --for clinic side
+INSERT INTO AppointmentSlots (id, clinic_id, start_time, end_time, is_booked)
+VALUES (?, ?, ?, ?, ?);
+
+selectAvailableSlotsByClinic:
+SELECT * FROM AppointmentSlots
+WHERE clinic_id = ? AND is_booked = 0
+ORDER BY start_time ASC;
+
+
+updateSlotReservation:
+UPDATE AppointmentSlots
+SET is_booked = ?
+WHERE id = ?;
+
+deleteAppt:
+DELETE FROM AppointmentSlots WHERE id = ?;
+
 
 CREATE TABLE Appointment (
     id TEXT PRIMARY KEY,
@@ -165,8 +294,27 @@ CREATE TABLE Appointment (
     reminders_enabled INTEGER DEFAULT 1 CHECK (reminders_enabled IN (0, 1))
 );
 
+insertAppointment:
+INSERT INTO Appointment (id, user_id, title, appointment_time, appointment_type, clinic_id, booking_id, status, notes, reminders_enabled)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
--- 4. Mood Module
+selectConfirmedApptsOfUser: --user's confirmed appointments
+SELECT a.*, c.name AS clinic_name, c.address
+FROM Appointment a
+LEFT JOIN Clinic c ON a.clinic_id = c.id
+WHERE a.user_id = ? AND a.status = 'CONFIRMED'
+ORDER BY a.appointment_time ASC;
+
+updateAppointmentDetails:
+UPDATE Appointment
+SET appointment_time = ?, booking_id = ?, status = ?, notes = ?, reminders_enabled = ?
+WHERE id = ?;
+
+cancelAppointment:
+DELETE FROM Appointment WHERE id = ?;
+
+
+-- 4. Mood
 CREATE TABLE Moods (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
@@ -176,6 +324,26 @@ CREATE TABLE Moods (
     journal TEXT  -- Longer entry
 );
 
+insertMood:
+INSERT INTO Moods (id, user_id, timestamp, mood_type, feeling, journal)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectMoodHistory:
+SELECT * FROM Moods WHERE user_id = ?
+ORDER BY timestamp DESC;
+
+selectDayMoods: --Moods of the day
+SELECT * FROM Moods
+WHERE user_id = ? AND date(timestamp) = date(?)
+ORDER BY timestamp ASC;
+
+updateMoodById:
+UPDATE Moods
+SET mood_type = ?, feeling = ?, journal = ?
+WHERE id = ?;
+
+deleteMoodById:
+DELETE FROM Moods WHERE id = ?;
 
 
 -- 5. Reminder
@@ -194,3 +362,21 @@ CREATE TABLE Reminder (
     UNIQUE(med_schedule_id, offset_mins),
     UNIQUE(appointment_id, offset_mins)
 );
+
+insertReminder:
+INSERT INTO Reminder (id, user_id, med_schedule_id, appointment_id, offset_mins, is_enabled)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectAppointmentReminders:
+SELECT * FROM Reminder WHERE appointment_id = ?;
+
+selectMedicationReminders:
+SELECT * FROM Reminder WHERE med_schedule_id = ?;
+
+updateReminderStatus:
+UPDATE Reminder
+SET offset_mins = ?, is_enabled = ?
+WHERE id = ?;
+
+deleteReminder:
+DELETE FROM Reminder WHERE id = ?;
