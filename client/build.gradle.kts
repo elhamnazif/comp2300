@@ -64,22 +64,50 @@ kotlin {
         return "$hostOs-$hostArch-$renderer"
     }
 
-    targets
-        .withType<KotlinNativeTarget>()
-        .matching { it.konanTarget.family.isAppleFamily }
-        .configureEach {
-            compilations {
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    )
+        .forEach {
+            it.binaries.framework {
+                baseName = "clientKit"
+                isStatic = true
+            }
+            it.compilations {
                 getByName("main") {
                     cinterops.create("spmMaplibre")
                 }
             }
-            binaries {
-                framework {
-                    baseName = "clientKit"
-                    isStatic = true
-                }
-            }
+//            it.configureSpmMaplibre(project)
         }
+
+//    targets
+//        .withType<KotlinNativeTarget>()
+//        .matching { it.konanTarget.family.isAppleFamily }
+//        .forEach {
+//            it.binaries.framework {
+//                baseName = "clientKit"
+//                isStatic = true
+//            }
+//            it.configureSpmMaplibre(project)
+//        }
+
+//    targets
+//        .withType<KotlinNativeTarget>()
+//        .matching { it.konanTarget.family.isAppleFamily }
+//        .configureEach {
+//            compilations {
+//                getByName("main") {
+//                    cinterops.create("spmMaplibre")
+//                }
+//            }
+//            binaries {
+//                framework {
+//                    baseName = "clientKit"
+//                    isStatic = true
+//                }
+//            }
+//        }
 
     sourceSets {
         commonMain {
@@ -293,7 +321,8 @@ swiftPackageConfig {
         dependency {
             remotePackageVersion(
                 url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
-                products = { add("MapLibre") },
+                products = { add("MapLibre", exportToKotlin = true) },
+                packageName = "maplibre-gl-native-distribution",
                 version = "6.17.1",
             )
         }
@@ -311,3 +340,19 @@ compose.desktop {
         }
     }
 }
+
+fun KotlinNativeTarget.configureSpmMaplibre(project: Project) {
+    // ideally the SPM gradle plugin should handle this for us
+    val variant =
+        when (targetName) {
+            "iosArm64" -> "arm64-apple-ios"
+            "iosSimulatorArm64" -> "arm64-apple-ios-simulator"
+            "iosX64" -> "x86_64-apple-ios-simulator"
+            else -> error("Unrecognized target: $targetName")
+        }
+    val rpath =
+        "${project.layout.buildDirectory.get()}/spmKmpPlugin/spmMaplibre/scratch/$variant/release/"
+    binaries.all { linkerOpts("-F$rpath", "-rpath", rpath) }
+    compilations.getByName("main") { cinterops { create("spmMaplibre") } }
+}
+

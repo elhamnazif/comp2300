@@ -43,7 +43,7 @@ maplibre = "0.12.1"
 # Build tools
 buildkonfig = "0.17.1"
 openapiGenerator = "7.20.0"
-spmForKmp = "1.4.7"
+spmForKmp = "1.4.8"
 
 # Code quality
 spotless = "8.2.1"
