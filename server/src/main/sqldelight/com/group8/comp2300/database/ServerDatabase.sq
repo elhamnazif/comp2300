@@ -1,6 +1,7 @@
 -- Server Database Schema
 -- Add your tables and queries here
 
+-- 1. Refresh Token
 CREATE TABLE RefreshTokenEntity (
     token TEXT NOT NULL PRIMARY KEY,
     userId TEXT NOT NULL,
@@ -25,6 +26,7 @@ SELECT * FROM RefreshTokenEntity WHERE token = ? AND revoked = 0 AND expiresAt >
 deleteExpiredTokens:
 DELETE FROM RefreshTokenEntity WHERE expiresAt < ?;
 
+-- 2. User
 CREATE TABLE UserEntity (
     id TEXT NOT NULL PRIMARY KEY,
     email TEXT NOT NULL UNIQUE,
@@ -53,6 +55,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 updatePassword:
 UPDATE UserEntity SET passwordHash = ? WHERE id = ?;
 
+-- 3. Product
 CREATE TABLE ProductEntity (
     id TEXT NOT NULL PRIMARY KEY,
     name TEXT NOT NULL,
@@ -80,3 +83,114 @@ WHERE id = ?;
 
 deleteProduct:
 DELETE FROM ProductEntity WHERE id = ?;
+
+
+-- 4. Colour Palette
+CREATE TABLE Colour (
+    id TEXT NOT NULL PRIMARY KEY,
+    colour_name TEXT NOT NULL,
+    hex_code TEXT NOT NULL -- format '#FF5733'
+);
+
+
+-- 5. Clinic Module
+CREATE TABLE Clinic (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    address TEXT,
+    phone TEXT,
+    latitude REAL,
+    longitude REAL
+);
+
+CREATE TABLE ClinicTags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    clinic_id TEXT NOT NULL REFERENCES Clinic(id) ON DELETE CASCADE,
+    tag_name TEXT NOT NULL
+);
+
+
+
+-- 2. Medication Module
+CREATE TABLE Medication (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    med_name TEXT NOT NULL,
+    dosage INTEGER, -- for number of pills
+    frequency TEXT NOT NULL CHECK (frequency IN ('DAILY', 'TWICE_DAILY', 'WEEKLY', 'ON_DEMAND')),
+    instruction TEXT,
+    colour_id TEXT REFERENCES Colour(id) ON DELETE SET NULL,
+    start_date TEXT NOT NULL, -- format: YYYY-MM-DD
+    end_date TEXT, -- format: YYYY-MM-DD
+    reminders_enabled INTEGER DEFAULT 1 CHECK (reminders_enabled IN (0, 1)),
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'ARCHIVED'))
+);
+
+CREATE TABLE MedicationSchedule (
+    id TEXT PRIMARY KEY,
+    medication_id TEXT NOT NULL REFERENCES Medication(id) ON DELETE CASCADE,
+    day_of_week INTEGER CHECK (day_of_week BETWEEN 0 AND 6),
+    time_of_day TEXT NOT NULL -- HH:MM
+);
+
+CREATE TABLE MedicationLog (
+    id TEXT PRIMARY KEY,
+    medication_id TEXT NOT NULL REFERENCES Medication(id) ON DELETE CASCADE,
+    scheduled_at TEXT NOT NULL, --YYYY-MM-DDTHH:MM:SS
+    status TEXT NOT NULL CHECK (status IN ('TAKEN', 'SKIPPED', 'SNOOZED', 'PENDING')),
+    UNIQUE(medication_id, scheduled_at)
+);
+
+
+
+-- 3. Appointment Module
+CREATE TABLE AppointmentSlots (
+    id TEXT PRIMARY KEY,
+    clinic_id TEXT NOT NULL REFERENCES Clinic(id) ON DELETE CASCADE,
+    start_time TEXT NOT NULL, -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
+    end_time TEXT NOT NULL,   -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
+    is_booked INTEGER DEFAULT 0 CHECK (is_booked IN (0, 1))
+);
+
+CREATE TABLE Appointment (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    appointment_time TEXT NOT NULL, -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
+    appointment_type TEXT NOT NULL CHECK (appointment_type IN ('CHECKUP', 'CONSULTATION', 'SCREENING', 'FOLLOW_UP', 'VACCINATION', 'OTHER')),
+    clinic_id TEXT REFERENCES Clinic(id) ON DELETE SET NULL,
+    booking_id TEXT REFERENCES AppointmentSlots(id) ON DELETE SET NULL,
+    status TEXT DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED')),
+    notes TEXT,
+    reminders_enabled INTEGER DEFAULT 1 CHECK (reminders_enabled IN (0, 1))
+);
+
+
+-- 4. Mood Module
+CREATE TABLE Moods (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    timestamp TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')), -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
+    mood_type TEXT NOT NULL CHECK (mood_type IN ('VERY_SAD', 'SAD', 'NEUTRAL', 'GOOD', 'GREAT')),
+    feeling TEXT, -- Short phrases
+    journal TEXT  -- Longer entry
+);
+
+
+
+-- 5. Reminder
+CREATE TABLE Reminder (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    med_schedule_id TEXT REFERENCES MedicationSchedule(id) ON DELETE CASCADE,
+    appointment_id TEXT REFERENCES Appointment(id) ON DELETE CASCADE,
+    offset_mins INTEGER NOT NULL CHECK (offset_mins IN (0, 5, 10, 15, 30, 60)),
+    is_enabled INTEGER DEFAULT 1 CHECK (is_enabled IN (0, 1)),
+
+    CONSTRAINT reminder_source_check CHECK (
+        (med_schedule_id IS NOT NULL AND appointment_id IS NULL) OR
+        (med_schedule_id IS NULL AND appointment_id IS NOT NULL)
+    ),
+    UNIQUE(med_schedule_id, offset_mins),
+    UNIQUE(appointment_id, offset_mins)
+);
