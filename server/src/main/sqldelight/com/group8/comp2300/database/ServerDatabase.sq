@@ -1,7 +1,6 @@
 -- Server Database Schema
 -- Add your tables and queries here
 
-
 -- 1. Refresh Token
 CREATE TABLE RefreshTokenEntity (
     token TEXT NOT NULL PRIMARY KEY,
