@@ -1,8 +1,9 @@
-package com.group8.comp2300.domain.repository
+/* package com.group8.comp2300.domain.repository
 
 // converts sql rows -> domain models
 
-import com.group8.comp2300.domain.model.reminder.*
+import com.group8.comp2300.domain.model.reminder.CalendarCategory
+import com.group8.comp2300.domain.model.reminder.MasterCalendarEvent
 import com.group8.comp2300.database.MasterCalendar
 import kotlinx.datetime.toLocalDateTime
 
@@ -16,3 +17,6 @@ fun MasterCalendar.toDomainModel(): MasterCalendarEvent {
         status = this.event_status ?: "PENDING"
     )
 }
+
+
+ */
