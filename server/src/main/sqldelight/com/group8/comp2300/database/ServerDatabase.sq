@@ -365,14 +365,7 @@ WHERE user_id = ?
 GROUP BY mood_type
 ORDER BY count DESC;
 
-selectMoodHistory:
-SELECT * FROM Moods WHERE user_id = ?
-ORDER BY timestamp DESC;
 
-selectDayMoods: --Moods of the day
-SELECT * FROM Moods
-WHERE user_id = ? AND date(timestamp) = date(?)
-ORDER BY timestamp ASC;
 
 -- 5. Reminder
 CREATE TABLE Reminder (
@@ -491,6 +484,10 @@ ORDER BY event_time ASC;
 
 
 selectCalendarIndicators:
+SELECT date(event_time) AS event_date, COUNT(*) AS total_events
+FROM MasterCalendar
+WHERE user_id = ? AND date(event_time) BETWEEN date(?) AND date(?)
+GROUP BY date(event_time);
 
 
 
