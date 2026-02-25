@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.comp2300.spotless)
     alias(libs.plugins.comp2300.detekt)
+    alias(libs.plugins.compose.multiplatform)
+    alias(libs.plugins.compose.compiler)
 }
 
 kotlin {
@@ -36,6 +38,11 @@ kotlin {
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.mp.stools)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.resources)
+            implementation(libs.compose.material3)
         }
         commonTest.dependencies { implementation(libs.kotlin.test) }
     }
