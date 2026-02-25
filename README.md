@@ -39,7 +39,7 @@ in your IDE’s toolbar or build it directly from the terminal:
 - on Windows
 
   ```shell
-  .\gradlew.bat :desktopApp:run
+  .\gradlew.bat :client:assembleDebug
   ```
 
 ### Build and Run Desktop (JVM) Application
