@@ -8,5 +8,5 @@ public data class AppointmentSlots(
   public val clinic_id: String,
   public val start_time: String,
   public val end_time: String,
-  public val is_booked: Long?,
+  public val is_booked: Long?
 )
