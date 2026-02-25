@@ -16,6 +16,8 @@ class AppointmentService(
 ) {
     fun bookAppointment(
         userId: String,
+
+
         slotId: String,
         appointmentType: String,
         title: String
