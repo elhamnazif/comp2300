@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.presentation.components.ScreenHeader
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
@@ -50,24 +51,25 @@ fun HomeScreen(
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
-                .systemBarsPadding()
                 .verticalScroll(scrollState) // Made scrollable to fit new buttons
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // 1. TOP BAR: Privacy Toggle
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            IconButton(onClick = { isPrivacyMode = !isPrivacyMode }) {
-                Icon(
-                    imageVector =
-                        if (isPrivacyMode) {
-                            Icons.VisibilityW500Outlined
-                        } else {
-                            Icons.VisibilityOffW500Outlined
-                        },
-                    contentDescription = stringResource(Res.string.home_toggle_privacy_desc),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+        ScreenHeader(horizontalPadding = 0.dp) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                IconButton(onClick = { isPrivacyMode = !isPrivacyMode }) {
+                    Icon(
+                        imageVector =
+                            if (isPrivacyMode) {
+                                Icons.VisibilityW500Outlined
+                            } else {
+                                Icons.VisibilityOffW500Outlined
+                            },
+                        contentDescription = stringResource(Res.string.home_toggle_privacy_desc),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
 

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -34,6 +33,7 @@ import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.components.shimmerEffect
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
@@ -74,6 +75,7 @@ fun ShopScreen(viewModel: ShopViewModel = koinViewModel()) {
         onCategorySelect = viewModel::selectCategory,
         onAddToCart = viewModel::addToCart,
         onRefresh = viewModel::refreshProducts,
+        onBack = navigator::goBack,
         isGuest = navigator.isGuest,
         onRequireAuth = navigator::requireAuth
     )
@@ -91,6 +93,7 @@ private fun ShopContent(
     onCategorySelect: (ProductCategory) -> Unit,
     onAddToCart: (Product) -> Unit,
     onRefresh: () -> Unit,
+    onBack: () -> Unit,
     isGuest: Boolean = false,
     onRequireAuth: () -> Unit = {}
 ) {
@@ -103,121 +106,131 @@ private fun ShopContent(
         }
     }
 
-    Column(
-        Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface).systemBarsPadding()
-            .pullToRefresh(
-                state = state,
-                isRefreshing = isLoading,
-                onRefresh = onRefresh
-            )
-    ) {
-        Column(Modifier.padding(16.dp).weight(1f)) {
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    stringResource(Res.string.shop_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                BadgedBox(badge = { Badge { Text(cartItemCount.toString()) } }) {
-                    Icon(Icons.ShoppingCartW400Outlinedfill1, stringResource(Res.string.shop_cart_desc))
-                }
-            }
-            Spacer(Modifier.height(16.dp))
-            Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ProductCategory.entries.forEach { category ->
-                    val categoryRes =
-                        when (category) {
-                            ProductCategory.ALL -> Res.string.shop_category_all
-                            ProductCategory.MEDICATION -> Res.string.shop_category_medication
-                            ProductCategory.TESTING -> Res.string.shop_category_testing
-                            ProductCategory.PREVENTION -> Res.string.shop_category_prevention
-                        }
-                    FilterChip(
-                        selected = selectedCategory == category,
-                        onClick = { onCategorySelect(category) },
-                        label = { Text(stringResource(categoryRes)) },
-                        leadingIcon =
-                            if (selectedCategory == category) {
-                                { Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp)) }
-                            } else {
-                                null
-                            }
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = {
+                    Text(
+                        stringResource(Res.string.shop_title),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
                     )
-                }
-            }
-            Spacer(Modifier.height(16.dp))
-
-            if (error != null) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(error, color = MaterialTheme.colorScheme.error)
-                        androidx.compose.material3.TextButton(onClick = { onCategorySelect(selectedCategory) }) {
-                            Text("Retry")
-                        }
+                },
+                onBackClick = onBack,
+                actions = {
+                    BadgedBox(badge = { Badge { Text(cartItemCount.toString()) } }) {
+                        Icon(Icons.ShoppingCartW400Outlinedfill1, stringResource(Res.string.shop_cart_desc))
                     }
                 }
-            } else {
-                Box(Modifier.fillMaxSize()) {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(150.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        if (isLoading) {
-                            items(6) { ShimmerProductCard() }
-                        } else {
-                            items(products) { product ->
-                                ProductCard(
-                                    product = product,
-                                    onClick = { onProductClick(product.id) },
-                                    onAddClick = {
-                                        if (isGuest) {
-                                            onRequireAuth()
-                                        } else {
-                                            onAddToCart(product)
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            Modifier.fillMaxSize()
+                .padding(innerPadding)
+                .background(MaterialTheme.colorScheme.surface)
+                .pullToRefresh(
+                    state = state,
+                    isRefreshing = isLoading,
+                    onRefresh = onRefresh
+                )
+        ) {
+            Column(Modifier.padding(horizontal = 16.dp).padding(top = 16.dp).weight(1f)) {
+                Row(
+                    Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ProductCategory.entries.forEach { category ->
+                        val categoryRes =
+                            when (category) {
+                                ProductCategory.ALL -> Res.string.shop_category_all
+                                ProductCategory.MEDICATION -> Res.string.shop_category_medication
+                                ProductCategory.TESTING -> Res.string.shop_category_testing
+                                ProductCategory.PREVENTION -> Res.string.shop_category_prevention
+                            }
+                        FilterChip(
+                            selected = selectedCategory == category,
+                            onClick = { onCategorySelect(category) },
+                            label = { Text(stringResource(categoryRes)) },
+                            leadingIcon =
+                                if (selectedCategory == category) {
+                                    { Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp)) }
+                                } else {
+                                    null
+                                }
+                        )
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+
+                if (error != null) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(error, color = MaterialTheme.colorScheme.error)
+                            androidx.compose.material3.TextButton(onClick = { onCategorySelect(selectedCategory) }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                } else {
+                    Box(Modifier.fillMaxSize()) {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(150.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            if (isLoading) {
+                                items(6) { ShimmerProductCard() }
+                            } else {
+                                items(products) { product ->
+                                    ProductCard(
+                                        product = product,
+                                        onClick = { onProductClick(product.id) },
+                                        onAddClick = {
+                                            if (isGuest) {
+                                                onRequireAuth()
+                                            } else {
+                                                onAddToCart(product)
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
-                        }
-                        item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(12.dp)) }
-                        item(span = { GridItemSpan(maxLineSpan) }) {
-                            Row(
-                                Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                Icon(
-                                    Icons.InfoW400Outlinedfill1,
-                                    null,
-                                    Modifier.size(14.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                )
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    stringResource(Res.string.shop_discreet_packaging),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                )
+                            item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(12.dp)) }
+                            item(span = { GridItemSpan(maxLineSpan) }) {
+                                Row(
+                                    Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        Icons.InfoW400Outlinedfill1,
+                                        null,
+                                        Modifier.size(14.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    )
+                                    Spacer(Modifier.width(6.dp))
+                                    Text(
+                                        stringResource(Res.string.shop_discreet_packaging),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    )
+                                }
                             }
+                            item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(32.dp)) }
                         }
-                        item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(32.dp)) }
-                    }
 
-                    Box(
-                        Modifier
-                            .align(Alignment.TopCenter)
-                            .graphicsLayer {
-                                scaleX = scaleFraction()
-                                scaleY = scaleFraction()
-                            }
-                    ) {
-                        PullToRefreshDefaults.LoadingIndicator(state = state, isRefreshing = isLoading)
+                        Box(
+                            Modifier
+                                .align(Alignment.TopCenter)
+                                .graphicsLayer {
+                                    scaleX = scaleFraction()
+                                    scaleY = scaleFraction()
+                                }
+                        ) {
+                            PullToRefreshDefaults.LoadingIndicator(state = state, isRefreshing = isLoading)
+                        }
                     }
                 }
             }

@@ -1,50 +1,44 @@
 package com.group8.comp2300.service
 
-import at.favre.lib.crypto.bcrypt.BCrypt
-import com.group8.comp2300.database.ServerDatabase
-import com.group8.comp2300.domain.model.user.Gender
-import com.group8.comp2300.domain.model.user.SexualOrientation
+import com.auth0.jwt.JWT
+import com.group8.comp2300.core.PasswordValidationResult
+import com.group8.comp2300.core.Validation
+import com.group8.comp2300.data.repository.RefreshTokenRepository
+import com.group8.comp2300.data.repository.UserRepository
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.dto.AuthResponse
 import com.group8.comp2300.dto.LoginRequest
-import com.group8.comp2300.dto.RefreshTokenRequest
 import com.group8.comp2300.dto.RegisterRequest
 import com.group8.comp2300.dto.TokenResponse
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.PasswordHasher
+import java.security.MessageDigest
 import java.util.UUID
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 
-class AuthService(private val database: ServerDatabase, private val jwtService: JwtService) {
+class AuthService(
+    private val userRepository: UserRepository,
+    private val refreshTokenRepository: RefreshTokenRepository,
+    private val jwtService: JwtService
+) {
     private val passwordHasher = PasswordHasher
 
-    suspend fun register(request: RegisterRequest): Result<AuthResponse> {
-        // Validate input before checking database
+    fun register(request: RegisterRequest): Result<AuthResponse> {
         val validationResult = validateRegisterRequest(request)
         if (validationResult is ValidationResult.Invalid) {
             return Result.failure(IllegalArgumentException(validationResult.message))
         }
 
-        // Check if user already exists
-        val existingUser = database.serverDatabaseQueries.selectUserByEmail(request.email).executeAsOneOrNull()
-        if (existingUser != null) {
-            // Return generic error to prevent email enumeration
-            return Result.failure(IllegalArgumentException("Registration failed"))
+        if (userRepository.existsByEmail(request.email)) {
+            return Result.failure(IllegalArgumentException("An account with this email already exists"))
         }
 
         return try {
-            // Hash password
             val passwordHash = passwordHasher.hash(request.password)
-
-            // Create new user with UUID to prevent race conditions
             val userId = generateUserId()
-            val now = Clock.System.now().toEpochMilliseconds()
 
-            database.serverDatabaseQueries.insertUser(
+            userRepository.insert(
                 id = userId,
                 email = request.email,
                 passwordHash = passwordHash,
@@ -53,63 +47,57 @@ class AuthService(private val database: ServerDatabase, private val jwtService: 
                 phone = request.phone,
                 dateOfBirth = request.dateOfBirth,
                 gender = request.gender,
-                sexualOrientation = request.sexualOrientation,
-                profileImageUrl = null,
-                createdAt = now,
-                preferredLanguage = "en"
+                sexualOrientation = request.sexualOrientation
             )
 
-            val user = database.serverDatabaseQueries.selectUserById(userId).executeAsOneOrNull()
+            val user = userRepository.findById(userId)
                 ?: return Result.failure(IllegalStateException("Failed to retrieve newly created user"))
 
-            val accessToken = jwtService.generateAccessToken(userId)
-            val refreshToken = jwtService.generateRefreshToken(userId)
-
-            // Store refresh token in database for revocation tracking
-            storeRefreshToken(refreshToken, userId)
+            val tokens = generateTokenPair(userId)
 
             Result.success(
                 AuthResponse(
-                    user = user.toDomainUser(),
-                    accessToken = accessToken,
-                    refreshToken = refreshToken
+                    user = user,
+                    accessToken = tokens.accessToken,
+                    refreshToken = tokens.refreshToken
                 )
             )
         } catch (e: Exception) {
+            if (e.isDuplicateEmailViolation()) {
+                return Result.failure(IllegalArgumentException("An account with this email already exists"))
+            }
             Result.failure(e)
         }
     }
 
-    suspend fun login(request: LoginRequest): Result<AuthResponse> = try {
-        val userEntity = database.serverDatabaseQueries.selectUserByEmail(request.email).executeAsOneOrNull()
+    fun login(request: LoginRequest): Result<AuthResponse> = try {
+        val user = userRepository.findByEmail(request.email)
             ?: return Result.failure(IllegalArgumentException("Invalid email or password"))
 
-        if (!passwordHasher.verify(request.password, userEntity.passwordHash)) {
+        val passwordHash = userRepository.getPasswordHash(request.email)
+            ?: return Result.failure(IllegalArgumentException("Invalid email or password"))
+
+        if (!passwordHasher.verify(request.password, passwordHash)) {
             return Result.failure(IllegalArgumentException("Invalid email or password"))
         }
 
-        val accessToken = jwtService.generateAccessToken(userEntity.id)
-        val refreshToken = jwtService.generateRefreshToken(userEntity.id)
-
-        // Store refresh token in database for revocation tracking
-        storeRefreshToken(refreshToken, userEntity.id)
+        val tokens = generateTokenPair(user.id)
 
         Result.success(
             AuthResponse(
-                user = userEntity.toDomainUser(),
-                accessToken = accessToken,
-                refreshToken = refreshToken
+                user = user,
+                accessToken = tokens.accessToken,
+                refreshToken = tokens.refreshToken
             )
         )
     } catch (e: Exception) {
         Result.failure(e)
     }
 
-    suspend fun refreshToken(refreshToken: String): Result<TokenResponse> {
-        // Verify token signature and expiry
+    fun refreshToken(refreshToken: String): Result<TokenResponse> {
         val jwt = try {
-            com.auth0.jwt.JWT.decode(refreshToken)
-        } catch (e: Exception) {
+            JWT.decode(refreshToken)
+        } catch (_: Exception) {
             return Result.failure(IllegalArgumentException("Invalid refresh token"))
         }
 
@@ -120,99 +108,81 @@ class AuthService(private val database: ServerDatabase, private val jwtService: 
             return Result.failure(IllegalArgumentException("Invalid token type"))
         }
 
-        // Check if token is expired
-        val verifier = jwtService.verifier
+        val verifier = jwtService.refreshVerifier
         try {
             verifier.verify(refreshToken)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             return Result.failure(IllegalArgumentException("Refresh token is expired or invalid"))
         }
 
-        // Hash the token to check against database
         val tokenHash = hashToken(refreshToken)
-        val now = System.currentTimeMillis()
+        val tokenUserId = refreshTokenRepository.findValid(tokenHash)
+            ?: return Result.failure(IllegalArgumentException("Refresh token is invalid or has been revoked"))
 
-        // Check if token exists and is not revoked
-        val storedToken = database.serverDatabaseQueries.isRefreshTokenValid(tokenHash, now)
-            .executeAsOneOrNull()
-
-        if (storedToken == null) {
-            return Result.failure(IllegalArgumentException("Refresh token is invalid or has been revoked"))
-        }
-
-        // Verify the token belongs to the user in the JWT
-        if (storedToken.userId != userId) {
+        if (tokenUserId != userId) {
             return Result.failure(IllegalArgumentException("Token does not belong to the specified user"))
         }
 
-        // Revoke the old refresh token (token rotation)
-        database.serverDatabaseQueries.revokeRefreshToken(tokenHash)
+        // Token rotation: revoke old, issue new
+        refreshTokenRepository.revoke(tokenHash)
 
-        // Generate new token pair
-        val newAccessToken = jwtService.generateAccessToken(userId)
-        val newRefreshToken = jwtService.generateRefreshToken(userId)
+        val newTokens = generateTokenPair(userId)
 
-        // Store the new refresh token
-        storeRefreshToken(newRefreshToken, userId)
-
-        // Clean up expired tokens periodically
+        // Periodic cleanup
         cleanExpiredTokens()
 
         return Result.success(
             TokenResponse(
-                accessToken = newAccessToken,
-                refreshToken = newRefreshToken
+                accessToken = newTokens.accessToken,
+                refreshToken = newTokens.refreshToken
             )
         )
     }
 
-    suspend fun logout(userId: String) {
-        // Revoke all refresh tokens for this user
-        database.serverDatabaseQueries.revokeAllUserRefreshTokens(userId)
+    fun logout(userId: String) {
+        refreshTokenRepository.revokeAllForUser(userId)
     }
 
-    suspend fun getUserById(userId: String): User? =
-        database.serverDatabaseQueries.selectUserById(userId).executeAsOneOrNull()?.toDomainUser()
+    fun getUserById(userId: String): User? = userRepository.findById(userId)
+
+    private fun generateTokenPair(userId: String): TokenPair {
+        val accessToken = jwtService.generateAccessToken(userId)
+        val refreshToken = jwtService.generateRefreshToken(userId)
+        val tokenHash = hashToken(refreshToken)
+
+        refreshTokenRepository.insert(tokenHash, userId)
+
+        return TokenPair(accessToken, refreshToken)
+    }
 
     private fun generateUserId(): String = "user_${UUID.randomUUID()}"
 
-    private fun hashToken(token: String): String {
-        // Use bcrypt to hash the token for secure storage
-        val chars = token.toCharArray()
-        return BCrypt.withDefaults().hashToString(4, chars)
-    }
+    private fun hashToken(token: String): String = MessageDigest.getInstance("SHA-256")
+        .digest(token.toByteArray())
+        .joinToString(separator = "") { byte -> "%02x".format(byte) }
 
-    private suspend fun storeRefreshToken(token: String, userId: String) {
-        val tokenHash = hashToken(token)
-        val now = Clock.System.now()
-        val expiresAt = now + jwtService.refreshTokenExpiration
-
-        database.serverDatabaseQueries.insertRefreshToken(
-            token = tokenHash,
-            userId = userId,
-            expiresAt = expiresAt.toEpochMilliseconds(),
-            createdAt = now.toEpochMilliseconds()
-        )
-    }
-
-    private suspend fun cleanExpiredTokens() {
+    private fun cleanExpiredTokens() {
         val cutoff = Clock.System.now() - 90.days
-        database.serverDatabaseQueries.deleteExpiredTokens(cutoff.toEpochMilliseconds())
+        refreshTokenRepository.deleteExpired(cutoff.toEpochMilliseconds())
     }
 
     private fun validateRegisterRequest(request: RegisterRequest): ValidationResult {
+        val passwordResult = Validation.validatePassword(request.password)
         when {
-            request.email.isBlank() || !isValidEmail(request.email) ->
+            request.email.isBlank() || !Validation.isValidEmail(request.email) ->
                 return ValidationResult.Invalid("Invalid email format")
 
-            request.password.length < 8 ->
+            passwordResult == PasswordValidationResult.TooShort ->
                 return ValidationResult.Invalid("Password must be at least 8 characters")
 
-            !request.password.any { it.isDigit() } ->
+            passwordResult == PasswordValidationResult.MissingDigit ->
                 return ValidationResult.Invalid("Password must contain at least one number")
 
-            !request.password.any { it.isLetter() } ->
+            passwordResult == PasswordValidationResult.MissingLetter ->
                 return ValidationResult.Invalid("Password must contain at least one letter")
+
+            passwordResult == PasswordValidationResult.TooLong ->
+                return ValidationResult.Invalid("Password must be 72 bytes or fewer")
 
             request.firstName.isBlank() || request.lastName.isBlank() ->
                 return ValidationResult.Invalid("Name fields cannot be blank")
@@ -220,31 +190,25 @@ class AuthService(private val database: ServerDatabase, private val jwtService: 
         return ValidationResult.Valid
     }
 
-    private fun isValidEmail(email: String): Boolean {
-        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
-        return emailRegex.matches(email)
+    private fun Throwable.isDuplicateEmailViolation(): Boolean {
+        var current: Throwable? = this
+        while (current != null) {
+            val message = current.message.orEmpty()
+            if (
+                message.contains("UNIQUE constraint failed", ignoreCase = true) &&
+                message.contains("UserEntity.email", ignoreCase = true)
+            ) {
+                return true
+            }
+            current = current.cause
+        }
+        return false
     }
-}
 
-private sealed class ValidationResult {
-    data object Valid : ValidationResult()
-    data class Invalid(val message: String) : ValidationResult()
-}
+    private sealed class ValidationResult {
+        data object Valid : ValidationResult()
+        data class Invalid(val message: String) : ValidationResult()
+    }
 
-private fun com.group8.comp2300.database.UserEntity.toDomainUser(): User = User(
-    id = id,
-    email = email,
-    firstName = firstName,
-    lastName = lastName,
-    phone = phone,
-    dateOfBirth = dateOfBirth?.let { epochMs ->
-        Instant.fromEpochMilliseconds(epochMs).toLocalDateTime(TimeZone.UTC).date
-    },
-    gender = gender?.let { Gender.entries.find { g -> g.name == it } },
-    sexualOrientation = sexualOrientation?.let { SexualOrientation.entries.find { s -> s.name == it } },
-    profileImageUrl = profileImageUrl,
-    createdAt = createdAt,
-    isAnonymous = false,
-    hasCompletedOnboarding = false,
-    preferredLanguage = preferredLanguage
-)
+    private data class TokenPair(val accessToken: String, val refreshToken: String)
+}

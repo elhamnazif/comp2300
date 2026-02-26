@@ -27,6 +27,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.mock.baseTimeSlots
+import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
@@ -105,22 +106,16 @@ fun BookingDetailsScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = {
                     Text(
                         stringResource(Res.string.medical_booking_details_title),
                         style = MaterialTheme.typography.titleMedium
                     )
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.ArrowBackW400Outlinedfill1,
-                            contentDescription = stringResource(Res.string.medical_booking_back_desc)
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                onBackClick = onBack,
+                backContentDescription = stringResource(Res.string.medical_booking_back_desc),
+                containerColor = MaterialTheme.colorScheme.surface
             )
         },
         bottomBar = {

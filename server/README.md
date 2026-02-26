@@ -73,15 +73,61 @@ server/
 | **Koin** | Dependency injection | 4.x |
 | **Kotlinx Serialization** | JSON handling | (via Ktor) |
 
+## Development Mode
+
+The server supports a development mode with authentication bypass for easier testing:
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `ENV` | (unset) | Set to `development` to enable dev mode |
+| `DEV_AUTH_BYPASS` | `true` (in dev) | Set to `false` to disable auth bypass |
+| `JWT_SECRET` | `dev-secret-key-change-in-production` | JWT signing secret |
+| `JWT_REALM` | `comp2300` | JWT realm |
+| `JWT_ISSUER` | `http://0.0.0.0:8080` | JWT issuer |
+| `JWT_AUDIENCE` | `http://0.0.0.0:8080` | JWT audience |
+
+### Development User
+
+When running in development mode with auth bypass enabled (`ENV=development`), a test user is automatically seeded:
+
+| Field | Value |
+|-------|-------|
+| **Email** | `dev@vita.local` |
+| **Password** | `devpassword1` |
+| **User ID** | `dev-user-001` |
+
+This allows you to test authenticated endpoints without creating an account.
+
+### Auth Bypass Behavior
+
+When `DEV_AUTH_BYPASS` is enabled (default in development):
+- Protected endpoints accept requests without authentication
+- The server logs a warning: `⚠️ DEV AUTH BYPASS is ENABLED`
+- Useful for frontend development and API testing
+
+To disable even in development:
+```bash
+ENV=development DEV_AUTH_BYPASS=false ./gradlew :server:run
+```
+
 ## API Endpoints
 
 ### Health
 - `GET /` - Server greeting
 - `GET /api/health` - Health check
 
+### Authentication
+- `POST /api/auth/register` - Create new account
+- `POST /api/auth/login` - Authenticate and receive tokens
+- `POST /api/auth/refresh` - Refresh access token
+- `GET /api/auth/profile` - Get current user (authenticated)
+- `POST /api/auth/logout` - Revoke refresh tokens (authenticated)
+
 ### Products
-- `GET /api/products` - Get all products
-- `GET /api/products/{id}` - Get product by ID
+- `GET /api/products` - Get all products (authenticated)
+- `GET /api/products/{id}` - Get product by ID (authenticated)
 
 ## Database
 
@@ -202,13 +248,6 @@ val serverModule = module {
 3. **Testing**: Use Ktor's test host for endpoint testing (see `ApplicationTest.kt`)
 4. **Code Style**: Run `./gradlew spotlessApply` before committing
 5. **Static Analysis**: Run `./gradlew detekt` to check code quality
-
-## Current Limitations
-
-- No authentication/authorization
-- Basic error handling
-- SQLite file storage (not production-ready for high traffic)
-- Limited to product endpoints
 
 ## Next Steps for Your Team
 

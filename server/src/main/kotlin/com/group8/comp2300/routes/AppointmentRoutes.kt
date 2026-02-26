@@ -8,5 +8,5 @@ import io.ktor.server.routing.get
 import org.koin.ktor.ext.inject
 
 fun Route.appointmentRoutes() {
-
+    // TODO: Add appointment routes
 }

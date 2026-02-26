@@ -16,6 +16,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.education.ContentCategory
+import com.group8.comp2300.presentation.components.AppTopBar
+import com.group8.comp2300.presentation.components.AppTopBarStyle
 import com.group8.comp2300.presentation.screens.auth.components.color
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
@@ -42,18 +44,12 @@ fun VideoDetailScreen(
         modifier = modifier,
         topBar = {
             // Transparent TopBar allowing content to shine through
-            TopAppBar(
+            AppTopBar(
                 title = {},
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.ArrowBackW400Outlinedfill1,
-                            stringResource(Res.string.education_video_back_desc),
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+                onBackClick = onBack,
+                backContentDescription = stringResource(Res.string.education_video_back_desc),
+                style = AppTopBarStyle.TransparentOverlay,
+                contentColor = Color.White
             )
         }
     ) { _ ->

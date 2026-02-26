@@ -51,6 +51,8 @@ kotlin {
             implementation(libs.ktor.serialization.json)
             implementation(libs.sqlDelight.coroutines)
             implementation(libs.koin.core)
+            implementation(libs.kermit)
+            implementation(libs.kermit.koin)
         }
 
         commonTest.dependencies { implementation(libs.kotlin.test) }

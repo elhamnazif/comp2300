@@ -11,8 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
+import com.group8.comp2300.presentation.components.AppTopBar
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
@@ -27,13 +26,10 @@ fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = { Text(stringResource(Res.string.privacy_security_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.ArrowBackW400Outlinedfill1, stringResource(Res.string.auth_back_desc))
-                    }
-                }
+                onBackClick = onBack,
+                backContentDescription = stringResource(Res.string.auth_back_desc)
             )
         }
     ) { paddingValues ->

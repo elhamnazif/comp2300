@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.education.ContentCategory
 import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.ContentType
+import com.group8.comp2300.presentation.components.ScreenHeader
 import com.group8.comp2300.presentation.screens.auth.components.color
 import com.group8.comp2300.presentation.screens.auth.components.icon
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -46,13 +47,12 @@ fun EducationScreen(
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
-                .systemBarsPadding()
     ) {
         // 1. Search Header
-        SearchBar(
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
-        ) {
-            Text(stringResource(Res.string.education_search_placeholder))
+        ScreenHeader(horizontalPadding = 16.dp) {
+            SearchBar(modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(Res.string.education_search_placeholder))
+            }
         }
 
         // 2. Category Pills (The "Spokes")

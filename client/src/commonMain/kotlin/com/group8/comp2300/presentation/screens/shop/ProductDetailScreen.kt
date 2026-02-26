@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.shop.Product
+import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
@@ -40,9 +41,10 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            AppTopBar(
                 title = {},
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.ArrowBackW400Outlinedfill1, null) } }
+                centered = true,
+                onBackClick = onBack
             )
         },
         bottomBar = {

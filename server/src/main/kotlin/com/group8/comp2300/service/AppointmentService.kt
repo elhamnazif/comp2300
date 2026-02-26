@@ -5,12 +5,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-interface SlotRepository {
-    fun getSlotById(id: String): AppointmentSlots?
-    fun updateSlotBookingStatus(id: String, isBooked: Long)
-    fun getSlotByBookingId(bookingId: String): AppointmentSlots?
-}
-
 class AppointmentService(
     private val appointmentRepository: AppointmentRepository,
     private val slotRepository: SlotRepository,
@@ -25,13 +19,14 @@ class AppointmentService(
         title: String,
         paymentMethod: PaymentMethod
     ): Result<BookingResult> {
-
         // 1. Validate payment method for this appointment type
         if (!paymentService.validatePaymentMethod(appointmentType, paymentMethod)) {
-            return Result.failure(Exception(
-                "Payment method $paymentMethod is not allowed for $appointmentType appointments. " +
+            return Result.failure(
+                Exception(
+                    "Payment method $paymentMethod is not allowed for $appointmentType appointments. " +
                         "Allowed methods: ${paymentService.getPaymentMethodsForAppointmentType(appointmentType)}"
-            ))
+                )
+            )
         }
 
         // 2. Check if slot exists
@@ -76,7 +71,13 @@ class AppointmentService(
             appointment_type = appointmentType,
             clinic_id = slot.clinic_id,
             booking_id = slot.id,
-            status = if (paymentMethod == PaymentMethod.ONLINE && requiresPrePayment) "CONFIRMED" else "PENDING_PAYMENT",
+            status = if (paymentMethod == PaymentMethod.ONLINE &&
+                requiresPrePayment
+            ) {
+                "CONFIRMED"
+            } else {
+                "PENDING_PAYMENT"
+            },
             notes = null,
             reminders_enabled = 0L,
             payment_method = paymentMethod.name,
@@ -146,7 +147,6 @@ class AppointmentService(
                 refundAmount = refundInfo.amount,
                 refundStatus = refundInfo.status
             )
-
         } catch (e: Exception) {
             return CancellationResult(
                 success = false,
@@ -156,8 +156,10 @@ class AppointmentService(
     }
 
     private fun calculateRefund(appointment: Appointment): RefundInfo {
-        val appointmentTime = LocalDateTime.parse(appointment.appointment_time,
-            DateTimeFormatter.ISO_DATE_TIME)
+        val appointmentTime = LocalDateTime.parse(
+            appointment.appointment_time,
+            DateTimeFormatter.ISO_DATE_TIME
+        )
         val now = LocalDateTime.now()
         val hoursUntilAppointment = java.time.Duration.between(now, appointmentTime).toHours()
 
@@ -166,14 +168,17 @@ class AppointmentService(
                 amount = appointment.payment_amount ?: 0.0,
                 status = "FULL_REFUND"
             )
+
             hoursUntilAppointment in 2..23 -> RefundInfo(
                 amount = (appointment.payment_amount ?: 0.0) * 0.5,
                 status = "PARTIAL_REFUND"
             )
+
             hoursUntilAppointment >= 0 && hoursUntilAppointment < 2 -> RefundInfo(
                 amount = 0.0,
                 status = "NO_REFUND"
             )
+
             else -> RefundInfo(
                 amount = 0.0,
                 status = "LATE_CANCELLATION"
@@ -185,33 +190,43 @@ class AppointmentService(
         paymentMethod: PaymentMethod,
         paymentStatus: PaymentStatus,
         amount: Double
-    ): String {
-        return when (paymentMethod) {
-            PaymentMethod.ONLINE -> when (paymentStatus) {
-                PaymentStatus.COMPLETED -> "Booking confirmed! Payment of $$amount processed successfully."
-                PaymentStatus.PENDING -> "Booking created. Please complete the payment of $$amount to confirm."
-                else -> "Booking created. Payment status: $paymentStatus"
-            }
-            PaymentMethod.PHYSICAL -> "Booking confirmed! Please pay $$amount at the clinic."
-            PaymentMethod.INSURANCE -> "Booking confirmed! Insurance will be billed for $$amount."
-            PaymentMethod.PENDING -> "Booking created. Please select a payment method."
+    ): String = when (paymentMethod) {
+        PaymentMethod.ONLINE -> when (paymentStatus) {
+            PaymentStatus.COMPLETED -> "Booking confirmed! Payment of $$amount processed successfully."
+            PaymentStatus.PENDING -> "Booking created. Please complete the payment of $$amount to confirm."
+            else -> "Booking created. Payment status: $paymentStatus"
         }
+
+        PaymentMethod.PHYSICAL -> "Booking confirmed! Please pay $$amount at the clinic."
+
+        PaymentMethod.INSURANCE -> "Booking confirmed! Insurance will be billed for $$amount."
+
+        PaymentMethod.PENDING -> "Booking created. Please select a payment method."
     }
 
-    private fun buildCancellationMessage(refundInfo: RefundInfo): String {
-        return when (refundInfo.status) {
-            "FULL_REFUND" -> "Appointment cancelled successfully. Full refund of $${refundInfo.amount} will be processed."
-            "PARTIAL_REFUND" -> "Appointment cancelled successfully. Partial refund of $${refundInfo.amount} will be processed."
-            "NO_REFUND" -> "Appointment cancelled successfully. No refund applicable as cancellation is within 2 hours."
-            "LATE_CANCELLATION" -> "Appointment cancelled successfully. No refund for past appointments."
-            else -> "Appointment cancelled successfully."
-        }
+    private fun buildCancellationMessage(refundInfo: RefundInfo): String = when (refundInfo.status) {
+        "FULL_REFUND" ->
+            "Appointment cancelled successfully. " +
+                "Full refund of $${refundInfo.amount} will be processed."
+
+        "PARTIAL_REFUND" ->
+            "Appointment cancelled successfully. " +
+                "Partial refund of $${refundInfo.amount} will be processed."
+
+        "NO_REFUND" ->
+            "Appointment cancelled successfully. No refund applicable as cancellation is " +
+                "within 2 hours."
+
+        "LATE_CANCELLATION" ->
+            "Appointment cancelled successfully. " +
+                "No refund for past appointments."
+
+        else -> "Appointment cancelled successfully."
     }
 
     // Helper function to get available payment methods
-    fun getAvailablePaymentMethods(appointmentType: String): List<PaymentMethod> {
-        return paymentService.getPaymentMethodsForAppointmentType(appointmentType)
-    }
+    fun getAvailablePaymentMethods(appointmentType: String): List<PaymentMethod> =
+        paymentService.getPaymentMethodsForAppointmentType(appointmentType)
 
     // Helper function to update payment method
     fun updateAppointmentPaymentMethod(
@@ -240,8 +255,5 @@ class AppointmentService(
         return Result.success("Payment method updated to $newPaymentMethod")
     }
 
-    private data class RefundInfo(
-        val amount: Double,
-        val status: String
-    )
+    private data class RefundInfo(val amount: Double, val status: String)
 }

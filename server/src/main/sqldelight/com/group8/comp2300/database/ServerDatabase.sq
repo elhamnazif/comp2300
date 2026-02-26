@@ -159,48 +159,48 @@ DELETE FROM ClinicTags WHERE clinic_id = ?;
 
 
 -- 2. Medication Module Tables - Medication, MedicationSchedule, MedicationLog
-CREATE TABLE MedicationEntity (
+CREATE TABLE Medication (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
     med_name TEXT NOT NULL,
-    dosage INTEGER NOT NULL, -- for number of pills
+    dosage INTEGER, -- for number of pills
     frequency TEXT NOT NULL CHECK (frequency IN ('DAILY', 'TWICE_DAILY', 'WEEKLY', 'ON_DEMAND')),
     instruction TEXT,
     colour_id TEXT REFERENCES Colour(id) ON DELETE SET NULL,
     start_date TEXT NOT NULL, -- format: YYYY-MM-DD
     end_date TEXT, -- format: YYYY-MM-DD
-    reminders_enabled INTEGER NOT NULL DEFAULT 1 CHECK (reminders_enabled IN (0, 1)),
+    reminders_enabled INTEGER DEFAULT 1 CHECK (reminders_enabled IN (0, 1)),
     status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'ARCHIVED'))
 );
 
 insertMedication:
-INSERT INTO MedicationEntity (id, user_id, med_name, dosage, frequency, instruction, colour_id, start_date, end_date, reminders_enabled, status)
+INSERT INTO Medication (id, user_id, med_name, dosage, frequency, instruction, colour_id, start_date, end_date, reminders_enabled, status)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectMedById:
-SELECT * FROM MedicationEntity WHERE id = ?;
+SELECT * FROM Medication WHERE id = ?;
 
 selectActiveMedsByUserId:
-SELECT * FROM MedicationEntity WHERE user_id = ? AND status = 'ACTIVE';
+SELECT * FROM Medication WHERE user_id = ? AND status = 'ACTIVE';
 
 selectArchivedMedsByUserId:
-SELECT * FROM MedicationEntity WHERE user_id = ? AND status = 'ARCHIVED';
+SELECT * FROM Medication WHERE user_id = ? AND status = 'ARCHIVED';
 
 selectAllMedsByUserId: --for Pill page
-SELECT * FROM MedicationEntity WHERE user_id = ? AND status IN ('ACTIVE', 'ARCHIVED');
+SELECT * FROM Medication WHERE user_id = ? AND status IN ('ACTIVE', 'ARCHIVED');
 
 updateMedById:
-UPDATE MedicationEntity
+UPDATE Medication
 SET med_name = ?, dosage = ?, frequency = ?, instruction = ?, colour_id = ?, start_date = ?, end_date = ?, reminders_enabled = ?, status = ?
 WHERE id = ?;
 
 deleteMedById:
-DELETE FROM MedicationEntity WHERE id = ?;
+DELETE FROM Medication WHERE id = ?;
 
 
 CREATE TABLE MedicationSchedule (
     id TEXT PRIMARY KEY,
-    medication_id TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE,
+    medication_id TEXT NOT NULL REFERENCES Medication(id) ON DELETE CASCADE,
     day_of_week INTEGER CHECK (day_of_week BETWEEN 0 AND 6),
     time_of_day TEXT NOT NULL -- HH:MM
 );
@@ -222,7 +222,7 @@ DELETE FROM MedicationSchedule WHERE id = ?;
 
 CREATE TABLE MedicationLog (
     id TEXT PRIMARY KEY,
-    medication_id TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE,
+    medication_id TEXT NOT NULL REFERENCES Medication(id) ON DELETE CASCADE,
     scheduled_at TEXT NOT NULL, --YYYY-MM-DDTHH:MM:SS
     status TEXT NOT NULL CHECK (status IN ('TAKEN', 'SKIPPED', 'SNOOZED', 'PENDING')),
     UNIQUE(medication_id, scheduled_at)
@@ -240,7 +240,7 @@ SELECT * FROM MedicationLog WHERE id = ?;
 
 selectDailyMedicationAgenda:
 SELECT l.*, m.med_name
-FROM MedicationLog l JOIN MedicationEntity m ON l.medication_id = m.id
+FROM MedicationLog l JOIN Medication m ON l.medication_id = m.id
 WHERE m.user_id = ? AND date(l.scheduled_at) = date(?);
 
 updateMedicationStatus: --'TAKEN', 'SKIPPED', 'SNOOZED', 'PENDING'
@@ -285,17 +285,44 @@ CREATE TABLE Appointment (
     user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     appointment_time TEXT NOT NULL, -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
-    appointment_type TEXT NOT NULL CHECK (appointment_type IN ('CHECKUP', 'CONSULTATION', 'SCREENING', 'FOLLOW_UP', 'VACCINATION', 'OTHER')),
+    appointment_type TEXT NOT NULL CHECK (appointment_type IN ('CHECKUP', 'CONSULTATION', 'SCREENING', 'FOLLOW_UP', 'VACCINATION', 'OTHER', 'FOLLOWUP', 'EMERGENCY', 'VIRTUAL_CONSULTATION', 'PHYSICAL_THERAPY', 'LAB_TEST')),
     clinic_id TEXT REFERENCES Clinic(id) ON DELETE SET NULL,
     booking_id TEXT REFERENCES AppointmentSlots(id) ON DELETE SET NULL,
-    status TEXT DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED')),
+    status TEXT DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'PENDING_PAYMENT')),
     notes TEXT,
-    reminders_enabled INTEGER NOT NULL DEFAULT 1 CHECK (reminders_enabled IN (0, 1))
+    reminders_enabled INTEGER DEFAULT 1 CHECK (reminders_enabled IN (0, 1)),
+    payment_method TEXT,
+    payment_status TEXT,
+    payment_amount REAL,
+    transaction_id TEXT
 );
 
 insertAppointment:
-INSERT INTO Appointment (id, user_id, title, appointment_time, appointment_type, clinic_id, booking_id, status, notes, reminders_enabled)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO Appointment (id, user_id, title, appointment_time, appointment_type, clinic_id, booking_id, status, notes, reminders_enabled, payment_method, payment_status, payment_amount, transaction_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAppointmentById:
+SELECT * FROM Appointment WHERE id = ?;
+
+updateAppointmentStatus:
+UPDATE Appointment SET status = ? WHERE id = ?;
+
+updatePaymentDetails:
+UPDATE Appointment SET payment_method = ?, payment_status = ?, transaction_id = ? WHERE id = ?;
+
+selectByUserAndPaymentStatus:
+SELECT * FROM Appointment WHERE user_id = ? AND payment_status = ?;
+
+selectSlotById:
+SELECT * FROM AppointmentSlots WHERE id = ?;
+
+updateSlotBookingStatus:
+UPDATE AppointmentSlots SET is_booked = ? WHERE id = ?;
+
+selectSlotByBookingId:
+SELECT s.* FROM AppointmentSlots s
+JOIN Appointment a ON a.booking_id = s.id
+WHERE a.id = ?;
 
 selectConfirmedApptsOfUser: --user's confirmed appointments
 SELECT a.*, c.name AS clinic_name, c.address
@@ -426,7 +453,7 @@ SELECT
     l.scheduled_at AS event_time,
     l.status AS event_status
 FROM MedicationLog l
-JOIN MedicationEntity m ON l.medication_id = m.id
+JOIN Medication m ON l.medication_id = m.id
 
 UNION ALL
 -- Moods
@@ -488,3 +515,9 @@ SELECT date(event_time) AS event_date, COUNT(*) AS total_events
 FROM MasterCalendar
 WHERE user_id = ? AND date(event_time) BETWEEN date(?) AND date(?)
 GROUP BY date(event_time);
+
+SELECT date(event_time) AS event_date, COUNT(*) AS total_events
+FROM MasterCalendar
+WHERE user_id = ? AND date(event_time) BETWEEN date(?) AND date(?)
+GROUP BY date(event_time);
+

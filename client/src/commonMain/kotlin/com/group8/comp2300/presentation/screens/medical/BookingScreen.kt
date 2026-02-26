@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.presentation.components.ScreenHeader
 import com.group8.comp2300.presentation.screens.medical.components.ClinicMap
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowForwardW400Outlinedfill1
@@ -83,33 +84,35 @@ fun BookingScreen(
             )
 
             // Search Bar (Floating at Top)
-            Surface(
-                modifier =
-                    Modifier.align(Alignment.TopCenter)
-                        .statusBarsPadding()
-                        .padding(top = 8.dp, start = 16.dp, end = 16.dp)
-                        .fillMaxWidth(),
-                shape = MaterialTheme.shapes.extraLarge,
-                shadowElevation = 4.dp,
-                color = MaterialTheme.colorScheme.surface
+            ScreenHeader(
+                modifier = Modifier.align(Alignment.TopCenter),
+                horizontalPadding = 16.dp,
+                topPadding = 8.dp
             ) {
-                Row(
-                    modifier =
-                        Modifier.clickable { /* TODO: Open Search Screen */ }
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    shadowElevation = 4.dp,
+                    color = MaterialTheme.colorScheme.surface
                 ) {
-                    Icon(
-                        imageVector = Icons.SearchW400Outlinedfill1,
-                        contentDescription = stringResource(Res.string.medical_booking_search_desc),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        text = stringResource(Res.string.medical_booking_search_placeholder),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Row(
+                        modifier =
+                            Modifier.clickable { /* TODO: Open Search Screen */ }
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.SearchW400Outlinedfill1,
+                            contentDescription = stringResource(Res.string.medical_booking_search_desc),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            text = stringResource(Res.string.medical_booking_search_placeholder),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
         }

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.screens.auth.components.AuthDropdown
 import com.group8.comp2300.presentation.screens.auth.components.AuthTextField
 import com.group8.comp2300.presentation.screens.auth.components.ClickableTextField
@@ -78,16 +79,29 @@ fun LoginScreen(
         }
     }
 
-    Scaffold(modifier = modifier) { innerPadding ->
+    Scaffold(
+        modifier = modifier,
+        topBar = {
+            AppTopBar(
+                title = {},
+                onBackClick = {
+                    if (state.isRegistering && state.step == 1) {
+                        viewModel.onEvent(AuthViewModel.AuthUiEvent.PrevStep)
+                    } else {
+                        onDismiss()
+                    }
+                },
+                backContentDescription = stringResource(Res.string.auth_back_desc)
+            )
+        }
+    ) { innerPadding ->
         Column(
             Modifier.fillMaxSize().padding(innerPadding).verticalScroll(scrollState).padding(24.dp).imePadding(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             HeaderSection(
-                isRegistering = state.isRegistering,
-                step = state.step,
-                onBack = { viewModel.onEvent(AuthViewModel.AuthUiEvent.PrevStep) }
+                isRegistering = state.isRegistering
             )
 
             Spacer(Modifier.height(32.dp))
@@ -109,7 +123,7 @@ fun LoginScreen(
             if (state.errorMessage != null) {
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    text = stringResource(state.errorMessage!!),
+                    text = state.errorMessage!!,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -139,18 +153,8 @@ fun LoginScreen(
 }
 
 @Composable
-private fun HeaderSection(isRegistering: Boolean, step: Int, onBack: () -> Unit) {
+private fun HeaderSection(isRegistering: Boolean) {
     Column {
-        if (isRegistering && step == 1) {
-            Box(Modifier.fillMaxWidth()) {
-                IconButton(onClick = onBack, Modifier.align(Alignment.CenterStart)) {
-                    Icon(
-                        Icons.ArrowBackW400Outlinedfill1,
-                        contentDescription = stringResource(Res.string.auth_back_desc)
-                    )
-                }
-            }
-        }
         Text(
             text =
                 if (isRegistering) {

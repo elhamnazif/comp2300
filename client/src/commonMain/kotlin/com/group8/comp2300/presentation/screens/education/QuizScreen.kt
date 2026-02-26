@@ -15,8 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.education.Quiz
-import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
+import com.group8.comp2300.presentation.components.AppTopBar
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -61,7 +60,7 @@ fun QuizScreen(
     Scaffold(
         modifier = modifier,
         topBar = {
-            TopAppBar(
+            AppTopBar(
                 title = {
                     Column {
                         Text(quiz.title)
@@ -77,14 +76,8 @@ fun QuizScreen(
                         }
                     }
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.ArrowBackW400Outlinedfill1,
-                            contentDescription = stringResource(Res.string.education_quiz_back_desc)
-                        )
-                    }
-                }
+                onBackClick = onBack,
+                backContentDescription = stringResource(Res.string.education_quiz_back_desc)
             )
         }
     ) { innerPadding ->

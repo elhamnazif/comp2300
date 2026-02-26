@@ -1,11 +1,15 @@
 package com.group8.comp2300.config
 
 object JwtConfig {
-    private val isDevelopment =
+    val isDevelopment =
         System.getenv("ENV")?.lowercase() == "development" ||
             System.getProperty("ENV")?.lowercase() == "development" ||
             // Allow test mode by checking if we're running in a test context
             System.getProperty("ktor.testing") != null
+
+    val devAuthBypass: Boolean =
+        isDevelopment &&
+            (System.getenv("DEV_AUTH_BYPASS")?.lowercase() != "false")
 
     val realm: String = System.getenv("JWT_REALM") ?: "comp2300"
 
@@ -18,4 +22,7 @@ object JwtConfig {
 
     val issuer: String = System.getenv("JWT_ISSUER") ?: "http://0.0.0.0:8080"
     val audience: String = System.getenv("JWT_AUDIENCE") ?: "http://0.0.0.0:8080"
+
+    @Suppress("ConstPropertyName")
+    const val DEV_USER_ID = "dev-user-001"
 }

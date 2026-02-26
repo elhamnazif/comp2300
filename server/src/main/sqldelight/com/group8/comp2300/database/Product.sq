@@ -1,0 +1,17 @@
+selectAllProducts:
+SELECT * FROM ProductEntity;
+
+selectProductById:
+SELECT * FROM ProductEntity WHERE id = ?;
+
+insertProduct:
+INSERT INTO ProductEntity (id, name, description, price, category, insuranceCovered, imageUrl)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateProduct:
+UPDATE ProductEntity
+SET name = ?, description = ?, price = ?, category = ?, insuranceCovered = ?, imageUrl = ?
+WHERE id = ?;
+
+deleteProduct:
+DELETE FROM ProductEntity WHERE id = ?;

@@ -1,6 +1,7 @@
 package com.group8.comp2300.presentation.screens.auth
 
 import androidx.lifecycle.viewModelScope
+import com.group8.comp2300.core.Validation
 import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
@@ -35,7 +36,7 @@ class RealAuthViewModel(
     override fun onEvent(event: AuthUiEvent) {
         when (event) {
             is AuthUiEvent.EmailChanged -> {
-                val isValid = isValidEmail(event.email)
+                val isValid = Validation.isValidEmail(event.email)
                 state.update {
                     it.copy(
                         email = event.email,
@@ -50,7 +51,7 @@ class RealAuthViewModel(
             }
 
             is AuthUiEvent.PasswordChanged -> {
-                val isValid = isValidPassword(event.password)
+                val isValid = Validation.isValidPassword(event.password)
                 state.update {
                     it.copy(
                         password = event.password,
@@ -159,17 +160,16 @@ class RealAuthViewModel(
             state.update { it.copy(isLoading = false) }
             onSuccess()
         } else {
+            val errorMessage = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() }
+                ?: "Authentication failed"
             state.update {
                 it.copy(
                     isLoading = false,
-                    errorMessage = Res.string.auth_error_authentication_failed
+                    errorMessage = errorMessage
                 )
             }
         }
     }
-
-    private fun isValidEmail(email: String): Boolean = email.contains("@") && email.contains(".")
-    private fun isValidPassword(password: String): Boolean = password.length >= 8
 
     override fun logout() {
         viewModelScope.launch { authRepository.logout() }

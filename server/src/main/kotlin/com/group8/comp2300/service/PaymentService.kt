@@ -1,10 +1,10 @@
 package com.group8.comp2300.service
 
-import com.group8.comp2300.database.PaymentMethod
-import com.group8.comp2300.database.PaymentStatus
-import com.group8.comp2300.database.PaymentOption
 import com.group8.comp2300.database.AppointmentType
+import com.group8.comp2300.database.PaymentMethod
+import com.group8.comp2300.database.PaymentOption
 import com.group8.comp2300.database.PaymentResult
+import com.group8.comp2300.database.PaymentStatus
 import java.util.*
 
 interface PaymentService {
@@ -51,31 +51,27 @@ class PaymentServiceImpl : PaymentService {
         )
     )
 
-    override fun getPaymentMethodsForAppointmentType(appointmentType: String): List<PaymentMethod> {
-        return paymentOptionsConfig[appointmentType.uppercase()]?.allowedPaymentMethods
+    override fun getPaymentMethodsForAppointmentType(appointmentType: String): List<PaymentMethod> =
+        paymentOptionsConfig[appointmentType.uppercase()]?.allowedPaymentMethods
             ?: listOf(PaymentMethod.ONLINE, PaymentMethod.PHYSICAL)
-    }
 
     override fun validatePaymentMethod(appointmentType: String, paymentMethod: PaymentMethod): Boolean {
         val allowedMethods = getPaymentMethodsForAppointmentType(appointmentType)
         return allowedMethods.contains(paymentMethod)
     }
 
-    override fun requiresPrePayment(appointmentType: String): Boolean {
-        return paymentOptionsConfig[appointmentType.uppercase()]?.requiresPrePayment ?: true
-    }
+    override fun requiresPrePayment(appointmentType: String): Boolean =
+        paymentOptionsConfig[appointmentType.uppercase()]?.requiresPrePayment ?: true
 
-    override fun calculatePaymentAmount(appointmentType: String): Double {
-        return when (appointmentType.uppercase()) {
-            "CONSULTATION" -> 100.0
-            "FOLLOWUP" -> 50.0
-            "CHECKUP" -> 75.0
-            "EMERGENCY" -> 200.0
-            "VIRTUAL_CONSULTATION" -> 80.0
-            "PHYSICAL_THERAPY" -> 120.0
-            "LAB_TEST" -> 150.0
-            else -> 80.0
-        }
+    override fun calculatePaymentAmount(appointmentType: String): Double = when (appointmentType.uppercase()) {
+        "CONSULTATION" -> 100.0
+        "FOLLOWUP" -> 50.0
+        "CHECKUP" -> 75.0
+        "EMERGENCY" -> 200.0
+        "VIRTUAL_CONSULTATION" -> 80.0
+        "PHYSICAL_THERAPY" -> 120.0
+        "LAB_TEST" -> 150.0
+        else -> 80.0
     }
 
     override fun processOnlinePayment(appointmentId: String, amount: Double): PaymentResult {
@@ -98,12 +94,20 @@ class PaymentServiceImpl : PaymentService {
         }
     }
 
-    override fun getPaymentInstructions(paymentMethod: PaymentMethod, appointmentType: String): String {
-        return when (paymentMethod) {
-            PaymentMethod.ONLINE -> "Please complete online payment to confirm your booking. A payment link will be sent to your email."
-            PaymentMethod.PHYSICAL -> "Payment will be collected at the clinic. Please arrive 15 minutes before your appointment."
-            PaymentMethod.INSURANCE -> "Insurance details will be verified. Please bring your insurance card to the appointment."
+    override fun getPaymentInstructions(paymentMethod: PaymentMethod, appointmentType: String): String =
+        when (paymentMethod) {
+            PaymentMethod.ONLINE ->
+                "Please complete online payment to confirm your booking. " +
+                    "A payment link will be sent to your email."
+
+            PaymentMethod.PHYSICAL ->
+                "Payment will be collected at the clinic. " +
+                    "Please arrive 15 minutes before your appointment."
+
+            PaymentMethod.INSURANCE ->
+                "Insurance details will be verified. " +
+                    "Please bring your insurance card to the appointment."
+
             PaymentMethod.PENDING -> "Please select a payment method to complete your booking."
         }
-    }
 }

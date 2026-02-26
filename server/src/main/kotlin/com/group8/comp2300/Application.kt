@@ -9,6 +9,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
+import io.ktor.server.application.log
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
@@ -46,6 +47,7 @@ fun Application.module() {
     }
 
     val jwtService: JwtService = get()
+    val devBypass = JwtConfig.devAuthBypass
 
     install(Authentication) {
         jwt("auth-jwt") {
@@ -65,12 +67,19 @@ fun Application.module() {
         }
     }
 
+    if (devBypass) {
+        log.warn("⚠️  DEV AUTH BYPASS is ENABLED — authenticated routes accept unauthenticated requests")
+    }
+
     routing {
         get("/") { call.respondText("Ktor: ${Greeting().greet()}") }
 
         get("/api/health") { call.respond(mapOf("status" to "OK")) }
 
         authRoutes(get())
-        productRoutes()
+
+        authenticate("auth-jwt", optional = devBypass) {
+            productRoutes()
+        }
     }
 }

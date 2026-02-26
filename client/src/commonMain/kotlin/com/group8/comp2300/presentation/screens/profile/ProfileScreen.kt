@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
+import com.group8.comp2300.presentation.components.ScreenHeader
 import com.group8.comp2300.presentation.components.shimmerEffect
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -66,7 +67,6 @@ fun ProfileScreen(
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
-                .systemBarsPadding()
                 .pullToRefresh(
                     state = pullToRefreshState,
                     isRefreshing = uiState.isLoading,
@@ -77,7 +77,9 @@ fun ProfileScreen(
                 Modifier.fillMaxSize()
                     .verticalScroll(rememberScrollState())
             ) {
-                InsetContent(uiState, onNavigateToLabResults)
+                ScreenHeader(horizontalPadding = 0.dp) {
+                    InsetContent(uiState, onNavigateToLabResults)
+                }
                 EdgeToEdgeSettings(
                     onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
                     onNavigateToNotifications = onNavigateToNotifications,
@@ -88,6 +90,7 @@ fun ProfileScreen(
             Box(
                 Modifier
                     .align(Alignment.TopCenter)
+                    .statusBarsPadding()
                     .graphicsLayer {
                         scaleX = scaleFraction()
                         scaleY = scaleFraction()
@@ -107,88 +110,89 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
-                .systemBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(24.dp))
+        ScreenHeader(horizontalPadding = 0.dp) {
+            Spacer(Modifier.height(24.dp))
 
-        // Hero Section
-        HeroSection()
+            // Hero Section
+            HeroSection()
 
-        Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(40.dp))
 
-        // Feature Preview Cards
-        Text(
-            stringResource(Res.string.profile_why_account_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Start)
-        )
-
-        Spacer(Modifier.height(16.dp))
-
-        FeatureCard(
-            icon = Icons.CheckCircleW400Outlinedfill1,
-            title = stringResource(Res.string.profile_track_results_title),
-            description = stringResource(Res.string.profile_track_results_desc)
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        FeatureCard(
-            icon = Icons.DateRangeW400Outlinedfill1,
-            title = stringResource(Res.string.profile_schedule_screenings_title),
-            description = stringResource(Res.string.profile_schedule_screenings_desc)
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        FeatureCard(
-            icon = Icons.LockW400Outlinedfill1,
-            title = stringResource(Res.string.profile_private_secure_title),
-            description = stringResource(Res.string.profile_private_secure_desc)
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        FeatureCard(
-            icon = Icons.SendW400Outlinedfill1,
-            title = stringResource(Res.string.profile_anonymous_partner_title),
-            description = stringResource(Res.string.profile_anonymous_partner_desc)
-        )
-
-        Spacer(Modifier.height(32.dp))
-
-        // Call to Action Section
-        Button(
-            onClick = onRequireAuth,
-            modifier = Modifier.fillMaxWidth().height(48.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
+            // Feature Preview Cards
             Text(
-                stringResource(Res.string.profile_sign_in),
+                stringResource(Res.string.profile_why_account_title),
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.align(Alignment.Start)
             )
+
+            Spacer(Modifier.height(16.dp))
+
+            FeatureCard(
+                icon = Icons.CheckCircleW400Outlinedfill1,
+                title = stringResource(Res.string.profile_track_results_title),
+                description = stringResource(Res.string.profile_track_results_desc)
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            FeatureCard(
+                icon = Icons.DateRangeW400Outlinedfill1,
+                title = stringResource(Res.string.profile_schedule_screenings_title),
+                description = stringResource(Res.string.profile_schedule_screenings_desc)
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            FeatureCard(
+                icon = Icons.LockW400Outlinedfill1,
+                title = stringResource(Res.string.profile_private_secure_title),
+                description = stringResource(Res.string.profile_private_secure_desc)
+            )
+
+            Spacer(Modifier.height(12.dp))
+
+            FeatureCard(
+                icon = Icons.SendW400Outlinedfill1,
+                title = stringResource(Res.string.profile_anonymous_partner_title),
+                description = stringResource(Res.string.profile_anonymous_partner_desc)
+            )
+
+            Spacer(Modifier.height(32.dp))
+
+            // Call to Action Section
+            Button(
+                onClick = onRequireAuth,
+                modifier = Modifier.fillMaxWidth().height(48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(
+                    stringResource(Res.string.profile_sign_in),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedButton(onClick = onRequireAuth, modifier = Modifier.fillMaxWidth().height(48.dp)) {
+                Text(stringResource(Res.string.profile_create_account), style = MaterialTheme.typography.titleMedium)
+            }
+
+            Spacer(Modifier.height(24.dp))
+
+            Text(
+                stringResource(Res.string.profile_guest_limited_access),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.secondary
+            )
+
+            Spacer(Modifier.height(32.dp))
         }
-
-        Spacer(Modifier.height(12.dp))
-
-        OutlinedButton(onClick = onRequireAuth, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-            Text(stringResource(Res.string.profile_create_account), style = MaterialTheme.typography.titleMedium)
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        Text(
-            stringResource(Res.string.profile_guest_limited_access),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.secondary
-        )
-
-        Spacer(Modifier.height(32.dp))
     }
 }
 

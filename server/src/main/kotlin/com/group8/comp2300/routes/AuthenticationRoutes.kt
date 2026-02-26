@@ -1,10 +1,8 @@
 package com.group8.comp2300.routes
 
-import com.group8.comp2300.dto.AuthResponse
 import com.group8.comp2300.dto.LoginRequest
 import com.group8.comp2300.dto.RefreshTokenRequest
 import com.group8.comp2300.dto.RegisterRequest
-import com.group8.comp2300.dto.TokenResponse
 import com.group8.comp2300.service.AuthService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -22,7 +20,20 @@ fun Route.authRoutes(authService: AuthService) {
         result.fold(
             onSuccess = { authResponse -> call.respond(HttpStatusCode.Created, authResponse) },
             onFailure = { error ->
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Registration failed")))
+                when (error) {
+                    is IllegalArgumentException -> {
+                        val message = error.message ?: "Registration failed"
+                        val status =
+                            if (message == "An account with this email already exists") {
+                                HttpStatusCode.Conflict
+                            } else {
+                                HttpStatusCode.BadRequest
+                            }
+                        call.respond(status, mapOf("error" to message))
+                    }
+
+                    else -> call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Registration failed"))
+                }
             }
         )
     }
@@ -33,7 +44,13 @@ fun Route.authRoutes(authService: AuthService) {
         result.fold(
             onSuccess = { authResponse -> call.respond(HttpStatusCode.OK, authResponse) },
             onFailure = { error ->
-                call.respond(HttpStatusCode.Unauthorized, mapOf("error" to (error.message ?: "Login failed")))
+                when (error) {
+                    is IllegalArgumentException ->
+                        call.respond(HttpStatusCode.Unauthorized, mapOf("error" to (error.message ?: "Login failed")))
+
+                    else ->
+                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Login failed"))
+                }
             }
         )
     }
@@ -44,7 +61,16 @@ fun Route.authRoutes(authService: AuthService) {
         result.fold(
             onSuccess = { tokenResponse -> call.respond(HttpStatusCode.OK, tokenResponse) },
             onFailure = { error ->
-                call.respond(HttpStatusCode.Unauthorized, mapOf("error" to (error.message ?: "Token refresh failed")))
+                when (error) {
+                    is IllegalArgumentException ->
+                        call.respond(
+                            HttpStatusCode.Unauthorized,
+                            mapOf("error" to (error.message ?: "Token refresh failed"))
+                        )
+
+                    else ->
+                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Token refresh failed"))
+                }
             }
         )
     }

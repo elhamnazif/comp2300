@@ -2,6 +2,8 @@ package com.group8.comp2300.di
 
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.data.repository.ProductRepository
+import com.group8.comp2300.data.repository.RefreshTokenRepository
+import com.group8.comp2300.data.repository.UserRepository
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.database.createServerDatabase
 import com.group8.comp2300.security.JwtService
@@ -11,8 +13,8 @@ import org.koin.dsl.module
 
 val serverModule = module {
     single<ServerDatabase> { createServerDatabase() }
-    single { ProductRepository(get()) }
 
+    // Security
     single<JwtService> {
         JwtServiceImpl(
             secret = JwtConfig.secret,
@@ -20,5 +22,14 @@ val serverModule = module {
             audience = JwtConfig.audience
         )
     }
-    single { AuthService(get(), get()) }
+
+    // Data layer
+    single { ProductRepository(get()) }
+    single { UserRepository(get()) }
+    single {
+        RefreshTokenRepository(database = get(), refreshTokenExpiration = get<JwtService>().refreshTokenExpiration)
+    }
+
+    // Services
+    single { AuthService(get(), get(), get()) }
 }
