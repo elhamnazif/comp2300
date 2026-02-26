@@ -7,11 +7,9 @@ import com.group8.comp2300.presentation.screens.medical.SelfDiagnosisScreen
 import com.group8.comp2300.presentation.screens.profile.HelpSupportScreen
 import com.group8.comp2300.presentation.screens.profile.NotificationsScreen
 import com.group8.comp2300.presentation.screens.profile.PrivacySecurityScreen
-import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
-@OptIn(KoinExperimentalAPI::class)
 val secondaryNavigationModule = module {
     navigation<Screen.SelfDiagnosis> {
         val navigator = LocalNavigator.current

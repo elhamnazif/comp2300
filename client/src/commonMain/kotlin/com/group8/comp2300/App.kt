@@ -4,7 +4,6 @@ package com.group8.comp2300
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
@@ -50,12 +49,10 @@ import org.koin.compose.KoinApplicationPreview
 import org.koin.compose.KoinMultiplatformApplication
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.koinConfiguration
 import org.koin.dsl.module
 
-@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun App() {
     KoinApplication(
@@ -88,12 +85,6 @@ private fun AppTheme(content: @Composable () -> Unit) {
 @Composable
 expect fun getWallpaperSeedColor(): Color?
 
-@OptIn(
-    KoinExperimentalAPI::class,
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3ExpressiveApi::class,
-    ExperimentalMaterial3AdaptiveApi::class
-)
 @Composable
 fun MainApp(
     modifier: Modifier = Modifier,

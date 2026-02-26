@@ -79,7 +79,6 @@ fun ClickableTextField(
 }
 
 /** Reusable Dropdown component */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthDropdown(
     label: String,

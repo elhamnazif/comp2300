@@ -7,7 +7,6 @@ import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ShopRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +19,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ShopViewModel(private val repository: ShopRepository, private val authRepository: AuthRepository) : ViewModel() {
 
     // INPUT 1: Category Selection

@@ -10,11 +10,9 @@ import com.group8.comp2300.presentation.screens.medical.BookingDetailsScreen
 import com.group8.comp2300.presentation.screens.medical.BookingScreen
 import com.group8.comp2300.presentation.screens.medical.BookingViewModel
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
-@OptIn(KoinExperimentalAPI::class, ExperimentalMaterial3AdaptiveApi::class)
 val medicalNavigationModule = module {
     navigation<Screen.Booking>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current

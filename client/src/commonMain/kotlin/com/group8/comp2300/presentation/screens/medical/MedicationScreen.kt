@@ -64,7 +64,6 @@ private object MedConstants {
 
 // --- Main Screen ---
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicationScreen(
     modifier: Modifier = Modifier,

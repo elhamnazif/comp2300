@@ -12,12 +12,10 @@ import com.group8.comp2300.presentation.screens.education.EducationViewModel
 import com.group8.comp2300.presentation.screens.education.QuizScreen
 import com.group8.comp2300.presentation.screens.education.VideoDetailScreen
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
-@OptIn(KoinExperimentalAPI::class, ExperimentalMaterial3AdaptiveApi::class)
 val educationNavigationModule = module {
     navigation<Screen.Education>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current

@@ -36,7 +36,6 @@ import org.jetbrains.compose.resources.stringResource
 
 // --- Main Screen ---
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(modifier: Modifier = Modifier) {
     val today = remember {
@@ -416,7 +415,6 @@ fun DayCell(
 
 // --- REUSABLE FORM COMPONENTS ---
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FormDropdown(
     label: String,
@@ -455,7 +453,6 @@ private fun FormDropdown(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun FormChipGroup(
     title: String,
@@ -743,7 +740,6 @@ fun MenuSelectionCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WrapperFormLayout(
     title: String,

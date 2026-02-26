@@ -31,7 +31,6 @@ fun ProductDetailScreen(productId: String, viewModel: ShopViewModel = koinViewMo
     ProductDetailContent(product = productState, onBack = onBack, onAddToCart = { prod -> viewModel.addToCart(prod) })
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToCart: (Product) -> Unit) {
     if (product == null) {

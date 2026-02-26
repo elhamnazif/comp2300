@@ -15,7 +15,6 @@ import com.group8.comp2300.presentation.components.AppTopBar
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
     var biometricsEnabled by remember { mutableStateOf(true) }

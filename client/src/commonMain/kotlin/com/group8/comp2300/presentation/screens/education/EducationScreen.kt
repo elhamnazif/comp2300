@@ -32,7 +32,6 @@ import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 /** Pure UI component for the Education screen. Takes state and callbacks, no ViewModel dependency. */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EducationScreen(
     filteredContent: List<ContentItem>,

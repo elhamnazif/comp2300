@@ -6,11 +6,9 @@ import com.group8.comp2300.presentation.screens.home.HomeScreen
 import com.group8.comp2300.presentation.screens.medical.MedicationScreen
 import com.group8.comp2300.presentation.screens.medical.calendar.CalendarScreen
 import com.group8.comp2300.presentation.screens.profile.ProfileScreen
-import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
-@OptIn(KoinExperimentalAPI::class)
 val mainNavigationModule = module {
     navigation<Screen.Home> {
         val navigator = LocalNavigator.current
