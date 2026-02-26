@@ -2,10 +2,10 @@ CREATE TABLE AppointmentEntity (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
-    appointment_time TEXT NOT NULL, -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
+    appointment_time INTEGER NOT NULL, -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
     appointment_type TEXT NOT NULL CHECK (appointment_type IN ('CHECKUP', 'CONSULTATION', 'SCREENING', 'FOLLOW_UP', 'VACCINATION', 'OTHER', 'FOLLOWUP', 'EMERGENCY', 'VIRTUAL_CONSULTATION', 'PHYSICAL_THERAPY', 'LAB_TEST')),
     clinic_id TEXT REFERENCES ClinicEntity(id) ON DELETE SET NULL,
-    booking_id TEXT REFERENCES AppointmentSlot(id) ON DELETE SET NULL,
+    booking_id TEXT REFERENCES AppointmentSlotEnt(id) ON DELETE SET NULL,
     status TEXT DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'PENDING_PAYMENT')),
     notes TEXT,
     has_reminder INTEGER DEFAULT 1 CHECK (has_reminder IN (0, 1)),
