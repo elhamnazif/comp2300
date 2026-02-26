@@ -1,4 +1,4 @@
-package com.group8.comp2300
+/* package com.group8.comp2300
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -33,3 +33,4 @@ fun PrivacyPolicyScreen() {
     }
 }
 
+*/
