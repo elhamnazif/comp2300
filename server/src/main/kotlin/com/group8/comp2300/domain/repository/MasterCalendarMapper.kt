@@ -1,9 +1,7 @@
 package com.group8.comp2300.domain.repository
 
-// converts sql rows -> domain models
-
 import com.group8.comp2300.domain.model.calendar.CalendarCategory
-import com.group8.comp2300.domain.model.reminder.MasterCalendarEvent
+import com.group8.comp2300.domain.model.calendar.MasterCalendarEvent
 import com.group8.comp2300.database.MasterCalendar
 import kotlinx.datetime.toLocalDateTime
 

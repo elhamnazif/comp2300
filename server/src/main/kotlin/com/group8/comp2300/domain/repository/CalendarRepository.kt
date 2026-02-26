@@ -1,56 +1,101 @@
 package com.group8.comp2300.domain.repository
 
-import com.group8.comp2300.domain.model.calendar.CalendarCategory
-import com.group8.comp2300.domain.model.reminder.MasterCalendarEvent
 import com.group8.comp2300.database.ServerDatabase
+import com.group8.comp2300.domain.model.calendar.*
+import com.group8.comp2300.domain.model.mood.MoodSummary
 import kotlinx.datetime.LocalDate
 import java.time.LocalDate
+import java.util.UUID
 
 class CalendarRepository(private val db: ServerDatabase) {
 
+    private val queries = db.serverDatabaseQueries
+
     // USER STORY 5: fetching date ranges for calendar view
 
-    fun getEventsforRange(userId: String, startDate: LocalDate, endDate: LocalDate): List<MasterCalendarEvent> {
-        return db.serverDatabaseQueries
-            .selectCalendarRange(
-                user_id = userId,
-                event_time = startDate.toString(),
-                event_time_ = endDate.toString(),
-            )
-            .executeAsList()
-            .map { it.toDomainModel() }
+    fun getEventsForRange(userId: String, startDate: LocalDate, endDate: LocalDate): List<MasterCalendarEvent> {
+        return queries.selectCalendarRange(
+            user_id = userId,
+            event_time = start.toString(),
+            event_time_ = end.toString(),
+        ).executeAsList().map { it.toDomainModel() }
     }
-
-
 
     // USER STORY 6: filtering events by categories
 
-    fun getEventsbyCategory(userId: String, category: CalendarCategory): List<MasterCalendarEvent> {
-        return db.serverDatabaseQueries
-            .selectFilteredEvent(userId, category.name)
-            .executeAsList()
-            .map { it.toDomainModel() }
+    fun getEventsByCategory(userId: String, category: CalendarCategory): List<MasterCalendarEvent> {
+        return queries.selectFilteredEvent(
+            user_id = user
+                    Id,
+            event_type = category.name
+        ).executeAsList().map { it.toDomainModel() }
     }
 
 
+    // USER STORY 9 & 10: editing and deleting calendar events
 
-   // USER STORY 9 & 10: editing and deleting calendar events
+    // deleting an event based on type
 
-   // deleting an event based on type
-
-    fun deleteCalendarEvent(eventId: String, type: CalendarCategory): List<MasterCalendarEvent> {
+    fun deleteCalendarEvent(eventId: String, type: CalendarCategory) {
         when (type) {
-            CalendarCategory.APPOINTMENT -> db.serverDatabaseQueries.deleteAppointment(eventId)
-            CalendarCategory.MEDICATION -> db.serverDatabaseQueries.deleteMedicationLog(eventId)
-            CalendarCategory.MOOD -> db.serverDatabaseQueries.deleteMoodById(eventId)
-            // CalendarCategory.MENSTRUAL_CYCLE -> db.serverDatabaseQueries.delete?(eventId) !! NEED TO ADD MENSTRUAL CYCLE TO DB
-            else -> { }
+            CalendarCategory.APPOINTMENT -> queries.deleteAppointment(eventId)
+            CalendarCategory.MEDICATION -> queries.deleteMedicationLog(eventId)
+            CalendarCategory.MOOD -> queries.deleteMoodById(eventId)
+            // CalendarCategory.MENSTRUAL_CYCLE
         }
     }
 
-   // updating an event's status
+    // updating an event's status
 
     fun updateMedicationStatus(logId: String, status: String) {
-        db.serverDatabaseQueries.updateMedicationStatus(status, logId)
+        queries.updateMedicationStatus(
+            status = status,
+            id = logId,
+        )
+    }
+
+    // logging mood
+    fun logMood(userId: String, mood: String, feeling: String? = null, journal: String? = null) {
+        queries.insertMood(
+            id = java.util.UUID.randomUUID().toString(),
+            user_id = userId,
+            timestamp = null,
+            mood_type = moodType,
+            feeling = feeling,
+            journal = journal
+        )
+    }
+
+    fun getDailySummary(userId: String, date: LocalDate): List<MoodSummary> {
+        val rows = queries.getDailyMoodCount(userId, date.toString()).executeAsList()
+        val totalEntries = rows.sumOf { it.count }
+
+        return rows.map { row ->
+            MoodSummary(
+                moodType = row.mood_type,
+                count = row.count.toInt(),
+                percentage = if (totalEntries > 0L) (row.count.toFloat() / totalEntries) * 100f else 0f
+            )
+        }
+    }
+
+    fun getMonthlySummary(userId: String, monthStart: LocalDate): List<MoodSummary> {
+
+        val rows  = queries.getMonthlyMoodCount(
+            user_id = userId,
+            timestamp = monthStart.toString(),
+            timestamp_ = monthStart.toString()
+        ).executeAsList()
+
+        val totalEntries = rows.sumOf { it.count }
+
+        return rows.map { row ->
+            MoodSummary(
+                moodType = row.mood_type,
+                count = row.count.toInt(),
+                percentage = if (totalEntries > 0L) (row.count.toFloat() / totalEntries) * 100f else 0f
+            )
+        }
     }
 }
+
