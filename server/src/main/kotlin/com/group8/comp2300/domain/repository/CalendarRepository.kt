@@ -1,7 +1,7 @@
 package com.group8.comp2300.domain.repository
 
 import com.group8.comp2300.database.ServerDatabase
-import com.group8.comp2300.domain.model.calendar.*
+import com.group8.comp2300.domain.model.calendar.MasterCalendarEvent
 import com.group8.comp2300.domain.model.mood.MoodSummary
 import kotlinx.datetime.LocalDate
 import java.util.UUID
@@ -24,8 +24,7 @@ class CalendarRepository(private val db: ServerDatabase) {
 
     fun getEventsByCategory(userId: String, category: CalendarCategory): List<MasterCalendarEvent> {
         return queries.selectFilteredEvent(
-            user_id = user
-                    Id,
+            user_id = userId,
             event_type = category.name
         ).executeAsList().map { it.toDomainModel() }
     }
