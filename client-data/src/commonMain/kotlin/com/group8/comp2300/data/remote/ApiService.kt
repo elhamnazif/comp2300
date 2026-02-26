@@ -63,33 +63,29 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
      * Catches JsonConvertException when server returns an error response like {"error": "..."}
      * instead of the expected AuthResponse format.
      */
-    private suspend fun handleAuthResponse(response: io.ktor.client.statement.HttpResponse): AuthResponse {
-        return try {
-            response.body()
-        } catch (e: JsonConvertException) {
-            // Extract the actual error message from the response body
-            val responseException = e.cause as? ResponseException
-            if (responseException != null) {
-                val rawBody = responseException.response.bodyAsText()
-                val errorMessage = rawBody.extractErrorMessage()
-                throw ApiException(
-                    statusCode = responseException.response.status.value,
-                    message = errorMessage ?: "Authentication failed",
-                    cause = e
-                )
-            }
-            throw ApiException(statusCode = 500, message = "Invalid response from server", cause = e)
+    private suspend fun handleAuthResponse(response: io.ktor.client.statement.HttpResponse): AuthResponse = try {
+        response.body()
+    } catch (e: JsonConvertException) {
+        // Extract the actual error message from the response body
+        val responseException = e.cause as? ResponseException
+        if (responseException != null) {
+            val rawBody = responseException.response.bodyAsText()
+            val errorMessage = rawBody.extractErrorMessage()
+            throw ApiException(
+                statusCode = responseException.response.status.value,
+                message = errorMessage ?: "Authentication failed",
+                cause = e
+            )
         }
+        throw ApiException(statusCode = 500, message = "Invalid response from server", cause = e)
     }
 
-    private fun String.extractErrorMessage(): String? {
-        return try {
-            Json.parseToJsonElement(this)
-                .jsonObject["error"]
-                ?.jsonPrimitive
-                ?.content
-        } catch (_: Exception) {
-            null
-        }
+    private fun String.extractErrorMessage(): String? = try {
+        Json.parseToJsonElement(this)
+            .jsonObject["error"]
+            ?.jsonPrimitive
+            ?.content
+    } catch (_: Exception) {
+        null
     }
 }

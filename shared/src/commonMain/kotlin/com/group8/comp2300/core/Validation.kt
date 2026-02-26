@@ -7,14 +7,12 @@ object Validation {
 
     fun isValidPassword(password: String): Boolean = password.length >= 8
 
-    fun validatePassword(password: String): PasswordValidationResult {
-        return when {
-            password.length < 8 -> PasswordValidationResult.TooShort
-            !password.any { it.isDigit() } -> PasswordValidationResult.MissingDigit
-            !password.any { it.isLetter() } -> PasswordValidationResult.MissingLetter
-            password.toByteArray().size > 72 -> PasswordValidationResult.TooLong
-            else -> PasswordValidationResult.Valid
-        }
+    fun validatePassword(password: String): PasswordValidationResult = when {
+        password.length < 8 -> PasswordValidationResult.TooShort
+        !password.any { it.isDigit() } -> PasswordValidationResult.MissingDigit
+        !password.any { it.isLetter() } -> PasswordValidationResult.MissingLetter
+        password.toByteArray().size > 72 -> PasswordValidationResult.TooLong
+        else -> PasswordValidationResult.Valid
     }
 }
 

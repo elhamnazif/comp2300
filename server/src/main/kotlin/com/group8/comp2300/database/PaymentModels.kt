@@ -1,10 +1,10 @@
 package com.group8.comp2300.database
 
 enum class PaymentMethod {
-    ONLINE,      // Pay online immediately
-    PHYSICAL,    // Pay at the clinic
-    INSURANCE,   // Pay through insurance
-    PENDING      // Payment method not yet selected
+    ONLINE, // Pay online immediately
+    PHYSICAL, // Pay at the clinic
+    INSURANCE, // Pay through insurance
+    PENDING // Payment method not yet selected
 }
 
 enum class PaymentStatus {

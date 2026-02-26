@@ -15,8 +15,7 @@ class UserRepository(private val database: ServerDatabase) {
     fun findByEmail(email: String): User? =
         database.userQueries.selectUserByEmail(email).executeAsOneOrNull()?.toDomainUser()
 
-    fun findById(id: String): User? =
-        database.userQueries.selectUserById(id).executeAsOneOrNull()?.toDomainUser()
+    fun findById(id: String): User? = database.userQueries.selectUserById(id).executeAsOneOrNull()?.toDomainUser()
 
     fun existsByEmail(email: String): Boolean =
         database.userQueries.selectUserByEmail(email).executeAsOneOrNull() != null

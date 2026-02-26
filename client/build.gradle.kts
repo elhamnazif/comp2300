@@ -1,10 +1,10 @@
 import io.github.kingsword09.symbolcraft.model.SymbolVariant
 import io.github.kingsword09.symbolcraft.model.SymbolWeight
+import java.net.URI
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -153,7 +153,6 @@ kotlin {
         }
 
         iosMain.dependencies {
-
         }
     }
 }
@@ -297,7 +296,7 @@ swiftPackageConfig {
                 url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
                 products = { add("MapLibre", exportToKotlin = true) },
                 packageName = "maplibre-gl-native-distribution",
-                version = "6.17.1",
+                version = "6.17.1"
             )
         }
     }

@@ -5,15 +5,16 @@ package com.group8.comp2300.presentation.components
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 
 enum class AppTopBarStyle {
     Surface,
@@ -24,7 +25,7 @@ enum class AppTopBarStyle {
 @Composable
 fun AppTopBar(
     title: @Composable () -> Unit,
-    modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier,
+    modifier: Modifier = Modifier,
     centered: Boolean = false,
     onBackClick: (() -> Unit)? = null,
     backContentDescription: String? = null,

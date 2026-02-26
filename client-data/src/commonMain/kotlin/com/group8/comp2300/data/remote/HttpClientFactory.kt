@@ -13,18 +13,18 @@ import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.minutes
 
 private val logger = Logger.withTag("HttpClientFactory")
 
@@ -155,14 +155,13 @@ private fun String.extractApiErrorMessage(): String? {
     return null
 }
 
-private fun defaultErrorMessage(status: HttpStatusCode): String =
-    when (status) {
-        HttpStatusCode.BadRequest -> "Invalid request"
-        HttpStatusCode.Unauthorized -> "Authentication failed"
-        HttpStatusCode.NotFound -> "Requested resource was not found"
-        HttpStatusCode.Conflict -> "Request conflicts with current data"
-        else -> "Request failed (${status.value})"
-    }
+private fun defaultErrorMessage(status: HttpStatusCode): String = when (status) {
+    HttpStatusCode.BadRequest -> "Invalid request"
+    HttpStatusCode.Unauthorized -> "Authentication failed"
+    HttpStatusCode.NotFound -> "Requested resource was not found"
+    HttpStatusCode.Conflict -> "Request conflicts with current data"
+    else -> "Request failed (${status.value})"
+}
 
 private val ACCESS_TOKEN_EXPIRATION = 15.minutes
 private val ACCESS_TOKEN_EXPIRATION_MS = ACCESS_TOKEN_EXPIRATION.inWholeMilliseconds

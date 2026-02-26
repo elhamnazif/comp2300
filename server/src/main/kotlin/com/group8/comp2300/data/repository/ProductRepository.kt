@@ -7,11 +7,9 @@ import com.group8.comp2300.domain.model.shop.ProductCategory
 
 class ProductRepository(private val database: ServerDatabase) {
 
-    fun getAll(): List<Product> =
-        database.productQueries.selectAllProducts().executeAsList().map { it.toDomain() }
+    fun getAll(): List<Product> = database.productQueries.selectAllProducts().executeAsList().map { it.toDomain() }
 
-    fun getById(id: String): Product? =
-        database.productQueries.selectProductById(id).executeAsOneOrNull()?.toDomain()
+    fun getById(id: String): Product? = database.productQueries.selectProductById(id).executeAsOneOrNull()?.toDomain()
 
     fun insert(product: Product) {
         database.productQueries.insertProduct(

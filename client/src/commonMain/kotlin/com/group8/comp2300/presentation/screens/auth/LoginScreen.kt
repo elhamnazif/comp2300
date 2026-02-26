@@ -101,8 +101,7 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             HeaderSection(
-                isRegistering = state.isRegistering,
-                step = state.step
+                isRegistering = state.isRegistering
             )
 
             Spacer(Modifier.height(32.dp))
@@ -154,7 +153,7 @@ fun LoginScreen(
 }
 
 @Composable
-private fun HeaderSection(isRegistering: Boolean, step: Int) {
+private fun HeaderSection(isRegistering: Boolean) {
     Column {
         Text(
             text =
