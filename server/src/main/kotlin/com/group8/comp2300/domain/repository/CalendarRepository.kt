@@ -4,7 +4,6 @@ import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.model.calendar.*
 import com.group8.comp2300.domain.model.mood.MoodSummary
 import kotlinx.datetime.LocalDate
-import java.time.LocalDate
 import java.util.UUID
 
 class CalendarRepository(private val db: ServerDatabase) {
