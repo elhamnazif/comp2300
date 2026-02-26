@@ -35,7 +35,7 @@ koin = "4.2.0-RC1"
 kermit = "2.0.8"
 
 # UI
-materialKolor = "4.1.1"
+materialKolor = "5.0.0-alpha06"
 sketch = "4.3.1"
 symbolcraft = "0.3.4"
 maplibre = "0.12.1"
@@ -43,7 +43,7 @@ maplibre = "0.12.1"
 # Build tools
 buildkonfig = "0.17.1"
 openapiGenerator = "7.20.0"
-spmForKmp = "1.4.0"
+spmForKmp = "1.4.8"
 
 # Code quality
 spotless = "8.2.1"
@@ -62,6 +62,7 @@ core = "1.7.0"
 logback = "1.5.32"
 bcrypt = "0.10.2"
 javaJwt = "4.5.1"
+uiTooling = "1.10.4"
 
 [libraries]
 # Compose
@@ -175,6 +176,7 @@ ktor-server-auth = { module = "io.ktor:ktor-server-auth-jvm", version.ref = "kto
 ktor-server-auth-jwt = { module = "io.ktor:ktor-server-auth-jwt-jvm", version.ref = "ktor" }
 bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
 java-jwt = { module = "com.auth0:java-jwt", version.ref = "javaJwt" }
+androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "uiTooling" }
 
 [plugins]
 # Kotlin
@@ -189,7 +191,6 @@ compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "composeMu
 
 # Android
 android-application = { id = "com.android.application", version.ref = "agp" }
-android-library = { id = "com.android.library", version.ref = "agp" }
 android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 
 # Build tools

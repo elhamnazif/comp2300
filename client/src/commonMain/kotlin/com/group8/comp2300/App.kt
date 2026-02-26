@@ -3,7 +3,10 @@
 package com.group8.comp2300
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
@@ -12,12 +15,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,25 +26,16 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
-import com.group8.comp2300.di.appModule
-import com.group8.comp2300.di.coreModule
-import com.group8.comp2300.di.navigationModule
-import com.group8.comp2300.di.platformModule
-import com.group8.comp2300.di.previewModule
-import com.group8.comp2300.presentation.navigation.FakeNavigator
-import com.group8.comp2300.presentation.navigation.LocalNavigator
-import com.group8.comp2300.presentation.navigation.Navigator
-import com.group8.comp2300.presentation.navigation.Screen
-import com.group8.comp2300.presentation.navigation.popAnimation
-import com.group8.comp2300.presentation.navigation.pushAnimation
+import com.group8.comp2300.di.*
+import com.group8.comp2300.presentation.navigation.*
 import com.group8.comp2300.presentation.screens.auth.AuthViewModel
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
-import com.materialkolor.DynamicMaterialTheme
+import com.materialkolor.DynamicMaterialExpressiveTheme
 import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamiccolor.ColorSpec
 import org.koin.compose.KoinApplication
 import org.koin.compose.KoinApplicationPreview
-import org.koin.compose.KoinMultiplatformApplication
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.module.dsl.viewModel
@@ -71,12 +60,11 @@ fun App() {
 @Composable
 private fun AppTheme(content: @Composable () -> Unit) {
     val seedColor = getWallpaperSeedColor() ?: Color(0xFF66ffc7)
-    DynamicMaterialTheme(
+    DynamicMaterialExpressiveTheme(
         seedColor = seedColor,
         isDark = isSystemInDarkTheme(),
-        // specVersion = ColorSpec.SpecVersion.SPEC_2025,
         isAmoled = false,
-        style = PaletteStyle.TonalSpot,
+        style = PaletteStyle.Content,
         animate = true,
         content = content
     )
