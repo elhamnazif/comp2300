@@ -6,14 +6,12 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.comp2300.spotless)
     alias(libs.plugins.comp2300.detekt)
-    kotlin("jvm")
 }
 
 dependencies {
     implementation(project(":client"))
     implementation(libs.compose.nav3)
     implementation(libs.kermit)
-    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
@@ -44,10 +42,4 @@ compose.desktop {
             }
         }
     }
-}
-repositories {
-    mavenCentral()
-}
-kotlin {
-    jvmToolchain(8)
 }
