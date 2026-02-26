@@ -1,4 +1,4 @@
-package com.group8.comp2300.domain.model.reminder
+package com.group8.comp2300.domain.model.calendar
 
 import kotlinx.datetime.LocalDateTime
 
