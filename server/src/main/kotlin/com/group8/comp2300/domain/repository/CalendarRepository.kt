@@ -2,7 +2,9 @@ package com.group8.comp2300.domain.repository
 
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.model.calendar.MasterCalendarEvent
+import com.group8.comp2300.domain.model.calendar.CalendarCategory
 import com.group8.comp2300.domain.model.mood.MoodSummary
+import com.group8.comp2300.domain.repository.toDomainModel
 import kotlinx.datetime.LocalDate
 import java.util.UUID
 
@@ -15,8 +17,8 @@ class CalendarRepository(private val db: ServerDatabase) {
     fun getEventsForRange(userId: String, startDate: LocalDate, endDate: LocalDate): List<MasterCalendarEvent> {
         return queries.selectCalendarRange(
             user_id = userId,
-            event_time = start.toString(),
-            event_time_ = end.toString(),
+            event_time = startDate.toString(),
+            event_time_ = endDate.toString()
         ).executeAsList().map { it.toDomainModel() }
     }
 
@@ -58,7 +60,7 @@ class CalendarRepository(private val db: ServerDatabase) {
             id = java.util.UUID.randomUUID().toString(),
             user_id = userId,
             timestamp = null,
-            mood_type = moodType,
+            mood_type = mood,
             feeling = feeling,
             journal = journal
         )
@@ -66,6 +68,7 @@ class CalendarRepository(private val db: ServerDatabase) {
 
     fun getDailySummary(userId: String, date: LocalDate): List<MoodSummary> {
         val rows = queries.getDailyMoodCount(userId, date.toString()).executeAsList()
+
         val totalEntries = rows.sumOf { it.count }
 
         return rows.map { row ->
