@@ -53,13 +53,10 @@ fun VideoDetailScreen(
         }
     ) { _ ->
         Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
-            // 1. STICKY VIDEO PLAYER (Mock)
-            // Stays pinned at the top, does not scroll with the text
             Box(
                 modifier = Modifier.fillMaxWidth().height(240.dp).background(Color.Black),
                 contentAlignment = Alignment.Center
             ) {
-                // Placeholder for ExoPlayer
                 Icon(
                     imageVector = Icons.PlayArrowW400Outlinedfill1,
                     contentDescription = stringResource(Res.string.education_video_play_desc),
@@ -74,13 +71,11 @@ fun VideoDetailScreen(
                 )
             }
 
-            // 2. SCROLLABLE CONTENT
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Header Info
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Badge(containerColor = item.category.color, contentColor = Color.White) {
@@ -109,14 +104,12 @@ fun VideoDetailScreen(
                     )
                 }
 
-                // Tags Row
                 item {
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(item.tags) { tag -> SuggestionChip(onClick = {}, label = { Text("#$tag") }) }
                     }
                 }
 
-                // The "Knowledge" (Transcript)
                 item {
                     Text(
                         text = stringResource(Res.string.education_video_transcript_title),
@@ -132,8 +125,6 @@ fun VideoDetailScreen(
                     )
                 }
 
-                // 3. CALL TO ACTION (Contextual)
-                // Links education to the "Care" or "Shop" tabs
                 val relatedAction = item.relatedAction
                 if (relatedAction != null) {
                     item {

@@ -34,8 +34,6 @@ import kotlinx.datetime.*
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
-// --- Main Screen ---
-
 @Composable
 fun CalendarScreen(modifier: Modifier = Modifier) {
     val today = remember {
@@ -112,7 +110,6 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Updated Calendar Card with Navigation Logic
             item {
                 CalendarCard(
                     baseDate = today,
@@ -244,8 +241,6 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
     }
 }
 
-// --- UPDATED CALENDAR COMPONENT ---
-
 @Composable
 fun CalendarCard(
     baseDate: LocalDate,
@@ -254,14 +249,11 @@ fun CalendarCard(
     onDayClick: (CalendarDay) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // State for navigation
     var monthOffset by remember { mutableIntStateOf(0) }
 
-    // Calculate the month to display based on offset
     val displayDate =
         remember(baseDate, monthOffset) { baseDate.plus(monthOffset, DateTimeUnit.MONTH) }
 
-    // Generate grid data dynamically for the displayed month
     val calendarDays =
         remember(displayDate) { generateCalendarDays(displayDate.year, displayDate.month) }
 
@@ -273,7 +265,6 @@ fun CalendarCard(
         modifier = modifier.fillMaxWidth()
     ) {
         Column(Modifier.padding(16.dp)) {
-            // Header with Navigation
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -326,7 +317,6 @@ fun CalendarCard(
             }
             Spacer(Modifier.height(8.dp))
 
-            // Calendar Grid
             val weeks = calendarDays.chunked(7)
             weeks.forEach { week ->
                 Row(
@@ -362,7 +352,6 @@ fun DayCell(
 ) {
     val actualStatus = if (day.isToday && todayTaken) AdherenceStatus.TAKEN else day.status
 
-    // Dim styling for days not in the current month
     val alpha = if (day.isCurrentMonth) 1f else 0.3f
 
     val borderColor =
@@ -412,8 +401,6 @@ fun DayCell(
         }
     }
 }
-
-// --- REUSABLE FORM COMPONENTS ---
 
 @Composable
 private fun FormDropdown(
@@ -485,8 +472,6 @@ private fun FormChipGroup(
         }
     }
 }
-
-// --- FORM IMPLEMENTATIONS ---
 
 @Composable
 fun MedicationForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifier = Modifier) {
@@ -591,7 +576,6 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        // 1. Mood Slider
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth()
@@ -636,7 +620,6 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
 
         HorizontalDivider()
 
-        // 2. Feelings Tags
         FormChipGroup(
             title = stringResource(Res.string.form_mood_question),
             options = FormConstants.moodTags(),
@@ -646,7 +629,6 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
             }
         )
 
-        // 4. Notes
         OutlinedTextField(
             value = notes,
             onValueChange = { notes = it },
@@ -661,8 +643,6 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
         ) { Text(stringResource(Res.string.form_mood_log_button)) }
     }
 }
-
-// --- LAYOUT WRAPPERS & MENUS ---
 
 @Composable
 private fun AddEntryMenu(onSelectType: (SheetView) -> Unit) {
@@ -861,8 +841,6 @@ fun WrapperFormLayout(
         }
     }
 }
-
-// --- BASIC UI COMPONENTS ---
 
 @Composable
 fun AppointmentDetailSheetContent(

@@ -31,7 +31,6 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.SearchW400Outline
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
-/** Pure UI component for the Education screen. Takes state and callbacks, no ViewModel dependency. */
 @Composable
 fun EducationScreen(
     filteredContent: List<ContentItem>,
@@ -47,14 +46,12 @@ fun EducationScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
     ) {
-        // 1. Search Header
         ScreenHeader(horizontalPadding = 16.dp) {
             SearchBar(modifier = Modifier.fillMaxWidth()) {
                 Text(stringResource(Res.string.education_search_placeholder))
             }
         }
 
-        // 2. Category Pills (The "Spokes")
         LazyRow(
             contentPadding = PaddingValues(horizontal = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -71,7 +68,6 @@ fun EducationScreen(
                 FilterChip(
                     selected = selectedCategory == category,
                     onClick = {
-                        // Toggle logic
                         onCategorySelect(if (selectedCategory == category) null else category)
                     },
                     label = {
@@ -94,7 +90,6 @@ fun EducationScreen(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 3. Hero Card (Only show on "All" view)
             if (selectedCategory == null && featuredItem != null) {
                 item {
                     Text(
@@ -110,7 +105,6 @@ fun EducationScreen(
                 }
             }
 
-            // 4. The Feed
             item {
                 Text(
                     if (selectedCategory == null) {
@@ -133,7 +127,6 @@ fun EducationScreen(
             }
 
             items(filteredContent) { item ->
-                // Don't duplicate the featured item in the list
                 if (item.id != featuredItem?.id || selectedCategory != null) {
                     StandardContentCard(
                         item,
@@ -144,8 +137,6 @@ fun EducationScreen(
         }
     }
 }
-
-// --- Helper Components ---
 
 @Composable
 fun SearchBar(modifier: Modifier = Modifier, content: @Composable () -> Unit) {
@@ -177,7 +168,6 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
         shape = RoundedCornerShape(16.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Gradient Background (Placeholder for Image)
             Box(
                 modifier =
                     Modifier.fillMaxSize()
@@ -188,7 +178,6 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
                         )
             )
 
-            // Play Icon Overlay
             if (item.type == ContentType.VIDEO) {
                 Icon(
                     Icons.PlayCircleW500Outlined,
@@ -198,7 +187,6 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
                 )
             }
 
-            // Text Content
             Column(modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)) {
                 Badge(containerColor = Color.White, contentColor = Color.Black) {
                     val labelRes =
@@ -236,7 +224,6 @@ fun StandardContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
         modifier = modifier.fillMaxWidth()
     ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            // Thumbnail Placeholder
             Box(
                 modifier =
                     Modifier.size(80.dp)

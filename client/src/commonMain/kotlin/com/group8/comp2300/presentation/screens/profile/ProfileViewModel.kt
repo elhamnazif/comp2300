@@ -23,39 +23,32 @@ class ProfileViewModel(
     private val getRecentLabResultsUseCase: GetRecentLabResultsUseCase
 ) : ViewModel() {
 
-    // INPUT: Explicit trigger for Pull-to-Refresh
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
 
-    // OUTPUT: The single source of truth
     val state: StateFlow<State> = combine(
         authRepository.currentUser,
         refreshTrigger.onStart { emit(Unit) } // Ensure it runs at least once on start
     ) { user, _ ->
         user
     }.flatMapLatest { user ->
-        // flatMapLatest cancels the previous block if the User changes OR we Refresh
         if (user == null) {
-            // Handle Logged Out State immediately
             flowOf(State(isLoading = false))
         } else {
             flow {
-                // 1. Immediately emit user details (usually available locally/cached)
                 val firstName = user.firstName
                 val lastName = user.lastName
                 val initials = listOfNotNull(firstName.firstOrNull(), lastName.firstOrNull())
                     .joinToString("") { it.uppercase() }
 
                 val baseState = State(
-                    isLoading = true, // Start loading the async parts (Lab Results)
+                    isLoading = true,
                     userInitials = initials,
                     userName = "$firstName $lastName".trim(),
                     memberSince = user.createdAt.let { DateFormatter.formatMonthDayYearSuspend(it) }
                 )
                 emit(baseState)
 
-                // 2. Fetch Async Data (Lab Results)
                 try {
-                    // This suspend call is now safe and won't block the UI
                     val results = getRecentLabResultsUseCase()
                     emit(baseState.copy(isLoading = false, recentResults = results))
                 } catch (_: Exception) {

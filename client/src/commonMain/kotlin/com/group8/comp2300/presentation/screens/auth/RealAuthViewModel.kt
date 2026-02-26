@@ -31,8 +31,6 @@ class RealAuthViewModel(
     override val currentUser: StateFlow<User?> =
         authRepository.currentUser.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    // --- Actions (Intents) ---
-
     override fun onEvent(event: AuthUiEvent) {
         when (event) {
             is AuthUiEvent.EmailChanged -> {

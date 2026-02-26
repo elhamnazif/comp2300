@@ -37,31 +37,21 @@ fun ClinicMap(
     onClinicSelect: (Clinic) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    // 1. Dynamic Styling Colors based on Material Theme
-    // We can pass Color objects directly to const() in the DSL
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
     val surfaceColor = MaterialTheme.colorScheme.surface
 
-    // Choose map style based on system theme
-    // Dark Style kinda sucks lol
-    // val isDark = isSystemInDarkTheme()
-    // val styleUri = if (isDark) "https://tiles.openfreemap.org/styles/dark" else
-    // "https://tiles.openfreemap.org/styles/liberty"
     val styleUri = "https://tiles.openfreemap.org/styles/liberty"
 
-    // 2. Camera State
     val cameraState =
         rememberCameraState(
             firstPosition =
                 CameraPosition(
-                    target = Position(101.6841, 3.1319), // KL Default
+                    target = Position(101.6841, 3.1319),
                     zoom = 11.0
                 )
         )
 
-    // 3. Construct GeoJSON with "selected" property
-    // We rebuild this when 'selectedClinic' changes to trigger style updates
     val data =
         remember(clinics, selectedClinic) {
             FeatureCollection(
@@ -72,9 +62,6 @@ fun ClinicMap(
                         properties =
                             mapOf(
                                 "title" to JsonPrimitive(clinic.name),
-                                // Store as String "true"/"false" for
-                                // robust matching in 'switch'
-                                // expression
                                 "isSelected" to
                                     JsonPrimitive(
                                         if (clinic.id ==
@@ -93,7 +80,6 @@ fun ClinicMap(
                 .toJson()
         }
 
-    // 4. Animate Camera on Selection
     LaunchedEffect(selectedClinic) {
         selectedClinic?.let {
             cameraState.animateTo(
@@ -107,7 +93,6 @@ fun ClinicMap(
         }
     }
 
-    // 5. Apply Modifier here to respect padding/sizing from parent
     Box(modifier = modifier.fillMaxSize()) {
         MaplibreMap(
             modifier = Modifier.fillMaxSize(),
@@ -139,7 +124,6 @@ fun ClinicMap(
                 strokeWidth = const(2.dp),
                 onClick = { features ->
                     val clickedId = features.firstOrNull()?.id?.toString()
-                    // Strip quotes if JsonPrimitive adds them
                     val cleanId = clickedId?.replace("\"", "")
 
                     val match = clinics.find { it.id == cleanId }

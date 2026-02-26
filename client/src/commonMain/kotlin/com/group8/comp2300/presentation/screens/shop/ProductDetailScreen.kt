@@ -82,7 +82,6 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).verticalScroll(rememberScrollState())) {
-            // 1. Product Image Placeholder
             Box(
                 modifier = Modifier.fillMaxWidth().height(250.dp).background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
@@ -95,7 +94,6 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
                 )
             }
 
-            // 2. Content
             Column(modifier = Modifier.padding(24.dp)) {
                 if (product.insuranceCovered) {
                     AssistChip(
@@ -113,7 +111,6 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
 
                 Spacer(Modifier.height(24.dp))
 
-                // 3. Features List
                 FeatureRow(
                     stringResource(Res.string.shop_details_feature_packaging_title),
                     stringResource(Res.string.shop_details_feature_packaging_desc)

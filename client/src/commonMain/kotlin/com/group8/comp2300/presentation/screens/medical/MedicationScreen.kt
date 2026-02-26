@@ -28,8 +28,6 @@ import comp2300.i18n.generated.resources.*
 import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 
-// --- Data Models ---
-
 enum class MedicationStatus {
     Active,
     Archived
@@ -44,8 +42,6 @@ data class Medication(
     val color: Color,
     val status: MedicationStatus = MedicationStatus.Active
 )
-
-// --- Constants ---
 
 private object MedConstants {
     val PresetColors =
@@ -62,8 +58,6 @@ private object MedConstants {
     val Frequencies = listOf("Daily", "Twice Daily", "Weekly", "On Demand")
 }
 
-// --- Main Screen ---
-
 @Composable
 fun MedicationScreen(
     modifier: Modifier = Modifier,
@@ -71,8 +65,6 @@ fun MedicationScreen(
     onRequireAuth: () -> Unit = {},
     onBack: (() -> Unit)? = null
 ) {
-    // Mock Database State
-    // Mock Database State
     val medications = remember {
         mutableStateListOf<Medication>().apply {
             addAll(
@@ -141,7 +133,6 @@ fun MedicationScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // 1. Active Medications Section
             val activeMeds = medications.filter { it.status == MedicationStatus.Active }
             item {
                 SectionHeader(
@@ -168,7 +159,6 @@ fun MedicationScreen(
                 }
             }
 
-            // 2. Archived Medications Section
             val archivedMeds = medications.filter { it.status == MedicationStatus.Archived }
             if (archivedMeds.isNotEmpty()) {
                 item {
@@ -216,8 +206,6 @@ fun MedicationScreen(
         }
     }
 }
-
-// --- Components ---
 
 @Composable
 fun SectionHeader(title: String, count: Int, modifier: Modifier = Modifier) {
@@ -321,8 +309,6 @@ fun MedicationCard(
         }
     }
 }
-
-// --- Form Sheet ---
 
 @Composable
 fun MedicationFormSheet(

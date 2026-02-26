@@ -54,7 +54,6 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 1. TOP BAR: Privacy Toggle
         ScreenHeader(horizontalPadding = 0.dp) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 IconButton(onClick = { isPrivacyMode = !isPrivacyMode }) {
@@ -74,7 +73,6 @@ fun HomeScreen(
 
         Spacer(Modifier.height(8.dp))
 
-        // 2. STATUS RING
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.size(220.dp).clickable { onNavigateToCalendar() }
@@ -116,7 +114,6 @@ fun HomeScreen(
 
         Spacer(Modifier.height(32.dp))
 
-        // 3. DAILY INSIGHT CARD
         Card(
             onClick = onNavigateToEducation,
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
@@ -151,8 +148,6 @@ fun HomeScreen(
 
         Spacer(Modifier.height(24.dp))
 
-        // 4. SMART ACTIONS GRID
-        // Row 1: Daily Management
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             SmartActionButton(
                 icon = Icons.AddW400Outlined,
@@ -181,9 +176,7 @@ fun HomeScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        // Row 2: Health Services (New)
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            // 1. STI Self Check (User Request)
             SmartActionButton(
                 icon = Icons.StethoscopeW500Outlined,
                 label = stringResource(Res.string.home_menu_symptom_check),
@@ -192,7 +185,6 @@ fun HomeScreen(
                 onClick = onNavigateToSymptomChecker
             )
 
-            // 2. Find Clinic (Location based)
             SmartActionButton(
                 icon = Icons.LocationOnW400Outlined,
                 label = stringResource(Res.string.home_menu_find_clinic),
@@ -201,7 +193,6 @@ fun HomeScreen(
                 onClick = onNavigateToClinicMap
             )
 
-            // 3. Partner Notify (Anonymous SMS tool)
             SmartActionButton(
                 icon = Icons.SendW400Outlined,
                 label = stringResource(Res.string.home_menu_partner_notify),

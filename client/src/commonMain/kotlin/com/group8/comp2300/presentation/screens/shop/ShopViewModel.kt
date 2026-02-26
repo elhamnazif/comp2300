@@ -21,20 +21,14 @@ import kotlinx.coroutines.launch
 
 class ShopViewModel(private val repository: ShopRepository, private val authRepository: AuthRepository) : ViewModel() {
 
-    // INPUT 1: Category Selection
-    // Changing this automatically triggers the data pipeline below
     val selectedCategory: StateFlow<ProductCategory>
         field: MutableStateFlow<ProductCategory> = MutableStateFlow(ProductCategory.ALL)
 
-    // INPUT 2: Cart Count (Local State)
     val cartItemCount: StateFlow<Int>
         field: MutableStateFlow<Int> = MutableStateFlow(0)
 
-    // INPUT 3: Refresh Signal (Swipe to refresh / Retry)
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
 
-    // INTERNAL: The Data Loading Pipeline
-    // This flow manages the network state (Loading -> Data/Error)
     private val productsResultFlow = combine(selectedCategory, refreshTrigger.onStart { emit(Unit) }) { category, _ ->
         category
     }.flatMapLatest { category ->
@@ -53,8 +47,6 @@ class ShopViewModel(private val repository: ShopRepository, private val authRepo
         }
     }
 
-    // OUTPUT: Final State
-    // Combines the Network result + The Selected Category + The Local Cart Count
     val state: StateFlow<State> = combine(
         productsResultFlow,
         selectedCategory,
@@ -86,8 +78,6 @@ class ShopViewModel(private val repository: ShopRepository, private val authRepo
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = State(isLoading = true)
     )
-
-    // --- Actions ---
 
     fun selectCategory(category: ProductCategory) {
         selectedCategory.value = category

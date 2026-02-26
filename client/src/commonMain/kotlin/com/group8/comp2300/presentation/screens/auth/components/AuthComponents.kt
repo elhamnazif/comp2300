@@ -18,7 +18,6 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowDropDownW400
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
-/** Standard text input for the app with consistent styling */
 @Composable
 fun AuthTextField(
     value: String,
@@ -36,7 +35,7 @@ fun AuthTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null) } }, // Null content desc for decor
+        leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null) } },
         trailingIcon = trailingIcon,
         isError = errorMessage != null,
         supportingText = {
@@ -52,7 +51,6 @@ fun AuthTextField(
     )
 }
 
-/** A text field that acts like a button. Used for Date Pickers and Dropdowns to ensure the WHOLE area is clickable. */
 @Composable
 fun ClickableTextField(
     value: String,
@@ -70,15 +68,13 @@ fun ClickableTextField(
             leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null) } },
             trailingIcon = trailingIcon?.let { { Icon(it, contentDescription = null) } },
             modifier = Modifier.fillMaxWidth(),
-            readOnly = true, // Visual only
+            readOnly = true,
             singleLine = true
         )
-        // Overlay Box that captures the click
         Box(modifier = Modifier.matchParentSize().alpha(0f).clickable(onClick = onClick))
     }
 }
 
-/** Reusable Dropdown component */
 @Composable
 fun AuthDropdown(
     label: String,
@@ -100,7 +96,7 @@ fun AuthDropdown(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth(0.7f) // Adjust width as needed
+            modifier = Modifier.fillMaxWidth(0.7f)
         ) {
             options.forEach { option ->
                 DropdownMenuItem(

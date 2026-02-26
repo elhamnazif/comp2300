@@ -23,7 +23,6 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.SearchW400Outline
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
-/** Pure UI component for the Booking screen. Takes state and callbacks, no ViewModel dependency. */
 @Composable
 fun BookingScreen(
     clinics: List<Clinic>,
