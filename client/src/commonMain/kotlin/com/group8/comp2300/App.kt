@@ -33,7 +33,6 @@ import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.materialkolor.DynamicMaterialExpressiveTheme
 import com.materialkolor.PaletteStyle
-import com.materialkolor.dynamiccolor.ColorSpec
 import org.koin.compose.KoinApplication
 import org.koin.compose.KoinApplicationPreview
 import org.koin.compose.navigation3.koinEntryProvider
@@ -53,25 +52,6 @@ fun App() {
         }
     )
 }
-
-/* ------------------------------------------------------------------
- * Theme resolution
- * ------------------------------------------------------------------ */
-@Composable
-private fun AppTheme(content: @Composable () -> Unit) {
-    val seedColor = getWallpaperSeedColor() ?: Color(0xFF66ffc7)
-    DynamicMaterialExpressiveTheme(
-        seedColor = seedColor,
-        isDark = isSystemInDarkTheme(),
-        isAmoled = false,
-        style = PaletteStyle.Content,
-        animate = true,
-        content = content
-    )
-}
-
-@Composable
-expect fun getWallpaperSeedColor(): Color?
 
 @Composable
 fun MainApp(
@@ -162,6 +142,22 @@ fun MainApp(
         }
     }
 }
+
+@Composable
+private fun AppTheme(content: @Composable () -> Unit) {
+    val seedColor = getWallpaperSeedColor() ?: Color(0xFF66ffc7)
+    DynamicMaterialExpressiveTheme(
+        seedColor = seedColor,
+        isDark = isSystemInDarkTheme(),
+        isAmoled = false,
+        style = PaletteStyle.Content,
+        animate = true,
+        content = content
+    )
+}
+
+@Composable
+expect fun getWallpaperSeedColor(): Color?
 
 @PreviewScreenSizes
 @Preview(name = "Onboarding")

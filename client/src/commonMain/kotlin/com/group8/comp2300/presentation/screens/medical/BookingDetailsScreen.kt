@@ -2,9 +2,6 @@
 
 package com.group8.comp2300.presentation.screens.medical
 
-/* ------------------------------------------------------------------
- * Demo data
- * ------------------------------------------------------------------ */
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,15 +34,8 @@ import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-/* ------------------------------------------------------------------
- * Demo data
- * ------------------------------------------------------------------ */
-// Base slots imported from shared mock data
 val baseSlots = baseTimeSlots
 
-/* ------------------------------------------------------------------
- * Screen
- * ------------------------------------------------------------------ */
 @Composable
 fun BookingDetailsScreen(
     clinicId: String,
@@ -82,7 +72,6 @@ fun BookingDetailsScreen(
     var reasonText by remember { mutableStateOf("") }
     var showNotifyToggle by remember { mutableStateOf(false) }
 
-    // Logic Fix: Default to empty set if date not found (meaning all slots free)
     val availableSlots =
         baseSlots.filter { slot ->
             val takenOnDate = takenSlots[selectedDate.toString()] ?: emptySet()
@@ -235,9 +224,6 @@ fun BookingDetailsScreen(
     }
 }
 
-/* ------------------------------------------------------------------
- * Sub-components
- * ------------------------------------------------------------------ */
 @Composable
 private fun SectionHeader(title: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -247,7 +233,6 @@ private fun SectionHeader(title: String, icon: androidx.compose.ui.graphics.vect
     }
 }
 
-// NEW: Clinic Header instead of Doctor Header
 @Composable
 private fun ClinicSummaryHeader(clinic: Clinic) {
     ElevatedCard(
@@ -301,9 +286,6 @@ private fun ClinicSummaryHeader(clinic: Clinic) {
     }
 }
 
-/* ------------------------------------------------------------------
- * Calendar using kotlinx-datetime
- * ------------------------------------------------------------------ */
 @Composable
 private fun CalendarGrid(
     baseDate: LocalDate,
@@ -423,9 +405,6 @@ private fun CalendarGrid(
     }
 }
 
-/* ------------------------------------------------------------------
- * Time grid
- * ------------------------------------------------------------------ */
 @Composable
 private fun TimeGrid(slots: List<String>, selected: String?, onSelect: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -435,9 +414,6 @@ private fun TimeGrid(slots: List<String>, selected: String?, onSelect: (String) 
                     val isSelected = slot == selected
                     val isAm = slot.endsWith("AM") && slot != "12:00 PM"
 
-                    // IMPROVEMENT: Use MaterialTheme colors instead of
-                    // hardcoded hex values for
-                    // better Dark Mode support.
                     val unselectedContainer =
                         if (isAm) {
                             MaterialTheme.colorScheme.surfaceContainerLow
