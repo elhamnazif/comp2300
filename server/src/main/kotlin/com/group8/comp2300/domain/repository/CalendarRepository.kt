@@ -41,7 +41,7 @@ class CalendarRepository(private val db: ServerDatabase) {
             CalendarCategory.APPOINTMENT -> queries.deleteAppointment(eventId)
             CalendarCategory.MEDICATION -> queries.deleteMedicationLog(eventId)
             CalendarCategory.MOOD -> queries.deleteMoodById(eventId)
-            // CalendarCategory.MENSTRUAL_CYCLE
+            CalendarCategory.MENSTRUAL_CYCLE -> {} // missing
         }
     }
 
