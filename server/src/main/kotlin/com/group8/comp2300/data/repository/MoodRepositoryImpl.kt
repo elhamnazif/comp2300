@@ -1,0 +1,72 @@
+package com.group8.comp2300.data.repository
+
+import com.group8.comp2300.database.ServerDatabase
+import com.group8.comp2300.database.data.MoodEntity
+import com.group8.comp2300.domain.model.medical.Mood
+import com.group8.comp2300.domain.model.medical.MoodType
+import com.group8.comp2300.domain.repository.MoodRepository
+
+class MoodRepositoryImpl(private val database: ServerDatabase) : MoodRepository {
+
+    private val queries = database.moodQueries
+
+    override fun insert(mood: Mood) {
+        queries.insertMood(
+            id = mood.id,
+            user_id = mood.userId,
+            timestamp = mood.timestamp,
+            mood_type = mood.moodType.name,
+            feeling = mood.feeling,
+            journal = mood.journal,
+        )
+    }
+
+    override fun getHistory(userId: String): List<Mood> =
+        queries.selectMoodHistory(userId)
+            .executeAsList()
+            .map { it.toDomain() }
+
+    override fun getDailyMoods(userId: String, dateString: String): List<Mood> =
+        queries.selectDayMoods(userId, dateString)
+            .executeAsList()
+            .map { it.toDomain() }
+
+    override fun getDailyCount(userId: String, dateString: String): Map<MoodType, Long> {
+        return queries.getDailyMoodCount(userId, dateString)
+            .executeAsList()
+            .associate { row ->
+                MoodType.valueOf(row.mood_type) to row.count
+            }
+    }
+
+    override fun getMonthlyCount(userId: String, monthStart: String): Map<MoodType, Long> {
+        // monthStart should be in 'YYYY-MM-DD' format (e.g., '2024-05-01')
+        return queries.getMonthlyMoodCount(userId, monthStart, monthStart)
+            .executeAsList()
+            .associate { row ->
+                MoodType.valueOf(row.mood_type) to row.count
+            }
+    }
+
+    override fun update(id: String, moodType: MoodType, feeling: String?, journal: String?) {
+        queries.updateMoodById(
+            mood_type = moodType.name,
+            feeling = feeling,
+            journal = journal,
+            id = id,
+        )
+    }
+
+    override fun delete(id: String) {
+        queries.deleteMoodById(id)
+    }
+
+    private fun MoodEntity.toDomain() = Mood(
+        id = id,
+        userId = user_id,
+        timestamp = timestamp,
+        moodType = MoodType.valueOf(mood_type),
+        feeling = feeling,
+        journal = journal,
+    )
+}

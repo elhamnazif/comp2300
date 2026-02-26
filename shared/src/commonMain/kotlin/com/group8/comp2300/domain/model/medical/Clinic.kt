@@ -1,8 +1,9 @@
 package com.group8.comp2300.domain.model.medical
 
 import kotlinx.serialization.Serializable
-import net.sergeych.sprintf.format
+//import net.sergeych.sprintf.format
 
+/**
 @Serializable
 data class Clinic(
     val id: String,
@@ -23,3 +24,14 @@ data class Clinic(
                 "%.1fkm".format(distanceKm)
             }
 }
+**/
+
+@Serializable
+data class Clinic(
+    val id: String,
+    val name: String,
+    val address: String,
+    val phone: String? = null,
+    val lat: Double,
+    val lng: Double
+)

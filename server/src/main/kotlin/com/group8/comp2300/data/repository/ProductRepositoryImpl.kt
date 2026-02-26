@@ -1,6 +1,6 @@
 package com.group8.comp2300.data.repository
 
-import com.group8.comp2300.database.ProductEntity
+import com.group8.comp2300.database.data.ProductEntity
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory

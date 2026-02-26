@@ -1,21 +1,21 @@
-CREATE TABLE MedicationSchedule (
+CREATE TABLE MedicationScheduleEnt (
     id TEXT PRIMARY KEY,
     medication_id TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE,
     day_of_week INTEGER CHECK (day_of_week BETWEEN 0 AND 6),
-    time_of_day TEXT NOT NULL -- HH:MM
+    time_of_day INTEGER NOT NULL -- HH:MM ?
 );
 
 insertMedSchedule:
-INSERT INTO MedicationSchedule (id, medication_id, day_of_week, time_of_day)
+INSERT INTO MedicationScheduleEnt (id, medication_id, day_of_week, time_of_day)
 VALUES (?, ?, ?, ?);
 
 selectAllSchedulesByMedId:
-SELECT * FROM MedicationSchedule WHERE medication_id = ?;
+SELECT * FROM MedicationScheduleEnt WHERE medication_id = ?;
 
 updateMedScheduleById:
-UPDATE MedicationSchedule
+UPDATE MedicationScheduleEnt
 SET day_of_week = ?, time_of_day = ? WHERE id = ?;
 
 deleteMedScheduleById:
-DELETE FROM MedicationSchedule WHERE id = ?;
+DELETE FROM MedicationScheduleEnt WHERE id = ?;
 

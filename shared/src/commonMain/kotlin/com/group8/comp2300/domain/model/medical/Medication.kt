@@ -7,6 +7,8 @@ import kotlinx.serialization.Serializable
  * for server compatibility.
  */
 
+/**
+ * Old model excluded for now
 @Serializable
 data class Medication(
 val id: String,
@@ -33,8 +35,40 @@ listOf(
 )
 }
 }
+ */
+
+
+/**
+ * Temporarily store all medical data class in this file.
+ * To be updated.
+ */
+
+@Serializable
+data class Medication(
+    val id: String,
+    val userId: String,
+    val name: String,
+    val dosage: String, // Number of pills
+    val quantity: String, // Units in weight
+    val frequency: MedicationFrequency,
+    val instruction: String? = null,
+    val colourHex: String? = null,
+    val startDate: String, // YYYY-MM-DD
+    val endDate: String, // YYYY-MM-DD
+    val hasReminder: Boolean = true,
+    val status: MedicationStatus = MedicationStatus.ACTIVE
+)
 
 
 
+// --- Composite "Grouped" Class ---
 
+/**
+ * Represents a Medication along with its full weekly schedule.
+ * Use this for the "Medication Details" screen.
+ */
+data class MedicationWithSchedules(
+    val medication: Medication,
+    val schedules: List<MedicationSchedule>
+)
 

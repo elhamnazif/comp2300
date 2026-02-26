@@ -1,10 +1,10 @@
 CREATE TABLE ClinicEntity (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    address TEXT,
+    address TEXT NOT NULL,
     phone TEXT,
-    latitude REAL,
-    longitude REAL
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL
 );
 
 insertClinic:

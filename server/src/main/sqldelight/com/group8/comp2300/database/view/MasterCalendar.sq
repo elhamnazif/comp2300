@@ -16,9 +16,9 @@ SELECT
     l.id AS event_id, m.user_id, 'MEDICATION' AS event_type,
     m.med_name AS display_title,
     (m.dosage || ' Pill(s)') AS subtitle, -- "Pill(s)" as unit = gives "2 Pill(s)"
-    l.scheduled_at AS event_time,
+    l.medication_time AS event_time,
     l.status AS event_status
-FROM MedicationLog l
+FROM MedicationLogEnt l
 JOIN MedicationEntity m ON l.medication_id = m.id
 
 UNION ALL
@@ -35,7 +35,7 @@ SELECT
     feeling AS subtitle,
     timestamp AS event_time,
     'RECORDED' AS event_status
-FROM Mood;
+FROM MoodEntity;
 
 selectAllCalendarEventsOfUser:
 SELECT * FROM MasterCalendar

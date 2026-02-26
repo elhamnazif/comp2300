@@ -2,13 +2,14 @@ CREATE TABLE MedicationEntity (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
     med_name TEXT NOT NULL,
-    dosage TEXT, -- for number of pills
-    quantity TEXT, -- mcg, mg, g, oz, ml, cc, U
+    dosage TEXT NOT NULL, -- for number of pills
+    quantity TEXT NOT NULL, --UNIT: mcg, mg, g, oz, ml, cc, U
     frequency TEXT NOT NULL CHECK (frequency IN ('DAILY', 'TWICE_DAILY', 'WEEKLY', 'ON_DEMAND')),
     instruction TEXT,
     colour_hex TEXT,
     start_date TEXT NOT NULL, -- format: YYYY-MM-DD
     end_date TEXT NOT NULL, -- format: YYYY-MM-DD
+    --missing a time?
     has_reminder INTEGER DEFAULT 1 CHECK (has_reminder IN (0, 1)),
     status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'ARCHIVED'))
 );
@@ -26,7 +27,7 @@ SELECT * FROM MedicationEntity WHERE user_id = ? AND status = 'ACTIVE';
 selectArchivedMedsByUserId:
 SELECT * FROM MedicationEntity WHERE user_id = ? AND status = 'ARCHIVED';
 
-selectAllMedsByUserId: --for Pill page
+selectActiveArchivedMedsByUserId: --for Pill page
 SELECT * FROM MedicationEntity WHERE user_id = ? AND status IN ('ACTIVE', 'ARCHIVED');
 
 updateMedById:
@@ -36,4 +37,6 @@ WHERE id = ?;
 
 deleteMedById:
 DELETE FROM MedicationEntity WHERE id = ?;
+
+
 

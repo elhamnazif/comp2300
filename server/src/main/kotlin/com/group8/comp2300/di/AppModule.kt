@@ -4,13 +4,13 @@ import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.data.repository.AppointmentRepositoryImpl
 import com.group8.comp2300.data.repository.ProductRepositoryImpl
 import com.group8.comp2300.data.repository.RefreshTokenRepositoryImpl
-import com.group8.comp2300.data.repository.SlotRepositoryImpl
+import com.group8.comp2300.data.repository.AppointmentSlotRepositoryImpl
 import com.group8.comp2300.data.repository.UserRepositoryImpl
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.repository.AppointmentRepository
 import com.group8.comp2300.domain.repository.ProductRepository
 import com.group8.comp2300.domain.repository.RefreshTokenRepository
-import com.group8.comp2300.domain.repository.SlotRepository
+import com.group8.comp2300.domain.repository.AppointmentSlotRepository
 import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.security.JwtService
@@ -40,7 +40,7 @@ val serverModule = module {
         RefreshTokenRepositoryImpl(database = get(), refreshTokenExpiration = get<JwtService>().refreshTokenExpiration)
     }
     single<AppointmentRepository> { AppointmentRepositoryImpl(get()) }
-    single<SlotRepository> { SlotRepositoryImpl(get()) }
+    single<AppointmentSlotRepository> { AppointmentSlotRepositoryImpl(get()) }
 
     // Services
     single { AuthService(get(), get(), get()) }
