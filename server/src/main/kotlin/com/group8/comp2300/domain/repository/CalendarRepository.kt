@@ -22,7 +22,10 @@ class CalendarRepository(private val db: ServerDatabase) {
     // USER STORY 6: filtering events by categories
 
     fun getEventsbyCategory(userId: String, category: CalendarCategory): List<MasterCalendarEvent> {
-        return db.serverDatabaseQueries.selectFilteredEvent(userId, category.name).executeAsList().map { it.toDomainModel() }
+        return db.serverDatabaseQueries.selectFilteredEvent(
+            userId,
+            category.name
+        ).executeAsList().map { it.toDomainModel() }
     }
 
 
@@ -31,7 +34,7 @@ class CalendarRepository(private val db: ServerDatabase) {
 
    // deleting an event based on type
 
-    fun deleteCalendarEvent(eventId: String, type: CalendarCategory): List<MasterCalendarEvent> {
+    fun deleteCalendarEvent(eventId: String, type: CalendarCategory) {
         when (type) {
             CalendarCategory.APPOINTMENT -> db.serverDatabaseQueries.deleteAppointment(eventId)
             CalendarCategory.MEDICATION -> db.serverDatabaseQueries.deleteMedicationLog(eventId)
@@ -44,6 +47,8 @@ class CalendarRepository(private val db: ServerDatabase) {
    // updating an event's status
 
     fun updateMedicationStatus(logId: String, status: String) {
-        db.serverDatabaseQueries.updateMedicationStatus(status, logId)
+        db.serverDatabaseQueries.updateMedicationStatus(
+            status = status,
+            id = logId)
     }
 }
