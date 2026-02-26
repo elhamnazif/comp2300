@@ -23,7 +23,6 @@ import org.koin.compose.viewmodel.koinViewModel
 private val CorrectGreen = Color(0xFF4CAF50) // Material green 500
 private val CorrectOnGreen = Color.White
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizScreen(
     quizId: String,

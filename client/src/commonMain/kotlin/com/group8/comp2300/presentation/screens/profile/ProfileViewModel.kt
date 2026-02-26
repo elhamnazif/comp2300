@@ -7,7 +7,6 @@ import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.usecase.medical.GetRecentLabResultsUseCase
 import com.group8.comp2300.presentation.util.DateFormatter
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +18,6 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModel(
     authRepository: AuthRepository,
     private val getRecentLabResultsUseCase: GetRecentLabResultsUseCase

@@ -1,0 +1,30 @@
+CREATE TABLE MedicationLog (
+    id TEXT PRIMARY KEY,
+    medication_id TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE,
+    scheduled_at TEXT NOT NULL, --YYYY-MM-DDTHH:MM:SS
+    status TEXT NOT NULL CHECK (status IN ('TAKEN', 'SKIPPED', 'SNOOZED', 'PENDING')),
+    UNIQUE(medication_id, scheduled_at)
+);
+
+insertMedLog:
+INSERT OR REPLACE INTO MedicationLog (id, medication_id, scheduled_at, status)
+VALUES (?, ?, ?, ?);
+
+selectLogsByMedication: -- All logs of a single pill
+SELECT * FROM MedicationLog WHERE medication_id = ?;
+
+selectLogDetails: -- Single log detail, for MasterCalendar
+SELECT * FROM MedicationLog WHERE id = ?;
+
+selectDailyMedicationAgenda:
+SELECT l.*, m.med_name
+FROM MedicationLog l JOIN MedicationEntity m ON l.medication_id = m.id
+WHERE m.user_id = ? AND date(l.scheduled_at) = date(?);
+
+updateMedicationStatus: --'TAKEN', 'SKIPPED', 'SNOOZED', 'PENDING'
+UPDATE MedicationLog
+SET status = ?
+WHERE id = ?;
+
+deleteMedicationLog:
+DELETE FROM MedicationLog WHERE id = ?;

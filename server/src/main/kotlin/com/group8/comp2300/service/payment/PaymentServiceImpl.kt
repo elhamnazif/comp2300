@@ -1,20 +1,11 @@
-package com.group8.comp2300.service
+package com.group8.comp2300.service.payment
 
-import com.group8.comp2300.database.AppointmentType
-import com.group8.comp2300.database.PaymentMethod
-import com.group8.comp2300.database.PaymentOption
-import com.group8.comp2300.database.PaymentResult
-import com.group8.comp2300.database.PaymentStatus
-import java.util.*
-
-interface PaymentService {
-    fun validatePaymentMethod(appointmentType: String, paymentMethod: PaymentMethod): Boolean
-    fun getPaymentMethodsForAppointmentType(appointmentType: String): List<PaymentMethod>
-    fun requiresPrePayment(appointmentType: String): Boolean
-    fun calculatePaymentAmount(appointmentType: String): Double
-    fun processOnlinePayment(appointmentId: String, amount: Double): PaymentResult
-    fun getPaymentInstructions(paymentMethod: PaymentMethod, appointmentType: String): String
-}
+import com.group8.comp2300.domain.model.appointment.AppointmentType
+import com.group8.comp2300.domain.model.payment.PaymentMethod
+import com.group8.comp2300.domain.model.payment.PaymentOption
+import com.group8.comp2300.domain.model.payment.PaymentResult
+import com.group8.comp2300.domain.model.payment.PaymentStatus
+import java.util.UUID
 
 class PaymentServiceImpl : PaymentService {
 

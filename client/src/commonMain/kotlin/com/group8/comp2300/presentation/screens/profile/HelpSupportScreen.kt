@@ -23,7 +23,6 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
     var expandedFaqIndex by remember { mutableStateOf<Int?>(null) }

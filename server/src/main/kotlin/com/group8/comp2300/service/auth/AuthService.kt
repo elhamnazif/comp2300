@@ -1,11 +1,11 @@
-package com.group8.comp2300.service
+package com.group8.comp2300.service.auth
 
 import com.auth0.jwt.JWT
 import com.group8.comp2300.core.PasswordValidationResult
 import com.group8.comp2300.core.Validation
-import com.group8.comp2300.data.repository.RefreshTokenRepository
-import com.group8.comp2300.data.repository.UserRepository
 import com.group8.comp2300.domain.model.user.User
+import com.group8.comp2300.domain.repository.RefreshTokenRepository
+import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.dto.AuthResponse
 import com.group8.comp2300.dto.LoginRequest
 import com.group8.comp2300.dto.RegisterRequest
@@ -47,7 +47,8 @@ class AuthService(
                 phone = request.phone,
                 dateOfBirth = request.dateOfBirth,
                 gender = request.gender,
-                sexualOrientation = request.sexualOrientation
+                sexualOrientation = request.sexualOrientation,
+                preferredLanguage = "en"
             )
 
             val user = userRepository.findById(userId)

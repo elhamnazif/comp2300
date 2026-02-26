@@ -23,6 +23,5 @@ object JwtConfig {
     val issuer: String = System.getenv("JWT_ISSUER") ?: "http://0.0.0.0:8080"
     val audience: String = System.getenv("JWT_AUDIENCE") ?: "http://0.0.0.0:8080"
 
-    @Suppress("ConstPropertyName")
     const val DEV_USER_ID = "dev-user-001"
 }

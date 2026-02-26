@@ -1,6 +1,6 @@
 package com.group8.comp2300.routes
 
-import com.group8.comp2300.data.repository.ProductRepository
+import com.group8.comp2300.domain.repository.ProductRepository
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route

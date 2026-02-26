@@ -1,14 +1,14 @@
 package com.group8.comp2300.data.repository
 
 import com.group8.comp2300.database.ServerDatabase
+import com.group8.comp2300.domain.repository.RefreshTokenRepository
 import kotlin.time.Clock
+import kotlin.time.Duration
 
-class RefreshTokenRepository(
-    private val database: ServerDatabase,
-    private val refreshTokenExpiration: kotlin.time.Duration
-) {
+class RefreshTokenRepositoryImpl(private val database: ServerDatabase, private val refreshTokenExpiration: Duration) :
+    RefreshTokenRepository {
 
-    fun insert(tokenHash: String, userId: String) {
+    override fun insert(tokenHash: String, userId: String) {
         val now = Clock.System.now()
         val expiresAt = now + refreshTokenExpiration
 
@@ -20,22 +20,22 @@ class RefreshTokenRepository(
         )
     }
 
-    fun findValid(tokenHash: String): String? {
+    override fun findValid(tokenHash: String): String? {
         val now = Clock.System.now().toEpochMilliseconds()
         return database.refreshTokenQueries.isRefreshTokenValid(tokenHash, now)
             .executeAsOneOrNull()
             ?.userId
     }
 
-    fun revoke(tokenHash: String) {
+    override fun revoke(tokenHash: String) {
         database.refreshTokenQueries.revokeRefreshToken(tokenHash)
     }
 
-    fun revokeAllForUser(userId: String) {
+    override fun revokeAllForUser(userId: String) {
         database.refreshTokenQueries.revokeAllUserRefreshTokens(userId)
     }
 
-    fun deleteExpired(beforeMs: Long) {
+    override fun deleteExpired(beforeMs: Long) {
         database.refreshTokenQueries.deleteExpiredTokens(beforeMs)
     }
 }

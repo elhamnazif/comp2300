@@ -1,0 +1,50 @@
+CREATE TABLE Mood (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    timestamp TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')), -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
+    mood_type TEXT NOT NULL CHECK (mood_type IN ('VERY_SAD', 'SAD', 'NEUTRAL', 'GOOD', 'GREAT')),
+    feeling TEXT, -- Short phrases
+    journal TEXT  -- Longer entry
+);
+
+insertMood:
+INSERT INTO Mood (id, user_id, timestamp, mood_type, feeling, journal)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectMoodHistory:
+SELECT * FROM Mood WHERE user_id = ?
+ORDER BY timestamp DESC;
+
+selectDayMoods: --Moods of the day
+SELECT * FROM Mood
+WHERE user_id = ? AND date(timestamp) = date(?)
+ORDER BY timestamp ASC;
+
+updateMoodById:
+UPDATE Mood
+SET mood_type = ?, feeling = ?, journal = ?
+WHERE id = ?;
+
+deleteMoodById:
+DELETE FROM Mood WHERE id = ?;
+
+getDailyMoodCount:
+SELECT
+    mood_type,
+    COUNT(*) AS count
+FROM Mood
+WHERE user_id = ?
+  AND date(timestamp) = date(?)
+GROUP BY mood_type
+ORDER BY count DESC;
+
+getMonthlyMoodCount:
+SELECT
+    mood_type,
+    COUNT(*) AS count
+FROM Mood
+WHERE user_id = ?
+  AND date(timestamp) >= date(?)
+  AND date(timestamp) < date(?, '+1 month')
+GROUP BY mood_type
+ORDER BY count DESC;

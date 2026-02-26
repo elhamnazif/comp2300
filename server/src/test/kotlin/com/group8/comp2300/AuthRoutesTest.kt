@@ -1,14 +1,17 @@
 package com.group8.comp2300
 
+import com.group8.comp2300.data.repository.RefreshTokenRepositoryImpl
+import com.group8.comp2300.data.repository.UserRepositoryImpl
 import com.group8.comp2300.dto.AuthResponse
 import com.group8.comp2300.dto.LoginRequest
 import com.group8.comp2300.dto.RefreshTokenRequest
 import com.group8.comp2300.dto.RegisterRequest
 import com.group8.comp2300.dto.TokenResponse
+import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.routes.authRoutes
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
-import com.group8.comp2300.service.AuthService
+import com.group8.comp2300.service.auth.AuthService
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.get
@@ -258,10 +261,10 @@ class AuthRoutesTest {
 }
 
 private fun ApplicationTestBuilder.configureAuthTestModule() {
-    val database = com.group8.comp2300.database.createServerDatabase("jdbc:sqlite::memory:")
+    val database = createServerDatabase("jdbc:sqlite::memory:")
     val jwtService = testJwtService()
-    val userRepository = com.group8.comp2300.data.repository.UserRepository(database)
-    val refreshTokenRepository = com.group8.comp2300.data.repository.RefreshTokenRepository(
+    val userRepository = UserRepositoryImpl(database)
+    val refreshTokenRepository = RefreshTokenRepositoryImpl(
         database = database,
         refreshTokenExpiration = jwtService.refreshTokenExpiration
     )

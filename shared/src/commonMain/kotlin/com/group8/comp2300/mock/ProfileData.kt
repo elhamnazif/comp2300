@@ -7,7 +7,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 
 // Helper to convert date to timestamp
-@OptIn(kotlin.time.ExperimentalTime::class)
 private fun dateToTimestamp(year: Int, month: Int, day: Int): Long =
     LocalDate(year, month, day).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
 

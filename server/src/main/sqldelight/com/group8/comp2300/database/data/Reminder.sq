@@ -1,0 +1,33 @@
+CREATE TABLE Reminder (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    med_schedule_id TEXT REFERENCES MedicationSchedule(id) ON DELETE CASCADE,
+    appointment_id TEXT REFERENCES AppointmentEntity(id) ON DELETE CASCADE,
+    offset_mins INTEGER NOT NULL CHECK (offset_mins IN (0, 5, 10, 15, 30, 60)),
+    is_enabled INTEGER DEFAULT 1 CHECK (is_enabled IN (0, 1)),
+
+    CONSTRAINT reminder_source_check CHECK (
+        (med_schedule_id IS NOT NULL AND appointment_id IS NULL) OR
+        (med_schedule_id IS NULL AND appointment_id IS NOT NULL)
+    ),
+    UNIQUE(med_schedule_id, offset_mins),
+    UNIQUE(appointment_id, offset_mins)
+);
+
+insertReminder:
+INSERT INTO Reminder (id, user_id, med_schedule_id, appointment_id, offset_mins, is_enabled)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectAppointmentReminders:
+SELECT * FROM Reminder WHERE appointment_id = ?;
+
+selectMedicationReminders:
+SELECT * FROM Reminder WHERE med_schedule_id = ?;
+
+updateReminderStatus:
+UPDATE Reminder
+SET offset_mins = ?, is_enabled = ?
+WHERE id = ?;
+
+deleteReminder:
+DELETE FROM Reminder WHERE id = ?;

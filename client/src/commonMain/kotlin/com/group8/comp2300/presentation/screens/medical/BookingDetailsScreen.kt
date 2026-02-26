@@ -46,7 +46,6 @@ val baseSlots = baseTimeSlots
 /* ------------------------------------------------------------------
  * Screen
  * ------------------------------------------------------------------ */
-@OptIn(ExperimentalMaterial3Api::class, kotlin.time.ExperimentalTime::class)
 @Composable
 fun BookingDetailsScreen(
     clinicId: String,
@@ -249,7 +248,6 @@ private fun SectionHeader(title: String, icon: androidx.compose.ui.graphics.vect
 }
 
 // NEW: Clinic Header instead of Doctor Header
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ClinicSummaryHeader(clinic: Clinic) {
     ElevatedCard(

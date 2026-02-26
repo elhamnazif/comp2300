@@ -24,7 +24,6 @@ import org.jetbrains.compose.resources.stringResource
  *   screen and the screen will automatically format the questions as inputs and stuff for us. For now, this is a simple
  *   implementation for HIV.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, modifier: Modifier = Modifier) {
     var unprotectedSex by remember { mutableStateOf<Boolean?>(null) }

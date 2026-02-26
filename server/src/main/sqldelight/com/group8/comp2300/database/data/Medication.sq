@@ -1,0 +1,39 @@
+CREATE TABLE MedicationEntity (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    med_name TEXT NOT NULL,
+    dosage TEXT, -- for number of pills
+    quantity TEXT, -- mcg, mg, g, oz, ml, cc, U
+    frequency TEXT NOT NULL CHECK (frequency IN ('DAILY', 'TWICE_DAILY', 'WEEKLY', 'ON_DEMAND')),
+    instruction TEXT,
+    colour_hex TEXT,
+    start_date TEXT NOT NULL, -- format: YYYY-MM-DD
+    end_date TEXT NOT NULL, -- format: YYYY-MM-DD
+    has_reminder INTEGER DEFAULT 1 CHECK (has_reminder IN (0, 1)),
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'ARCHIVED'))
+);
+
+insertMedication:
+INSERT INTO MedicationEntity (id, user_id, med_name, dosage, quantity, frequency, instruction, colour_hex, start_date, end_date, has_reminder, status)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectMedById:
+SELECT * FROM MedicationEntity WHERE id = ?;
+
+selectActiveMedsByUserId:
+SELECT * FROM MedicationEntity WHERE user_id = ? AND status = 'ACTIVE';
+
+selectArchivedMedsByUserId:
+SELECT * FROM MedicationEntity WHERE user_id = ? AND status = 'ARCHIVED';
+
+selectAllMedsByUserId: --for Pill page
+SELECT * FROM MedicationEntity WHERE user_id = ? AND status IN ('ACTIVE', 'ARCHIVED');
+
+updateMedById:
+UPDATE MedicationEntity
+SET med_name = ?, dosage = ?, quantity = ?, frequency = ?, instruction = ?, colour_hex = ?, start_date = ?, end_date = ?, has_reminder = ?, status = ?
+WHERE id = ?;
+
+deleteMedById:
+DELETE FROM MedicationEntity WHERE id = ?;
+

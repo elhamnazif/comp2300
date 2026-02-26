@@ -4,14 +4,17 @@ import com.group8.comp2300.database.ProductEntity
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.domain.repository.ProductRepository
 
-class ProductRepository(private val database: ServerDatabase) {
+class ProductRepositoryImpl(private val database: ServerDatabase) : ProductRepository {
 
-    fun getAll(): List<Product> = database.productQueries.selectAllProducts().executeAsList().map { it.toDomain() }
+    override fun getAll(): List<Product> =
+        database.productQueries.selectAllProducts().executeAsList().map { it.toDomain() }
 
-    fun getById(id: String): Product? = database.productQueries.selectProductById(id).executeAsOneOrNull()?.toDomain()
+    override fun getById(id: String): Product? =
+        database.productQueries.selectProductById(id).executeAsOneOrNull()?.toDomain()
 
-    fun insert(product: Product) {
+    override fun insert(product: Product) {
         database.productQueries.insertProduct(
             id = product.id,
             name = product.name,
@@ -23,7 +26,7 @@ class ProductRepository(private val database: ServerDatabase) {
         )
     }
 
-    fun update(product: Product) {
+    override fun update(product: Product) {
         database.productQueries.updateProduct(
             name = product.name,
             description = product.description,
@@ -35,7 +38,7 @@ class ProductRepository(private val database: ServerDatabase) {
         )
     }
 
-    fun delete(id: String) {
+    override fun delete(id: String) {
         database.productQueries.deleteProduct(id)
     }
 

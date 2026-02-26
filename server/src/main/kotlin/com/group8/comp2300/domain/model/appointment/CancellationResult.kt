@@ -1,4 +1,4 @@
-package com.group8.comp2300.database
+package com.group8.comp2300.domain.model.appointment
 
 data class CancellationResult(
     val success: Boolean,

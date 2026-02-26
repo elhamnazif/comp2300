@@ -1,9 +1,10 @@
-package com.group8.comp2300.database
+package com.group8.comp2300.infrastructure.database
 
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import com.group8.comp2300.config.JwtConfig
-import com.group8.comp2300.data.repository.ProductRepository
-import com.group8.comp2300.data.repository.UserRepository
+import com.group8.comp2300.data.repository.ProductRepositoryImpl
+import com.group8.comp2300.data.repository.UserRepositoryImpl
+import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.mock.sampleProducts
 import com.group8.comp2300.security.PasswordHasher
 
@@ -17,13 +18,13 @@ fun createServerDatabase(databasePath: String = System.getenv("DB_PATH") ?: "jdb
 
 private fun seedProducts(database: ServerDatabase) {
     if (database.productQueries.selectAllProducts().executeAsList().isEmpty()) {
-        val repository = ProductRepository(database)
+        val repository = ProductRepositoryImpl(database)
         sampleProducts.forEach { repository.insert(it) }
     }
 }
 
 private fun seedDevUser(database: ServerDatabase) {
-    val repo = UserRepository(database)
+    val repo = UserRepositoryImpl(database)
     if (repo.findById(JwtConfig.DEV_USER_ID) == null) {
         repo.insert(
             id = JwtConfig.DEV_USER_ID,
@@ -34,7 +35,8 @@ private fun seedDevUser(database: ServerDatabase) {
             phone = null,
             dateOfBirth = null,
             gender = null,
-            sexualOrientation = null
+            sexualOrientation = null,
+            preferredLanguage = "en"
         )
     }
 }

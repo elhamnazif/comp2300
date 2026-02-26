@@ -1,0 +1,28 @@
+CREATE TABLE AppointmentSlot (
+    id TEXT PRIMARY KEY,
+    clinic_id TEXT NOT NULL REFERENCES ClinicEntity(id) ON DELETE CASCADE,
+    start_time TEXT NOT NULL, -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
+    end_time TEXT NOT NULL,   -- ISO8601 string: YYYY-MM-DDTHH:MM:SS
+    is_booked INTEGER DEFAULT 0 CHECK (is_booked IN (0, 1))
+);
+
+createApptSlot: --for clinic side
+INSERT INTO AppointmentSlot (id, clinic_id, start_time, end_time, is_booked)
+VALUES (?, ?, ?, ?, ?);
+
+selectSlotById:
+SELECT * FROM AppointmentSlot WHERE id = ?;
+
+selectAvailableSlotsByClinic:
+SELECT * FROM AppointmentSlot
+WHERE clinic_id = ? AND is_booked = 0
+ORDER BY start_time ASC;
+
+updateSlotReservationStatus:
+UPDATE AppointmentSlot
+SET is_booked = ?
+WHERE id = ?;
+
+deleteApptSlot:
+DELETE FROM AppointmentSlot WHERE id = ?;
+
