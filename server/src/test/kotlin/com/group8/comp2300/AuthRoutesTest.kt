@@ -260,7 +260,12 @@ class AuthRoutesTest {
 private fun ApplicationTestBuilder.configureAuthTestModule() {
     val database = com.group8.comp2300.database.createServerDatabase("jdbc:sqlite::memory:")
     val jwtService = testJwtService()
-    val authService = AuthService(database, jwtService)
+    val userRepository = com.group8.comp2300.data.repository.UserRepository(database)
+    val refreshTokenRepository = com.group8.comp2300.data.repository.RefreshTokenRepository(
+        database = database,
+        refreshTokenExpiration = jwtService.refreshTokenExpiration
+    )
+    val authService = AuthService(userRepository, refreshTokenRepository, jwtService)
 
     application {
         authTestModule(authService, jwtService)

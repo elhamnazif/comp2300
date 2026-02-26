@@ -5,12 +5,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-interface SlotRepository {
-    fun getSlotById(id: String): AppointmentSlots?
-    fun updateSlotBookingStatus(id: String, isBooked: Long)
-    fun getSlotByBookingId(bookingId: String): AppointmentSlots?
-}
-
 class AppointmentService(
     private val appointmentRepository: AppointmentRepository,
     private val slotRepository: SlotRepository,

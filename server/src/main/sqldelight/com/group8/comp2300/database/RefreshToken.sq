@@ -1,11 +1,3 @@
-CREATE TABLE RefreshTokenEntity (
-    token TEXT NOT NULL PRIMARY KEY,
-    userId TEXT NOT NULL,
-    expiresAt INTEGER NOT NULL,
-    createdAt INTEGER NOT NULL,
-    revoked INTEGER NOT NULL DEFAULT 0
-);
-
 insertRefreshToken:
 INSERT INTO RefreshTokenEntity (token, userId, expiresAt, createdAt, revoked)
 VALUES (?, ?, ?, ?, 0);

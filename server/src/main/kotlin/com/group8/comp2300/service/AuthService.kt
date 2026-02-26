@@ -1,6 +1,8 @@
 package com.group8.comp2300.service
 
 import com.auth0.jwt.JWT
+import com.group8.comp2300.core.PasswordValidationResult
+import com.group8.comp2300.core.Validation
 import com.group8.comp2300.data.repository.RefreshTokenRepository
 import com.group8.comp2300.data.repository.UserRepository
 import com.group8.comp2300.domain.model.user.User
@@ -165,31 +167,27 @@ class AuthService(
     }
 
     private fun validateRegisterRequest(request: RegisterRequest): ValidationResult {
+        val passwordResult = Validation.validatePassword(request.password)
         when {
-            request.email.isBlank() || !isValidEmail(request.email) ->
+            request.email.isBlank() || !Validation.isValidEmail(request.email) ->
                 return ValidationResult.Invalid("Invalid email format")
 
-            request.password.length < 8 ->
+            passwordResult == PasswordValidationResult.TooShort ->
                 return ValidationResult.Invalid("Password must be at least 8 characters")
 
-            !request.password.any { it.isDigit() } ->
+            passwordResult == PasswordValidationResult.MissingDigit ->
                 return ValidationResult.Invalid("Password must contain at least one number")
 
-            !request.password.any { it.isLetter() } ->
+            passwordResult == PasswordValidationResult.MissingLetter ->
                 return ValidationResult.Invalid("Password must contain at least one letter")
 
-            request.password.toByteArray().size > 72 ->
+            passwordResult == PasswordValidationResult.TooLong ->
                 return ValidationResult.Invalid("Password must be 72 bytes or fewer")
 
             request.firstName.isBlank() || request.lastName.isBlank() ->
                 return ValidationResult.Invalid("Name fields cannot be blank")
         }
         return ValidationResult.Valid
-    }
-
-    private fun isValidEmail(email: String): Boolean {
-        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
-        return emailRegex.matches(email)
     }
 
     private fun Throwable.isDuplicateEmailViolation(): Boolean {

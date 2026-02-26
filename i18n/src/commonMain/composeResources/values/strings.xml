@@ -195,7 +195,7 @@
     <!-- Calendar Module -->
     <string name="calendar_title">Your Schedule</string>
     <string name="calendar_add_entry_desc">Add Entry</string>
-    <string name="calendar_today_action">Today\'s Action</string>
+    <string name="calendar_today_action">Today's Action</string>
     <string name="calendar_upcoming">Upcoming</string>
     <string name="calendar_prev_month_desc">Previous Month</string>
     <string name="calendar_next_month_desc">Next Month</string>
@@ -207,7 +207,7 @@
     <string name="calendar_menu_track_appt">Track Appointment</string>
     <string name="calendar_menu_track_appt_desc">Track your visit or lab work</string>
     <string name="calendar_menu_track_mood">Track Mood</string>
-    <string name="calendar_menu_track_mood_desc">Log how you\'re feeling today</string>
+    <string name="calendar_menu_track_mood_desc">Log how you're feeling today</string>
 
     <!-- Medication Form -->
     <string name="form_medication_title">Log Medication</string>
