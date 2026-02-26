@@ -1,4 +1,4 @@
-package com.group8.comp2300.domain.model.reminder
+package com.group8.comp2300.domain.model.calendar
 
 /* As a user, I want to filter categories in calendar
 (appointments/medications/moods/menstrual cycle) so that I can choose what to focus on.

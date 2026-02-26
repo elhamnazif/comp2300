@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.comp2300.detekt)
     alias(libs.plugins.sqlDelight)
     application
+    kotlin("jvm")
 }
 
 sqldelight {
@@ -50,6 +51,7 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.content.negotiation)
     testImplementation(libs.kotlin.test.junit)
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.withType<Test>().configureEach {
@@ -57,4 +59,10 @@ tasks.withType<Test>().configureEach {
     systemProperty("ENV", "development")
     // Also set ktor.testing property as backup
     systemProperty("ktor.testing", "true")
+}
+repositories {
+    mavenCentral()
+}
+kotlin {
+    jvmToolchain(8)
 }

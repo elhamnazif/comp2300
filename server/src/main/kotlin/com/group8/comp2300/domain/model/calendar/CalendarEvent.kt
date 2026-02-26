@@ -1,6 +1,7 @@
 package com.group8.comp2300.domain.model.reminder
 
-import kotlinx.datetime.LocalDateTime
+import com.group8.comp2300.domain.model.calendar.CalendarCategory
+import kotlinx.datetime.toLocalDateTime
 
 data class CalendarEvent(
     val id: String,

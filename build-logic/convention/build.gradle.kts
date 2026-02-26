@@ -2,10 +2,12 @@ plugins {
     `kotlin-dsl`
     alias(libs.plugins.spotless)
     alias(libs.plugins.detekt)
+    kotlin("jvm")
 }
 
 kotlin {
     jvmToolchain(21)
+    jvmToolchain(8)
 }
 
 dependencies {
@@ -15,6 +17,7 @@ dependencies {
 
     // https://github.com/gradle/gradle/issues/15383#issuecomment-779893192
     compileOnly(files(libs::class.java.superclass.protectionDomain.codeSource.location))
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 gradlePlugin {
@@ -28,4 +31,7 @@ gradlePlugin {
             implementationClass = "SpotlessConventionPlugin"
         }
     }
+}
+repositories {
+    mavenCentral()
 }
