@@ -1,4 +1,6 @@
-package com.group8.comp2300.database
+package com.group8.comp2300.domain.repository
+
+import com.group8.comp2300.database.Appointment
 
 interface AppointmentRepository {
     fun insertAppointment(appointment: Appointment)

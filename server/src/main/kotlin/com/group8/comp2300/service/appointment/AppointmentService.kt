@@ -1,9 +1,17 @@
-package com.group8.comp2300.service
+package com.group8.comp2300.service.appointment
 
-import com.group8.comp2300.database.*
+import com.group8.comp2300.database.Appointment
+import com.group8.comp2300.database.AppointmentSlots
+import com.group8.comp2300.domain.model.appointment.BookingResult
+import com.group8.comp2300.domain.model.appointment.CancellationResult
+import com.group8.comp2300.domain.model.payment.PaymentMethod
+import com.group8.comp2300.domain.model.payment.PaymentStatus
+import com.group8.comp2300.domain.repository.AppointmentRepository
+import com.group8.comp2300.domain.repository.SlotRepository
+import com.group8.comp2300.service.payment.PaymentService
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.UUID
 
 class AppointmentService(
     private val appointmentRepository: AppointmentRepository,

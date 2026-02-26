@@ -3,7 +3,7 @@ package com.group8.comp2300.routes
 import com.group8.comp2300.dto.LoginRequest
 import com.group8.comp2300.dto.RefreshTokenRequest
 import com.group8.comp2300.dto.RegisterRequest
-import com.group8.comp2300.service.AuthService
+import com.group8.comp2300.service.auth.AuthService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.principal
