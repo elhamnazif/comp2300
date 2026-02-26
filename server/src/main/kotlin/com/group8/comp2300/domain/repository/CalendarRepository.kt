@@ -51,4 +51,17 @@ class CalendarRepository(private val db: ServerDatabase) {
             status = status,
             id = logId)
     }
+
+    // logging mood
+    fun logMood (id: String, userId: String, mood: String, feeling: String?, journal: String?) {
+        db.serverDatabaseQueries.insertMood(
+            id = id,
+            user_id = userId,
+            timestamp = null,
+            mood_type = mood,
+            feeling = feeling,
+            journal = journal
+        )
+    }
+
 }
