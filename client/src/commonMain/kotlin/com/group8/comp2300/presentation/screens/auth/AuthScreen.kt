@@ -1,7 +1,6 @@
 package com.group8.comp2300.presentation.screens.auth
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,7 +12,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,15 +25,12 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.presentation.components.AppTopBar
-import com.group8.comp2300.presentation.screens.auth.components.AuthDropdown
 import com.group8.comp2300.presentation.screens.auth.components.AuthTextField
-import com.group8.comp2300.presentation.screens.auth.components.ClickableTextField
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.time.Clock
 
 @Composable
 fun AuthScreen(
@@ -43,51 +38,20 @@ fun AuthScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = koinViewModel(),
     onDismiss: () -> Unit = {},
+    onNavigateToEmailVerification: (String) -> Unit = {},
+    onNavigateToForgotPassword: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
 
-    // Date Picker Dialog
-    if (state.showDatePicker) {
-        val dateState =
-            rememberDatePickerState(
-                initialSelectedDateMillis = state.dateOfBirth ?: Clock.System.now().toEpochMilliseconds(),
-            )
-        DatePickerDialog(
-            onDismissRequest = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ShowDatePicker(false)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.onEvent(AuthViewModel.AuthUiEvent.DateOfBirthChanged(dateState.selectedDateMillis))
-                    },
-                ) {
-                    Text(stringResource(Res.string.auth_ok))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ShowDatePicker(false)) }) {
-                    Text(stringResource(Res.string.auth_cancel))
-                }
-            },
-        ) {
-            DatePicker(state = dateState)
-        }
-    }
-
     Scaffold(
         modifier = modifier,
         topBar = {
             AppTopBar(
                 title = {},
-                onBackClick = {
-                    if (state.isRegistering && state.step == 1) {
-                        viewModel.onEvent(AuthViewModel.AuthUiEvent.PrevStep)
-                    } else {
-                        onDismiss()
-                    }
-                },
+                onBackClick = onDismiss,
                 backContentDescription = stringResource(Res.string.auth_back_desc),
             )
         },
@@ -128,26 +92,12 @@ fun AuthScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // Swap Content based on step
-            AnimatedContent(
-                targetState = Pair(state.isRegistering, state.step),
-                label = "AuthContentTransition",
-                transitionSpec = {
-                    fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
-                },
-            ) { targetState ->
-                if (targetState.first && targetState.second == 1) {
-                    PersonalDetailsStep(
-                        state,
-                        viewModel::onEvent,
-                    )
-                } else {
-                    CredentialsStep(
-                        state,
-                        viewModel::onEvent,
-                    )
-                }
-            }
+            // Credentials form
+            CredentialsForm(
+                state = state,
+                onEvent = viewModel::onEvent,
+                onNavigateToForgotPassword = onNavigateToForgotPassword,
+            )
 
             Spacer(Modifier.height(16.dp))
 
@@ -156,18 +106,19 @@ fun AuthScreen(
                 state = state,
                 onEvent = viewModel::onEvent,
                 onLoginSuccess = onLoginSuccess,
+                onRegisterSuccess = { email ->
+                    onNavigateToEmailVerification(email)
+                },
             )
 
             Spacer(Modifier.height(16.dp))
 
             // Footer (Switch Mode / Guest)
-            if (state.step == 0) {
-                FooterSection(
-                    isRegistering = state.isRegistering,
-                    onToggleMode = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ToggleAuthMode) },
-                    onGuestParams = onDismiss,
-                )
-            }
+            FooterSection(
+                isRegistering = state.isRegistering,
+                onToggleMode = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ToggleAuthMode) },
+                onGuestParams = onDismiss,
+            )
         }
     }
 }
@@ -225,7 +176,11 @@ private fun HeaderSection(isRegistering: Boolean) {
 }
 
 @Composable
-private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.AuthUiEvent) -> Unit) {
+private fun CredentialsForm(
+    state: AuthViewModel.State,
+    onEvent: (AuthViewModel.AuthUiEvent) -> Unit,
+    onNavigateToForgotPassword: () -> Unit = {},
+) {
     Column {
         val focusManager = LocalFocusManager.current
 
@@ -283,6 +238,19 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         )
 
+        // Forgot Password link (only for login mode)
+        if (!state.isRegistering) {
+            Text(
+                text = stringResource(Res.string.auth_forgot_password),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(top = 4.dp)
+                    .clickable { onNavigateToForgotPassword() },
+            )
+        }
+
         if (state.isRegistering) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -313,138 +281,27 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
 }
 
 @Composable
-private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.AuthUiEvent) -> Unit) {
-    Column {
-        val focusManager = LocalFocusManager.current
-
-        AuthTextField(
-            value = state.firstName,
-            onValueChange = {
-                onEvent(
-                    AuthViewModel.AuthUiEvent.FirstNameChanged(
-                        it,
-                    ),
-                )
-            },
-            label = stringResource(Res.string.auth_first_name_label),
-            leadingIcon = Icons.PersonW400Outlinedfill1,
-            keyboardOptions =
-            KeyboardOptions(
-                capitalization = KeyboardCapitalization.Words,
-                imeAction = ImeAction.Next,
-            ),
-            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
-        )
-
-        AuthTextField(
-            value = state.lastName,
-            onValueChange = {
-                onEvent(
-                    AuthViewModel.AuthUiEvent.LastNameChanged(
-                        it,
-                    ),
-                )
-            },
-            label = stringResource(Res.string.auth_last_name_label),
-            leadingIcon = Icons.PersonW400Outlinedfill1,
-            keyboardOptions =
-            KeyboardOptions(
-                capitalization = KeyboardCapitalization.Words,
-                imeAction = ImeAction.Done,
-            ),
-            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
-        )
-
-        ClickableTextField(
-            value = state.getFormattedDate(),
-            label = stringResource(Res.string.auth_dob_label),
-            leadingIcon = Icons.DateRangeW400Outlinedfill1,
-            onClick = {
-                onEvent(
-                    AuthViewModel.AuthUiEvent.ShowDatePicker(
-                        true,
-                    ),
-                )
-            },
-        )
-        Spacer(Modifier.height(16.dp))
-
-        HorizontalDivider(Modifier.padding(vertical = 8.dp))
-        Text(stringResource(Res.string.auth_optional_info), style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(16.dp))
-
-        AuthDropdown(
-            label = stringResource(Res.string.auth_gender_label),
-            selectedValue = state.gender,
-            options =
-            listOf(
-                stringResource(Res.string.auth_gender_male),
-                stringResource(Res.string.auth_gender_female),
-                stringResource(Res.string.auth_gender_non_binary),
-                stringResource(Res.string.auth_gender_prefer_not_to_say),
-            ),
-            onSelectOption = {
-                onEvent(
-                    AuthViewModel.AuthUiEvent.GenderChanged(
-                        it,
-                    ),
-                )
-            },
-        )
-        Spacer(Modifier.height(16.dp))
-
-        AuthDropdown(
-            label = stringResource(Res.string.auth_orientation_label),
-            selectedValue = state.sexualOrientation,
-            options =
-            listOf(
-                stringResource(Res.string.auth_orientation_heterosexual),
-                stringResource(Res.string.auth_orientation_gay),
-                stringResource(Res.string.auth_orientation_lesbian),
-                stringResource(Res.string.auth_orientation_bisexual),
-                stringResource(Res.string.auth_orientation_pansexual),
-                stringResource(Res.string.auth_orientation_asexual),
-            ),
-            onSelectOption = {
-                onEvent(
-                    AuthViewModel.AuthUiEvent.OrientationChanged(
-                        it,
-                    ),
-                )
-            },
-        )
-    }
-}
-
-@Composable
 private fun ActionButtons(
     state: AuthViewModel.State,
     onEvent: (AuthViewModel.AuthUiEvent) -> Unit,
     onLoginSuccess: () -> Unit,
+    onRegisterSuccess: (String) -> Unit = {},
 ) {
     Column {
         Button(
             onClick = {
                 onEvent(AuthViewModel.AuthUiEvent.ClearError)
-                when {
-                    state.isRegistering && state.step == 0 -> {
-                        if (state.isStep1Valid) onEvent(AuthViewModel.AuthUiEvent.NextStep)
-                    }
-
-                    else -> onEvent(AuthViewModel.AuthUiEvent.Submit(onLoginSuccess))
+                if (state.isRegistering) {
+                    // Registration - call preregister API then navigate to email verification
+                    onEvent(AuthViewModel.AuthUiEvent.Submit { onRegisterSuccess(state.email) })
+                } else {
+                    // Login - call login API
+                    onEvent(AuthViewModel.AuthUiEvent.Submit(onLoginSuccess))
                 }
             },
             modifier = Modifier.fillMaxWidth().height(56.dp),
             shape = androidx.compose.foundation.shape.RoundedCornerShape(50),
-            enabled =
-            !state.isLoading &&
-                if (state.isRegistering && state.step == 0) {
-                    state.isStep1Valid
-                } else if (state.isRegistering) {
-                    state.isStep2Valid
-                } else {
-                    (state.email.isNotBlank() && state.password.isNotBlank() && state.emailError == null)
-                },
+            enabled = !state.isLoading && state.isValid,
             colors =
             ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -455,10 +312,10 @@ private fun ActionButtons(
                 CircularProgressIndicator(Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
             } else {
                 Text(
-                    when {
-                        state.isRegistering && state.step == 0 -> stringResource(Res.string.auth_continue)
-                        state.isRegistering -> stringResource(Res.string.auth_sign_up)
-                        else -> stringResource(Res.string.auth_sign_in)
+                    if (state.isRegistering) {
+                        stringResource(Res.string.auth_continue)
+                    } else {
+                        stringResource(Res.string.auth_sign_in)
                     },
                     fontWeight = FontWeight.Bold,
                 )

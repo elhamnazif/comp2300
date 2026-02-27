@@ -3,12 +3,15 @@ package com.group8.comp2300.data.repository
 import co.touchlab.kermit.Logger
 import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.remote.ApiService
+import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
 import com.group8.comp2300.data.remote.dto.LoginRequest
+import com.group8.comp2300.data.remote.dto.PreregisterRequest
 import com.group8.comp2300.data.remote.dto.RegisterRequest
 import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
+import com.group8.comp2300.util.toEpochMilliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -70,10 +73,7 @@ class AuthRepositoryImpl(
             phone = null,
             gender = gender.name,
             sexualOrientation = sexualOrientation.name,
-            dateOfBirth = dateOfBirth?.toEpochDays()?.let { epochDays ->
-                // Convert LocalDate epoch days to milliseconds
-                epochDays * 24L * 60L * 60L * 1000L
-            },
+            dateOfBirth = dateOfBirth.toEpochMilliseconds(),
         )
         val response = apiService.register(request)
         val expiresAt = Clock.System.now().toEpochMilliseconds() + ACCESS_TOKEN_EXPIRATION_MS
@@ -101,6 +101,73 @@ class AuthRepositoryImpl(
     }
 
     override fun isGuest(): Boolean = _currentUser.value == null
+
+    override suspend fun activateAccount(token: String): Result<Unit> = try {
+        logger.i { "Account activation attempt with token" }
+        val response = apiService.activateAccount(token)
+        val expiresAt = Clock.System.now().toEpochMilliseconds() + ACCESS_TOKEN_EXPIRATION_MS
+        tokenManager.saveTokens(response.user.id, response.accessToken, response.refreshToken, expiresAt)
+        _currentUser.value = response.user
+        logger.i { "Account activation successful for user: ${response.user.id}" }
+        Result.success(Unit)
+    } catch (e: Exception) {
+        logger.e(e) { "Account activation failed" }
+        Result.failure(e)
+    }
+
+    override suspend fun forgotPassword(email: String): Result<Unit> = try {
+        logger.i { "Forgot password request for email: $email" }
+        apiService.forgotPassword(email)
+        logger.i { "Forgot password email sent successfully" }
+        Result.success(Unit)
+    } catch (e: Exception) {
+        logger.e(e) { "Forgot password request failed for email: $email" }
+        Result.failure(e)
+    }
+
+    override suspend fun resetPassword(token: String, newPassword: String): Result<Unit> = try {
+        logger.i { "Password reset attempt with token" }
+        apiService.resetPassword(token, newPassword)
+        logger.i { "Password reset successful" }
+        Result.success(Unit)
+    } catch (e: Exception) {
+        logger.e(e) { "Password reset failed" }
+        Result.failure(e)
+    }
+
+    override suspend fun preregister(email: String, password: String): Result<String> = try {
+        logger.i { "Preregistration attempt for email: $email" }
+        val response = apiService.preregister(PreregisterRequest(email, password))
+        logger.i { "Preregistration successful for email: $email" }
+        Result.success(response.email)
+    } catch (e: Exception) {
+        logger.e(e) { "Preregistration failed for email: $email" }
+        Result.failure(e)
+    }
+
+    override suspend fun completeProfile(
+        firstName: String,
+        lastName: String,
+        gender: Gender,
+        sexualOrientation: SexualOrientation,
+        dateOfBirth: LocalDate?,
+    ): Result<User> = try {
+        logger.i { "Profile completion attempt for user" }
+        val request = CompleteProfileRequest(
+            firstName = firstName,
+            lastName = lastName,
+            dateOfBirth = dateOfBirth.toEpochMilliseconds(),
+            gender = gender.name,
+            sexualOrientation = sexualOrientation.name,
+        )
+        val user = apiService.completeProfile(request)
+        _currentUser.value = user
+        logger.i { "Profile completion successful for user: ${user.id}" }
+        Result.success(user)
+    } catch (e: Exception) {
+        logger.e(e) { "Profile completion failed" }
+        Result.failure(e)
+    }
 
     private fun tryRestoreSession() {
         repositoryScope.launch {

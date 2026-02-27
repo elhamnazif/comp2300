@@ -43,6 +43,9 @@ dependencies {
     implementation(libs.bcrypt)
     implementation(libs.java.jwt)
 
+    // Email
+    implementation(libs.resend)
+
     // Koin DI
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)

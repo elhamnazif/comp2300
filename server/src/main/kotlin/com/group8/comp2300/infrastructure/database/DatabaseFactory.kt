@@ -38,5 +38,6 @@ private fun seedDevUser(database: ServerDatabase) {
             sexualOrientation = null,
             preferredLanguage = "en",
         )
+        repo.activateUser(JwtConfig.DEV_USER_ID)
     }
 }

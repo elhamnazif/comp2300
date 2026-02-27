@@ -94,6 +94,26 @@ class FakeAuthRepository : AuthRepository {
         return Result.success(user)
     }
 
+    override suspend fun preregister(email: String, password: String): Result<String> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun completeProfile(
+        firstName: String,
+        lastName: String,
+        gender: Gender,
+        sexualOrientation: SexualOrientation,
+        dateOfBirth: LocalDate?,
+    ): Result<User> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun activateAccount(token: String): Result<Unit> = Result.success(Unit)
+
+    override suspend fun forgotPassword(email: String): Result<Unit> = Result.success(Unit)
+
+    override suspend fun resetPassword(token: String, newPassword: String): Result<Unit> = Result.success(Unit)
+
     override suspend fun logout() {
         _currentUser.value = null
     }
