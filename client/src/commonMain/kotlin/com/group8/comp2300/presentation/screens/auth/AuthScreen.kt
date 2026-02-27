@@ -33,7 +33,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 
 @Composable
-fun LoginScreen(
+fun AuthScreen(
     onLoginSuccess: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = koinViewModel(),

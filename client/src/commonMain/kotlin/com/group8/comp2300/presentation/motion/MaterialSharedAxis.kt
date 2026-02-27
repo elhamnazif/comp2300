@@ -1,3 +1,5 @@
+@file:Suppress("unused", "RedundantVisibilityModifier")
+
 package com.group8.comp2300.presentation.motion
 
 import androidx.compose.animation.ContentTransform

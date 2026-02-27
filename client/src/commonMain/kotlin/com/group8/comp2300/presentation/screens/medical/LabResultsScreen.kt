@@ -21,10 +21,6 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import org.jetbrains.compose.resources.stringResource
 
-// Helper to create timestamp from date components
-private fun dateToTimestamp(year: Int, month: Int, day: Int): Long =
-    kotlinx.datetime.LocalDate(year, month, day).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
-
 @Composable
 fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: Modifier = Modifier) {
     // Mock complete lab results data using proper types
