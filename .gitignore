@@ -22,4 +22,5 @@ kls.database.db
 kls_database.db
 *.db
 *.log
+.env
 maplibre-cache

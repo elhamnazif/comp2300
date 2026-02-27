@@ -22,8 +22,13 @@ import com.group8.comp2300.domain.repository.EducationRepository
 import com.group8.comp2300.domain.repository.MedicalRepository
 import com.group8.comp2300.domain.repository.ReminderRepository
 import com.group8.comp2300.domain.repository.ShopRepository
+import com.group8.comp2300.domain.usecase.auth.ActivateAccountUseCase
+import com.group8.comp2300.domain.usecase.auth.CompleteProfileUseCase
+import com.group8.comp2300.domain.usecase.auth.ForgotPasswordUseCase
 import com.group8.comp2300.domain.usecase.auth.LoginUseCase
+import com.group8.comp2300.domain.usecase.auth.PreregisterUseCase
 import com.group8.comp2300.domain.usecase.auth.RegisterUseCase
+import com.group8.comp2300.domain.usecase.auth.ResetPasswordUseCase
 import com.group8.comp2300.domain.usecase.medical.GetRecentLabResultsUseCase
 import com.group8.comp2300.domain.usecase.shop.GetProductsUseCase
 import org.koin.core.module.dsl.bind
@@ -79,5 +84,10 @@ val coreModule = module {
     singleOf(::GetProductsUseCase)
     singleOf(::LoginUseCase)
     singleOf(::RegisterUseCase)
+    singleOf(::ActivateAccountUseCase)
+    singleOf(::CompleteProfileUseCase)
+    singleOf(::ForgotPasswordUseCase)
+    singleOf(::PreregisterUseCase)
+    singleOf(::ResetPasswordUseCase)
     singleOf(::GetRecentLabResultsUseCase)
 }

@@ -47,6 +47,47 @@
     <string name="auth_error_network">Cannot reach server. Please check your connection.</string>
     <string name="auth_error_terms_required">Please accept the Terms &amp; Conditions</string>
     <string name="auth_continue_as_guest">Continue as Guest</string>
+    <string name="auth_forgot_password">Forgot Password?</string>
+
+    <!-- Email Verification -->
+    <string name="email_verification_title">Verify Your Email</string>
+    <string name="email_verification_desc">We've sent a 6-digit code to:</string>
+    <string name="email_verification_check_inbox">Enter the code from the email to verify your address.</string>
+    <string name="email_verification_token_label">Verification code</string>
+    <string name="email_verification_token_placeholder">Enter 6-digit code</string>
+    <string name="email_verification_verify_button">Verify Email</string>
+    <string name="email_verification_resend">Resend Email</string>
+    <string name="email_verification_resend_in">Resend in %1$ds</string>
+    <string name="email_verification_verified_button">I've Verified My Email</string>
+    <string name="email_verification_success">Email verified successfully! You can now log in.</string>
+    <string name="email_verification_error_invalid_token">Invalid or expired verification code</string>
+    <string name="email_verification_error_network">Network error. Please check your connection.</string>
+
+    <!-- Forgot Password -->
+    <string name="forgot_password_title">Forgot Password</string>
+    <string name="forgot_password_desc">Enter your email address and we'll send you a code to reset your password.</string>
+    <string name="forgot_password_email_label">Email</string>
+    <string name="forgot_password_submit">Send Code</string>
+    <string name="forgot_password_success_title">Check Your Email</string>
+    <string name="forgot_password_success_desc">We've sent a 6-digit code to:</string>
+    <string name="forgot_password_back_to_login">Back to Login</string>
+    <string name="forgot_password_error_network">Network error. Please check your connection.</string>
+    <string name="forgot_password_error_not_found">No account found with this email</string>
+
+    <!-- Reset Password -->
+    <string name="reset_password_title">Reset Password</string>
+    <string name="reset_password_desc">Create a new password for your account.</string>
+    <string name="reset_password_new_label">New Password</string>
+    <string name="reset_password_confirm_label">Confirm Password</string>
+    <string name="reset_password_submit">Reset Password</string>
+    <string name="reset_password_success">Password reset successfully! You can now log in with your new password.</string>
+    <string name="reset_password_error_mismatch">Passwords do not match</string>
+    <string name="reset_password_error_invalid_token">Invalid or expired verification code</string>
+    <string name="reset_password_error_network">Network error. Please check your connection.</string>
+    <string name="reset_password_requirements">Password must be at least 8 characters long.</string>
+    <string name="complete_profile_title">Complete Your Profile</string>
+    <string name="complete_profile_desc">Tell us a bit about yourself</string>
+    <string name="complete_profile_button">Complete Registration</string>
 
     <!-- Onboarding Module -->
     <string name="onboarding_welcome_back_title">Welcome Back!</string>
