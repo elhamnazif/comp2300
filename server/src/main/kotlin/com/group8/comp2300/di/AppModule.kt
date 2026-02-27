@@ -29,7 +29,7 @@ val serverModule = module {
         JwtServiceImpl(
             secret = JwtConfig.secret,
             issuer = JwtConfig.issuer,
-            audience = JwtConfig.audience
+            audience = JwtConfig.audience,
         )
     }
 

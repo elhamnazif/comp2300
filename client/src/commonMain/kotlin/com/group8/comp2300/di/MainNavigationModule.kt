@@ -18,7 +18,7 @@ val mainNavigationModule = module {
             onNavigateToEducation = { navigator.navigate(Screen.Education) },
             onNavigateToMedication = { navigator.navigate(Screen.Medication) },
             onNavigateToSymptomChecker = { navigator.navigate(Screen.SelfDiagnosis) },
-            onNavigateToClinicMap = { navigator.navigate(Screen.Booking) }
+            onNavigateToClinicMap = { navigator.navigate(Screen.Booking) },
         )
     }
 
@@ -34,7 +34,7 @@ val mainNavigationModule = module {
             onNavigateToLabResults = { navigator.navigate(Screen.LabResults) },
             onNavigateToPrivacySecurity = { navigator.navigate(Screen.PrivacySecurity) },
             onNavigateToNotifications = { navigator.navigate(Screen.Notifications) },
-            onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) }
+            onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) },
         )
     }
 
@@ -43,7 +43,7 @@ val mainNavigationModule = module {
         MedicationScreen(
             isGuest = navigator.isGuest,
             onRequireAuth = navigator::requireAuth,
-            onBack = navigator::goBack
+            onBack = navigator::goBack,
         )
     }
 }

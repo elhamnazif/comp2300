@@ -34,7 +34,7 @@ private class ShimmerNode(var durationMillis: Int) :
                 progress.snapTo(0f)
                 progress.animateTo(
                     targetValue = 1f,
-                    animationSpec = tween(durationMillis, easing = LinearEasing)
+                    animationSpec = tween(durationMillis, easing = LinearEasing),
                 )
             }
         }
@@ -48,7 +48,7 @@ private class ShimmerNode(var durationMillis: Int) :
         val brush = Brush.linearGradient(
             colors = listOf(Color(0xFFB8B5B5), Color(0xFF8F8B8B), Color(0xFFB8B5B5)),
             start = Offset(startOffsetX, 0f),
-            end = Offset(startOffsetX + width, size.height)
+            end = Offset(startOffsetX + width, size.height),
         )
 
         // Draw shimmer background

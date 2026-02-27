@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package com.group8.comp2300.presentation.screens.profile
 
 import androidx.compose.foundation.layout.*
@@ -28,26 +26,26 @@ fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
             AppTopBar(
                 title = { Text(stringResource(Res.string.privacy_security_title)) },
                 onBackClick = onBack,
-                backContentDescription = stringResource(Res.string.auth_back_desc)
+                backContentDescription = stringResource(Res.string.auth_back_desc),
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier =
-                Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp)
+            Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp),
         ) {
             Text(
                 stringResource(Res.string.privacy_security_settings_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
                 title = stringResource(Res.string.privacy_security_biometrics_title),
                 description = stringResource(Res.string.privacy_security_biometrics_desc),
                 checked = biometricsEnabled,
-                onCheckedChange = { biometricsEnabled = it }
+                onCheckedChange = { biometricsEnabled = it },
             )
 
             Spacer(Modifier.height(8.dp))
@@ -56,7 +54,7 @@ fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 title = stringResource(Res.string.privacy_security_encryption_title),
                 description = stringResource(Res.string.privacy_security_encryption_desc),
                 checked = dataEncryptionEnabled,
-                onCheckedChange = { dataEncryptionEnabled = it }
+                onCheckedChange = { dataEncryptionEnabled = it },
             )
 
             Spacer(Modifier.height(24.dp))
@@ -65,14 +63,14 @@ fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 stringResource(Res.string.privacy_security_privacy_settings_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SettingToggleItem(
                 title = stringResource(Res.string.privacy_security_anonymous_reporting_title),
                 description = stringResource(Res.string.privacy_security_anonymous_reporting_desc),
                 checked = anonymousReporting,
-                onCheckedChange = { anonymousReporting = it }
+                onCheckedChange = { anonymousReporting = it },
             )
 
             Spacer(Modifier.height(8.dp))
@@ -81,7 +79,7 @@ fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 title = stringResource(Res.string.privacy_security_share_data_title),
                 description = stringResource(Res.string.privacy_security_share_data_desc),
                 checked = shareDataForResearch,
-                onCheckedChange = { shareDataForResearch = it }
+                onCheckedChange = { shareDataForResearch = it },
             )
 
             Spacer(Modifier.height(24.dp))
@@ -92,13 +90,13 @@ fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                         stringResource(Res.string.privacy_security_info_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(Res.string.privacy_security_info_body),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                     )
                 }
             }
@@ -112,16 +110,16 @@ private fun SettingToggleItem(
     description: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
@@ -129,7 +127,7 @@ private fun SettingToggleItem(
                 Text(
                     description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
             Spacer(Modifier.width(16.dp))

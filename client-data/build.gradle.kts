@@ -35,7 +35,7 @@ kotlin {
             "-opt-in=kotlin.uuid.ExperimentalUuidApi",
             "-opt-in=kotlin.time.ExperimentalTime",
             "-Xexpect-actual-classes",
-            "-Xannotation-default-target=param-property"
+            "-Xannotation-default-target=param-property",
         )
     }
 

@@ -21,5 +21,5 @@ val faqs =
             "All your data will be permanently removed within 30 days.",
         "How do I change my notification settings?" to
             "Go to Profile > Settings > Notifications to customize what notifications you " +
-            "receive and enable Discreet Mode."
+            "receive and enable Discreet Mode.",
     )

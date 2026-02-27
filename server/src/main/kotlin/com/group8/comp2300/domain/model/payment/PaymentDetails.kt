@@ -6,5 +6,5 @@ data class PaymentDetails(
     val amount: Double,
     val transactionId: String? = null,
     val paymentTime: String? = null,
-    val requiresPrePayment: Boolean = true
+    val requiresPrePayment: Boolean = true,
 )

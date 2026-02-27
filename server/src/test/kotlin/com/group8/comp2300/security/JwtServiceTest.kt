@@ -11,7 +11,7 @@ class JwtServiceTest {
     private val jwtService: JwtService = JwtServiceImpl(
         secret = "test-secret-key-for-unit-testing",
         issuer = "test-issuer",
-        audience = "test-audience"
+        audience = "test-audience",
     )
 
     @Test
@@ -65,7 +65,7 @@ class JwtServiceTest {
         val wrongIssuerService = JwtServiceImpl(
             secret = "test-secret-key-for-unit-testing",
             issuer = "wrong-issuer",
-            audience = "test-audience"
+            audience = "test-audience",
         )
         val token = wrongIssuerService.generateAccessToken("user_123")
 

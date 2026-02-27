@@ -74,7 +74,7 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
             throw ApiException(
                 statusCode = responseException.response.status.value,
                 message = errorMessage ?: "Authentication failed",
-                cause = e
+                cause = e,
             )
         }
         throw ApiException(statusCode = 500, message = "Invalid response from server", cause = e)

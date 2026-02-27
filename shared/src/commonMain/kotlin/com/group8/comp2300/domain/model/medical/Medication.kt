@@ -17,7 +17,7 @@ data class Medication(
     val colorHex: String = "#42A5F5",
     val status: MedicationStatus = MedicationStatus.ACTIVE,
     val createdAt: Long = 0L,
-    val updatedAt: Long = createdAt
+    val updatedAt: Long = createdAt,
 ) {
     companion object {
         val PRESET_COLORS =
@@ -28,7 +28,7 @@ data class Medication(
                 "#FFA726", // Orange
                 "#AB47BC", // Purple
                 "#26C6DA", // Cyan
-                "#78909C" // Blue Grey
+                "#78909C", // Blue Grey
             )
     }
 }

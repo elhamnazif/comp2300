@@ -17,7 +17,7 @@ interface AuthRepository {
         lastName: String,
         gender: Gender,
         sexualOrientation: SexualOrientation,
-        dateOfBirth: LocalDate?
+        dateOfBirth: LocalDate?,
     ): Result<User>
 
     suspend fun logout()

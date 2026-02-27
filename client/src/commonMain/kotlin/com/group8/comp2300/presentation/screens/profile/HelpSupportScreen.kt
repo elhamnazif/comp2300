@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package com.group8.comp2300.presentation.screens.profile
 
 import androidx.compose.foundation.clickable
@@ -33,19 +31,19 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
             AppTopBar(
                 title = { Text(stringResource(Res.string.help_support_title)) },
                 onBackClick = onBack,
-                backContentDescription = stringResource(Res.string.auth_back_desc)
+                backContentDescription = stringResource(Res.string.auth_back_desc),
             )
-        }
+        },
     ) { paddingValues ->
         Column(
             modifier =
-                Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp)
+            Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp),
         ) {
             Text(
                 stringResource(Res.string.help_support_faq_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             // faqs is imported from shared mock data
@@ -62,7 +60,7 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                             } else {
                                 index
                             }
-                    }
+                    },
                 )
                 if (index < faqs.size - 1) {
                     Spacer(Modifier.height(8.dp))
@@ -75,14 +73,14 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 stringResource(Res.string.help_support_contact_title),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier.padding(bottom = 16.dp),
             )
 
             SupportOptionCard(
                 icon = Icons.MailOutlineW400Outlinedfill1,
                 title = stringResource(Res.string.help_support_email_label),
                 description = stringResource(Res.string.help_support_email_val),
-                onClick = {}
+                onClick = {},
             )
 
             Spacer(Modifier.height(8.dp))
@@ -91,7 +89,7 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 icon = Icons.CallW400Outlinedfill1,
                 title = stringResource(Res.string.help_support_phone_label),
                 description = stringResource(Res.string.help_support_phone_val),
-                onClick = {}
+                onClick = {},
             )
 
             Spacer(Modifier.height(8.dp))
@@ -100,7 +98,7 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 icon = Icons.InfoW400Outlinedfill1,
                 title = stringResource(Res.string.help_support_resources_label),
                 description = stringResource(Res.string.help_support_resources_desc),
-                onClick = {}
+                onClick = {},
             )
 
             Spacer(Modifier.height(24.dp))
@@ -111,13 +109,13 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                         stringResource(Res.string.help_support_emergency_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         stringResource(Res.string.help_support_emergency_desc),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                 }
             }
@@ -131,38 +129,38 @@ private fun FaqItem(
     answer: String,
     expanded: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         Column(modifier = Modifier.clickable(onClick = onClick).padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
                     question,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 Icon(
                     imageVector =
-                        if (expanded) {
-                            Icons.ExpandLessW400Outlined
-                        } else {
-                            Icons.ExpandMoreW400Outlined
-                        },
+                    if (expanded) {
+                        Icons.ExpandLessW400Outlined
+                    } else {
+                        Icons.ExpandMoreW400Outlined
+                    },
                     contentDescription =
-                        if (expanded) {
-                            stringResource(Res.string.help_support_collapse_desc)
-                        } else {
-                            stringResource(Res.string.help_support_expand_desc)
-                        },
-                    tint = MaterialTheme.colorScheme.secondary
+                    if (expanded) {
+                        stringResource(Res.string.help_support_collapse_desc)
+                    } else {
+                        stringResource(Res.string.help_support_expand_desc)
+                    },
+                    tint = MaterialTheme.colorScheme.secondary,
                 )
             }
             if (expanded) {
@@ -179,19 +177,19 @@ private fun SupportOptionCard(
     title: String,
     description: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         onClick = onClick,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 icon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(24.dp),
             )
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -200,7 +198,7 @@ private fun SupportOptionCard(
                 Text(
                     description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary
+                    color = MaterialTheme.colorScheme.secondary,
                 )
             }
         }

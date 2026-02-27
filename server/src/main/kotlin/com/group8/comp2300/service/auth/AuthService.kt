@@ -20,7 +20,7 @@ import kotlin.time.Duration.Companion.days
 class AuthService(
     private val userRepository: UserRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
-    private val jwtService: JwtService
+    private val jwtService: JwtService,
 ) {
     private val passwordHasher = PasswordHasher
 
@@ -48,7 +48,7 @@ class AuthService(
                 dateOfBirth = request.dateOfBirth,
                 gender = request.gender,
                 sexualOrientation = request.sexualOrientation,
-                preferredLanguage = "en"
+                preferredLanguage = "en",
             )
 
             val user = userRepository.findById(userId)
@@ -60,8 +60,8 @@ class AuthService(
                 AuthResponse(
                     user = user,
                     accessToken = tokens.accessToken,
-                    refreshToken = tokens.refreshToken
-                )
+                    refreshToken = tokens.refreshToken,
+                ),
             )
         } catch (e: Exception) {
             if (e.isDuplicateEmailViolation()) {
@@ -88,8 +88,8 @@ class AuthService(
             AuthResponse(
                 user = user,
                 accessToken = tokens.accessToken,
-                refreshToken = tokens.refreshToken
-            )
+                refreshToken = tokens.refreshToken,
+            ),
         )
     } catch (e: Exception) {
         Result.failure(e)
@@ -135,8 +135,8 @@ class AuthService(
         return Result.success(
             TokenResponse(
                 accessToken = newTokens.accessToken,
-                refreshToken = newTokens.refreshToken
-            )
+                refreshToken = newTokens.refreshToken,
+            ),
         )
     }
 

@@ -3,7 +3,6 @@ package com.group8.comp2300.presentation.screens.medical.calendar
 import androidx.compose.runtime.Composable
 import comp2300.i18n.generated.resources.*
 import comp2300.i18n.generated.resources.Res
-import kotlin.time.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.Month
@@ -13,12 +12,13 @@ import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
 
 enum class AdherenceStatus {
     TAKEN,
     MISSED,
     NONE,
-    APPOINTMENT
+    APPOINTMENT,
 }
 
 data class CalendarDay(
@@ -26,7 +26,7 @@ data class CalendarDay(
     val date: LocalDate,
     val status: AdherenceStatus,
     val isToday: Boolean,
-    val isCurrentMonth: Boolean
+    val isCurrentMonth: Boolean,
 )
 
 data class Appointment(val id: String, val title: String, val type: String, val date: String, val time: String)
@@ -64,7 +64,7 @@ fun generateCalendarDays(year: Int, month: Month): List<CalendarDay> {
             date = date,
             status = status,
             isToday = isToday,
-            isCurrentMonth = isCurrentMonth
+            isCurrentMonth = isCurrentMonth,
         )
     }
 }
@@ -74,7 +74,7 @@ enum class SheetView {
     FORM_MED,
     FORM_APPT,
     FORM_MOOD,
-    DETAILS_APPT
+    DETAILS_APPT,
 }
 
 object FormConstants {
@@ -84,14 +84,14 @@ object FormConstants {
         stringResource(Res.string.medication_truvada),
         stringResource(Res.string.medication_descovy),
         stringResource(Res.string.medication_doxypep),
-        stringResource(Res.string.medication_multivitamin)
+        stringResource(Res.string.medication_multivitamin),
     )
 
     @Composable
     fun apptTypes() = listOf(
         stringResource(Res.string.appt_type_consultation),
         stringResource(Res.string.appt_type_labwork),
-        stringResource(Res.string.appt_type_followup)
+        stringResource(Res.string.appt_type_followup),
     )
 
     val Dosages = listOf(1, 2, 3)
@@ -103,7 +103,7 @@ object FormConstants {
         stringResource(Res.string.form_mood_sad),
         stringResource(Res.string.form_mood_neutral),
         stringResource(Res.string.form_mood_happy),
-        stringResource(Res.string.form_mood_great)
+        stringResource(Res.string.form_mood_great),
     )
 
     @Composable
@@ -114,6 +114,6 @@ object FormConstants {
         stringResource(Res.string.form_mood_tag_energetic),
         stringResource(Res.string.form_mood_tag_tired),
         stringResource(Res.string.form_mood_tag_stressed),
-        stringResource(Res.string.form_mood_tag_focused)
+        stringResource(Res.string.form_mood_tag_focused),
     )
 }

@@ -9,5 +9,5 @@ enum class AppointmentType(val displayName: String) {
     SCREENING("Screening"),
     FOLLOW_UP("Follow-up"),
     VACCINATION("Vaccination"),
-    OTHER("Other")
+    OTHER("Other"),
 }

@@ -45,7 +45,7 @@ abstract class AuthViewModel : ViewModel() {
         val sexualOrientation: String = "",
 
         // UI Control
-        val showDatePicker: Boolean = false
+        val showDatePicker: Boolean = false,
     ) {
         // Computed Properties for Validation
         val isStep1Valid: Boolean

@@ -22,7 +22,7 @@ class ProductRepositoryImpl(private val database: ServerDatabase) : ProductRepos
             price = product.price,
             category = product.category.name,
             insuranceCovered = if (product.insuranceCovered) 1L else 0L,
-            imageUrl = product.imageUrl
+            imageUrl = product.imageUrl,
         )
     }
 
@@ -34,7 +34,7 @@ class ProductRepositoryImpl(private val database: ServerDatabase) : ProductRepos
             category = product.category.name,
             insuranceCovered = if (product.insuranceCovered) 1L else 0L,
             imageUrl = product.imageUrl,
-            id = product.id
+            id = product.id,
         )
     }
 
@@ -49,6 +49,6 @@ class ProductRepositoryImpl(private val database: ServerDatabase) : ProductRepos
         price = price,
         category = ProductCategory.valueOf(category),
         insuranceCovered = insuranceCovered == 1L,
-        imageUrl = imageUrl
+        imageUrl = imageUrl,
     )
 }

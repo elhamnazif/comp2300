@@ -21,7 +21,7 @@ class AppointmentRepositoryImpl(private val database: ServerDatabase) : Appointm
             payment_method = appointment.payment_method,
             payment_status = appointment.payment_status,
             payment_amount = appointment.payment_amount,
-            transaction_id = appointment.transaction_id
+            transaction_id = appointment.transaction_id,
         )
     }
 
@@ -36,13 +36,13 @@ class AppointmentRepositoryImpl(private val database: ServerDatabase) : Appointm
         id: String,
         paymentMethod: String,
         paymentStatus: String,
-        transactionId: String?
+        transactionId: String?,
     ) {
         database.serverDatabaseQueries.updatePaymentDetails(
             payment_method = paymentMethod,
             payment_status = paymentStatus,
             transaction_id = transactionId,
-            id = id
+            id = id,
         )
     }
 

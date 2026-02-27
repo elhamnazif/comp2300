@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package com.group8.comp2300.presentation.screens.auth.components
 
 import androidx.compose.foundation.clickable
@@ -29,7 +27,7 @@ fun AuthTextField(
     errorMessage: StringResource? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     OutlinedTextField(
         value = value,
@@ -47,7 +45,7 @@ fun AuthTextField(
         visualTransformation = visualTransformation,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth(),
     )
 }
 
@@ -58,7 +56,7 @@ fun ClickableTextField(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
-    trailingIcon: ImageVector? = null
+    trailingIcon: ImageVector? = null,
 ) {
     Box(modifier = modifier) {
         OutlinedTextField(
@@ -69,7 +67,7 @@ fun ClickableTextField(
             trailingIcon = trailingIcon?.let { { Icon(it, contentDescription = null) } },
             modifier = Modifier.fillMaxWidth(),
             readOnly = true,
-            singleLine = true
+            singleLine = true,
         )
         Box(modifier = Modifier.matchParentSize().alpha(0f).clickable(onClick = onClick))
     }
@@ -81,7 +79,7 @@ fun AuthDropdown(
     selectedValue: String,
     options: List<String>,
     onSelectOption: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -90,13 +88,13 @@ fun AuthDropdown(
             value = selectedValue,
             label = label,
             onClick = { expanded = true },
-            trailingIcon = Icons.ArrowDropDownW400Outlinedfill1
+            trailingIcon = Icons.ArrowDropDownW400Outlinedfill1,
         )
 
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth(0.7f)
+            modifier = Modifier.fillMaxWidth(0.7f),
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
@@ -104,7 +102,7 @@ fun AuthDropdown(
                     onClick = {
                         onSelectOption(option)
                         expanded = false
-                    }
+                    },
                 )
             }
         }

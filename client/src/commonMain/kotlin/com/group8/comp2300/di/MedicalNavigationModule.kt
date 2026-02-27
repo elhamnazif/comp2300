@@ -23,7 +23,7 @@ val medicalNavigationModule = module {
             clinics = uiState.clinics,
             selectedClinic = uiState.selectedClinic,
             onClinicClick = { clinicId -> navigator.navigate(Screen.ClinicDetail(clinicId)) },
-            onClinicSelect = viewModel::selectClinic
+            onClinicSelect = viewModel::selectClinic,
         )
     }
 
@@ -39,7 +39,7 @@ val medicalNavigationModule = module {
                 } else {
                     // TODO: Handle booking confirmation
                 }
-            }
+            },
         )
     }
 }

@@ -15,7 +15,7 @@ fun main() {
         Window(
             title = "Comp2300",
             state = rememberWindowState(width = 800.dp, height = 600.dp),
-            onCloseRequest = ::exitApplication
+            onCloseRequest = ::exitApplication,
         ) {
             window.minimumSize = Dimension(MinWindowWidth, MinWindowHeight)
             App()

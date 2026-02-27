@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package com.group8.comp2300.presentation.screens.auth
 
 import androidx.compose.foundation.clickable
@@ -30,16 +28,16 @@ import com.group8.comp2300.presentation.screens.auth.components.ClickableTextFie
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
-import kotlin.time.Clock
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.Clock
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = koinViewModel(),
-    onDismiss: () -> Unit = {}
+    onDismiss: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
@@ -55,7 +53,7 @@ fun LoginScreen(
     if (state.showDatePicker) {
         val dateState =
             rememberDatePickerState(
-                initialSelectedDateMillis = state.dateOfBirth ?: Clock.System.now().toEpochMilliseconds()
+                initialSelectedDateMillis = state.dateOfBirth ?: Clock.System.now().toEpochMilliseconds(),
             )
         DatePickerDialog(
             onDismissRequest = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ShowDatePicker(false)) },
@@ -63,7 +61,7 @@ fun LoginScreen(
                 TextButton(
                     onClick = {
                         viewModel.onEvent(AuthViewModel.AuthUiEvent.DateOfBirthChanged(dateState.selectedDateMillis))
-                    }
+                    },
                 ) {
                     Text(stringResource(Res.string.auth_ok))
                 }
@@ -72,7 +70,7 @@ fun LoginScreen(
                 TextButton(onClick = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ShowDatePicker(false)) }) {
                     Text(stringResource(Res.string.auth_cancel))
                 }
-            }
+            },
         ) {
             DatePicker(state = dateState)
         }
@@ -90,17 +88,17 @@ fun LoginScreen(
                         onDismiss()
                     }
                 },
-                backContentDescription = stringResource(Res.string.auth_back_desc)
+                backContentDescription = stringResource(Res.string.auth_back_desc),
             )
-        }
+        },
     ) { innerPadding ->
         Column(
             Modifier.fillMaxSize().padding(innerPadding).verticalScroll(scrollState).padding(24.dp).imePadding(),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             HeaderSection(
-                isRegistering = state.isRegistering
+                isRegistering = state.isRegistering,
             )
 
             Spacer(Modifier.height(32.dp))
@@ -109,12 +107,12 @@ fun LoginScreen(
             if (state.isRegistering && state.step == 1) {
                 PersonalDetailsStep(
                     state,
-                    viewModel::onEvent
+                    viewModel::onEvent,
                 )
             } else {
                 CredentialsStep(
                     state,
-                    viewModel::onEvent
+                    viewModel::onEvent,
                 )
             }
 
@@ -124,7 +122,7 @@ fun LoginScreen(
                 Text(
                     text = state.errorMessage!!,
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
 
@@ -134,7 +132,7 @@ fun LoginScreen(
             ActionButtons(
                 state = state,
                 onEvent = viewModel::onEvent,
-                onLoginSuccess = onLoginSuccess
+                onLoginSuccess = onLoginSuccess,
             )
 
             Spacer(Modifier.height(16.dp))
@@ -144,7 +142,7 @@ fun LoginScreen(
                 FooterSection(
                     isRegistering = state.isRegistering,
                     onToggleMode = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ToggleAuthMode) },
-                    onGuestParams = onDismiss
+                    onGuestParams = onDismiss,
                 )
             }
         }
@@ -156,24 +154,24 @@ private fun HeaderSection(isRegistering: Boolean) {
     Column {
         Text(
             text =
-                if (isRegistering) {
-                    stringResource(Res.string.auth_create_account)
-                } else {
-                    stringResource(Res.string.auth_welcome_back)
-                },
+            if (isRegistering) {
+                stringResource(Res.string.auth_create_account)
+            } else {
+                stringResource(Res.string.auth_welcome_back)
+            },
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Spacer(Modifier.height(8.dp))
         Text(
             text =
-                if (isRegistering) {
-                    stringResource(Res.string.auth_join_desc)
-                } else {
-                    stringResource(Res.string.auth_sign_in_desc)
-                },
+            if (isRegistering) {
+                stringResource(Res.string.auth_join_desc)
+            } else {
+                stringResource(Res.string.auth_sign_in_desc)
+            },
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.secondary
+            color = MaterialTheme.colorScheme.secondary,
         )
     }
 }
@@ -188,15 +186,15 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
             onValueChange = {
                 onEvent(
                     AuthViewModel.AuthUiEvent.EmailChanged(
-                        it
-                    )
+                        it,
+                    ),
                 )
             },
             label = stringResource(Res.string.auth_email_label),
             leadingIcon = Icons.MailOutlineW400Outlinedfill1,
             errorMessage = state.emailError,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
         Spacer(Modifier.height(16.dp))
 
@@ -205,18 +203,18 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
             onValueChange = {
                 onEvent(
                     AuthViewModel.AuthUiEvent.PasswordChanged(
-                        it
-                    )
+                        it,
+                    ),
                 )
             },
             label = stringResource(Res.string.auth_password_label),
             leadingIcon = Icons.LockW400Outlinedfill1,
             errorMessage =
-                if (state.isRegistering) {
-                    state.passwordError
-                } else {
-                    null
-                }, // Don't show validation error on Login
+            if (state.isRegistering) {
+                state.passwordError
+            } else {
+                null
+            }, // Don't show validation error on Login
             trailingIcon = {
                 IconButton(onClick = { onEvent(AuthViewModel.AuthUiEvent.TogglePasswordVisibility) }) {
                     val icon =
@@ -229,24 +227,24 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
                 }
             },
             visualTransformation =
-                if (state.isPasswordVisible) {
-                    VisualTransformation.None
-                } else {
-                    PasswordVisualTransformation()
-                },
+            if (state.isPasswordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         )
         Spacer(Modifier.height(16.dp))
 
         if (state.isRegistering) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().clickable { onEvent(AuthViewModel.AuthUiEvent.ToggleTerms) }
+                modifier = Modifier.fillMaxWidth().clickable { onEvent(AuthViewModel.AuthUiEvent.ToggleTerms) },
             ) {
                 Checkbox(
                     checked = state.termsAccepted,
-                    onCheckedChange = { onEvent(AuthViewModel.AuthUiEvent.ToggleTerms) }
+                    onCheckedChange = { onEvent(AuthViewModel.AuthUiEvent.ToggleTerms) },
                 )
                 val annotatedText = buildAnnotatedString {
                     append(stringResource(Res.string.auth_agree_to))
@@ -261,7 +259,7 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
                 Text(
                     annotatedText,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp),
                 )
             }
         }
@@ -278,18 +276,18 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
             onValueChange = {
                 onEvent(
                     AuthViewModel.AuthUiEvent.FirstNameChanged(
-                        it
-                    )
+                        it,
+                    ),
                 )
             },
             label = stringResource(Res.string.auth_first_name_label),
             leadingIcon = Icons.PersonW400Outlinedfill1,
             keyboardOptions =
-                KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    imeAction = ImeAction.Next
-                ),
-            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+            KeyboardOptions(
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Next,
+            ),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
         Spacer(Modifier.height(16.dp))
 
@@ -298,18 +296,18 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
             onValueChange = {
                 onEvent(
                     AuthViewModel.AuthUiEvent.LastNameChanged(
-                        it
-                    )
+                        it,
+                    ),
                 )
             },
             label = stringResource(Res.string.auth_last_name_label),
             leadingIcon = Icons.PersonW400Outlinedfill1,
             keyboardOptions =
-                KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    imeAction = ImeAction.Done
-                ),
-            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
+            KeyboardOptions(
+                capitalization = KeyboardCapitalization.Words,
+                imeAction = ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         )
         Spacer(Modifier.height(16.dp))
 
@@ -320,10 +318,10 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
             onClick = {
                 onEvent(
                     AuthViewModel.AuthUiEvent.ShowDatePicker(
-                        true
-                    )
+                        true,
+                    ),
                 )
-            }
+            },
         )
         Spacer(Modifier.height(16.dp))
 
@@ -335,19 +333,19 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
             label = stringResource(Res.string.auth_gender_label),
             selectedValue = state.gender,
             options =
-                listOf(
-                    stringResource(Res.string.auth_gender_male),
-                    stringResource(Res.string.auth_gender_female),
-                    stringResource(Res.string.auth_gender_non_binary),
-                    stringResource(Res.string.auth_gender_prefer_not_to_say)
-                ),
+            listOf(
+                stringResource(Res.string.auth_gender_male),
+                stringResource(Res.string.auth_gender_female),
+                stringResource(Res.string.auth_gender_non_binary),
+                stringResource(Res.string.auth_gender_prefer_not_to_say),
+            ),
             onSelectOption = {
                 onEvent(
                     AuthViewModel.AuthUiEvent.GenderChanged(
-                        it
-                    )
+                        it,
+                    ),
                 )
-            }
+            },
         )
         Spacer(Modifier.height(16.dp))
 
@@ -355,21 +353,21 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
             label = stringResource(Res.string.auth_orientation_label),
             selectedValue = state.sexualOrientation,
             options =
-                listOf(
-                    stringResource(Res.string.auth_orientation_heterosexual),
-                    stringResource(Res.string.auth_orientation_gay),
-                    stringResource(Res.string.auth_orientation_lesbian),
-                    stringResource(Res.string.auth_orientation_bisexual),
-                    stringResource(Res.string.auth_orientation_pansexual),
-                    stringResource(Res.string.auth_orientation_asexual)
-                ),
+            listOf(
+                stringResource(Res.string.auth_orientation_heterosexual),
+                stringResource(Res.string.auth_orientation_gay),
+                stringResource(Res.string.auth_orientation_lesbian),
+                stringResource(Res.string.auth_orientation_bisexual),
+                stringResource(Res.string.auth_orientation_pansexual),
+                stringResource(Res.string.auth_orientation_asexual),
+            ),
             onSelectOption = {
                 onEvent(
                     AuthViewModel.AuthUiEvent.OrientationChanged(
-                        it
-                    )
+                        it,
+                    ),
                 )
-            }
+            },
         )
     }
 }
@@ -378,7 +376,7 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
 private fun ActionButtons(
     state: AuthViewModel.State,
     onEvent: (AuthViewModel.AuthUiEvent) -> Unit,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
 ) {
     Column {
         Button(
@@ -394,19 +392,19 @@ private fun ActionButtons(
             },
             modifier = Modifier.fillMaxWidth().height(50.dp),
             enabled =
-                !state.isLoading &&
-                    if (state.isRegistering && state.step == 0) {
-                        state.isStep1Valid
-                    } else if (state.isRegistering) {
-                        state.isStep2Valid
-                    } else {
-                        (state.email.isNotBlank() && state.password.isNotBlank())
-                    },
+            !state.isLoading &&
+                if (state.isRegistering && state.step == 0) {
+                    state.isStep1Valid
+                } else if (state.isRegistering) {
+                    state.isStep2Valid
+                } else {
+                    (state.email.isNotBlank() && state.password.isNotBlank())
+                },
             colors =
-                ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ),
         ) {
             if (state.isLoading) {
                 CircularProgressIndicator(Modifier.size(24.dp))
@@ -416,7 +414,7 @@ private fun ActionButtons(
                         state.isRegistering && state.step == 0 -> stringResource(Res.string.auth_continue)
                         state.isRegistering -> stringResource(Res.string.auth_sign_up)
                         else -> stringResource(Res.string.auth_sign_in)
-                    }
+                    },
                 )
             }
         }
@@ -432,7 +430,7 @@ private fun FooterSection(isRegistering: Boolean, onToggleMode: () -> Unit, onGu
                     stringResource(Res.string.auth_already_have_account)
                 } else {
                     stringResource(Res.string.auth_no_account)
-                }
+                },
             )
         }
         TextButton(onClick = onGuestParams) {

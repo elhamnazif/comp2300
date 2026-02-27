@@ -15,7 +15,7 @@ val secondaryNavigationModule = module {
         val navigator = LocalNavigator.current
         SelfDiagnosisScreen(
             onBack = navigator::goBack,
-            onNavigateToBooking = { navigator.navigate(Screen.Booking) }
+            onNavigateToBooking = { navigator.navigate(Screen.Booking) },
         )
     }
 
@@ -23,28 +23,28 @@ val secondaryNavigationModule = module {
         val navigator = LocalNavigator.current
         LabResultsScreen(
             onBack = navigator::goBack,
-            onScheduleTest = { navigator.navigate(Screen.Booking) }
+            onScheduleTest = { navigator.navigate(Screen.Booking) },
         )
     }
 
     navigation<Screen.PrivacySecurity> {
         val navigator = LocalNavigator.current
         PrivacySecurityScreen(
-            onBack = navigator::goBack
+            onBack = navigator::goBack,
         )
     }
 
     navigation<Screen.Notifications> {
         val navigator = LocalNavigator.current
         NotificationsScreen(
-            onBack = navigator::goBack
+            onBack = navigator::goBack,
         )
     }
 
     navigation<Screen.HelpSupport> {
         val navigator = LocalNavigator.current
         HelpSupportScreen(
-            onBack = navigator::goBack
+            onBack = navigator::goBack,
         )
     }
 }

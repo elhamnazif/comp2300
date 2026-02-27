@@ -34,7 +34,7 @@ val educationNavigationModule = module {
                     navigator.navigate(Screen.VideoDetail(id))
                 }
             },
-            onCategorySelect = viewModel::selectCategory
+            onCategorySelect = viewModel::selectCategory,
         )
     }
 
@@ -53,7 +53,7 @@ val educationNavigationModule = module {
                 if (action.contains("Clinic")) {
                     navigator.clearAndGoTo(Screen.Booking)
                 }
-            }
+            },
         )
     }
 
@@ -66,7 +66,7 @@ val educationNavigationModule = module {
         QuizScreen(
             viewModel = viewModel,
             quizId = route.quizId,
-            onBack = navigator::goBack
+            onBack = navigator::goBack,
         )
     }
 }

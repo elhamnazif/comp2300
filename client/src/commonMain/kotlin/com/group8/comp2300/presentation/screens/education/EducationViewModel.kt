@@ -38,14 +38,14 @@ class EducationViewModel(private val repository: EducationRepository) : ViewMode
                 }
                 currentState.copy(
                     selectedCategory = category,
-                    filteredContent = filtered
+                    filteredContent = filtered,
                 )
             }
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = State(isLoading = true)
+            initialValue = State(isLoading = true),
         )
 
     private suspend fun fetchData(): State = try {
@@ -55,7 +55,7 @@ class EducationViewModel(private val repository: EducationRepository) : ViewMode
             isLoading = false,
             allContent = allContent,
             filteredContent = allContent, // Default to showing all
-            featuredItem = featuredItem
+            featuredItem = featuredItem,
         )
     } catch (_: Exception) {
         State(isLoading = false, isError = true)
@@ -84,6 +84,6 @@ class EducationViewModel(private val repository: EducationRepository) : ViewMode
         val allContent: List<ContentItem> = emptyList(),
         val filteredContent: List<ContentItem> = emptyList(),
         val selectedCategory: ContentCategory? = null,
-        val featuredItem: ContentItem? = null
+        val featuredItem: ContentItem? = null,
     )
 }

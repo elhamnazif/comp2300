@@ -10,5 +10,5 @@ data class Quiz(
     val questions: List<QuizQuestion>,
     val category: ContentCategory,
     val difficultyLevel: QuizDifficulty = QuizDifficulty.MEDIUM,
-    val estimatedMinutes: Int = 5
+    val estimatedMinutes: Int = 5,
 )

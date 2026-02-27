@@ -11,7 +11,7 @@ data class Product(
     val price: Double,
     val category: ProductCategory,
     val insuranceCovered: Boolean = false,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
 ) {
     /** Formatted price for display */
     val formattedPrice: String

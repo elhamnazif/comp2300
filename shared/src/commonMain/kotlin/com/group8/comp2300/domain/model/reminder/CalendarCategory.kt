@@ -17,5 +17,5 @@ enum class CalendarCategory {
     APPOINTMENT,
     MEDICATION,
     MOOD,
-    MENSTRUAL_CYCLE
+    MENSTRUAL_CYCLE,
 }

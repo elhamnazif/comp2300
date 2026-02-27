@@ -19,7 +19,7 @@ fun Route.productRoutes() {
             call.parameters["id"]
                 ?: return@get call.respond(
                     HttpStatusCode.BadRequest,
-                    "Missing product ID"
+                    "Missing product ID",
                 )
         val product = productRepository.getById(id)
         if (product != null) {

@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package com.group8.comp2300.presentation.screens.education
 
 import androidx.compose.foundation.background
@@ -31,7 +29,7 @@ fun VideoDetailScreen(
     onBack: () -> Unit,
     onActionClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: EducationViewModel = koinViewModel()
+    viewModel: EducationViewModel = koinViewModel(),
 ) {
     val item = viewModel.getContentById(videoId)
     if (item == null) {
@@ -48,33 +46,33 @@ fun VideoDetailScreen(
                 onBackClick = onBack,
                 backContentDescription = stringResource(Res.string.education_video_back_desc),
                 style = AppTopBarStyle.TransparentOverlay,
-                contentColor = Color.White
+                contentColor = Color.White,
             )
-        }
+        },
     ) { _ ->
         Column(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface)) {
             Box(
                 modifier = Modifier.fillMaxWidth().height(240.dp).background(Color.Black),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.PlayArrowW400Outlinedfill1,
                     contentDescription = stringResource(Res.string.education_video_play_desc),
                     tint = Color.White,
                     modifier =
-                        Modifier.size(64.dp).background(Color.White.copy(alpha = 0.3f), CircleShape).padding(8.dp)
+                    Modifier.size(64.dp).background(Color.White.copy(alpha = 0.3f), CircleShape).padding(8.dp),
                 )
                 Text(
                     stringResource(Res.string.education_video_player_placeholder),
                     color = Color.Gray,
-                    modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp)
+                    modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp),
                 )
             }
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -100,7 +98,7 @@ fun VideoDetailScreen(
                     Text(
                         text = item.title,
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                 }
 
@@ -114,14 +112,14 @@ fun VideoDetailScreen(
                     Text(
                         text = stringResource(Res.string.education_video_transcript_title),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = item.transcript,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.4
+                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.4,
                     )
                 }
 
@@ -132,7 +130,7 @@ fun VideoDetailScreen(
                         Button(
                             onClick = { onActionClick(relatedAction) },
                             modifier = Modifier.fillMaxWidth().height(50.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         ) {
                             Icon(Icons.ThumbUpW400Outlinedfill1, null)
                             Spacer(Modifier.width(8.dp))

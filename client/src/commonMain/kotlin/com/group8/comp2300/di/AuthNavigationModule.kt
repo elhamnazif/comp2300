@@ -13,7 +13,7 @@ val authNavigationModule = module {
         OnboardingScreen(
             onFinish = { navigator.clearAndGoTo(Screen.Home) },
             isGuest = navigator.isGuest,
-            onRequireAuth = navigator::requireAuth
+            onRequireAuth = navigator::requireAuth,
         )
     }
 
@@ -21,7 +21,7 @@ val authNavigationModule = module {
         val navigator = LocalNavigator.current
         LoginScreen(
             onLoginSuccess = navigator::goBack,
-            onDismiss = navigator::goBack
+            onDismiss = navigator::goBack,
         )
     }
 }

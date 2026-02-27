@@ -9,9 +9,9 @@ object Validation {
 
     fun validatePassword(password: String): PasswordValidationResult = when {
         password.length < 8 -> PasswordValidationResult.TooShort
+        password.length > 72 -> PasswordValidationResult.TooLong
         !password.any { it.isDigit() } -> PasswordValidationResult.MissingDigit
         !password.any { it.isLetter() } -> PasswordValidationResult.MissingLetter
-        password.toByteArray().size > 72 -> PasswordValidationResult.TooLong
         else -> PasswordValidationResult.Valid
     }
 }
@@ -21,5 +21,5 @@ enum class PasswordValidationResult {
     TooShort,
     MissingDigit,
     MissingLetter,
-    TooLong
+    TooLong,
 }

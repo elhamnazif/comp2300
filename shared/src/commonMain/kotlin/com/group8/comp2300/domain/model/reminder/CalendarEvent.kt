@@ -7,5 +7,5 @@ data class CalendarEvent(
     val title: String,
     val category: CalendarCategory,
     val dateTime: LocalDateTime,
-    val notes: String
+    val notes: String,
 )

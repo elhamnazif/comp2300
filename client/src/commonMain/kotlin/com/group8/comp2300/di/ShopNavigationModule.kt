@@ -18,7 +18,7 @@ val shopNavigationModule = module {
         val navigator = LocalNavigator.current
         ProductDetailScreen(
             productId = route.productId,
-            onBack = navigator::goBack
+            onBack = navigator::goBack,
         )
     }
 }

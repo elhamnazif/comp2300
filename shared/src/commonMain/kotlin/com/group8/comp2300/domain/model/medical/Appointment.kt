@@ -14,5 +14,5 @@ data class Appointment(
     val clinicId: String? = null,
     val doctorId: String? = null,
     val notes: String? = null,
-    val reminderEnabled: Boolean = true
+    val reminderEnabled: Boolean = true,
 )

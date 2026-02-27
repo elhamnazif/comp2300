@@ -13,5 +13,5 @@ data class Reminder(
     val frequency: ReminderFrequency = ReminderFrequency.ONCE,
     val isEnabled: Boolean = true,
     val relatedEntityId: String? = null, // e.g., medicationId or appointmentId
-    val createdAt: Long = 0L
+    val createdAt: Long = 0L,
 )

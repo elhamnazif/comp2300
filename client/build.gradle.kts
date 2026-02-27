@@ -1,10 +1,10 @@
 import io.github.kingsword09.symbolcraft.model.SymbolVariant
 import io.github.kingsword09.symbolcraft.model.SymbolWeight
-import java.net.URI
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+import java.net.URI
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -44,7 +44,7 @@ kotlin {
             "-opt-in=androidx.compose.foundation.layout.ExperimentalLayoutApi",
             "-Xexpect-actual-classes",
             "-Xannotation-default-target=param-property",
-            "-Xexplicit-backing-fields"
+            "-Xexplicit-backing-fields",
         )
     }
 
@@ -150,7 +150,11 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             val target = detectTarget()
-            runtimeOnly(libs.maplibre.nativeBindingsJni.get().toString()) {
+            runtimeOnly(
+                libs.maplibre.nativeBindingsJni
+                    .get()
+                    .toString(),
+            ) {
                 capabilities {
                     requireCapability("org.maplibre.compose:maplibre-native-bindings-jni-$target")
                 }
@@ -207,7 +211,7 @@ symbolCraft {
         "visibility",
         "visibility_off",
         "calendar_month",
-        "local_pharmacy"
+        "local_pharmacy",
     ) {
         weights(SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
     }
@@ -220,7 +224,6 @@ symbolCraft {
         "arrow_drop_down",
         "home",
         "person",
-
         // Actions
         "add",
         "check",
@@ -232,34 +235,26 @@ symbolCraft {
         "search",
         "send",
         "share",
-
         // Content & Media
         "play_arrow",
         "thumb_up",
-
         // Social & Communication
         "mail_outline",
         "notifications",
-
         // Shopping & Commerce
         "shopping_cart",
-
         // Information & UI
         "info",
-
         // Places & Location
         "location_on",
-
         // Dates & Time
         "date_range",
-
         // Security & Account
         "lock",
         "account_box",
         "face",
-
         // Misc
-        "favorite"
+        "favorite",
     ) {
         weights(SymbolWeight.W400, SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
         bothFills(weight = SymbolWeight.W400, variant = SymbolVariant.OUTLINED)
@@ -301,7 +296,7 @@ swiftPackageConfig {
                 url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
                 products = { add("MapLibre", exportToKotlin = true) },
                 packageName = "maplibre-gl-native-distribution",
-                version = "6.17.1"
+                version = "6.17.1",
             )
         }
     }

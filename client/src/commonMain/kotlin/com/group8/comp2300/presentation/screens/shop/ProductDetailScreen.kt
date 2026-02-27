@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:function-naming")
-
 package com.group8.comp2300.presentation.screens.shop
 
 import androidx.compose.foundation.background
@@ -43,7 +41,7 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
             AppTopBar(
                 title = {},
                 centered = true,
-                onBackClick = onBack
+                onBackClick = onBack,
             )
         },
         bottomBar = {
@@ -52,12 +50,12 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp).navigationBarsPadding(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             stringResource(Res.string.shop_details_total_label),
-                            style = MaterialTheme.typography.labelLarge
+                            style = MaterialTheme.typography.labelLarge,
                         )
                         Text(
                             if (product.insuranceCovered) {
@@ -67,11 +65,11 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
                             },
                             style = MaterialTheme.typography.headlineSmall,
                             color =
-                                if (product.insuranceCovered) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurface
-                                }
+                            if (product.insuranceCovered) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            },
                         )
                     }
                     Button(onClick = { onAddToCart(product) }, modifier = Modifier.weight(1f).height(50.dp)) {
@@ -79,18 +77,18 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
                     }
                 }
             }
-        }
+        },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).verticalScroll(rememberScrollState())) {
             Box(
                 modifier = Modifier.fillMaxWidth().height(250.dp).background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     Icons.CheckCircleW400Outlinedfill1,
                     null,
                     modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -100,7 +98,7 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
                         onClick = {},
                         label = { Text(stringResource(Res.string.shop_details_insurance_badge)) },
                         leadingIcon = { Icon(Icons.CheckCircleW400Outlinedfill1, null) },
-                        colors = AssistChipDefaults.assistChipColors(leadingIconContentColor = Color(0xFF4CAF50))
+                        colors = AssistChipDefaults.assistChipColors(leadingIconContentColor = Color(0xFF4CAF50)),
                     )
                     Spacer(Modifier.height(8.dp))
                 }
@@ -113,15 +111,15 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
 
                 FeatureRow(
                     stringResource(Res.string.shop_details_feature_packaging_title),
-                    stringResource(Res.string.shop_details_feature_packaging_desc)
+                    stringResource(Res.string.shop_details_feature_packaging_desc),
                 )
                 FeatureRow(
                     stringResource(Res.string.shop_details_feature_delivery_title),
-                    stringResource(Res.string.shop_details_feature_delivery_desc)
+                    stringResource(Res.string.shop_details_feature_delivery_desc),
                 )
                 FeatureRow(
                     stringResource(Res.string.shop_details_feature_refills_title),
-                    stringResource(Res.string.shop_details_feature_refills_desc)
+                    stringResource(Res.string.shop_details_feature_refills_desc),
                 )
             }
         }
@@ -135,7 +133,7 @@ fun FeatureRow(title: String, subtitle: String, modifier: Modifier = Modifier) {
             Icons.CheckCircleW400Outlinedfill1,
             null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(20.dp),
         )
         Spacer(Modifier.width(12.dp))
         Column {
@@ -143,7 +141,7 @@ fun FeatureRow(title: String, subtitle: String, modifier: Modifier = Modifier) {
             Text(
                 subtitle,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

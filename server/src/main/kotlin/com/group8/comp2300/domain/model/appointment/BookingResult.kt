@@ -11,5 +11,5 @@ data class BookingResult(
     val amount: Double,
     val transactionId: String?,
     val message: String,
-    val paymentInstructions: String
+    val paymentInstructions: String,
 )

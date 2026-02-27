@@ -20,11 +20,11 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
 
 private val logger = Logger.withTag("HttpClientFactory")
 
@@ -64,7 +64,7 @@ fun createHttpClient(): HttpClient = HttpClient {
                 ignoreUnknownKeys = true
                 prettyPrint = true
                 isLenient = true
-            }
+            },
         )
     }
 

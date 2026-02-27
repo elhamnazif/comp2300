@@ -16,7 +16,7 @@ import java.util.UUID
 class AppointmentService(
     private val appointmentRepository: AppointmentRepository,
     private val slotRepository: SlotRepository,
-    private val paymentService: PaymentService
+    private val paymentService: PaymentService,
 ) {
 
     // Updated bookAppointment method with payment
@@ -25,15 +25,15 @@ class AppointmentService(
         slotId: String,
         appointmentType: String,
         title: String,
-        paymentMethod: PaymentMethod
+        paymentMethod: PaymentMethod,
     ): Result<BookingResult> {
         // 1. Validate payment method for this appointment type
         if (!paymentService.validatePaymentMethod(appointmentType, paymentMethod)) {
             return Result.failure(
                 Exception(
                     "Payment method $paymentMethod is not allowed for $appointmentType appointments. " +
-                        "Allowed methods: ${paymentService.getPaymentMethodsForAppointmentType(appointmentType)}"
-                )
+                        "Allowed methods: ${paymentService.getPaymentMethodsForAppointmentType(appointmentType)}",
+                ),
             )
         }
 
@@ -58,7 +58,7 @@ class AppointmentService(
         if (paymentMethod == PaymentMethod.ONLINE && requiresPrePayment) {
             val paymentResult = paymentService.processOnlinePayment(
                 appointmentId = UUID.randomUUID().toString(), // Temporary ID
-                amount = paymentAmount
+                amount = paymentAmount,
             )
 
             if (!paymentResult.success) {
@@ -91,7 +91,7 @@ class AppointmentService(
             payment_method = paymentMethod.name,
             payment_status = paymentStatus.name,
             payment_amount = paymentAmount,
-            transaction_id = transactionId
+            transaction_id = transactionId,
         )
 
         // 7. Save to DB
@@ -111,7 +111,7 @@ class AppointmentService(
             amount = paymentAmount,
             transactionId = transactionId,
             message = buildBookingMessage(paymentMethod, paymentStatus, paymentAmount),
-            paymentInstructions = paymentService.getPaymentInstructions(paymentMethod, appointmentType)
+            paymentInstructions = paymentService.getPaymentInstructions(paymentMethod, appointmentType),
         )
 
         return Result.success(bookingResult)
@@ -123,20 +123,20 @@ class AppointmentService(
             val appointment = appointmentRepository.getAppointmentById(appointmentId)
                 ?: return CancellationResult(
                     success = false,
-                    message = "Appointment not found"
+                    message = "Appointment not found",
                 )
 
             if (appointment.user_id != userId) {
                 return CancellationResult(
                     success = false,
-                    message = "You don't have permission to cancel this appointment"
+                    message = "You don't have permission to cancel this appointment",
                 )
             }
 
             if (appointment.status == "CANCELLED") {
                 return CancellationResult(
                     success = false,
-                    message = "Appointment is already cancelled"
+                    message = "Appointment is already cancelled",
                 )
             }
 
@@ -153,12 +153,12 @@ class AppointmentService(
                 success = true,
                 message = buildCancellationMessage(refundInfo),
                 refundAmount = refundInfo.amount,
-                refundStatus = refundInfo.status
+                refundStatus = refundInfo.status,
             )
         } catch (e: Exception) {
             return CancellationResult(
                 success = false,
-                message = "Cancellation failed: ${e.message}"
+                message = "Cancellation failed: ${e.message}",
             )
         }
     }
@@ -166,7 +166,7 @@ class AppointmentService(
     private fun calculateRefund(appointment: Appointment): RefundInfo {
         val appointmentTime = LocalDateTime.parse(
             appointment.appointment_time,
-            DateTimeFormatter.ISO_DATE_TIME
+            DateTimeFormatter.ISO_DATE_TIME,
         )
         val now = LocalDateTime.now()
         val hoursUntilAppointment = java.time.Duration.between(now, appointmentTime).toHours()
@@ -174,22 +174,22 @@ class AppointmentService(
         return when {
             hoursUntilAppointment >= 24 -> RefundInfo(
                 amount = appointment.payment_amount ?: 0.0,
-                status = "FULL_REFUND"
+                status = "FULL_REFUND",
             )
 
             hoursUntilAppointment in 2..23 -> RefundInfo(
                 amount = (appointment.payment_amount ?: 0.0) * 0.5,
-                status = "PARTIAL_REFUND"
+                status = "PARTIAL_REFUND",
             )
 
             hoursUntilAppointment >= 0 && hoursUntilAppointment < 2 -> RefundInfo(
                 amount = 0.0,
-                status = "NO_REFUND"
+                status = "NO_REFUND",
             )
 
             else -> RefundInfo(
                 amount = 0.0,
-                status = "LATE_CANCELLATION"
+                status = "LATE_CANCELLATION",
             )
         }
     }
@@ -197,7 +197,7 @@ class AppointmentService(
     private fun buildBookingMessage(
         paymentMethod: PaymentMethod,
         paymentStatus: PaymentStatus,
-        amount: Double
+        amount: Double,
     ): String = when (paymentMethod) {
         PaymentMethod.ONLINE -> when (paymentStatus) {
             PaymentStatus.COMPLETED -> "Booking confirmed! Payment of $$amount processed successfully."
@@ -240,7 +240,7 @@ class AppointmentService(
     fun updateAppointmentPaymentMethod(
         appointmentId: String,
         userId: String,
-        newPaymentMethod: PaymentMethod
+        newPaymentMethod: PaymentMethod,
     ): Result<String> {
         val appointment = appointmentRepository.getAppointmentById(appointmentId)
             ?: return Result.failure(Exception("Appointment not found"))
@@ -257,7 +257,7 @@ class AppointmentService(
             id = appointmentId,
             paymentMethod = newPaymentMethod.name,
             paymentStatus = PaymentStatus.PENDING.name,
-            transactionId = null
+            transactionId = null,
         )
 
         return Result.success("Payment method updated to $newPaymentMethod")

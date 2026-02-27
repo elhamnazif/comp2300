@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package com.group8.comp2300.di
 
 import com.group8.comp2300.data.auth.TokenManager
@@ -71,7 +69,7 @@ val coreModule = module {
         AuthRepositoryImpl(
             get(),
             get(),
-            co.touchlab.kermit.Logger.withTag("AuthRepository")
+            co.touchlab.kermit.Logger.withTag("AuthRepository"),
         )
     }
     single<ClinicRepository> { ClinicRepositoryImpl() }

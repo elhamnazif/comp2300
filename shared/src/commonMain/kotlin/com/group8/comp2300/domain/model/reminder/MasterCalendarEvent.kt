@@ -8,5 +8,5 @@ data class MasterCalendarEvent(
     val title: String,
     val subtitle: String,
     val eventTime: LocalDateTime,
-    val status: String
+    val status: String,
 )

@@ -6,5 +6,5 @@ enum class PaymentStatus {
     COMPLETED,
     FAILED,
     REFUNDED,
-    WAIVED
+    WAIVED,
 }

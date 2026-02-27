@@ -10,7 +10,7 @@ enum class SexualOrientation(val displayName: String) {
     BISEXUAL("Bisexual"),
     PANSEXUAL("Pansexual"),
     ASEXUAL("Asexual"),
-    PREFER_NOT_TO_SAY("Prefer not to say")
+    PREFER_NOT_TO_SAY("Prefer not to say"),
     ;
 
     companion object {

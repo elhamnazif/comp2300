@@ -14,32 +14,32 @@ class PaymentServiceImpl : PaymentService {
             appointmentType = AppointmentType.CONSULTATION,
             allowedPaymentMethods = listOf(PaymentMethod.ONLINE, PaymentMethod.PHYSICAL, PaymentMethod.INSURANCE),
             requiresPrePayment = true,
-            notes = "Online payment required for consultation bookings"
+            notes = "Online payment required for consultation bookings",
         ),
         "FOLLOWUP" to PaymentOption(
             appointmentType = AppointmentType.FOLLOWUP,
             allowedPaymentMethods = listOf(PaymentMethod.ONLINE, PaymentMethod.PHYSICAL),
             requiresPrePayment = false,
-            notes = "Payment can be made at the clinic"
+            notes = "Payment can be made at the clinic",
         ),
         "CHECKUP" to PaymentOption(
             appointmentType = AppointmentType.CHECKUP,
             allowedPaymentMethods = listOf(PaymentMethod.ONLINE, PaymentMethod.PHYSICAL, PaymentMethod.INSURANCE),
             requiresPrePayment = true,
-            notes = "Pre-payment required for checkups"
+            notes = "Pre-payment required for checkups",
         ),
         "EMERGENCY" to PaymentOption(
             appointmentType = AppointmentType.EMERGENCY,
             allowedPaymentMethods = listOf(PaymentMethod.PHYSICAL, PaymentMethod.INSURANCE),
             requiresPrePayment = false,
-            notes = "Payment can be arranged upon arrival"
+            notes = "Payment can be arranged upon arrival",
         ),
         "VIRTUAL_CONSULTATION" to PaymentOption(
             appointmentType = AppointmentType.VIRTUAL_CONSULTATION,
             allowedPaymentMethods = listOf(PaymentMethod.ONLINE),
             requiresPrePayment = true,
-            notes = "Online payment required for virtual consultations"
-        )
+            notes = "Online payment required for virtual consultations",
+        ),
     )
 
     override fun getPaymentMethodsForAppointmentType(appointmentType: String): List<PaymentMethod> =
@@ -73,14 +73,14 @@ class PaymentServiceImpl : PaymentService {
                 success = true,
                 transactionId = "TXN${UUID.randomUUID().toString().take(8).uppercase()}",
                 message = "Payment processed successfully",
-                paymentStatus = PaymentStatus.COMPLETED
+                paymentStatus = PaymentStatus.COMPLETED,
             )
         } else {
             PaymentResult(
                 success = false,
                 transactionId = null,
                 message = "Invalid payment amount",
-                paymentStatus = PaymentStatus.FAILED
+                paymentStatus = PaymentStatus.FAILED,
             )
         }
     }

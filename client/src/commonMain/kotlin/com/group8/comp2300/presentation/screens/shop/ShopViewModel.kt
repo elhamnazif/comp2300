@@ -50,33 +50,33 @@ class ShopViewModel(private val repository: ShopRepository, private val authRepo
     val state: StateFlow<State> = combine(
         productsResultFlow,
         selectedCategory,
-        cartItemCount
+        cartItemCount,
     ) { result, category, count ->
         when (result) {
             is FetchResult.Loading -> State(
                 isLoading = true,
                 selectedCategory = category,
-                cartItemCount = count
+                cartItemCount = count,
             )
 
             is FetchResult.Success -> State(
                 isLoading = false,
                 products = result.data,
                 selectedCategory = category,
-                cartItemCount = count
+                cartItemCount = count,
             )
 
             is FetchResult.Error -> State(
                 isLoading = false,
                 error = result.message,
                 selectedCategory = category,
-                cartItemCount = count
+                cartItemCount = count,
             )
         }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = State(isLoading = true)
+        initialValue = State(isLoading = true),
     )
 
     fun selectCategory(category: ProductCategory) {
@@ -108,6 +108,6 @@ class ShopViewModel(private val repository: ShopRepository, private val authRepo
         val selectedCategory: ProductCategory = ProductCategory.ALL,
         val cartItemCount: Int = 0,
         val isLoading: Boolean = false,
-        val error: String? = null
+        val error: String? = null,
     )
 }

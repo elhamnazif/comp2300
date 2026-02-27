@@ -15,5 +15,5 @@ fun ProductDto.toDomain(): Product = Product(
         ProductCategory.ALL
     },
     insuranceCovered = insuranceCovered,
-    imageUrl = imageUrl
+    imageUrl = imageUrl,
 )

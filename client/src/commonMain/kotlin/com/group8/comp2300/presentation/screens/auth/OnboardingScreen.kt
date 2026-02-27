@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package com.group8.comp2300.presentation.screens.auth
 
 import androidx.compose.animation.*
@@ -32,7 +30,7 @@ fun OnboardingScreen(
     onFinish: () -> Unit,
     modifier: Modifier = Modifier,
     isGuest: Boolean = true,
-    onRequireAuth: () -> Unit = {}
+    onRequireAuth: () -> Unit = {},
 ) {
     var step by remember { mutableIntStateOf(0) } // 0: Welcome, 1: Auth, 2: PIN, 3+: Questions, Last: Result
     var pin by remember { mutableStateOf("") }
@@ -52,9 +50,9 @@ fun OnboardingScreen(
 
     Column(
         modifier =
-            modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
+        modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
     ) {
         // --- Header Area ---
         Row(
@@ -63,7 +61,7 @@ fun OnboardingScreen(
                 .statusBarsPadding()
                 .height(64.dp)
                 .padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Back Button
             Box(Modifier.size(48.dp)) {
@@ -75,11 +73,11 @@ fun OnboardingScreen(
                             }
                             step--
                         },
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     ) {
                         Icon(
                             imageVector = Icons.ArrowBackW400Outlinedfill1,
-                            contentDescription = stringResource(Res.string.onboarding_back)
+                            contentDescription = stringResource(Res.string.onboarding_back),
                         )
                     }
                 }
@@ -92,20 +90,20 @@ fun OnboardingScreen(
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 12.dp)
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(4.dp)),
                 )
 
                 Text(
                     text = "${step - questionStartIndex + 1}/${sampleOnboardingQuestions.size}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
 
                 // Skip Button (Right side of middle area or separate?)
                 // User said "put skip in top right", so it should be at the absolute end.
                 TextButton(
-                    onClick = { step++ }
+                    onClick = { step++ },
                 ) {
                     Text(stringResource(Res.string.onboarding_skip))
                 }
@@ -119,79 +117,81 @@ fun OnboardingScreen(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp)
+                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
         ) {
             AnimatedContent(
                 targetState = step,
                 transitionSpec = {
                     if (targetState > initialState) {
                         (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
-                            slideOutHorizontally { width -> -width } + fadeOut()
+                            slideOutHorizontally { width -> -width } + fadeOut(),
                         )
                     } else {
                         (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
-                            slideOutHorizontally { width -> width } + fadeOut()
+                            slideOutHorizontally { width -> width } + fadeOut(),
                         )
                     }
                 },
                 label = "OnboardingStepTransition",
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             ) { currentStep ->
-            when (currentStep) {
-                0 -> WelcomeStep({ step++ })
+                when (currentStep) {
+                    0 -> WelcomeStep({ step++ })
 
-                1 -> AuthChoiceStep(
-                    isGuest = isGuest,
-                    onRequireAuth = onRequireAuth,
-                    onNext = { step++ }
-                )
-
-                2 -> PinScreen(
-                    onComplete = { finalPin ->
-                        pin = finalPin
-                        step++ // Moves to questionStartIndex (3)
-                    }
-                )
-
-                in questionStartIndex until questionEndIndex -> {
-                    val questionIndex = currentStep - questionStartIndex
-                    val question = sampleOnboardingQuestions[questionIndex]
-
-                    val questionText = when (question.id) {
-                        1 -> stringResource(Res.string.onboarding_q1_text)
-                        2 -> stringResource(Res.string.onboarding_q2_text)
-                        else -> question.text
-                    }
-
-                    val localizedOptions = when (question.id) {
-                        1 -> listOf(
-                            stringResource(Res.string.onboarding_q1_op1),
-                            stringResource(Res.string.onboarding_q1_op2),
-                            stringResource(Res.string.onboarding_q1_op3),
-                            stringResource(Res.string.onboarding_q1_op4)
-                        )
-                        2 -> listOf(
-                            stringResource(Res.string.onboarding_q2_op1),
-                            stringResource(Res.string.onboarding_q2_op2),
-                            stringResource(Res.string.onboarding_q2_op3)
-                        )
-                        else -> question.options
-                    }
-
-                    QuestionStep(
-                        question = questionText,
-                        options = localizedOptions,
-                        onAnswerSelect = { index ->
-                            riskScore += index
-                            step++
-                        }
+                    1 -> AuthChoiceStep(
+                        isGuest = isGuest,
+                        onRequireAuth = onRequireAuth,
+                        onNext = { step++ },
                     )
-                }
 
-                questionEndIndex -> ResultStep(
-                    riskScore = riskScore,
-                    onFinish = onFinish
-                )
+                    2 -> PinScreen(
+                        onComplete = { finalPin ->
+                            pin = finalPin
+                            step++ // Moves to questionStartIndex (3)
+                        },
+                    )
+
+                    in questionStartIndex until questionEndIndex -> {
+                        val questionIndex = currentStep - questionStartIndex
+                        val question = sampleOnboardingQuestions[questionIndex]
+
+                        val questionText = when (question.id) {
+                            1 -> stringResource(Res.string.onboarding_q1_text)
+                            2 -> stringResource(Res.string.onboarding_q2_text)
+                            else -> question.text
+                        }
+
+                        val localizedOptions = when (question.id) {
+                            1 -> listOf(
+                                stringResource(Res.string.onboarding_q1_op1),
+                                stringResource(Res.string.onboarding_q1_op2),
+                                stringResource(Res.string.onboarding_q1_op3),
+                                stringResource(Res.string.onboarding_q1_op4),
+                            )
+
+                            2 -> listOf(
+                                stringResource(Res.string.onboarding_q2_op1),
+                                stringResource(Res.string.onboarding_q2_op2),
+                                stringResource(Res.string.onboarding_q2_op3),
+                            )
+
+                            else -> question.options
+                        }
+
+                        QuestionStep(
+                            question = questionText,
+                            options = localizedOptions,
+                            onAnswerSelect = { index ->
+                                riskScore += index
+                                step++
+                            },
+                        )
+                    }
+
+                    questionEndIndex -> ResultStep(
+                        riskScore = riskScore,
+                        onFinish = onFinish,
+                    )
                 }
             }
         }
@@ -203,13 +203,13 @@ fun AuthChoiceStep(isGuest: Boolean, onRequireAuth: () -> Unit, onNext: () -> Un
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             imageVector = Icons.AccountBoxW400Outlinedfill1,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(80.dp)
+            modifier = Modifier.size(80.dp),
         )
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -217,13 +217,13 @@ fun AuthChoiceStep(isGuest: Boolean, onRequireAuth: () -> Unit, onNext: () -> Un
             Text(
                 stringResource(Res.string.onboarding_welcome_back_title),
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 stringResource(Res.string.onboarding_signed_in_body),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 16.dp),
             )
             Spacer(modifier = Modifier.height(32.dp))
             Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(50.dp)) {
@@ -233,14 +233,14 @@ fun AuthChoiceStep(isGuest: Boolean, onRequireAuth: () -> Unit, onNext: () -> Un
             Text(
                 stringResource(Res.string.onboarding_create_account_title),
                 style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 stringResource(Res.string.onboarding_sign_up_body),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.secondary,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 16.dp),
             )
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -262,26 +262,26 @@ fun WelcomeStep(onNext: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             imageVector = Icons.AccountBoxW400Outlinedfill1,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(80.dp)
+            modifier = Modifier.size(80.dp),
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
             stringResource(Res.string.onboarding_welcome_vita),
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
         Text(
             stringResource(Res.string.onboarding_welcome_desc),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(vertical = 16.dp)
+            modifier = Modifier.padding(vertical = 16.dp),
         )
         Spacer(modifier = Modifier.height(32.dp))
         Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(50.dp)) {
@@ -290,20 +290,19 @@ fun WelcomeStep(onNext: () -> Unit, modifier: Modifier = Modifier) {
     }
 }
 
-
 @Composable
 fun QuestionStep(
     question: String,
     options: List<String>,
     onAnswerSelect: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
         Text(
             question,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -312,7 +311,7 @@ fun QuestionStep(
             OutlinedButton(
                 onClick = { onAnswerSelect(index) },
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp).height(56.dp),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
             ) {
                 Text(option, fontSize = 18.sp)
             }
@@ -333,40 +332,40 @@ fun ResultStep(riskScore: Int, onFinish: () -> Unit, modifier: Modifier = Modifi
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             Icons.CheckW400Outlinedfill1,
             contentDescription = null,
             tint = Color(0xFF4CAF50), // Success Green
-            modifier = Modifier.size(100.dp).background(Color(0xFFE8F5E9), CircleShape).padding(16.dp)
+            modifier = Modifier.size(100.dp).background(Color(0xFFE8F5E9), CircleShape).padding(16.dp),
         )
         Spacer(Modifier.height(32.dp))
         Text(
             stringResource(Res.string.onboarding_all_set),
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
 
         Card(
             modifier = Modifier.padding(vertical = 24.dp).fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
         ) {
             Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     stringResource(Res.string.onboarding_recommended_plan),
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.labelLarge,
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     stringResource(Res.string.onboarding_screening_title),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
                 Text(
                     recommendation,
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.ExtraBold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
         }

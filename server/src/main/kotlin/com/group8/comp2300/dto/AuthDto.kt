@@ -14,7 +14,7 @@ data class RegisterRequest(
     val phone: String? = null,
     val gender: String? = null,
     val sexualOrientation: String? = null,
-    val dateOfBirth: Long? = null
+    val dateOfBirth: Long? = null,
 )
 
 @Serializable

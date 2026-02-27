@@ -4,5 +4,5 @@ data class PaymentResult(
     val success: Boolean,
     val transactionId: String?,
     val message: String,
-    val paymentStatus: PaymentStatus
+    val paymentStatus: PaymentStatus,
 )

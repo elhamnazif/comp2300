@@ -11,7 +11,7 @@ val sampleProducts =
             "Results in 15 mins",
             0.0,
             ProductCategory.TESTING,
-            true
+            true,
         ),
         Product(
             "2",
@@ -19,7 +19,7 @@ val sampleProducts =
             "3-month supply",
             0.0,
             ProductCategory.MEDICATION,
-            true
+            true,
         ),
         Product(
             "3",
@@ -27,7 +27,7 @@ val sampleProducts =
             "Lab kit for 5 STIs",
             45.0,
             ProductCategory.TESTING,
-            false
+            false,
         ),
         Product(
             "4",
@@ -35,7 +35,7 @@ val sampleProducts =
             "Post-exposure meds",
             20.0,
             ProductCategory.MEDICATION,
-            false
+            false,
         ),
         Product(
             "5",
@@ -43,7 +43,7 @@ val sampleProducts =
             "Pack of 12",
             12.0,
             ProductCategory.PREVENTION,
-            false
+            false,
         ),
-        Product("6", "Lube", "Water-based", 8.0, ProductCategory.PREVENTION, false)
+        Product("6", "Lube", "Water-based", 8.0, ProductCategory.PREVENTION, false),
     )

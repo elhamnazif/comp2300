@@ -38,7 +38,7 @@ fun PinScreen(
     title: String? = null,
     description: String? = null,
     errorMessage: String? = null,
-    onErrorMessageCleared: () -> Unit = {}
+    onErrorMessageCleared: () -> Unit = {},
 ) {
     var pin by rememberSaveable { mutableStateOf("") }
     var confirmedPin by rememberSaveable { mutableStateOf("") }
@@ -53,15 +53,21 @@ fun PinScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val displayTitle = title ?: if (isSetup) {
-        if (isConfirming) stringResource(Res.string.onboarding_confirm_pin_title)
-        else stringResource(Res.string.onboarding_create_pin_title)
+        if (isConfirming) {
+            stringResource(Res.string.onboarding_confirm_pin_title)
+        } else {
+            stringResource(Res.string.onboarding_create_pin_title)
+        }
     } else {
         stringResource(Res.string.onboarding_create_pin_title) // Fallback if no title provided
     }
 
     val displayDescription = description ?: if (isSetup) {
-        if (isConfirming) stringResource(Res.string.onboarding_confirm_pin_desc)
-        else stringResource(Res.string.onboarding_create_pin_desc)
+        if (isConfirming) {
+            stringResource(Res.string.onboarding_confirm_pin_desc)
+        } else {
+            stringResource(Res.string.onboarding_create_pin_desc)
+        }
     } else {
         ""
     }
@@ -120,7 +126,7 @@ fun PinScreen(
             } else {
                 // Not setup mode, just input PIN
                 onCompleteState(pin)
-                // Optionally clear PIN here if we want to reset it after entry. 
+                // Optionally clear PIN here if we want to reset it after entry.
                 // Wait for external error to handle reset if it's wrong.
             }
         }
@@ -132,11 +138,11 @@ fun PinScreen(
             repeat(4) {
                 shakeOffset.animateTo(
                     targetValue = 10f,
-                    animationSpec = tween(durationMillis = 40, easing = LinearEasing)
+                    animationSpec = tween(durationMillis = 40, easing = LinearEasing),
                 )
                 shakeOffset.animateTo(
                     targetValue = -10f,
-                    animationSpec = tween(durationMillis = 40, easing = LinearEasing)
+                    animationSpec = tween(durationMillis = 40, easing = LinearEasing),
                 )
             }
             shakeOffset.animateTo(0f, animationSpec = tween(durationMillis = 40, easing = LinearEasing))
@@ -146,35 +152,47 @@ fun PinScreen(
     Column(
         modifier = modifier.fillMaxSize().systemBarsPadding(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             Icons.LockW400Outlinedfill1,
             contentDescription = null,
             modifier = Modifier.size(48.dp),
-            tint = if (displayError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+            tint = if (displayError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
         )
 
         Spacer(Modifier.height(24.dp))
 
         AnimatedContent(
             targetState = isConfirming, // Still useful to animate if switching confirmation states
-            label = "PinTextTransition"
+            label = "PinTextTransition",
         ) { confirming ->
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // Just use the derived titles directly, ignoring the AnimatedContent implicit argument 
+                // Just use the derived titles directly, ignoring the AnimatedContent implicit argument
                 // in favor of our more robust logic above.
                 Text(
                     text = displayTitle,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = if (displayError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+                    color = if (displayError !=
+                        null
+                    ) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
                 )
                 Text(
                     text = displayError ?: displayDescription,
-                    color = if (displayError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary,
+                    color = if (displayError !=
+                        null
+                    ) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.secondary
+                    },
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 32.dp)
+                    modifier = Modifier.padding(horizontal = 32.dp),
                 )
             }
         }
@@ -184,28 +202,37 @@ fun PinScreen(
         /* PIN dots */
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.offset(x = shakeOffset.value.dp)
+            modifier = Modifier.offset(x = shakeOffset.value.dp),
         ) {
             repeat(pinLength) { index ->
                 val isFilled = index < pin.length
                 val scale by animateFloatAsState(
                     targetValue = if (isFilled) 1.2f else 1f,
-                    animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
-                    label = "PinDotScaleAnimation"
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioMediumBouncy,
+                        stiffness = Spring.StiffnessMedium,
+                    ),
+                    label = "PinDotScaleAnimation",
                 )
 
                 Box(
                     modifier =
-                        Modifier.size(24.dp)
-                            .scale(scale)
-                            .clip(CircleShape)
-                            .background(
-                                if (isFilled) {
-                                    if (displayError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                    Modifier.size(24.dp)
+                        .scale(scale)
+                        .clip(CircleShape)
+                        .background(
+                            if (isFilled) {
+                                if (displayError !=
+                                    null
+                                ) {
+                                    MaterialTheme.colorScheme.error
                                 } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
+                                    MaterialTheme.colorScheme.primary
                                 }
-                            )
+                            } else {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            },
+                        ),
                 )
             }
         }
@@ -219,7 +246,7 @@ fun PinScreen(
                     listOf("1", "2", "3"),
                     listOf("4", "5", "6"),
                     listOf("7", "8", "9"),
-                    listOf(null, "0", "⌫") // null = spacer
+                    listOf(null, "0", "⌫"), // null = spacer
                 )
 
             rows.forEach { row ->
@@ -256,7 +283,7 @@ fun PinScreen(
                                         pin += label
                                     }
                                 }
-                            }
+                            },
                         )
                     }
                 }
@@ -272,27 +299,27 @@ private fun KeyPadButton(text: String, onClick: () -> Unit) {
     Box(
         contentAlignment = Alignment.Center,
         modifier =
-            Modifier.size(72.dp)
-                .clip(CircleShape)
-                .background(
-                    if (pressed) {
-                        MaterialTheme.colorScheme.primary.copy(alpha = .3f)
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainerHigh
-                    }
-                )
-                .pointerInput(Unit) { detectTapGestures(onPress = { tryAwaitRelease() }, onTap = { onClick() }) }
-                .semantics { contentDescription = text }
+        Modifier.size(72.dp)
+            .clip(CircleShape)
+            .background(
+                if (pressed) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = .3f)
+                } else {
+                    MaterialTheme.colorScheme.surfaceContainerHigh
+                },
+            )
+            .pointerInput(Unit) { detectTapGestures(onPress = { tryAwaitRelease() }, onTap = { onClick() }) }
+            .semantics { contentDescription = text },
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.headlineSmall,
             color =
-                if (text == "⌫") {
-                    MaterialTheme.colorScheme.onSurface
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
+            if (text == "⌫") {
+                MaterialTheme.colorScheme.onSurface
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
         )
     }
 }

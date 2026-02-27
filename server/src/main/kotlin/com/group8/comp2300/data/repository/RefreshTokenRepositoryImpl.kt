@@ -16,7 +16,7 @@ class RefreshTokenRepositoryImpl(private val database: ServerDatabase, private v
             token = tokenHash,
             userId = userId,
             expiresAt = expiresAt.toEpochMilliseconds(),
-            createdAt = now.toEpochMilliseconds()
+            createdAt = now.toEpochMilliseconds(),
         )
     }
 

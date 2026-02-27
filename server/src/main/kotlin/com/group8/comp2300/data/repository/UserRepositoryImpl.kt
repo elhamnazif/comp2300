@@ -6,10 +6,10 @@ import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.UserRepository
-import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository {
 
@@ -32,7 +32,7 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
         dateOfBirth: Long?,
         gender: String?,
         sexualOrientation: String?,
-        preferredLanguage: String
+        preferredLanguage: String,
     ) {
         val now = Clock.System.now().toEpochMilliseconds()
         database.userQueries.insertUser(
@@ -47,7 +47,7 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
             sexualOrientation = sexualOrientation,
             profileImageUrl = null,
             createdAt = now,
-            preferredLanguage = preferredLanguage
+            preferredLanguage = preferredLanguage,
         )
     }
 
@@ -73,6 +73,6 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
         createdAt = createdAt,
         isAnonymous = false,
         hasCompletedOnboarding = false,
-        preferredLanguage = preferredLanguage
+        preferredLanguage = preferredLanguage,
     )
 }

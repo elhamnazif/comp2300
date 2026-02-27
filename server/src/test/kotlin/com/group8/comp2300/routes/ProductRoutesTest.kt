@@ -37,7 +37,7 @@ class ProductRoutesTest {
             price = 19.99,
             category = ProductCategory.MEDICATION,
             insuranceCovered = true,
-            imageUrl = "http://example.com/vitaminc.jpg"
+            imageUrl = "http://example.com/vitaminc.jpg",
         )
         val product2 = Product(
             id = "prod_2",
@@ -46,7 +46,7 @@ class ProductRoutesTest {
             price = 9.99,
             category = ProductCategory.MEDICATION,
             insuranceCovered = false,
-            imageUrl = null
+            imageUrl = null,
         )
         productRepository.insert(product1)
         productRepository.insert(product2)
@@ -76,7 +76,7 @@ class ProductRoutesTest {
             price = 29.99,
             category = ProductCategory.TESTING,
             insuranceCovered = false,
-            imageUrl = null
+            imageUrl = null,
         )
         productRepository.insert(product)
 
@@ -116,7 +116,7 @@ class ProductRoutesTest {
                 modules(
                     module {
                         single<ProductRepository> { productRepository }
-                    }
+                    },
                 )
             }
             install(ContentNegotiation) {
@@ -125,7 +125,7 @@ class ProductRoutesTest {
                         prettyPrint = true
                         isLenient = true
                         ignoreUnknownKeys = true
-                    }
+                    },
                 )
             }
 
@@ -141,7 +141,7 @@ class ProductRoutesTest {
                 Json {
                     ignoreUnknownKeys = true
                     isLenient = true
-                }
+                },
             )
         }
     }

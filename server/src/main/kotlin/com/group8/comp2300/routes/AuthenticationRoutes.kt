@@ -34,7 +34,7 @@ fun Route.authRoutes(authService: AuthService) {
 
                     else -> call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Registration failed"))
                 }
-            }
+            },
         )
     }
 
@@ -51,7 +51,7 @@ fun Route.authRoutes(authService: AuthService) {
                     else ->
                         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Login failed"))
                 }
-            }
+            },
         )
     }
 
@@ -65,13 +65,13 @@ fun Route.authRoutes(authService: AuthService) {
                     is IllegalArgumentException ->
                         call.respond(
                             HttpStatusCode.Unauthorized,
-                            mapOf("error" to (error.message ?: "Token refresh failed"))
+                            mapOf("error" to (error.message ?: "Token refresh failed")),
                         )
 
                     else ->
                         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Token refresh failed"))
                 }
-            }
+            },
         )
     }
 

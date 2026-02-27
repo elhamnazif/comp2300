@@ -9,8 +9,6 @@ import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.minutes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -20,11 +18,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
 
 class AuthRepositoryImpl(
     private val apiService: ApiService,
     private val tokenManager: TokenManager,
-    private val logger: Logger
+    private val logger: Logger,
 ) : AuthRepository {
     private val _currentUser = MutableStateFlow<User?>(null)
     override val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
@@ -59,7 +59,7 @@ class AuthRepositoryImpl(
         lastName: String,
         gender: Gender,
         sexualOrientation: SexualOrientation,
-        dateOfBirth: LocalDate?
+        dateOfBirth: LocalDate?,
     ): Result<User> = try {
         logger.i { "Registration attempt for email: $email, name: $firstName $lastName" }
         val request = RegisterRequest(
@@ -73,7 +73,7 @@ class AuthRepositoryImpl(
             dateOfBirth = dateOfBirth?.toEpochDays()?.let { epochDays ->
                 // Convert LocalDate epoch days to milliseconds
                 epochDays * 24L * 60L * 60L * 1000L
-            }
+            },
         )
         val response = apiService.register(request)
         val expiresAt = Clock.System.now().toEpochMilliseconds() + ACCESS_TOKEN_EXPIRATION_MS

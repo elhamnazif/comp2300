@@ -6,5 +6,5 @@ data class PaymentOption(
     val appointmentType: AppointmentType,
     val allowedPaymentMethods: List<PaymentMethod>,
     val requiresPrePayment: Boolean,
-    val notes: String? = null
+    val notes: String? = null,
 )
