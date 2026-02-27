@@ -212,6 +212,8 @@ symbolCraft {
         "visibility_off",
         "calendar_month",
         "local_pharmacy",
+        "mark_email_read",
+        "password",
     ) {
         weights(SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
     }

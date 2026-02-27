@@ -1,10 +1,16 @@
 package com.group8.comp2300.data.remote
 
 import com.group8.comp2300.data.remote.dto.AuthResponse
+import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
+import com.group8.comp2300.data.remote.dto.ForgotPasswordRequest
 import com.group8.comp2300.data.remote.dto.LoginRequest
+import com.group8.comp2300.data.remote.dto.MessageResponse
+import com.group8.comp2300.data.remote.dto.PreregisterRequest
+import com.group8.comp2300.data.remote.dto.PreregisterResponse
 import com.group8.comp2300.data.remote.dto.ProductDto
 import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
 import com.group8.comp2300.data.remote.dto.RegisterRequest
+import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
@@ -35,6 +41,16 @@ interface ApiService {
     suspend fun logout()
 
     suspend fun getProfile(): User
+
+    suspend fun activateAccount(token: String): AuthResponse
+
+    suspend fun forgotPassword(email: String): MessageResponse
+
+    suspend fun resetPassword(token: String, newPassword: String): MessageResponse
+
+    suspend fun preregister(request: PreregisterRequest): PreregisterResponse
+
+    suspend fun completeProfile(request: CompleteProfileRequest): User
 
     // Medical API methods
     suspend fun getCalendarOverview(
@@ -80,6 +96,26 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     }
 
     override suspend fun getProfile(): User = client.get("/api/auth/profile").body()
+
+    override suspend fun activateAccount(token: String): AuthResponse =
+        handleAuthResponse(client.post("/api/auth/activate") {
+            setBody(mapOf("token" to token))
+        })
+
+    override suspend fun forgotPassword(email: String): MessageResponse = client.post("/api/auth/forgot-password") {
+        setBody(ForgotPasswordRequest(email))
+    }.body()
+
+    override suspend fun resetPassword(token: String, newPassword: String): MessageResponse =
+        client.post("/api/auth/reset-password") {
+            setBody(ResetPasswordRequest(token, newPassword))
+        }.body()
+
+    override suspend fun preregister(request: PreregisterRequest): PreregisterResponse =
+        client.post("/api/auth/preregister") { setBody(request) }.body()
+
+    override suspend fun completeProfile(request: CompleteProfileRequest): User =
+        client.post("/api/auth/complete-profile") { setBody(request) }.body()
 
     // --- Medical API ---
     override suspend fun getCalendarOverview(

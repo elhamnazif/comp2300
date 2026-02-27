@@ -87,6 +87,9 @@ The server supports a development mode with authentication bypass for easier tes
 | `JWT_REALM` | `comp2300` | JWT realm |
 | `JWT_ISSUER` | `http://0.0.0.0:8080` | JWT issuer |
 | `JWT_AUDIENCE` | `http://0.0.0.0:8080` | JWT audience |
+| `RESEND_API_KEY` | (empty) | Resend API key for sending emails |
+| `RESEND_FROM_EMAIL` | `Vita <noreply@vita.local>` | Sender email address |
+| `APP_BASE_URL` | `http://localhost:8080` | Base URL used in email links |
 
 ### Development User
 
@@ -112,6 +115,36 @@ To disable even in development:
 ENV=development DEV_AUTH_BYPASS=false ./gradlew :server:run
 ```
 
+## Email Configuration
+
+The server uses [Resend](https://resend.com) for sending transactional emails (account activation, password reset).
+
+### Setup
+
+1. Create a free account at [resend.com](https://resend.com)
+2. Generate an API key from [resend.com/api-keys](https://resend.com/api-keys)
+3. Configure your environment:
+
+```bash
+RESEND_API_KEY=re_your_api_key_here
+RESEND_FROM_EMAIL=Vita <noreply@yourdomain.com>
+APP_BASE_URL=http://localhost:8080
+```
+
+### ⚠️ Important: Graceful Degradation
+
+> **If `RESEND_API_KEY` is not set or is blank, the `EmailService` will be `null` and emails will NOT be sent.**
+>
+> - Registration and password reset requests will still succeed
+> - Users will NOT receive verification or reset emails
+> - This is intentional to allow local development without email service
+> - Check server logs if emails are not being received
+
+For local development without Resend, you can:
+- Check the database directly for activation tokens
+- Use the development user (`dev@vita.local` / `devpassword1`)
+- Set up a local mail catcher like [Mailhog](https://github.com/mailhog/MailHog)
+
 ## API Endpoints
 
 ### Health
@@ -119,11 +152,17 @@ ENV=development DEV_AUTH_BYPASS=false ./gradlew :server:run
 - `GET /api/health` - Health check
 
 ### Authentication
-- `POST /api/auth/register` - Create new account
+- `POST /api/auth/register` - Create new account (legacy, use preregister instead)
+- `POST /api/auth/preregister` - Start registration with email/password (sends verification email)
+- `GET /api/auth/activate?token=...` - Activate account via email link
+- `POST /api/auth/activate` - Activate account with token in body
 - `POST /api/auth/login` - Authenticate and receive tokens
 - `POST /api/auth/refresh` - Refresh access token
+- `POST /api/auth/forgot-password` - Request password reset email
+- `POST /api/auth/reset-password` - Reset password with token
 - `GET /api/auth/profile` - Get current user (authenticated)
 - `POST /api/auth/logout` - Revoke refresh tokens (authenticated)
+- `POST /api/auth/complete-profile` - Complete profile after activation (authenticated)
 
 ### Products
 - `GET /api/products` - Get all products (authenticated)
