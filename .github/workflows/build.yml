@@ -2,9 +2,9 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -61,15 +61,12 @@ jobs:
       - name: Gradle setup
         uses: ./.github/actions/gradle-setup
 
-      - name: Build Kotlin framework for iOS
-        run: ./gradlew :client:linkDebugFrameworkIosSimulatorArm64
-
       - name: Build iOS simulator app
         run: |
           xcodebuild build \
           -project iosApp/iosApp.xcodeproj \
-          -target iosApp \
           -configuration Debug \
+          -scheme iosApp \
           -sdk iphonesimulator \
           -derivedDataPath ./build \
           -verbose
