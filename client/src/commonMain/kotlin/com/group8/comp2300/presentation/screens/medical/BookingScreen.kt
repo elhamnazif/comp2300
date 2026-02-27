@@ -9,10 +9,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,7 +17,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
-import com.group8.comp2300.presentation.components.ScreenHeader
 import com.group8.comp2300.presentation.screens.medical.components.ClinicMap
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowForwardW400Outlinedfill1
@@ -32,7 +27,8 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun BookingScreen(
-    clinics: List<Clinic>,
+    allClinics: List<Clinic>,
+    filteredClinics: List<Clinic>,
     selectedClinic: Clinic?,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
@@ -69,7 +65,7 @@ fun BookingScreen(
                     )
                 }
 
-                items(clinics) { clinic ->
+                items(allClinics) { clinic ->
                     ClinicCompactRow(
                         clinic = clinic,
                         isSelected = selectedClinic?.id == clinic.id,
@@ -88,15 +84,16 @@ fun BookingScreen(
 
         Box(modifier = Modifier.fillMaxSize()) {
             ClinicMap(
-                clinics = clinics,
+                clinics = filteredClinics,
                 selectedClinic = selectedClinic,
             )
 
             // Search Bar (Floating at Top)
-            ScreenHeader(
-                modifier = Modifier.align(Alignment.TopCenter),
-                horizontalPadding = 16.dp,
-                topPadding = 8.dp,
+            Column(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
             ) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
@@ -144,8 +141,90 @@ fun BookingScreen(
                         keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
                     )
                 }
+
+                // Search Results Overlay
+                if (searchQuery.isNotEmpty() && filteredClinics.isNotEmpty()) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        shape = MaterialTheme.shapes.extraLarge,
+                        shadowElevation = 8.dp,
+                        color = MaterialTheme.colorScheme.surface,
+                    ) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 300.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp),
+                        ) {
+                            items(filteredClinics) { clinic ->
+                                ClinicSearchResultRow(
+                                    clinic = clinic,
+                                    onClick = {
+                                        onClinicSelect(clinic)
+                                        focusManager.clearFocus()
+                                    },
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // No results message
+                if (searchQuery.isNotEmpty() && filteredClinics.isEmpty()) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                        shape = MaterialTheme.shapes.extraLarge,
+                        shadowElevation = 8.dp,
+                        color = MaterialTheme.colorScheme.surface,
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.medical_booking_no_results),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(16.dp),
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun ClinicSearchResultRow(clinic: Clinic, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = clinic.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            val clinicAddress = clinic.address
+            if (clinicAddress != null) {
+                Text(
+                    text = clinicAddress,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+        }
+        Text(
+            text = clinic.formattedDistance,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
 }
 

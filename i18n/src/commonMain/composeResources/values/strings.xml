@@ -125,6 +125,7 @@
     <string name="medical_booking_search_placeholder">Search for clinics...</string>
     <string name="medical_booking_view_details_desc">View Details</string>
     <string name="medical_booking_search_desc">Search</string>
+    <string name="medical_booking_no_results">No clinics found</string>
 
     <!-- Medical Booking Details -->
     <string name="medical_booking_details_title">Book Appointment</string>

@@ -21,7 +21,8 @@ val medicalNavigationModule = module {
         val searchQuery by viewModel.searchQuery.collectAsState()
 
         BookingScreen(
-            clinics = filteredClinics,
+            allClinics = viewModel.allClinics,
+            filteredClinics = filteredClinics,
             selectedClinic = selectedClinic,
             searchQuery = searchQuery,
             onSearchQueryChange = { viewModel.updateSearchQuery(it) },

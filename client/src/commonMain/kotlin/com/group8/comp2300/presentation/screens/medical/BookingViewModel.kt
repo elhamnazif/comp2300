@@ -19,6 +19,8 @@ class BookingViewModel(private val repository: ClinicRepository) : ViewModel() {
 
     private val clinicsList = MutableStateFlow(repository.getAllClinics())
 
+    val allClinics: List<Clinic> get() = clinicsList.value
+
     val filteredClinics: StateFlow<List<Clinic>> = combine(
         clinicsList,
         _searchQuery,
