@@ -38,6 +38,7 @@ val sampleClinics =
             nextAvailableSlot = hoursFromNow(6),
             lat = 3.1400,
             lng = 101.6850,
+            address = "456 Health Street, Kuala Lumpur",
         ),
     )
 

@@ -1,3 +1,13 @@
+CREATE TABLE ProductEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price REAL NOT NULL,
+    category TEXT NOT NULL,
+    insuranceCovered INTEGER NOT NULL,
+    imageUrl TEXT
+);
+
 selectAllProducts:
 SELECT * FROM ProductEntity;
 

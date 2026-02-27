@@ -9,15 +9,17 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Medication(
     val id: String,
-    val userId: String? = null,
+    val userId: String,
     val name: String,
-    val dosage: String,
+    val dosage: String, // Number of pills
+    val quantity: String, // Units in weight
     val frequency: MedicationFrequency,
-    val instructions: String = "",
-    val colorHex: String = "#42A5F5",
+    val instruction: String? = null,
+    val colorHex: String? = null,
+    val startDate: String, // YYYY-MM-DD
+    val endDate: String, // YYYY-MM-DD
+    val hasReminder: Boolean = true,
     val status: MedicationStatus = MedicationStatus.ACTIVE,
-    val createdAt: Long = 0L,
-    val updatedAt: Long = createdAt,
 ) {
     companion object {
         val PRESET_COLORS =
@@ -32,3 +34,11 @@ data class Medication(
             )
     }
 }
+
+// --- Composite "Grouped" Class ---
+
+/**
+ * Represents a Medication along with its full weekly schedule.
+ * Use this for the "Medication Details" screen.
+ */
+data class MedicationWithSchedules(val medication: Medication, val schedules: List<MedicationSchedule>)

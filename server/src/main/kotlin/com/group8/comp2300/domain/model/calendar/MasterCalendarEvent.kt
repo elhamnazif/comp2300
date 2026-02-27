@@ -9,7 +9,7 @@ data class MasterCalendarEvent(
     val title: String,
     val subtitle: String,
     val eventTime: LocalDateTime,
-    val status: String
+    val status: String,
 )
 
 // categories for user stories 6-7
@@ -17,11 +17,10 @@ enum class CalendarCategory {
     APPOINTMENT,
     MEDICATION,
     MOOD,
-    MENSTRUAL_CYCLE;
+    MENSTRUAL_CYCLE,
+    ;
 
     companion object {
-        fun fromString(value: String): CalendarCategory {
-            return entries.find { it.name == value } ?: APPOINTMENT
-        }
+        fun fromString(value: String): CalendarCategory = entries.find { it.name == value } ?: APPOINTMENT
     }
 }
