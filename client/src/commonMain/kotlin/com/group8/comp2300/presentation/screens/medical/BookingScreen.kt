@@ -5,18 +5,27 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.presentation.components.ScreenHeader
 import com.group8.comp2300.presentation.screens.medical.components.ClinicMap
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowForwardW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.CloseW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.SearchW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -25,6 +34,8 @@ import org.jetbrains.compose.resources.stringResource
 fun BookingScreen(
     clinics: List<Clinic>,
     selectedClinic: Clinic?,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     onClinicClick: (String) -> Unit,
     onClinicSelect: (Clinic) -> Unit,
     modifier: Modifier = Modifier,
@@ -73,6 +84,8 @@ fun BookingScreen(
             }
         },
     ) { _ ->
+        val focusManager = LocalFocusManager.current
+
         Box(modifier = Modifier.fillMaxSize()) {
             ClinicMap(
                 clinics = clinics,
@@ -91,24 +104,45 @@ fun BookingScreen(
                     shadowElevation = 4.dp,
                     color = MaterialTheme.colorScheme.surface,
                 ) {
-                    Row(
-                        modifier =
-                        Modifier.clickable { /* TODO: Open Search Screen */ }
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            imageVector = Icons.SearchW400Outlinedfill1,
-                            contentDescription = stringResource(Res.string.medical_booking_search_desc),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Text(
-                            text = stringResource(Res.string.medical_booking_search_placeholder),
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                    TextField(
+                        value = searchQuery,
+                        onValueChange = onSearchQueryChange,
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = {
+                            Text(
+                                text = stringResource(Res.string.medical_booking_search_placeholder),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.SearchW400Outlinedfill1,
+                                contentDescription = stringResource(Res.string.medical_booking_search_desc),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        },
+                        trailingIcon = {
+                            if (searchQuery.isNotEmpty()) {
+                                IconButton(onClick = { onSearchQueryChange("") }) {
+                                    Icon(
+                                        imageVector = Icons.CloseW400Outlinedfill1,
+                                        contentDescription = stringResource(Res.string.medical_booking_search_desc),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        },
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                        ),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
+                    )
                 }
             }
         }
