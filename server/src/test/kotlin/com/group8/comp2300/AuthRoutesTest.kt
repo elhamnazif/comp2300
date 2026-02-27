@@ -1,7 +1,9 @@
 package com.group8.comp2300
 
+import com.group8.comp2300.data.repository.PasswordResetTokenRepositoryImpl
 import com.group8.comp2300.data.repository.RefreshTokenRepositoryImpl
 import com.group8.comp2300.data.repository.UserRepositoryImpl
+import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.dto.AuthResponse
 import com.group8.comp2300.dto.LoginRequest
 import com.group8.comp2300.dto.RefreshTokenRequest
@@ -140,7 +142,7 @@ class AuthRoutesTest {
 
     @Test
     fun loginWithValidCredentialsReturnsSuccess() = testApplication {
-        configureAuthTestModule()
+        val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
         val email = "login.user@example.com"
@@ -158,6 +160,8 @@ class AuthRoutesTest {
             )
         }
         assertEquals(HttpStatusCode.Created, registerResponse.status)
+        val registered = registerResponse.body<AuthResponse>()
+        userRepo.activateUser(registered.user.id)
 
         val loginResponse = client.post("/api/auth/login") {
             contentType(ContentType.Application.Json)
@@ -260,7 +264,7 @@ class AuthRoutesTest {
     }
 }
 
-private fun ApplicationTestBuilder.configureAuthTestModule() {
+private fun ApplicationTestBuilder.configureAuthTestModule(): UserRepository {
     val database = createServerDatabase("jdbc:sqlite::memory:")
     val jwtService = testJwtService()
     val userRepository = UserRepositoryImpl(database)
@@ -268,11 +272,15 @@ private fun ApplicationTestBuilder.configureAuthTestModule() {
         database = database,
         refreshTokenExpiration = jwtService.refreshTokenExpiration
     )
-    val authService = AuthService(userRepository, refreshTokenRepository, jwtService)
+    val passwordResetTokenRepository = PasswordResetTokenRepositoryImpl(database)
+    val authService =
+        AuthService(userRepository, refreshTokenRepository, passwordResetTokenRepository, jwtService, null)
 
     application {
         authTestModule(authService, jwtService)
     }
+
+    return userRepository
 }
 
 private fun ApplicationTestBuilder.jsonClient() = createClient {

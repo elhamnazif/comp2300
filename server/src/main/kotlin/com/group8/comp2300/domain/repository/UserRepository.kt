@@ -20,4 +20,6 @@ interface UserRepository {
     )
     fun getPasswordHash(email: String): String?
     fun updatePasswordHash(userId: String, newHash: String)
+    fun activateUser(userId: String)
+    fun isActivated(userId: String): Boolean
 }

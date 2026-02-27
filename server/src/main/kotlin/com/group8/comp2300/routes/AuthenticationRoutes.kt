@@ -1,8 +1,12 @@
 package com.group8.comp2300.routes
 
+import com.group8.comp2300.dto.ActivateRequest
+import com.group8.comp2300.dto.ForgotPasswordRequest
 import com.group8.comp2300.dto.LoginRequest
+import com.group8.comp2300.dto.MessageResponse
 import com.group8.comp2300.dto.RefreshTokenRequest
 import com.group8.comp2300.dto.RegisterRequest
+import com.group8.comp2300.dto.ResetPasswordRequest
 import com.group8.comp2300.service.auth.AuthService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.auth.authenticate
@@ -71,6 +75,54 @@ fun Route.authRoutes(authService: AuthService) {
                     else ->
                         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Token refresh failed"))
                 }
+            }
+        )
+    }
+
+    get("/api/auth/activate") {
+        val token = call.request.queryParameters["token"]
+        if (token.isNullOrBlank()) {
+            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing activation token"))
+            return@get
+        }
+        val result = authService.activateAccount(token)
+        result.fold(
+            onSuccess = { call.respond(HttpStatusCode.OK, MessageResponse("Account activated successfully")) },
+            onFailure = { error ->
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Activation failed")))
+            }
+        )
+    }
+
+    post("/api/auth/activate") {
+        val request = call.receive<ActivateRequest>()
+        val result = authService.activateAccount(request.token)
+        result.fold(
+            onSuccess = { call.respond(HttpStatusCode.OK, MessageResponse("Account activated successfully")) },
+            onFailure = { error ->
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Activation failed")))
+            }
+        )
+    }
+
+    post("/api/auth/forgot-password") {
+        val request = call.receive<ForgotPasswordRequest>()
+        authService.forgotPassword(request.email)
+        call.respond(
+            HttpStatusCode.OK,
+            MessageResponse("If an account with that email exists, a password reset link has been sent")
+        )
+    }
+
+    post("/api/auth/reset-password") {
+        val request = call.receive<ResetPasswordRequest>()
+        val result = authService.resetPassword(request.token, request.newPassword)
+        result.fold(
+            onSuccess = {
+                call.respond(HttpStatusCode.OK, MessageResponse("Password has been reset successfully"))
+            },
+            onFailure = { error ->
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Password reset failed")))
             }
         )
     }

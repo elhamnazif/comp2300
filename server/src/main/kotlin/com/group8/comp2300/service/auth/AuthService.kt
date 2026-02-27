@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.group8.comp2300.core.PasswordValidationResult
 import com.group8.comp2300.core.Validation
 import com.group8.comp2300.domain.model.user.User
+import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
 import com.group8.comp2300.domain.repository.RefreshTokenRepository
 import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.dto.AuthResponse
@@ -12,6 +13,7 @@ import com.group8.comp2300.dto.RegisterRequest
 import com.group8.comp2300.dto.TokenResponse
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.PasswordHasher
+import com.group8.comp2300.service.email.EmailService
 import java.security.MessageDigest
 import java.util.UUID
 import kotlin.time.Clock
@@ -20,11 +22,13 @@ import kotlin.time.Duration.Companion.days
 class AuthService(
     private val userRepository: UserRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
-    private val jwtService: JwtService
+    private val passwordResetTokenRepository: PasswordResetTokenRepository,
+    private val jwtService: JwtService,
+    private val emailService: EmailService?
 ) {
     private val passwordHasher = PasswordHasher
 
-    fun register(request: RegisterRequest): Result<AuthResponse> {
+    suspend fun register(request: RegisterRequest): Result<AuthResponse> {
         val validationResult = validateRegisterRequest(request)
         if (validationResult is ValidationResult.Invalid) {
             return Result.failure(IllegalArgumentException(validationResult.message))
@@ -54,6 +58,9 @@ class AuthService(
             val user = userRepository.findById(userId)
                 ?: return Result.failure(IllegalStateException("Failed to retrieve newly created user"))
 
+            // Send activation email
+            sendActivationEmail(userId, request.email)
+
             val tokens = generateTokenPair(userId)
 
             Result.success(
@@ -80,6 +87,10 @@ class AuthService(
 
         if (!passwordHasher.verify(request.password, passwordHash)) {
             return Result.failure(IllegalArgumentException("Invalid email or password"))
+        }
+
+        if (!userRepository.isActivated(user.id)) {
+            return Result.failure(IllegalArgumentException("Please activate your account before logging in"))
         }
 
         val tokens = generateTokenPair(user.id)
@@ -146,6 +157,70 @@ class AuthService(
 
     fun getUserById(userId: String): User? = userRepository.findById(userId)
 
+    fun activateAccount(token: String): Result<Unit> {
+        val tokenHash = hashToken(token)
+        val userId = passwordResetTokenRepository.findValid(tokenHash)
+            ?: return Result.failure(IllegalArgumentException("Invalid or expired activation token"))
+
+        if (userRepository.isActivated(userId)) {
+            return Result.failure(IllegalArgumentException("Account is already activated"))
+        }
+
+        userRepository.activateUser(userId)
+        passwordResetTokenRepository.markUsed(tokenHash)
+        return Result.success(Unit)
+    }
+
+    suspend fun forgotPassword(email: String): Result<Unit> {
+        val user = userRepository.findByEmail(email)
+        if (user == null) {
+            // Return success even if user not found to prevent email enumeration
+            return Result.success(Unit)
+        }
+
+        val token = UUID.randomUUID().toString()
+        val tokenHash = hashToken(token)
+        passwordResetTokenRepository.insert(tokenHash, user.id)
+
+        try {
+            emailService?.sendPasswordResetEmail(email, token)
+        } catch (_: Exception) {
+            // Log but don't fail — token is stored, user can retry
+        }
+
+        return Result.success(Unit)
+    }
+
+    fun resetPassword(token: String, newPassword: String): Result<Unit> {
+        val passwordResult = Validation.validatePassword(newPassword)
+        when (passwordResult) {
+            PasswordValidationResult.TooShort ->
+                return Result.failure(IllegalArgumentException("Password must be at least 8 characters"))
+
+            PasswordValidationResult.MissingDigit ->
+                return Result.failure(IllegalArgumentException("Password must contain at least one number"))
+
+            PasswordValidationResult.MissingLetter ->
+                return Result.failure(IllegalArgumentException("Password must contain at least one letter"))
+
+            PasswordValidationResult.TooLong ->
+                return Result.failure(IllegalArgumentException("Password must be 72 bytes or fewer"))
+
+            PasswordValidationResult.Valid -> { /* continue */ }
+        }
+
+        val tokenHash = hashToken(token)
+        val userId = passwordResetTokenRepository.findValid(tokenHash)
+            ?: return Result.failure(IllegalArgumentException("Invalid or expired reset token"))
+
+        val newHash = passwordHasher.hash(newPassword)
+        userRepository.updatePasswordHash(userId, newHash)
+        passwordResetTokenRepository.markUsed(tokenHash)
+        refreshTokenRepository.revokeAllForUser(userId)
+
+        return Result.success(Unit)
+    }
+
     private fun generateTokenPair(userId: String): TokenPair {
         val accessToken = jwtService.generateAccessToken(userId)
         val refreshToken = jwtService.generateRefreshToken(userId)
@@ -161,6 +236,17 @@ class AuthService(
     private fun hashToken(token: String): String = MessageDigest.getInstance("SHA-256")
         .digest(token.toByteArray())
         .joinToString(separator = "") { byte -> "%02x".format(byte) }
+
+    private suspend fun sendActivationEmail(userId: String, email: String) {
+        val token = UUID.randomUUID().toString()
+        val tokenHash = hashToken(token)
+        passwordResetTokenRepository.insert(tokenHash, userId)
+        try {
+            emailService?.sendActivationEmail(email, token)
+        } catch (_: Exception) {
+            // Log but don't fail — token is stored, user can retry
+        }
+    }
 
     private fun cleanExpiredTokens() {
         val cutoff = Clock.System.now() - 90.days

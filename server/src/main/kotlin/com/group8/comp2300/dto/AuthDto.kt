@@ -28,3 +28,15 @@ data class TokenResponse(val accessToken: String, val refreshToken: String)
 
 @Serializable
 data class RefreshTokenRequest(val refreshToken: String)
+
+@Serializable
+data class ActivateRequest(val token: String)
+
+@Serializable
+data class ForgotPasswordRequest(val email: String)
+
+@Serializable
+data class ResetPasswordRequest(val token: String, val newPassword: String)
+
+@Serializable
+data class MessageResponse(val message: String)

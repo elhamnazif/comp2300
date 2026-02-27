@@ -47,8 +47,18 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
             sexualOrientation = sexualOrientation,
             profileImageUrl = null,
             createdAt = now,
-            preferredLanguage = preferredLanguage
+            preferredLanguage = preferredLanguage,
+            isActivated = 0
         )
+    }
+
+    override fun activateUser(userId: String) {
+        database.userQueries.activateUser(userId)
+    }
+
+    override fun isActivated(userId: String): Boolean {
+        val user = database.userQueries.selectUserById(userId).executeAsOneOrNull() ?: return false
+        return user.isActivated != 0L
     }
 
     override fun getPasswordHash(email: String): String? =

@@ -39,7 +39,17 @@ CREATE TABLE UserEntity (
     sexualOrientation TEXT,
     profileImageUrl TEXT,
     createdAt INTEGER NOT NULL,
-    preferredLanguage TEXT NOT NULL DEFAULT 'en'
+    preferredLanguage TEXT NOT NULL DEFAULT 'en',
+    isActivated INTEGER NOT NULL DEFAULT 0
+);
+
+-- Password Reset Token
+CREATE TABLE PasswordResetTokenEntity (
+    token TEXT NOT NULL PRIMARY KEY,
+    userId TEXT NOT NULL,
+    expiresAt INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL,
+    used INTEGER NOT NULL DEFAULT 0
 );
 
 selectUserByEmail:
@@ -49,11 +59,14 @@ selectUserById:
 SELECT * FROM UserEntity WHERE id = ?;
 
 insertUser:
-INSERT INTO UserEntity (id, email, passwordHash, firstName, lastName, phone, dateOfBirth, gender, sexualOrientation, profileImageUrl, createdAt, preferredLanguage)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO UserEntity (id, email, passwordHash, firstName, lastName, phone, dateOfBirth, gender, sexualOrientation, profileImageUrl, createdAt, preferredLanguage, isActivated)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updatePassword:
 UPDATE UserEntity SET passwordHash = ? WHERE id = ?;
+
+activateUser:
+UPDATE UserEntity SET isActivated = 1 WHERE id = ?;
 
 -- 3. Product
 CREATE TABLE ProductEntity (
