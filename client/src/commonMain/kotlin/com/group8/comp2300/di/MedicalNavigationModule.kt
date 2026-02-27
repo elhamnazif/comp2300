@@ -16,11 +16,16 @@ val medicalNavigationModule = module {
     navigation<Screen.Booking>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current
         val viewModel = koinViewModel<BookingViewModel>()
-        val uiState by viewModel.state.collectAsState()
+        val filteredClinics by viewModel.filteredClinics.collectAsState()
+        val selectedClinic by viewModel.selectedClinic.collectAsState()
+        val searchQuery by viewModel.searchQuery.collectAsState()
 
         BookingScreen(
-            clinics = uiState.clinics,
-            selectedClinic = uiState.selectedClinic,
+            allClinics = viewModel.allClinics,
+            filteredClinics = filteredClinics,
+            selectedClinic = selectedClinic,
+            searchQuery = searchQuery,
+            onSearchQueryChange = { viewModel.updateSearchQuery(it) },
             onClinicClick = { clinicId -> navigator.navigate(Screen.ClinicDetail(clinicId)) },
             onClinicSelect = viewModel::selectClinic,
         )
