@@ -1,6 +1,5 @@
 package com.group8.comp2300.di
 
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
@@ -18,7 +17,7 @@ val shopNavigationModule = module {
         val navigator = LocalNavigator.current
         ProductDetailScreen(
             productId = route.productId,
-            onBack = navigator::goBack
+            onBack = navigator::goBack,
         )
     }
 }

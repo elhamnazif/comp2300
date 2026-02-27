@@ -1,6 +1,5 @@
 package com.group8.comp2300.di
 
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -23,7 +22,7 @@ val medicalNavigationModule = module {
             clinics = uiState.clinics,
             selectedClinic = uiState.selectedClinic,
             onClinicClick = { clinicId -> navigator.navigate(Screen.ClinicDetail(clinicId)) },
-            onClinicSelect = viewModel::selectClinic
+            onClinicSelect = viewModel::selectClinic,
         )
     }
 
@@ -39,7 +38,7 @@ val medicalNavigationModule = module {
                 } else {
                     // TODO: Handle booking confirmation
                 }
-            }
+            },
         )
     }
 }

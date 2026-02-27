@@ -23,7 +23,7 @@ class EmailService(apiKey: String, private val fromEmail: String, private val ap
                     <p>Thank you for registering. Please activate your account by clicking the link below:</p>
                     <p><a href="$activationUrl">Activate Account</a></p>
                     <p>If you didn't create this account, you can safely ignore this email.</p>
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
                 .addTag(Tag.builder().name("email_type").value("activation").build())
                 .build()
@@ -45,7 +45,7 @@ class EmailService(apiKey: String, private val fromEmail: String, private val ap
                     <p>You requested a password reset. Click the link below to set a new password:</p>
                     <p><a href="$resetUrl">Reset Password</a></p>
                     <p>This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
                 .addTag(Tag.builder().name("email_type").value("password_reset").build())
                 .build()

@@ -11,7 +11,7 @@ actual class DatabaseDriverFactory {
         val databasePath = getDatabasePath()
         return NativeSqliteDriver(
             schema = AppDatabase.Schema,
-            name = databasePath
+            name = databasePath,
         )
     }
 
@@ -20,7 +20,7 @@ actual class DatabaseDriverFactory {
             NSSearchPathForDirectoriesInDomains(
                 NSDocumentDirectory,
                 NSUserDomainMask,
-                true
+                true,
             )
         val documentsDirectory = paths.first() as? String ?: return "comp2300.db"
         return "$documentsDirectory/comp2300.db"

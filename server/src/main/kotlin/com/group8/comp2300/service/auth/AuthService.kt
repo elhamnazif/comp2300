@@ -24,7 +24,7 @@ class AuthService(
     private val refreshTokenRepository: RefreshTokenRepository,
     private val passwordResetTokenRepository: PasswordResetTokenRepository,
     private val jwtService: JwtService,
-    private val emailService: EmailService?
+    private val emailService: EmailService?,
 ) {
     private val passwordHasher = PasswordHasher
 
@@ -52,7 +52,7 @@ class AuthService(
                 dateOfBirth = request.dateOfBirth,
                 gender = request.gender,
                 sexualOrientation = request.sexualOrientation,
-                preferredLanguage = "en"
+                preferredLanguage = "en",
             )
 
             val user = userRepository.findById(userId)
@@ -67,8 +67,8 @@ class AuthService(
                 AuthResponse(
                     user = user,
                     accessToken = tokens.accessToken,
-                    refreshToken = tokens.refreshToken
-                )
+                    refreshToken = tokens.refreshToken,
+                ),
             )
         } catch (e: Exception) {
             if (e.isDuplicateEmailViolation()) {
@@ -99,8 +99,8 @@ class AuthService(
             AuthResponse(
                 user = user,
                 accessToken = tokens.accessToken,
-                refreshToken = tokens.refreshToken
-            )
+                refreshToken = tokens.refreshToken,
+            ),
         )
     } catch (e: Exception) {
         Result.failure(e)
@@ -146,8 +146,8 @@ class AuthService(
         return Result.success(
             TokenResponse(
                 accessToken = newTokens.accessToken,
-                refreshToken = newTokens.refreshToken
-            )
+                refreshToken = newTokens.refreshToken,
+            ),
         )
     }
 

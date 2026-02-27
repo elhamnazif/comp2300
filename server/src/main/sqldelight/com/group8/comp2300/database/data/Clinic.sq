@@ -1,0 +1,23 @@
+CREATE TABLE ClinicEntity (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    address TEXT NOT NULL,
+    phone TEXT,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL
+);
+
+insertClinic:
+INSERT INTO ClinicEntity (id, name, address, phone, latitude, longitude)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectClinicById:
+SELECT * FROM ClinicEntity WHERE id = ?;
+
+updateClinicById:
+UPDATE ClinicEntity
+SET name = ?, address = ?, phone = ?, latitude = ?, longitude = ?
+WHERE id = ?;
+
+deleteClinicById:
+DELETE FROM ClinicEntity WHERE id = ?;

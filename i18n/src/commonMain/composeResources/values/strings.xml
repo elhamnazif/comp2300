@@ -44,6 +44,7 @@
     <string name="auth_error_invalid_email">Invalid email format</string>
     <string name="auth_error_password_too_short">Min 8 chars</string>
     <string name="auth_error_authentication_failed">Authentication failed</string>
+    <string name="auth_error_network">Cannot reach server. Please check your connection.</string>
     <string name="auth_error_terms_required">Please accept the Terms &amp; Conditions</string>
     <string name="auth_continue_as_guest">Continue as Guest</string>
 
@@ -60,6 +61,11 @@
     <string name="onboarding_get_started">Get Started</string>
     <string name="onboarding_create_pin_title">Create a Privacy PIN</string>
     <string name="onboarding_create_pin_desc">We'll ask for this whenever you open the app.</string>
+    <string name="onboarding_confirm_pin_title">Confirm your Privacy PIN</string>
+    <string name="onboarding_confirm_pin_desc">Please re-enter your PIN to confirm.</string>
+    <string name="onboarding_pin_mismatch">PINs do not match. Please try again.</string>
+    <string name="onboarding_back">Back</string>
+    <string name="onboarding_skip">Skip</string>
     <string name="onboarding_all_set">You're all set!</string>
     <string name="onboarding_recommended_plan">Recommended Plan</string>
     <string name="onboarding_screening_title">Screening Schedule</string>

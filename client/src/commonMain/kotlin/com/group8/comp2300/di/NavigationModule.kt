@@ -9,6 +9,6 @@ val navigationModule = module {
         shopNavigationModule,
         medicalNavigationModule,
         educationNavigationModule,
-        secondaryNavigationModule
+        secondaryNavigationModule,
     )
 }

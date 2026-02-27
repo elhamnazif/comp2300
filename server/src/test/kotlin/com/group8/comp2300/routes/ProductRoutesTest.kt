@@ -6,7 +6,6 @@ import com.group8.comp2300.domain.model.shop.ProductCategory
 import com.group8.comp2300.domain.repository.ProductRepository
 import com.group8.comp2300.infrastructure.database.createServerDatabase
 import io.ktor.client.call.*
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -15,12 +14,13 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 import io.ktor.server.testing.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class ProductRoutesTest {
 
@@ -37,7 +37,7 @@ class ProductRoutesTest {
             price = 19.99,
             category = ProductCategory.MEDICATION,
             insuranceCovered = true,
-            imageUrl = "http://example.com/vitaminc.jpg"
+            imageUrl = "http://example.com/vitaminc.jpg",
         )
         val product2 = Product(
             id = "prod_2",
@@ -46,7 +46,7 @@ class ProductRoutesTest {
             price = 9.99,
             category = ProductCategory.MEDICATION,
             insuranceCovered = false,
-            imageUrl = null
+            imageUrl = null,
         )
         productRepository.insert(product1)
         productRepository.insert(product2)
@@ -76,7 +76,7 @@ class ProductRoutesTest {
             price = 29.99,
             category = ProductCategory.TESTING,
             insuranceCovered = false,
-            imageUrl = null
+            imageUrl = null,
         )
         productRepository.insert(product)
 
@@ -116,7 +116,7 @@ class ProductRoutesTest {
                 modules(
                     module {
                         single<ProductRepository> { productRepository }
-                    }
+                    },
                 )
             }
             install(ContentNegotiation) {
@@ -125,7 +125,7 @@ class ProductRoutesTest {
                         prettyPrint = true
                         isLenient = true
                         ignoreUnknownKeys = true
-                    }
+                    },
                 )
             }
 
@@ -141,7 +141,7 @@ class ProductRoutesTest {
                 Json {
                     ignoreUnknownKeys = true
                     isLenient = true
-                }
+                },
             )
         }
     }

@@ -38,7 +38,7 @@ fun Route.authRoutes(authService: AuthService) {
 
                     else -> call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Registration failed"))
                 }
-            }
+            },
         )
     }
 
@@ -55,7 +55,7 @@ fun Route.authRoutes(authService: AuthService) {
                     else ->
                         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Login failed"))
                 }
-            }
+            },
         )
     }
 
@@ -69,13 +69,13 @@ fun Route.authRoutes(authService: AuthService) {
                     is IllegalArgumentException ->
                         call.respond(
                             HttpStatusCode.Unauthorized,
-                            mapOf("error" to (error.message ?: "Token refresh failed"))
+                            mapOf("error" to (error.message ?: "Token refresh failed")),
                         )
 
                     else ->
                         call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Token refresh failed"))
                 }
-            }
+            },
         )
     }
 
@@ -90,7 +90,7 @@ fun Route.authRoutes(authService: AuthService) {
             onSuccess = { call.respond(HttpStatusCode.OK, MessageResponse("Account activated successfully")) },
             onFailure = { error ->
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Activation failed")))
-            }
+            },
         )
     }
 
@@ -101,7 +101,7 @@ fun Route.authRoutes(authService: AuthService) {
             onSuccess = { call.respond(HttpStatusCode.OK, MessageResponse("Account activated successfully")) },
             onFailure = { error ->
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Activation failed")))
-            }
+            },
         )
     }
 
@@ -110,7 +110,7 @@ fun Route.authRoutes(authService: AuthService) {
         authService.forgotPassword(request.email)
         call.respond(
             HttpStatusCode.OK,
-            MessageResponse("If an account with that email exists, a password reset link has been sent")
+            MessageResponse("If an account with that email exists, a password reset link has been sent"),
         )
     }
 
@@ -123,7 +123,7 @@ fun Route.authRoutes(authService: AuthService) {
             },
             onFailure = { error ->
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Password reset failed")))
-            }
+            },
         )
     }
 

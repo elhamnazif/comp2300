@@ -5,5 +5,5 @@ enum class AppointmentType {
     FOLLOWUP,
     CHECKUP,
     EMERGENCY,
-    VIRTUAL_CONSULTATION
+    VIRTUAL_CONSULTATION,
 }

@@ -15,7 +15,7 @@ class PasswordResetTokenRepositoryImpl(private val database: ServerDatabase) : P
             token = tokenHash,
             userId = userId,
             expiresAt = expiresAt.toEpochMilliseconds(),
-            createdAt = now.toEpochMilliseconds()
+            createdAt = now.toEpochMilliseconds(),
         )
     }
 

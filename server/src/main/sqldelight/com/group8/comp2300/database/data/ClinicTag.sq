@@ -1,0 +1,17 @@
+CREATE TABLE ClinicTag (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    clinic_id TEXT NOT NULL REFERENCES ClinicEntity(id) ON DELETE CASCADE,
+    tag_name TEXT NOT NULL
+);
+
+addClinicTag:
+INSERT INTO ClinicTag (clinic_id, tag_name) VALUES (?, ?);
+
+selectAllTagsByClinicId:
+SELECT tag_name FROM ClinicTag WHERE clinic_id = ?;
+
+deleteClinicTag:
+DELETE FROM ClinicTag WHERE clinic_id = ? AND tag_name = ?;
+
+deleteAllTagsByClinicId:
+DELETE FROM ClinicTag WHERE clinic_id = ?;

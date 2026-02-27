@@ -8,11 +8,11 @@ import com.group8.comp2300.domain.model.reminder.Reminder
 import com.group8.comp2300.domain.model.reminder.ReminderFrequency
 import com.group8.comp2300.domain.model.reminder.ReminderType
 import com.group8.comp2300.domain.repository.ReminderRepository
-import kotlin.time.Clock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlin.time.Clock
 
 class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderRepository {
     override fun getReminders(): Flow<List<Reminder>> = database.appDatabaseQueries
@@ -35,7 +35,7 @@ class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderReposi
             frequency = reminder.frequency.name,
             isEnabled = if (reminder.isEnabled) 1L else 0L,
             createdAt = reminder.createdAt,
-            updatedAt = Clock.System.now().toEpochMilliseconds()
+            updatedAt = Clock.System.now().toEpochMilliseconds(),
         )
         Unit
     }
@@ -49,7 +49,7 @@ class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderReposi
             frequency = reminder.frequency.name,
             isEnabled = if (reminder.isEnabled) 1L else 0L,
             updatedAt = Clock.System.now().toEpochMilliseconds(),
-            id = reminder.id
+            id = reminder.id,
         )
         Unit
     }
@@ -70,7 +70,7 @@ private fun ReminderEntity.toDomain() = Reminder(
     frequency = parseReminderFrequency(frequency),
     isEnabled = isEnabled == 1L,
     relatedEntityId = null,
-    createdAt = createdAt
+    createdAt = createdAt,
 )
 
 private fun parseReminderType(type: String): ReminderType = when (type) {

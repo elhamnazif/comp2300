@@ -5,7 +5,7 @@ data class MockCalendarAppointment(
     val title: String,
     val type: String,
     val date: String,
-    val time: String
+    val time: String,
 )
 
 data class MockDoctor(val name: String)
@@ -13,7 +13,7 @@ data class MockDoctor(val name: String)
 val sampleCalendarAppointments =
     listOf(
         MockCalendarAppointment("1", "Dr. Smith", "Consultation", "Nov 12", "10:00 AM"),
-        MockCalendarAppointment("2", "Lab Corp", "Lab Work", "Nov 15", "08:30 AM")
+        MockCalendarAppointment("2", "Lab Corp", "Lab Work", "Nov 15", "08:30 AM"),
     )
 
 val sampleCalendarDoctors =

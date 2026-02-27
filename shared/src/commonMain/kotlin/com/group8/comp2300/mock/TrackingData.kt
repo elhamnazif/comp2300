@@ -1,36 +1,42 @@
 package com.group8.comp2300.mock
 
 import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.AppointmentType
 import com.group8.comp2300.domain.model.reminder.AdherenceStatus
 import com.group8.comp2300.domain.model.reminder.CalendarDay
-import kotlin.time.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 val sampleAppointments =
     listOf(
         Appointment(
             id = "1",
+            userId = "user1",
             title = "HIV/STI Screening",
-            date = LocalDate(2024, 10, 24),
-            time = LocalTime(10, 0),
-            type = AppointmentType.SCREENING,
-            clinicId = "1"
+            appointmentTime = 1729728000000, // 2024-10-24 00:00:00 UTC
+            appointmentType = "SCREENING",
+            clinicId = "1",
+            bookingId = "slot1",
+            status = "CONFIRMED",
+            notes = null,
+            hasReminder = true,
         ),
         Appointment(
             id = "2",
+            userId = "user1",
             title = "PrEP Follow-up",
-            date = LocalDate(2024, 11, 12),
-            time = LocalTime(14, 30),
-            type = AppointmentType.FOLLOW_UP,
-            doctorId = "d1"
-        )
+            appointmentTime = 1731360000000, // 2024-11-12 00:00:00 UTC
+            appointmentType = "FOLLOW_UP",
+            clinicId = null,
+            bookingId = "slot2",
+            status = "CONFIRMED",
+            notes = null,
+            hasReminder = true,
+        ),
     )
 
 // Helper: Date Generator

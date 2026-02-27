@@ -28,6 +28,7 @@ abstract class AuthViewModel : ViewModel() {
         val step: Int = 0,
         val isLoading: Boolean = false,
         val errorMessage: String? = null,
+        val errorMessageRes: StringResource? = null,
 
         // Step 1: Credentials
         val email: String = "",
@@ -45,7 +46,7 @@ abstract class AuthViewModel : ViewModel() {
         val sexualOrientation: String = "",
 
         // UI Control
-        val showDatePicker: Boolean = false
+        val showDatePicker: Boolean = false,
     ) {
         // Computed Properties for Validation
         val isStep1Valid: Boolean

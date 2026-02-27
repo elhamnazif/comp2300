@@ -13,7 +13,7 @@ data class Clinic(
     val lat: Double,
     val lng: Double,
     val address: String? = null,
-    val phone: String? = null
+    val phone: String? = null,
 ) {
     val formattedDistance: String
         get() =

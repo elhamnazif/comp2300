@@ -1,6 +1,5 @@
 package com.group8.comp2300.di
 
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,7 +33,7 @@ val educationNavigationModule = module {
                     navigator.navigate(Screen.VideoDetail(id))
                 }
             },
-            onCategorySelect = viewModel::selectCategory
+            onCategorySelect = viewModel::selectCategory,
         )
     }
 
@@ -53,7 +52,7 @@ val educationNavigationModule = module {
                 if (action.contains("Clinic")) {
                     navigator.clearAndGoTo(Screen.Booking)
                 }
-            }
+            },
         )
     }
 
@@ -66,7 +65,7 @@ val educationNavigationModule = module {
         QuizScreen(
             viewModel = viewModel,
             quizId = route.quizId,
-            onBack = navigator::goBack
+            onBack = navigator::goBack,
         )
     }
 }

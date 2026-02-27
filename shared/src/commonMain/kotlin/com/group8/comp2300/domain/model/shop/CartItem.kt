@@ -7,5 +7,5 @@ data class CartItem(
     val productId: String,
     val quantity: Int,
     /** Capture price at time of adding to cart */
-    val priceAtAdd: Double
+    val priceAtAdd: Double,
 )

@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package com.group8.comp2300.presentation.components
 
 import androidx.compose.foundation.layout.RowScope
@@ -17,7 +15,7 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outl
 
 enum class AppTopBarStyle {
     Surface,
-    TransparentOverlay
+    TransparentOverlay,
 }
 
 @Composable
@@ -30,7 +28,7 @@ fun AppTopBar(
     style: AppTopBarStyle = AppTopBarStyle.Surface,
     containerColor: Color? = null,
     contentColor: Color? = null,
-    actions: @Composable RowScope.() -> Unit = {}
+    actions: @Composable RowScope.() -> Unit = {},
 ) {
     val resolvedContainerColor =
         containerColor ?: when (style) {
@@ -43,7 +41,7 @@ fun AppTopBar(
             containerColor = resolvedContainerColor,
             titleContentColor = resolvedContentColor,
             navigationIconContentColor = resolvedContentColor,
-            actionIconContentColor = resolvedContentColor
+            actionIconContentColor = resolvedContentColor,
         )
 
     val navigationIcon: @Composable () -> Unit = {
@@ -51,7 +49,7 @@ fun AppTopBar(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.ArrowBackW400Outlinedfill1,
-                    contentDescription = backContentDescription
+                    contentDescription = backContentDescription,
                 )
             }
         }
@@ -63,7 +61,7 @@ fun AppTopBar(
             title = title,
             navigationIcon = navigationIcon,
             actions = actions,
-            colors = colors
+            colors = colors,
         )
     } else {
         TopAppBar(
@@ -71,7 +69,7 @@ fun AppTopBar(
             title = title,
             navigationIcon = navigationIcon,
             actions = actions,
-            colors = colors
+            colors = colors,
         )
     }
 }

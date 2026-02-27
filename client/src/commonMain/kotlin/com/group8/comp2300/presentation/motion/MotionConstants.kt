@@ -1,4 +1,4 @@
-@file:Suppress("PropertyName")
+@file:Suppress("PropertyName", "RedundantVisibilityModifier", "unused")
 
 package com.group8.comp2300.presentation.motion
 

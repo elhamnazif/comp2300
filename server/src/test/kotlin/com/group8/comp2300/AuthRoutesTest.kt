@@ -15,7 +15,6 @@ import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
 import com.group8.comp2300.service.auth.AuthService
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -35,12 +34,13 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class AuthRoutesTest {
     @Test
@@ -55,8 +55,8 @@ class AuthRoutesTest {
                     email = "new.user@example.com",
                     password = "Password1",
                     firstName = "New",
-                    lastName = "User"
-                )
+                    lastName = "User",
+                ),
             )
         }
 
@@ -79,8 +79,8 @@ class AuthRoutesTest {
                     email = "invalid-email",
                     password = "Password1",
                     firstName = "Invalid",
-                    lastName = "Email"
-                )
+                    lastName = "Email",
+                ),
             )
         }
 
@@ -100,8 +100,8 @@ class AuthRoutesTest {
                     email = "long.password@example.com",
                     password = "${"a".repeat(79)}1",
                     firstName = "Long",
-                    lastName = "Password"
-                )
+                    lastName = "Password",
+                ),
             )
         }
 
@@ -119,7 +119,7 @@ class AuthRoutesTest {
                 email = "dupe@example.com",
                 password = "Password1",
                 firstName = "Dupe",
-                lastName = "User"
+                lastName = "User",
             )
 
         val firstResponse = client.post("/api/auth/register") {
@@ -136,7 +136,7 @@ class AuthRoutesTest {
         assertEquals(HttpStatusCode.Conflict, secondResponse.status)
         assertEquals(
             "An account with this email already exists",
-            secondResponse.body<ErrorResponse>().error
+            secondResponse.body<ErrorResponse>().error,
         )
     }
 
@@ -155,8 +155,8 @@ class AuthRoutesTest {
                     email = email,
                     password = password,
                     firstName = "Login",
-                    lastName = "User"
-                )
+                    lastName = "User",
+                ),
             )
         }
         assertEquals(HttpStatusCode.Created, registerResponse.status)
@@ -189,8 +189,8 @@ class AuthRoutesTest {
                     email = email,
                     password = "Password1",
                     firstName = "Wrong",
-                    lastName = "Password"
-                )
+                    lastName = "Password",
+                ),
             )
         }
         assertEquals(HttpStatusCode.Created, registerResponse.status)
@@ -216,8 +216,8 @@ class AuthRoutesTest {
                     email = "refresh.user@example.com",
                     password = "Password1",
                     firstName = "Refresh",
-                    lastName = "User"
-                )
+                    lastName = "User",
+                ),
             )
         }
         assertEquals(HttpStatusCode.Created, registerResponse.status)
@@ -246,8 +246,8 @@ class AuthRoutesTest {
                     email = "profile.user@example.com",
                     password = "Password1",
                     firstName = "Profile",
-                    lastName = "User"
-                )
+                    lastName = "User",
+                ),
             )
         }
         assertEquals(HttpStatusCode.Created, registerResponse.status)
@@ -270,7 +270,7 @@ private fun ApplicationTestBuilder.configureAuthTestModule(): UserRepository {
     val userRepository = UserRepositoryImpl(database)
     val refreshTokenRepository = RefreshTokenRepositoryImpl(
         database = database,
-        refreshTokenExpiration = jwtService.refreshTokenExpiration
+        refreshTokenExpiration = jwtService.refreshTokenExpiration,
     )
     val passwordResetTokenRepository = PasswordResetTokenRepositoryImpl(database)
     val authService =
@@ -289,7 +289,7 @@ private fun ApplicationTestBuilder.jsonClient() = createClient {
             Json {
                 ignoreUnknownKeys = true
                 isLenient = true
-            }
+            },
         )
     }
 }
@@ -301,7 +301,7 @@ private fun Application.authTestModule(authService: AuthService, jwtService: Jwt
                 prettyPrint = true
                 isLenient = true
                 ignoreUnknownKeys = true
-            }
+            },
         )
     }
 
@@ -328,7 +328,7 @@ private fun Application.authTestModule(authService: AuthService, jwtService: Jwt
 private fun testJwtService(): JwtService = JwtServiceImpl(
     secret = "test-secret",
     issuer = "http://localhost/test",
-    audience = "http://localhost/test"
+    audience = "http://localhost/test",
 )
 
 @Serializable

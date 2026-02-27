@@ -41,8 +41,8 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
                     // Fallback in case of deserialization error
                     mutableStateListOf(startDestination)
                 }
-            }
-        )
+            },
+        ),
     ) {
         // Initial value if no state is saved
         mutableStateListOf(startDestination)

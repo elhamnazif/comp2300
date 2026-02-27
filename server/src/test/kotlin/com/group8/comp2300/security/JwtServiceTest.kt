@@ -11,7 +11,7 @@ class JwtServiceTest {
     private val jwtService: JwtService = JwtServiceImpl(
         secret = "test-secret-key-for-unit-testing",
         issuer = "test-issuer",
-        audience = "test-audience"
+        audience = "test-audience",
     )
 
     @Test
@@ -65,7 +65,7 @@ class JwtServiceTest {
         val wrongIssuerService = JwtServiceImpl(
             secret = "test-secret-key-for-unit-testing",
             issuer = "wrong-issuer",
-            audience = "test-audience"
+            audience = "test-audience",
         )
         val token = wrongIssuerService.generateAccessToken("user_123")
 
@@ -134,16 +134,5 @@ class JwtServiceTest {
         assertNotNull(decoded1.id)
         assertNotNull(decoded2.id)
         assertTrue(decoded1.id != decoded2.id)
-    }
-
-    private inline fun <reified T : Throwable> assertFailsWith(block: () -> Unit) {
-        try {
-            block()
-            throw AssertionError("Expected ${T::class.simpleName} but no exception was thrown")
-        } catch (e: Throwable) {
-            if (e !is T) {
-                throw AssertionError("Expected ${T::class.simpleName} but got ${e::class.simpleName}")
-            }
-        }
     }
 }

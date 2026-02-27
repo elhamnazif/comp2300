@@ -7,5 +7,5 @@ enum class ProductCategory(val displayName: String) {
     ALL("All"),
     TESTING("Testing"),
     MEDICATION("Medication"),
-    PREVENTION("Prevention")
+    PREVENTION("Prevention"),
 }

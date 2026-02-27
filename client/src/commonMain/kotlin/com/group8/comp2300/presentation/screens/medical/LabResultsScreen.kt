@@ -1,5 +1,3 @@
-@file:Suppress("FunctionName")
-
 package com.group8.comp2300.presentation.screens.medical
 
 import androidx.compose.foundation.layout.*
@@ -22,10 +20,6 @@ import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.atStartOfDayIn
 import org.jetbrains.compose.resources.stringResource
-
-// Helper to create timestamp from date components
-private fun dateToTimestamp(year: Int, month: Int, day: Int): Long =
-    kotlinx.datetime.LocalDate(year, month, day).atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds()
 
 @Composable
 fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: Modifier = Modifier) {
@@ -65,24 +59,24 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: M
             AppTopBar(
                 title = { Text(stringResource(Res.string.medical_lab_results_title)) },
                 onBackClick = onBack,
-                backContentDescription = stringResource(Res.string.medical_lab_results_back_desc)
+                backContentDescription = stringResource(Res.string.medical_lab_results_back_desc),
             )
-        }
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding).padding(16.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Header
             Text(
                 text = stringResource(Res.string.medical_lab_results_history_header),
                 style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
             Text(
                 text = stringResource(Res.string.medical_lab_results_history_desc),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             // Filter chips
@@ -91,7 +85,7 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: M
                     FilterChip(
                         selected = selectedFilter == filter,
                         onClick = { selectedFilter = filter },
-                        label = { Text(filter) }
+                        label = { Text(filter) },
                     )
                 }
             }
@@ -99,19 +93,19 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: M
             // Results count
             Text(
                 text =
-                    if (filteredResults.size == 1) {
-                        stringResource(Res.string.medical_lab_results_count_single, filteredResults.size)
-                    } else {
-                        stringResource(Res.string.medical_lab_results_count_multiple, filteredResults.size)
-                    },
+                if (filteredResults.size == 1) {
+                    stringResource(Res.string.medical_lab_results_count_single, filteredResults.size)
+                } else {
+                    stringResource(Res.string.medical_lab_results_count_multiple, filteredResults.size)
+                },
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.secondary,
             )
 
             // Results list
             filteredResults.forEach { result ->
                 LabResultCard(
-                    result
+                    result,
                 )
             }
 
@@ -119,7 +113,7 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: M
             Button(
                 onClick = onScheduleTest,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             ) {
                 Text(stringResource(Res.string.medical_lab_results_schedule_next))
             }
@@ -127,18 +121,18 @@ fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: M
             // Educational info
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
                         text = stringResource(Res.string.medical_lab_results_recommendations_title),
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = stringResource(Res.string.medical_lab_results_recommendations_content),
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
             }
@@ -155,24 +149,24 @@ private fun LabResultCard(result: LabResult) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = { expanded = !expanded },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = result.testName,
                         style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
                     )
                     Text(
                         text = DateFormatter.formatMonthDayYear(result.testDate),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
                 StatusBadge(result)
@@ -185,11 +179,11 @@ private fun LabResultCard(result: LabResult) {
 
                 DetailRow(
                     stringResource(Res.string.medical_lab_results_detail_type),
-                    result.testName
+                    result.testName,
                 )
                 DetailRow(
                     stringResource(Res.string.medical_lab_results_detail_date),
-                    DateFormatter.formatMonthDayYear(result.testDate)
+                    DateFormatter.formatMonthDayYear(result.testDate),
                 )
                 val statusRes =
                     when (result.status) {
@@ -200,22 +194,22 @@ private fun LabResultCard(result: LabResult) {
                     }
                 DetailRow(
                     stringResource(Res.string.medical_lab_results_detail_status),
-                    stringResource(statusRes)
+                    stringResource(statusRes),
                 )
                 DetailRow(
                     stringResource(Res.string.medical_lab_results_detail_location),
-                    stringResource(Res.string.medical_lab_results_location_default)
+                    stringResource(Res.string.medical_lab_results_location_default),
                 )
                 DetailRow(
                     stringResource(Res.string.medical_lab_results_detail_next),
-                    stringResource(Res.string.medical_lab_results_next_test_date)
+                    stringResource(Res.string.medical_lab_results_next_test_date),
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = stringResource(Res.string.medical_lab_results_review_notice),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -240,7 +234,7 @@ private fun StatusBadge(result: LabResult) {
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
             style = MaterialTheme.typography.labelMedium,
             color = textColor,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
     }
 }
@@ -251,7 +245,7 @@ private fun DetailRow(label: String, value: String) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Text(text = value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
     }

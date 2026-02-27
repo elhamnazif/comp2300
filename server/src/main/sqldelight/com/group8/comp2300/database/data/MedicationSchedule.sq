@@ -1,0 +1,21 @@
+CREATE TABLE MedicationScheduleEnt (
+    id TEXT PRIMARY KEY,
+    medication_id TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE,
+    day_of_week INTEGER CHECK (day_of_week BETWEEN 0 AND 6),
+    time_of_day INTEGER NOT NULL -- HH:MM ?
+);
+
+insertMedSchedule:
+INSERT INTO MedicationScheduleEnt (id, medication_id, day_of_week, time_of_day)
+VALUES (?, ?, ?, ?);
+
+selectAllSchedulesByMedId:
+SELECT * FROM MedicationScheduleEnt WHERE medication_id = ?;
+
+updateMedScheduleById:
+UPDATE MedicationScheduleEnt
+SET day_of_week = ?, time_of_day = ? WHERE id = ?;
+
+deleteMedScheduleById:
+DELETE FROM MedicationScheduleEnt WHERE id = ?;
+

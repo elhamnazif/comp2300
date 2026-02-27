@@ -7,5 +7,5 @@ enum class ReminderFrequency {
     ONCE,
     DAILY,
     WEEKLY,
-    MONTHLY
+    MONTHLY,
 }

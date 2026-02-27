@@ -8,7 +8,7 @@ class SessionDataSource(private val database: AppDatabase) {
             userId = userId,
             accessToken = accessToken,
             refreshToken = refreshToken,
-            expiresAt = expiresAt
+            expiresAt = expiresAt,
         )
     }
 
@@ -18,7 +18,7 @@ class SessionDataSource(private val database: AppDatabase) {
                 userId = sessionEntity.userId,
                 accessToken = sessionEntity.accessToken,
                 refreshToken = sessionEntity.refreshToken,
-                expiresAt = sessionEntity.expiresAt
+                expiresAt = sessionEntity.expiresAt,
             )
         }
 

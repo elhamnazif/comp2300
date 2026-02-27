@@ -7,5 +7,5 @@ enum class ReminderType(val displayName: String) {
     MEDICATION("Medication"),
     APPOINTMENT("Appointment"),
     SCREENING("Screening"),
-    CUSTOM("Custom")
+    CUSTOM("Custom"),
 }

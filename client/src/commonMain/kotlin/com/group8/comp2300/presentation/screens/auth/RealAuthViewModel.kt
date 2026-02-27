@@ -9,7 +9,6 @@ import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.usecase.auth.LoginUseCase
 import com.group8.comp2300.domain.usecase.auth.RegisterUseCase
 import comp2300.i18n.generated.resources.*
-import kotlin.time.Instant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,11 +17,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Instant
 
 class RealAuthViewModel(
     private val loginUseCase: LoginUseCase,
     private val registerUseCase: RegisterUseCase,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
 ) : AuthViewModel() {
 
     final override val state: StateFlow<State>
@@ -39,11 +39,11 @@ class RealAuthViewModel(
                     it.copy(
                         email = event.email,
                         emailError =
-                            if (isValid || event.email.isEmpty()) {
-                                null
-                            } else {
-                                Res.string.auth_error_invalid_email
-                            }
+                        if (isValid || event.email.isEmpty()) {
+                            null
+                        } else {
+                            Res.string.auth_error_invalid_email
+                        },
                     )
                 }
             }
@@ -54,7 +54,7 @@ class RealAuthViewModel(
                     it.copy(
                         password = event.password,
                         passwordError =
-                            if (isValid || event.password.isEmpty()) null else Res.string.auth_error_password_too_short
+                        if (isValid || event.password.isEmpty()) null else Res.string.auth_error_password_too_short,
                     )
                 }
             }
@@ -95,12 +95,12 @@ class RealAuthViewModel(
 
             is AuthUiEvent.Submit -> submitData(event.onSuccess)
 
-            is AuthUiEvent.ClearError -> state.update { it.copy(errorMessage = null) }
+            is AuthUiEvent.ClearError -> state.update { it.copy(errorMessage = null, errorMessageRes = null) }
         }
     }
 
     private fun submitData(onSuccess: () -> Unit) {
-        state.update { it.copy(isLoading = true, errorMessage = null) }
+        state.update { it.copy(isLoading = true, errorMessage = null, errorMessageRes = null) }
 
         if (state.value.isRegistering) {
             performRegister(state.value, onSuccess)
@@ -143,11 +143,11 @@ class RealAuthViewModel(
                     gender = gender,
                     sexualOrientation = orientation,
                     dateOfBirth =
-                        state.dateOfBirth?.let {
-                            Instant.fromEpochMilliseconds(it)
-                                .toLocalDateTime(TimeZone.currentSystemDefault())
-                                .date
-                        }
+                    state.dateOfBirth?.let {
+                        Instant.fromEpochMilliseconds(it)
+                            .toLocalDateTime(TimeZone.currentSystemDefault())
+                            .date
+                    },
                 )
             handleResult(result, onSuccess)
         }
@@ -158,12 +158,30 @@ class RealAuthViewModel(
             state.update { it.copy(isLoading = false) }
             onSuccess()
         } else {
-            val errorMessage = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() }
-                ?: "Authentication failed"
+            val exception = result.exceptionOrNull()
+            val exceptionName = exception?.let { it::class.simpleName } ?: ""
+            val exceptionMessage = exception?.message ?: ""
+
+            val isNetworkError = exceptionName.contains("Connect") ||
+                exceptionName.contains("Socket") ||
+                exceptionName.contains("Timeout") ||
+                exceptionName.contains("UnknownHost") ||
+                exceptionName.contains("EOF") ||
+                exceptionMessage.contains("Failed to connect", ignoreCase = true) ||
+                exceptionMessage.contains("Connection refused", ignoreCase = true) ||
+                exceptionMessage.contains("unexpected end of stream", ignoreCase = true)
+
+            val (errorText, errorRes) = when {
+                isNetworkError -> null to Res.string.auth_error_network
+                exceptionMessage.isNotBlank() && !exceptionMessage.contains("Exception") -> exceptionMessage to null
+                else -> null to Res.string.auth_error_authentication_failed
+            }
+
             state.update {
                 it.copy(
                     isLoading = false,
-                    errorMessage = errorMessage
+                    errorMessage = errorText,
+                    errorMessageRes = errorRes,
                 )
             }
         }

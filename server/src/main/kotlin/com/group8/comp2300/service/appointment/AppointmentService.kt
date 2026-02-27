@@ -1,22 +1,19 @@
 package com.group8.comp2300.service.appointment
 
-import com.group8.comp2300.database.Appointment
-import com.group8.comp2300.database.AppointmentSlots
 import com.group8.comp2300.domain.model.appointment.BookingResult
 import com.group8.comp2300.domain.model.appointment.CancellationResult
+import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.payment.PaymentMethod
 import com.group8.comp2300.domain.model.payment.PaymentStatus
 import com.group8.comp2300.domain.repository.AppointmentRepository
-import com.group8.comp2300.domain.repository.SlotRepository
+import com.group8.comp2300.domain.repository.AppointmentSlotRepository
 import com.group8.comp2300.service.payment.PaymentService
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 class AppointmentService(
     private val appointmentRepository: AppointmentRepository,
-    private val slotRepository: SlotRepository,
-    private val paymentService: PaymentService
+    private val appointmentSlotRepository: AppointmentSlotRepository,
+    private val paymentService: PaymentService,
 ) {
 
     // Updated bookAppointment method with payment
@@ -25,24 +22,24 @@ class AppointmentService(
         slotId: String,
         appointmentType: String,
         title: String,
-        paymentMethod: PaymentMethod
+        paymentMethod: PaymentMethod,
     ): Result<BookingResult> {
         // 1. Validate payment method for this appointment type
         if (!paymentService.validatePaymentMethod(appointmentType, paymentMethod)) {
             return Result.failure(
                 Exception(
                     "Payment method $paymentMethod is not allowed for $appointmentType appointments. " +
-                        "Allowed methods: ${paymentService.getPaymentMethodsForAppointmentType(appointmentType)}"
-                )
+                        "Allowed methods: ${paymentService.getPaymentMethodsForAppointmentType(appointmentType)}",
+                ),
             )
         }
 
         // 2. Check if slot exists
-        val slot = slotRepository.getSlotById(slotId)
+        val slot = appointmentSlotRepository.getSlotById(slotId)
             ?: return Result.failure(Exception("Slot not found"))
 
         // 3. Check if already booked
-        if (slot.is_booked == 1L) {
+        if (slot.isBooked) {
             return Result.failure(Exception("Slot already booked"))
         }
 
@@ -58,7 +55,7 @@ class AppointmentService(
         if (paymentMethod == PaymentMethod.ONLINE && requiresPrePayment) {
             val paymentResult = paymentService.processOnlinePayment(
                 appointmentId = UUID.randomUUID().toString(), // Temporary ID
-                amount = paymentAmount
+                amount = paymentAmount,
             )
 
             if (!paymentResult.success) {
@@ -73,12 +70,12 @@ class AppointmentService(
         // 6. Create the appointment object with payment details
         val appointment = Appointment(
             id = UUID.randomUUID().toString(),
-            user_id = userId,
+            userId = userId,
             title = title,
-            appointment_time = slot.start_time,
-            appointment_type = appointmentType,
-            clinic_id = slot.clinic_id,
-            booking_id = slot.id,
+            appointmentTime = slot.startTime,
+            appointmentType = appointmentType,
+            clinicId = slot.clinicId,
+            bookingId = slot.id,
             status = if (paymentMethod == PaymentMethod.ONLINE &&
                 requiresPrePayment
             ) {
@@ -87,11 +84,11 @@ class AppointmentService(
                 "PENDING_PAYMENT"
             },
             notes = null,
-            reminders_enabled = 0L,
-            payment_method = paymentMethod.name,
-            payment_status = paymentStatus.name,
-            payment_amount = paymentAmount,
-            transaction_id = transactionId
+            hasReminder = false,
+            paymentMethod = paymentMethod.name,
+            paymentStatus = paymentStatus.name,
+            paymentAmount = paymentAmount,
+            transactionId = transactionId,
         )
 
         // 7. Save to DB
@@ -99,7 +96,7 @@ class AppointmentService(
 
         // 8. Update slot status (only if payment successful or physical payment)
         if (paymentMethod != PaymentMethod.ONLINE || paymentStatus == PaymentStatus.COMPLETED) {
-            slotRepository.updateSlotBookingStatus(slot.id, 1L)
+            appointmentSlotRepository.updateSlotBookingStatus(slot.id, true)
         }
 
         // 9. Prepare booking result
@@ -111,7 +108,7 @@ class AppointmentService(
             amount = paymentAmount,
             transactionId = transactionId,
             message = buildBookingMessage(paymentMethod, paymentStatus, paymentAmount),
-            paymentInstructions = paymentService.getPaymentInstructions(paymentMethod, appointmentType)
+            paymentInstructions = paymentService.getPaymentInstructions(paymentMethod, appointmentType),
         )
 
         return Result.success(bookingResult)
@@ -123,73 +120,70 @@ class AppointmentService(
             val appointment = appointmentRepository.getAppointmentById(appointmentId)
                 ?: return CancellationResult(
                     success = false,
-                    message = "Appointment not found"
+                    message = "Appointment not found",
                 )
 
-            if (appointment.user_id != userId) {
+            if (appointment.userId != userId) {
                 return CancellationResult(
                     success = false,
-                    message = "You don't have permission to cancel this appointment"
+                    message = "You don't have permission to cancel this appointment",
                 )
             }
 
             if (appointment.status == "CANCELLED") {
                 return CancellationResult(
                     success = false,
-                    message = "Appointment is already cancelled"
+                    message = "Appointment is already cancelled",
                 )
             }
 
-            val slot = appointment.booking_id?.let { slotRepository.getSlotById(it) }
+            val slot = appointment.bookingId?.let { appointmentSlotRepository.getSlotById(it) }
             val refundInfo = calculateRefund(appointment)
 
             appointmentRepository.updateAppointmentStatus(appointmentId, "CANCELLED")
 
             if (slot != null) {
-                slotRepository.updateSlotBookingStatus(slot.id, 0L)
+                appointmentSlotRepository.updateSlotBookingStatus(slot.id, isBooked = false)
             }
 
             return CancellationResult(
                 success = true,
                 message = buildCancellationMessage(refundInfo),
                 refundAmount = refundInfo.amount,
-                refundStatus = refundInfo.status
+                refundStatus = refundInfo.status,
             )
         } catch (e: Exception) {
             return CancellationResult(
                 success = false,
-                message = "Cancellation failed: ${e.message}"
+                message = "Cancellation failed: ${e.message}",
             )
         }
     }
 
     private fun calculateRefund(appointment: Appointment): RefundInfo {
-        val appointmentTime = LocalDateTime.parse(
-            appointment.appointment_time,
-            DateTimeFormatter.ISO_DATE_TIME
-        )
-        val now = LocalDateTime.now()
-        val hoursUntilAppointment = java.time.Duration.between(now, appointmentTime).toHours()
+        val now = System.currentTimeMillis()
+        val diffMs = appointment.appointmentTime - now
+        val hoursUntilAppointment = diffMs / (1000 * 60 * 60)
 
         return when {
             hoursUntilAppointment >= 24 -> RefundInfo(
-                amount = appointment.payment_amount ?: 0.0,
-                status = "FULL_REFUND"
+                amount = appointment.paymentAmount ?: 0.0,
+                status = "FULL_REFUND",
             )
 
             hoursUntilAppointment in 2..23 -> RefundInfo(
-                amount = (appointment.payment_amount ?: 0.0) * 0.5,
-                status = "PARTIAL_REFUND"
+                amount = (appointment.paymentAmount ?: 0.0) * 0.5,
+                status = "PARTIAL_REFUND",
             )
 
-            hoursUntilAppointment >= 0 && hoursUntilAppointment < 2 -> RefundInfo(
+            hoursUntilAppointment in 0..1 -> RefundInfo(
                 amount = 0.0,
-                status = "NO_REFUND"
+                status = "NO_REFUND",
             )
 
             else -> RefundInfo(
                 amount = 0.0,
-                status = "LATE_CANCELLATION"
+                status = "LATE_CANCELLATION",
             )
         }
     }
@@ -197,7 +191,7 @@ class AppointmentService(
     private fun buildBookingMessage(
         paymentMethod: PaymentMethod,
         paymentStatus: PaymentStatus,
-        amount: Double
+        amount: Double,
     ): String = when (paymentMethod) {
         PaymentMethod.ONLINE -> when (paymentStatus) {
             PaymentStatus.COMPLETED -> "Booking confirmed! Payment of $$amount processed successfully."
@@ -240,16 +234,16 @@ class AppointmentService(
     fun updateAppointmentPaymentMethod(
         appointmentId: String,
         userId: String,
-        newPaymentMethod: PaymentMethod
+        newPaymentMethod: PaymentMethod,
     ): Result<String> {
         val appointment = appointmentRepository.getAppointmentById(appointmentId)
             ?: return Result.failure(Exception("Appointment not found"))
 
-        if (appointment.user_id != userId) {
+        if (appointment.userId != userId) {
             return Result.failure(Exception("Unauthorized to modify this appointment"))
         }
 
-        if (!paymentService.validatePaymentMethod(appointment.appointment_type ?: "", newPaymentMethod)) {
+        if (!paymentService.validatePaymentMethod(appointment.appointmentType ?: "", newPaymentMethod)) {
             return Result.failure(Exception("Invalid payment method for this appointment type"))
         }
 
@@ -257,7 +251,7 @@ class AppointmentService(
             id = appointmentId,
             paymentMethod = newPaymentMethod.name,
             paymentStatus = PaymentStatus.PENDING.name,
-            transactionId = null
+            transactionId = null,
         )
 
         return Result.success("Payment method updated to $newPaymentMethod")

@@ -16,7 +16,7 @@ interface UserRepository {
         dateOfBirth: Long?,
         gender: String?,
         sexualOrientation: String?,
-        preferredLanguage: String
+        preferredLanguage: String,
     )
     fun getPasswordHash(email: String): String?
     fun updatePasswordHash(userId: String, newHash: String)

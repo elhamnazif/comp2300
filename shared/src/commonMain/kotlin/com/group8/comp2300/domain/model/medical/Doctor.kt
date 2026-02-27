@@ -10,5 +10,5 @@ data class Doctor(
     val isOnline: Boolean,
     val nextAvailableSlot: Long, // Unix timestamp
     val imageUrl: String? = null,
-    val specializations: List<String> = emptyList()
+    val specializations: List<String> = emptyList(),
 )

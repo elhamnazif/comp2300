@@ -7,5 +7,5 @@ enum class AdherenceStatus {
     NONE,
     TAKEN,
     MISSED,
-    APPOINTMENT
+    APPOINTMENT,
 }

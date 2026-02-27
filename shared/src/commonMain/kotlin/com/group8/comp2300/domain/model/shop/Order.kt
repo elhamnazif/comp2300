@@ -14,7 +14,7 @@ data class Order(
     val createdAt: Long,
     val updatedAt: Long = createdAt,
     val shippingAddress: String? = null,
-    val trackingNumber: String? = null
+    val trackingNumber: String? = null,
 ) {
     val total: Double
         get() = subtotal + tax + shipping
