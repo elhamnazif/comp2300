@@ -7,6 +7,7 @@ import com.group8.comp2300.presentation.screens.auth.AuthViewModel
 import com.group8.comp2300.presentation.screens.auth.RealAuthViewModel
 import com.group8.comp2300.presentation.screens.education.EducationViewModel
 import com.group8.comp2300.presentation.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.screens.medical.calendar.CalendarViewModel
 import com.group8.comp2300.presentation.screens.profile.ProfileViewModel
 import com.group8.comp2300.presentation.screens.shop.ShopViewModel
 import org.koin.core.module.dsl.bind
@@ -24,4 +25,5 @@ val appModule = module {
     viewModelOf(::BookingViewModel)
     viewModelOf(::EducationViewModel)
     viewModelOf(::ProfileViewModel)
+    viewModelOf(::CalendarViewModel)
 }

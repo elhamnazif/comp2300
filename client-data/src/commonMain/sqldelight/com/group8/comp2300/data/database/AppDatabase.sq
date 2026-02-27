@@ -44,3 +44,125 @@ WHERE id = ?;
 
 delete:
 DELETE FROM ReminderEntity WHERE id = ?;
+
+-- ==========================================
+-- Appointment cache
+-- ==========================================
+CREATE TABLE AppointmentEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    userId TEXT NOT NULL,
+    title TEXT NOT NULL,
+    appointmentTime INTEGER NOT NULL,
+    appointmentType TEXT NOT NULL,
+    clinicId TEXT,
+    bookingId TEXT,
+    status TEXT NOT NULL,
+    notes TEXT,
+    hasReminder INTEGER NOT NULL DEFAULT 0,
+    paymentStatus TEXT NOT NULL DEFAULT 'PENDING'
+);
+
+selectAllAppointments:
+SELECT * FROM AppointmentEntity ORDER BY appointmentTime ASC;
+
+insertAppointment:
+INSERT OR REPLACE INTO AppointmentEntity (id, userId, title, appointmentTime, appointmentType, clinicId, bookingId, status, notes, hasReminder, paymentStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteAllAppointments:
+DELETE FROM AppointmentEntity;
+
+deleteAppointment:
+DELETE FROM AppointmentEntity WHERE id = ?;
+
+-- ==========================================
+-- Mood cache
+-- ==========================================
+CREATE TABLE MoodEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    userId TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    moodType TEXT NOT NULL,
+    feeling TEXT,
+    journal TEXT
+);
+
+selectAllMoods:
+SELECT * FROM MoodEntity ORDER BY timestamp DESC;
+
+insertMood:
+INSERT OR REPLACE INTO MoodEntity (id, userId, timestamp, moodType, feeling, journal)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deleteAllMoods:
+DELETE FROM MoodEntity;
+
+-- ==========================================
+-- Medication log cache
+-- ==========================================
+CREATE TABLE MedicationLogEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    medicationId TEXT NOT NULL,
+    medicationTime INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    medicationName TEXT
+);
+
+selectAllMedicationLogs:
+SELECT * FROM MedicationLogEntity ORDER BY medicationTime DESC;
+
+selectMedicationLogsByDate:
+SELECT * FROM MedicationLogEntity
+WHERE medicationTime >= ? AND medicationTime < ?
+ORDER BY medicationTime ASC;
+
+insertMedicationLog:
+INSERT OR REPLACE INTO MedicationLogEntity (id, medicationId, medicationTime, status, medicationName)
+VALUES (?, ?, ?, ?, ?);
+
+deleteAllMedicationLogs:
+DELETE FROM MedicationLogEntity;
+
+-- ==========================================
+-- Calendar overview cache
+-- ==========================================
+CREATE TABLE CalendarOverviewEntity (
+    date TEXT NOT NULL,
+    status TEXT NOT NULL,
+    yearMonth TEXT NOT NULL,
+    PRIMARY KEY (date, yearMonth)
+);
+
+selectCalendarOverviewByYearMonth:
+SELECT * FROM CalendarOverviewEntity WHERE yearMonth = ? ORDER BY date ASC;
+
+insertCalendarOverview:
+INSERT OR REPLACE INTO CalendarOverviewEntity (date, status, yearMonth)
+VALUES (?, ?, ?);
+
+deleteCalendarOverviewByYearMonth:
+DELETE FROM CalendarOverviewEntity WHERE yearMonth = ?;
+
+-- ==========================================
+-- Sync queue for offline writes
+-- ==========================================
+CREATE TABLE SyncQueueEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    entityType TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    retryCount INTEGER NOT NULL DEFAULT 0
+);
+
+selectAllSyncQueue:
+SELECT * FROM SyncQueueEntity ORDER BY createdAt ASC;
+
+insertSyncQueue:
+INSERT INTO SyncQueueEntity (id, entityType, payload, createdAt, retryCount)
+VALUES (?, ?, ?, ?, 0);
+
+deleteSyncQueue:
+DELETE FROM SyncQueueEntity WHERE id = ?;
+
+incrementSyncRetry:
+UPDATE SyncQueueEntity SET retryCount = retryCount + 1 WHERE id = ?;

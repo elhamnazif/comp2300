@@ -35,6 +35,28 @@ interface ApiService {
     suspend fun logout()
 
     suspend fun getProfile(): User
+
+    // Medical API methods
+    suspend fun getCalendarOverview(
+        year: Int,
+        month: Int,
+    ): List<com.group8.comp2300.domain.model.medical.CalendarOverviewResponse>
+
+    suspend fun getAppointments(): List<com.group8.comp2300.domain.model.medical.Appointment>
+
+    suspend fun scheduleAppointment(
+        request: com.group8.comp2300.domain.model.medical.AppointmentRequest,
+    ): com.group8.comp2300.domain.model.medical.Appointment
+
+    suspend fun logMedication(
+        request: com.group8.comp2300.domain.model.medical.MedicationLogRequest,
+    ): com.group8.comp2300.domain.model.medical.MedicationLog
+
+    suspend fun getMedicationAgenda(date: String): List<com.group8.comp2300.domain.model.medical.MedicationLog>
+
+    suspend fun logMood(
+        request: com.group8.comp2300.domain.model.medical.MoodEntryRequest,
+    ): com.group8.comp2300.domain.model.medical.Mood
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -58,6 +80,35 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     }
 
     override suspend fun getProfile(): User = client.get("/api/auth/profile").body()
+
+    // --- Medical API ---
+    override suspend fun getCalendarOverview(
+        year: Int,
+        month: Int,
+    ): List<com.group8.comp2300.domain.model.medical.CalendarOverviewResponse> =
+        client.get("/api/calendar/overview?year=$year&month=$month").body()
+
+    override suspend fun getAppointments(): List<com.group8.comp2300.domain.model.medical.Appointment> =
+        client.get("/api/appointments").body()
+
+    override suspend fun scheduleAppointment(
+        request: com.group8.comp2300.domain.model.medical.AppointmentRequest,
+    ): com.group8.comp2300.domain.model.medical.Appointment =
+        client.post("/api/appointments") { setBody(request) }.body()
+
+    override suspend fun logMedication(
+        request: com.group8.comp2300.domain.model.medical.MedicationLogRequest,
+    ): com.group8.comp2300.domain.model.medical.MedicationLog =
+        client.post("/api/medications/logs") { setBody(request) }.body()
+
+    override suspend fun getMedicationAgenda(
+        date: String,
+    ): List<com.group8.comp2300.domain.model.medical.MedicationLog> =
+        client.get("/api/medications/agenda?date=$date").body()
+
+    override suspend fun logMood(
+        request: com.group8.comp2300.domain.model.medical.MoodEntryRequest,
+    ): com.group8.comp2300.domain.model.medical.Mood = client.post("/api/moods") { setBody(request) }.body()
 
     /**
      * Catches JsonConvertException when server returns an error response like {"error": "..."}

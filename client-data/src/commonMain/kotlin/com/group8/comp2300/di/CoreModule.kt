@@ -4,7 +4,12 @@ import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.auth.TokenManagerImpl
 import com.group8.comp2300.data.database.DatabaseDriverFactory
 import com.group8.comp2300.data.database.createDatabase
+import com.group8.comp2300.data.local.AppointmentLocalDataSource
+import com.group8.comp2300.data.local.CalendarOverviewLocalDataSource
+import com.group8.comp2300.data.local.MedicationLogLocalDataSource
+import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
+import com.group8.comp2300.data.local.SyncQueueDataSource
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.ApiServiceImpl
 import com.group8.comp2300.data.remote.TokenProvider
@@ -62,6 +67,13 @@ val coreModule = module {
             override suspend fun clearTokens() = tokenManager.clearTokens()
         }
     }
+
+    // Offline-first local data sources
+    single { AppointmentLocalDataSource(get()) }
+    single { MoodLocalDataSource(get()) }
+    single { MedicationLogLocalDataSource(get()) }
+    single { CalendarOverviewLocalDataSource(get()) }
+    single { SyncQueueDataSource(get()) }
 
     singleOf(::ShopRepositoryImpl) { bind<ShopRepository>() }
     singleOf(::MedicalRepositoryImpl) { bind<MedicalRepository>() }
