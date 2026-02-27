@@ -1,0 +1,50 @@
+CREATE TABLE MoodEntity (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    timestamp INTEGER NOT NULL,
+    mood_type TEXT NOT NULL CHECK (mood_type IN ('VERY_SAD', 'SAD', 'NEUTRAL', 'GOOD', 'GREAT')),
+    feeling TEXT,
+    journal TEXT
+);
+
+insertMood:
+INSERT INTO MoodEntity (id, user_id, timestamp, mood_type, feeling, journal)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectMoodHistory:
+SELECT * FROM MoodEntity WHERE user_id = ?
+ORDER BY timestamp DESC;
+
+selectDayMoods:
+SELECT * FROM MoodEntity
+WHERE user_id = ? AND date(timestamp / 1000, 'unixepoch') = date(?)
+ORDER BY timestamp ASC;
+
+updateMoodById:
+UPDATE MoodEntity
+SET mood_type = ?, feeling = ?, journal = ?
+WHERE id = ?;
+
+deleteMoodById:
+DELETE FROM MoodEntity WHERE id = ?;
+
+getDailyMoodCount:
+SELECT
+    mood_type,
+    COUNT(*) AS count
+FROM MoodEntity
+WHERE user_id = ?
+  AND date(timestamp / 1000, 'unixepoch') = date(?)
+GROUP BY mood_type
+ORDER BY count DESC;
+
+getMonthlyMoodCount:
+SELECT
+    mood_type,
+    COUNT(*) AS count
+FROM MoodEntity
+WHERE user_id = ?
+  AND date(timestamp / 1000, 'unixepoch') >= date(?)
+  AND date(timestamp / 1000, 'unixepoch') < date(?, '+1 month')
+GROUP BY mood_type
+ORDER BY count DESC;

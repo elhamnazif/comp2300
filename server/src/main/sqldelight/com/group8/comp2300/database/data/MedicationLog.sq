@@ -1,0 +1,30 @@
+CREATE TABLE MedicationLogEnt (
+    id TEXT PRIMARY KEY,
+    medication_id TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE,
+    medication_time INTEGER NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('TAKEN', 'SKIPPED', 'SNOOZED', 'PENDING')),
+    UNIQUE(medication_id, medication_time)
+);
+
+insertMedLog:
+INSERT OR REPLACE INTO MedicationLogEnt (id, medication_id, medication_time, status)
+VALUES (?, ?, ?, ?);
+
+selectLogsByMedication:
+SELECT * FROM MedicationLogEnt WHERE medication_id = ?;
+
+selectLogDetails:
+SELECT * FROM MedicationLogEnt WHERE id = ?;
+
+selectDailyMedicationAgenda:
+SELECT l.*, m.med_name
+FROM MedicationLogEnt l JOIN MedicationEntity m ON l.medication_id = m.id
+WHERE m.user_id = ? AND date(l.medication_time / 1000, 'unixepoch') = date(?);
+
+updateMedicationStatus:
+UPDATE MedicationLogEnt
+SET status = ?
+WHERE id = ?;
+
+deleteMedicationLog:
+DELETE FROM MedicationLogEnt WHERE id = ?;

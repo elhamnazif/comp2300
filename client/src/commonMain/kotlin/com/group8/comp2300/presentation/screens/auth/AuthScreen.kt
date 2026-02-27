@@ -134,7 +134,7 @@ fun AuthScreen(
                 label = "AuthContentTransition",
                 transitionSpec = {
                     fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
-                }
+                },
             ) { targetState ->
                 if (targetState.first && targetState.second == 1) {
                     PersonalDetailsStep(
@@ -176,7 +176,7 @@ fun AuthScreen(
 private fun HeaderSection(isRegistering: Boolean) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         // Logo Placeholder
         Box(
@@ -184,18 +184,18 @@ private fun HeaderSection(isRegistering: Boolean) {
                 .size(64.dp)
                 .background(
                     MaterialTheme.colorScheme.primaryContainer,
-                    shape = androidx.compose.foundation.shape.CircleShape
+                    shape = androidx.compose.foundation.shape.CircleShape,
                 ),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 Icons.PersonW400Outlinedfill1,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp),
             )
         }
-        
+
         Spacer(Modifier.height(24.dp))
 
         Text(
@@ -471,7 +471,7 @@ private fun ActionButtons(
 private fun FooterSection(isRegistering: Boolean, onToggleMode: () -> Unit, onGuestParams: () -> Unit) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         TextButton(onClick = onToggleMode) {
             Text(

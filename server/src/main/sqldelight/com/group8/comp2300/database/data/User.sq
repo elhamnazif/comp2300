@@ -1,0 +1,27 @@
+CREATE TABLE UserEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    passwordHash TEXT NOT NULL,
+    firstName TEXT NOT NULL,
+    lastName TEXT NOT NULL,
+    phone TEXT,
+    dateOfBirth INTEGER,
+    gender TEXT,
+    sexualOrientation TEXT,
+    profileImageUrl TEXT,
+    createdAt INTEGER NOT NULL,
+    preferredLanguage TEXT NOT NULL DEFAULT 'en'
+);
+
+selectUserByEmail:
+SELECT * FROM UserEntity WHERE email = ?;
+
+selectUserById:
+SELECT * FROM UserEntity WHERE id = ?;
+
+insertUser:
+INSERT INTO UserEntity (id, email, passwordHash, firstName, lastName, phone, dateOfBirth, gender, sexualOrientation, profileImageUrl, createdAt, preferredLanguage)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updatePassword:
+UPDATE UserEntity SET passwordHash = ? WHERE id = ?;

@@ -1,15 +1,18 @@
+
+@file:Suppress("ktlint:standard:no-empty-file")
+
 package com.group8.comp2300.service.appointment
 
-//import com.group8.comp2300.database.Appointment
-//import com.group8.comp2300.domain.repository.AppointmentRepository
-//import com.group8.comp2300.domain.repository.SlotRepository
-//import com.group8.comp2300.database.AppointmentSlots
-//import com.group8.comp2300.domain.model.payment.PaymentMethod
-//import com.group8.comp2300.service.payment.PaymentServiceImpl
-//import com.group8.comp2300.service.payment.PaymentService
-//import java.util.UUID
+// import com.group8.comp2300.database.Appointment
+// import com.group8.comp2300.domain.repository.AppointmentRepository
+// import com.group8.comp2300.domain.repository.SlotRepository
+// import com.group8.comp2300.database.AppointmentSlots
+// import com.group8.comp2300.domain.model.payment.PaymentMethod
+// import com.group8.comp2300.service.payment.PaymentServiceImpl
+// import com.group8.comp2300.service.payment.PaymentService
+// import java.util.UUID
 //
-//fun main() {
+// fun main() {
 //    println("=".repeat(60))
 //    println("🧪 TESTING APPOINTMENT BOOKING SYSTEM")
 //    println("=".repeat(60))
@@ -28,9 +31,9 @@ package com.group8.comp2300.service.appointment
 //
 //    // Run all tests
 //    runAllTests(appointmentService, paymentService)
-//}
+// }
 //
-//fun createMockAppointmentRepository(): AppointmentRepository {
+// fun createMockAppointmentRepository(): AppointmentRepository {
 //    return object : AppointmentRepository {
 //        private val appointments = mutableListOf<Appointment>()
 //
@@ -73,9 +76,9 @@ package com.group8.comp2300.service.appointment
 //            return appointments.filter { it.user_id == userId && it.payment_status == paymentStatus }
 //        }
 //    }
-//}
+// }
 //
-//fun createMockSlotRepository(): SlotRepository {
+// fun createMockSlotRepository(): SlotRepository {
 //    return object : SlotRepository {
 //        private val slots = mutableMapOf(
 //            "slot-1" to AppointmentSlots(
@@ -123,8 +126,8 @@ package com.group8.comp2300.service.appointment
 //            return slots.values.find { it.id == bookingId }
 //        }
 //    }
-//}
-//fun runAllTests(appointmentService: AppointmentService, PaymentService: PaymentServiceImpl) {
+// }
+// fun runAllTests(appointmentService: AppointmentService, PaymentService: PaymentServiceImpl) {
 //
 //    // TEST 1: Check available payment methods
 //    println("\n📋 TEST 1: Available Payment Methods")
@@ -317,9 +320,9 @@ package com.group8.comp2300.service.appointment
 //    println("\n" + "=".repeat(60))
 //    println("✅ ALL TESTS COMPLETED")
 //    println("=".repeat(60))
-//}
+// }
 //
-//// Helper extension function for padding strings
-//fun String.padEnd(length: Int): String {
+// // Helper extension function for padding strings
+// fun String.padEnd(length: Int): String {
 //    return if (this.length >= length) this else this + " ".repeat(length - this.length)
-//}
+// }

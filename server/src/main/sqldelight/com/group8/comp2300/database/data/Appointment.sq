@@ -1,0 +1,52 @@
+CREATE TABLE AppointmentEntity (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    appointment_time INTEGER NOT NULL, -- Unix timestamp in milliseconds
+    appointment_type TEXT NOT NULL CHECK (appointment_type IN ('CHECKUP', 'CONSULTATION', 'SCREENING', 'FOLLOW_UP', 'VACCINATION', 'OTHER', 'FOLLOWUP', 'EMERGENCY', 'VIRTUAL_CONSULTATION', 'PHYSICAL_THERAPY', 'LAB_TEST')),
+    clinic_id TEXT REFERENCES ClinicEntity(id) ON DELETE SET NULL,
+    booking_id TEXT REFERENCES AppointmentSlotEnt(id) ON DELETE SET NULL,
+    status TEXT DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'PENDING_PAYMENT')),
+    notes TEXT,
+    has_reminder INTEGER DEFAULT 1 CHECK (has_reminder IN (0, 1)),
+    payment_method TEXT,
+    payment_status TEXT,
+    payment_amount REAL,
+    transaction_id TEXT
+);
+
+insertAppointment:
+INSERT INTO AppointmentEntity (id, user_id, title, appointment_time, appointment_type, clinic_id, booking_id, status, notes, has_reminder, payment_method, payment_status, payment_amount, transaction_id)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAppointmentById:
+SELECT * FROM AppointmentEntity WHERE id = ?;
+
+updateAppointmentStatus:
+UPDATE AppointmentEntity SET status = ? WHERE id = ?;
+
+updatePaymentDetails:
+UPDATE AppointmentEntity SET payment_method = ?, payment_status = ?, transaction_id = ? WHERE id = ?;
+
+selectByUserAndPaymentStatus:
+SELECT * FROM AppointmentEntity WHERE user_id = ? AND payment_status = ?;
+
+selectSlotByBookingId:
+SELECT s.* FROM AppointmentSlotEnt s
+JOIN AppointmentEntity a ON a.booking_id = s.id
+WHERE a.id = ?;
+
+selectConfirmedApptsOfUser: --user's confirmed appointments
+SELECT a.*, c.name AS clinic_name, c.address
+FROM AppointmentEntity a
+LEFT JOIN ClinicEntity c ON a.clinic_id = c.id
+WHERE a.user_id = ? AND a.status = 'CONFIRMED'
+ORDER BY a.appointment_time ASC;
+
+updateAppointmentDetails:
+UPDATE AppointmentEntity
+SET title = ?, appointment_time = ?, appointment_type = ?, clinic_id = ?, booking_id = ?, status = ?, notes = ?, has_reminder = ?
+WHERE id = ?;
+
+deleteAppointment:
+DELETE FROM AppointmentEntity WHERE id = ?;

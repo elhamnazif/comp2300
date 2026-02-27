@@ -72,11 +72,11 @@ fun MedicationScreen(
                         name = domainMed.name,
                         dosage = domainMed.dosage,
                         frequency = domainMed.frequency.displayName,
-                        instructions = domainMed.instructions,
+                        instructions = domainMed.instruction.orEmpty(),
                         color =
                         try {
                             // Simple hex parsing (simplified)
-                            val hex = domainMed.colorHex.removePrefix("#")
+                            val hex = domainMed.colorHex?.removePrefix("#") ?: "42A5F5"
                             Color(hex.toLong(16) or 0xFF00000000)
                         } catch (e: Exception) {
                             MedConstants.PresetColors.first()

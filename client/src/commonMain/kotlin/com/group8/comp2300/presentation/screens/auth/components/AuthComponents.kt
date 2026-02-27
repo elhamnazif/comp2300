@@ -54,8 +54,8 @@ fun AuthTextField(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent
-            )
+                errorIndicatorColor = Color.Transparent,
+            ),
         )
         // Error slot + field spacer. Uses min-height so long messages aren't clipped.
         Box(
@@ -63,13 +63,13 @@ fun AuthTextField(
                 .fillMaxWidth()
                 .defaultMinSize(minHeight = 24.dp)
                 .padding(start = 16.dp, top = 4.dp, bottom = 4.dp),
-            contentAlignment = androidx.compose.ui.Alignment.TopStart
+            contentAlignment = androidx.compose.ui.Alignment.TopStart,
         ) {
             if (errorMessage != null) {
                 Text(
                     stringResource(errorMessage),
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }
@@ -102,8 +102,8 @@ fun ClickableTextField(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
-                errorIndicatorColor = Color.Transparent
-            )
+                errorIndicatorColor = Color.Transparent,
+            ),
         )
         Box(modifier = Modifier.matchParentSize().alpha(0f).clickable(onClick = onClick))
     }

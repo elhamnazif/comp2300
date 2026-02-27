@@ -118,6 +118,7 @@ fun PinScreen(
                     pin = ""
                     isConfirming = true
                 }
+
                 isSetup && isConfirming -> {
                     if (pin == savedPin) {
                         onComplete(pin)
@@ -127,6 +128,7 @@ fun PinScreen(
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     }
                 }
+
                 else -> onComplete(pin)
             }
         }
