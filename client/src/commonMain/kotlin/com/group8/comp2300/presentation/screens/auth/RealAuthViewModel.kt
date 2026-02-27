@@ -2,26 +2,26 @@ package com.group8.comp2300.presentation.screens.auth
 
 import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.core.Validation
-import com.group8.comp2300.domain.model.user.Gender
-import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.usecase.auth.LoginUseCase
-import com.group8.comp2300.domain.usecase.auth.RegisterUseCase
-import comp2300.i18n.generated.resources.*
+import com.group8.comp2300.domain.usecase.auth.PreregisterUseCase
+import comp2300.i18n.generated.resources.Res
+import comp2300.i18n.generated.resources.auth_error_authentication_failed
+import comp2300.i18n.generated.resources.auth_error_invalid_email
+import comp2300.i18n.generated.resources.auth_error_network
+import comp2300.i18n.generated.resources.auth_error_password_too_short
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import kotlin.time.Instant
+import org.jetbrains.compose.resources.StringResource
 
 class RealAuthViewModel(
     private val loginUseCase: LoginUseCase,
-    private val registerUseCase: RegisterUseCase,
+    private val preregisterUseCase: PreregisterUseCase,
     private val authRepository: AuthRepository,
 ) : AuthViewModel() {
 
@@ -67,31 +67,9 @@ class RealAuthViewModel(
                 state.update { it.copy(termsAccepted = !it.termsAccepted) }
             }
 
-            is AuthUiEvent.FirstNameChanged -> state.update { it.copy(firstName = event.name) }
-
-            is AuthUiEvent.LastNameChanged -> state.update { it.copy(lastName = event.name) }
-
-            is AuthUiEvent.GenderChanged -> state.update { it.copy(gender = event.gender) }
-
-            is AuthUiEvent.OrientationChanged ->
-                state.update { it.copy(sexualOrientation = event.orientation) }
-
-            is AuthUiEvent.DateOfBirthChanged ->
-                state.update {
-                    it.copy(dateOfBirth = event.dateMillis, showDatePicker = false)
-                }
-
-            is AuthUiEvent.ShowDatePicker ->
-                state.update { it.copy(showDatePicker = event.show) }
-
-            is AuthUiEvent.ToggleAuthMode ->
-                state.update {
-                    State(isRegistering = !it.isRegistering) // Reset form on switch
-                }
-
-            is AuthUiEvent.NextStep -> state.update { it.copy(step = 1) }
-
-            is AuthUiEvent.PrevStep -> state.update { it.copy(step = 0) }
+            is AuthUiEvent.ToggleAuthMode -> {
+                state.update { State(isRegistering = !it.isRegistering) }
+            }
 
             is AuthUiEvent.Submit -> submitData(event.onSuccess)
 
@@ -103,7 +81,7 @@ class RealAuthViewModel(
         state.update { it.copy(isLoading = true, errorMessage = null, errorMessageRes = null) }
 
         if (state.value.isRegistering) {
-            performRegister(state.value, onSuccess)
+            performPreregister(state.value, onSuccess)
         } else {
             performLogin(state.value, onSuccess)
         }
@@ -116,40 +94,27 @@ class RealAuthViewModel(
         }
     }
 
-    private fun performRegister(state: State, onSuccess: () -> Unit) {
+    private fun performPreregister(formState: State, onSuccess: () -> Unit) {
         viewModelScope.launch {
-            // Convert UI strings to enums, with defaults if empty
-            val gender =
-                if (state.gender.isNotEmpty()) {
-                    Gender.fromDisplayName(state.gender) ?: Gender.PREFER_NOT_TO_SAY
-                } else {
-                    Gender.PREFER_NOT_TO_SAY
-                }
+            val result = preregisterUseCase(formState.email, formState.password)
+            if (result.isSuccess) {
+                state.update { it.copy(isLoading = false) }
+                onSuccess()
+            } else {
+                val exception = result.exceptionOrNull()
+                handlePreregisterError(exception)
+            }
+        }
+    }
 
-            val orientation =
-                if (state.sexualOrientation.isNotEmpty()) {
-                    SexualOrientation.fromDisplayName(state.sexualOrientation)
-                        ?: SexualOrientation.HETEROSEXUAL
-                } else {
-                    SexualOrientation.HETEROSEXUAL
-                }
-
-            val result =
-                registerUseCase(
-                    state.email,
-                    state.password,
-                    firstName = state.firstName,
-                    lastName = state.lastName,
-                    gender = gender,
-                    sexualOrientation = orientation,
-                    dateOfBirth =
-                    state.dateOfBirth?.let {
-                        Instant.fromEpochMilliseconds(it)
-                            .toLocalDateTime(TimeZone.currentSystemDefault())
-                            .date
-                    },
-                )
-            handleResult(result, onSuccess)
+    private fun handlePreregisterError(exception: Throwable?) {
+        val (errorText, errorRes) = categorizeError(exception)
+        state.update {
+            it.copy(
+                isLoading = false,
+                errorMessage = errorText,
+                errorMessageRes = errorRes,
+            )
         }
     }
 
@@ -159,31 +124,38 @@ class RealAuthViewModel(
             onSuccess()
         } else {
             val exception = result.exceptionOrNull()
-            val exceptionName = exception?.let { it::class.simpleName } ?: ""
-            val exceptionMessage = exception?.message ?: ""
+            handleLoginError(exception)
+        }
+    }
 
-            val isNetworkError = exceptionName.contains("Connect") ||
-                exceptionName.contains("Socket") ||
-                exceptionName.contains("Timeout") ||
-                exceptionName.contains("UnknownHost") ||
-                exceptionName.contains("EOF") ||
-                exceptionMessage.contains("Failed to connect", ignoreCase = true) ||
-                exceptionMessage.contains("Connection refused", ignoreCase = true) ||
-                exceptionMessage.contains("unexpected end of stream", ignoreCase = true)
+    private fun handleLoginError(exception: Throwable?) {
+        val (errorText, errorRes) = categorizeError(exception)
+        state.update {
+            it.copy(
+                isLoading = false,
+                errorMessage = errorText,
+                errorMessageRes = errorRes,
+            )
+        }
+    }
 
-            val (errorText, errorRes) = when {
-                isNetworkError -> null to Res.string.auth_error_network
-                exceptionMessage.isNotBlank() && !exceptionMessage.contains("Exception") -> exceptionMessage to null
-                else -> null to Res.string.auth_error_authentication_failed
-            }
+    private fun categorizeError(exception: Throwable?): Pair<String?, StringResource?> {
+        val exceptionName = exception?.let { it::class.simpleName } ?: ""
+        val exceptionMessage = exception?.message ?: ""
 
-            state.update {
-                it.copy(
-                    isLoading = false,
-                    errorMessage = errorText,
-                    errorMessageRes = errorRes,
-                )
-            }
+        val isNetworkError = exceptionName.contains("Connect") ||
+            exceptionName.contains("Socket") ||
+            exceptionName.contains("Timeout") ||
+            exceptionName.contains("UnknownHost") ||
+            exceptionName.contains("EOF") ||
+            exceptionMessage.contains("Failed to connect", ignoreCase = true) ||
+            exceptionMessage.contains("Connection refused", ignoreCase = true) ||
+            exceptionMessage.contains("unexpected end of stream", ignoreCase = true)
+
+        return when {
+            isNetworkError -> null to Res.string.auth_error_network
+            exceptionMessage.isNotBlank() && !exceptionMessage.contains("Exception") -> exceptionMessage to null
+            else -> null to Res.string.auth_error_authentication_failed
         }
     }
 

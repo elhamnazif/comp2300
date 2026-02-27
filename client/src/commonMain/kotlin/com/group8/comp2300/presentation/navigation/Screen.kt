@@ -31,6 +31,18 @@ sealed interface Screen : NavKey {
     @Serializable
     data object Login : Screen
 
+    @Serializable
+    data class EmailVerification(val email: String) : Screen
+
+    @Serializable
+    data class CompleteProfile(val email: String) : Screen
+
+    @Serializable
+    data object ForgotPassword : Screen
+
+    @Serializable
+    data class ResetPassword(val token: String) : Screen
+
     // Detail Screens
     @Serializable
     data class ClinicDetail(val clinicId: String) : Screen

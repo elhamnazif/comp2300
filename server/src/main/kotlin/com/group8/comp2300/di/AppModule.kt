@@ -72,7 +72,7 @@ val serverModule = module {
     single<ReminderRepository> { ReminderRepositoryImpl(get()) }
 
     // Email
-    single { EmailService(ResendConfig.apiKey, ResendConfig.fromEmail, ResendConfig.appBaseUrl) }
+    single { EmailService(ResendConfig.apiKey, ResendConfig.fromEmail, ResendConfig.appName) }
 
     // Services
     single {
@@ -81,7 +81,7 @@ val serverModule = module {
             refreshTokenRepository = get(),
             passwordResetTokenRepository = get(),
             jwtService = get(),
-            emailService = if (ResendConfig.apiKey.isNotBlank()) get<EmailService>() else null,
+            emailService = if (ResendConfig.isConfigured) get<EmailService>() else null,
         )
     }
     single<PaymentService> { PaymentServiceImpl() }

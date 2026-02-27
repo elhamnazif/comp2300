@@ -8,16 +8,23 @@ import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
 import com.group8.comp2300.domain.repository.RefreshTokenRepository
 import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.dto.AuthResponse
+import com.group8.comp2300.dto.CompleteProfileRequest
 import com.group8.comp2300.dto.LoginRequest
+import com.group8.comp2300.dto.PreregisterRequest
+import com.group8.comp2300.dto.PreregisterResponse
 import com.group8.comp2300.dto.RegisterRequest
 import com.group8.comp2300.dto.TokenResponse
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.PasswordHasher
+import com.group8.comp2300.service.email.EmailResult
 import com.group8.comp2300.service.email.EmailService
+import kotlinx.coroutines.delay
+import org.slf4j.LoggerFactory
 import java.security.MessageDigest
-import java.util.UUID
+import java.security.SecureRandom
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.minutes
 
 class AuthService(
     private val userRepository: UserRepository,
@@ -27,6 +34,9 @@ class AuthService(
     private val emailService: EmailService?,
 ) {
     private val passwordHasher = PasswordHasher
+    private val secureRandom = SecureRandom()
+
+    private val log = LoggerFactory.getLogger(javaClass)
 
     suspend fun register(request: RegisterRequest): Result<AuthResponse> {
         val validationResult = validateRegisterRequest(request)
@@ -157,7 +167,7 @@ class AuthService(
 
     fun getUserById(userId: String): User? = userRepository.findById(userId)
 
-    fun activateAccount(token: String): Result<Unit> {
+    fun activateAccount(token: String): Result<AuthResponse> {
         val tokenHash = hashToken(token)
         val userId = passwordResetTokenRepository.findValid(tokenHash)
             ?: return Result.failure(IllegalArgumentException("Invalid or expired activation token"))
@@ -168,24 +178,55 @@ class AuthService(
 
         userRepository.activateUser(userId)
         passwordResetTokenRepository.markUsed(tokenHash)
-        return Result.success(Unit)
+
+        val user = userRepository.findById(userId)
+            ?: return Result.failure(IllegalStateException("Failed to retrieve user after activation"))
+
+        val tokens = generateTokenPair(userId)
+
+        return Result.success(
+            AuthResponse(
+                user = user,
+                accessToken = tokens.accessToken,
+                refreshToken = tokens.refreshToken,
+            ),
+        )
     }
 
     suspend fun forgotPassword(email: String): Result<Unit> {
+        // Rate limiting check
+        if (!userRepository.canRequestVerification(email)) {
+            return Result.failure(IllegalArgumentException("Please wait before requesting another password reset"))
+        }
+
         val user = userRepository.findByEmail(email)
         if (user == null) {
+            // Add delay to normalize response times and prevent timing attacks
+            delay(TIMING_ATTACK_DELAY_MS)
             // Return success even if user not found to prevent email enumeration
             return Result.success(Unit)
         }
 
-        val token = UUID.randomUUID().toString()
+        // Record the verification request for rate limiting
+        userRepository.recordVerificationRequest(email)
+
+        val token = generateVerificationCode()
         val tokenHash = hashToken(token)
         passwordResetTokenRepository.insert(tokenHash, user.id)
 
-        try {
-            emailService?.sendPasswordResetEmail(email, token)
-        } catch (_: Exception) {
-            // Log but don't fail — token is stored, user can retry
+        when (val result = emailService?.sendPasswordResetEmail(email, token)) {
+            is EmailResult.Success -> {
+                log.debug("Password reset email sent successfully to {} (messageId={})", email, result.messageId)
+            }
+
+            is EmailResult.Failure -> {
+                log.warn("Failed to send password reset email to {}: {}", email, result.error.message)
+                // Token is stored, user can retry
+            }
+
+            null -> {
+                log.debug("Email service not configured - skipping password reset email for {}", email)
+            }
         }
 
         return Result.success(Unit)
@@ -221,6 +262,107 @@ class AuthService(
         return Result.success(Unit)
     }
 
+    suspend fun preregister(request: PreregisterRequest): Result<PreregisterResponse> {
+        // Validate email and password
+        if (request.email.isBlank() || !Validation.isValidEmail(request.email)) {
+            return Result.failure(IllegalArgumentException("Invalid email format"))
+        }
+
+        val passwordResult = Validation.validatePassword(request.password)
+        val passwordError = when (passwordResult) {
+            PasswordValidationResult.TooShort -> "Password must be at least 8 characters"
+            PasswordValidationResult.MissingDigit -> "Password must contain at least one number"
+            PasswordValidationResult.MissingLetter -> "Password must contain at least one letter"
+            PasswordValidationResult.TooLong -> "Password must be 72 bytes or fewer"
+            PasswordValidationResult.Valid -> null
+        }
+
+        if (passwordError != null) {
+            return Result.failure(IllegalArgumentException(passwordError))
+        }
+
+        // Check for existing email before rate limiting (to maintain existing error behavior)
+        if (userRepository.existsByEmail(request.email)) {
+            return Result.failure(IllegalArgumentException("An account with this email already exists"))
+        }
+
+        // Rate limiting check
+        if (!userRepository.canRequestVerification(request.email)) {
+            return Result.failure(IllegalArgumentException("Please wait before requesting another verification email"))
+        }
+
+        return try {
+            val passwordHash = passwordHasher.hash(request.password)
+            val userId = generateUserId()
+
+            // Create user with placeholder profile data (inactive until profile completed)
+            userRepository.insert(
+                id = userId,
+                email = request.email,
+                passwordHash = passwordHash,
+                firstName = "", // Placeholder - will be filled during complete profile
+                lastName = "", // Placeholder - will be filled during complete profile
+                phone = null,
+                dateOfBirth = null,
+                gender = null,
+                sexualOrientation = null,
+                preferredLanguage = "en",
+            )
+
+            // Record the verification request for rate limiting
+            userRepository.recordVerificationRequest(request.email)
+
+            // Send verification email
+            sendActivationEmail(userId, request.email)
+
+            Result.success(
+                PreregisterResponse(
+                    email = request.email,
+                    message = "Verification email sent. Please check your inbox.",
+                ),
+            )
+        } catch (e: Exception) {
+            if (e.isDuplicateEmailViolation()) {
+                return Result.failure(IllegalArgumentException("An account with this email already exists"))
+            }
+            Result.failure(e)
+        }
+    }
+
+    fun completeProfile(userId: String, request: CompleteProfileRequest): Result<User> {
+        // Validate required fields
+        if (request.firstName.isBlank() || request.lastName.isBlank()) {
+            return Result.failure(IllegalArgumentException("First name and last name are required"))
+        }
+
+        val user = userRepository.findById(userId)
+            ?: return Result.failure(IllegalArgumentException("User not found"))
+
+        // Ensure the account is activated before allowing profile completion
+        if (!userRepository.isActivated(userId)) {
+            return Result.failure(
+                IllegalArgumentException("Please activate your account before completing your profile"),
+            )
+        }
+
+        return try {
+            userRepository.updateProfile(
+                userId = userId,
+                firstName = request.firstName,
+                lastName = request.lastName,
+                dateOfBirth = request.dateOfBirth,
+                gender = request.gender,
+                sexualOrientation = request.sexualOrientation,
+            )
+
+            userRepository.findById(userId)
+                ?.let { Result.success(it) }
+                ?: Result.failure(IllegalStateException("Failed to retrieve updated user"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     private fun generateTokenPair(userId: String): TokenPair {
         val accessToken = jwtService.generateAccessToken(userId)
         val refreshToken = jwtService.generateRefreshToken(userId)
@@ -231,26 +373,48 @@ class AuthService(
         return TokenPair(accessToken, refreshToken)
     }
 
-    private fun generateUserId(): String = "user_${UUID.randomUUID()}"
+    private fun generateUserId(): String = "user_${java.util.UUID.randomUUID()}"
+
+    /**
+     * Generates a 6-digit verification code (100000-999999)
+     */
+    private fun generateVerificationCode(): String {
+        val code = secureRandom.nextInt(VERIFICATION_CODE_RANGE) + VERIFICATION_CODE_MIN
+        return code.toString()
+    }
 
     private fun hashToken(token: String): String = MessageDigest.getInstance("SHA-256")
         .digest(token.toByteArray())
         .joinToString(separator = "") { byte -> "%02x".format(byte) }
 
     private suspend fun sendActivationEmail(userId: String, email: String) {
-        val token = UUID.randomUUID().toString()
+        val token = generateVerificationCode()
         val tokenHash = hashToken(token)
         passwordResetTokenRepository.insert(tokenHash, userId)
-        try {
-            emailService?.sendActivationEmail(email, token)
-        } catch (_: Exception) {
-            // Log but don't fail — token is stored, user can retry
+
+        when (val result = emailService?.sendActivationEmail(email, token)) {
+            is EmailResult.Success -> {
+                log.debug("Activation email sent successfully to {} (messageId={})", email, result.messageId)
+            }
+
+            is EmailResult.Failure -> {
+                log.warn("Failed to send activation email to {}: {}", email, result.error.message)
+                // Token is stored, user can retry
+            }
+
+            null -> {
+                log.debug("Email service not configured - skipping activation email for {}", email)
+            }
         }
     }
 
     private fun cleanExpiredTokens() {
         val cutoff = Clock.System.now() - 90.days
         refreshTokenRepository.deleteExpired(cutoff.toEpochMilliseconds())
+        // Also clean up unactivated accounts older than 24 hours
+        val unactivatedCutoff = Clock.System.now() - UNACTIVATED_ACCOUNT_MAX_AGE
+        userRepository.deleteUnactivatedAccounts(unactivatedCutoff.toEpochMilliseconds())
+        passwordResetTokenRepository.deleteExpired(cutoff.toEpochMilliseconds())
     }
 
     private fun validateRegisterRequest(request: RegisterRequest): ValidationResult {
@@ -298,4 +462,12 @@ class AuthService(
     }
 
     private data class TokenPair(val accessToken: String, val refreshToken: String)
+
+    private companion object {
+        const val VERIFICATION_CODE_MIN = 100000
+        const val VERIFICATION_CODE_MAX = 999999
+        const val VERIFICATION_CODE_RANGE = VERIFICATION_CODE_MAX - VERIFICATION_CODE_MIN + 1
+        const val TIMING_ATTACK_DELAY_MS = 500L
+        val UNACTIVATED_ACCOUNT_MAX_AGE = 1.days
+    }
 }

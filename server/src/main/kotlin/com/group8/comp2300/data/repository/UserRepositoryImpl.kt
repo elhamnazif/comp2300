@@ -9,9 +9,15 @@ import com.group8.comp2300.domain.repository.UserRepository
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository {
+
+    // In-memory rate limiting cache for verification requests
+    // Maps email to last request timestamp
+    private val verificationRequestCache = mutableMapOf<String, Long>()
+    private val rateLimitPeriod = 1.minutes
 
     override fun findByEmail(email: String): User? =
         database.userQueries.selectUserByEmail(email).executeAsOneOrNull()?.toDomain()
@@ -65,6 +71,39 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
 
     override fun updatePasswordHash(userId: String, newHash: String) {
         database.userQueries.updatePassword(newHash, userId)
+    }
+
+    override fun updateProfile(
+        userId: String,
+        firstName: String,
+        lastName: String,
+        dateOfBirth: Long?,
+        gender: String?,
+        sexualOrientation: String?,
+    ) {
+        database.userQueries.updateProfile(
+            firstName = firstName,
+            lastName = lastName,
+            dateOfBirth = dateOfBirth,
+            gender = gender,
+            sexualOrientation = sexualOrientation,
+            id = userId,
+        )
+    }
+
+    override fun canRequestVerification(email: String): Boolean {
+        val lastRequest = verificationRequestCache[email] ?: return true
+        val now = Clock.System.now().toEpochMilliseconds()
+        val elapsed = now - lastRequest
+        return elapsed >= rateLimitPeriod.inWholeMilliseconds
+    }
+
+    override fun recordVerificationRequest(email: String) {
+        verificationRequestCache[email] = Clock.System.now().toEpochMilliseconds()
+    }
+
+    override fun deleteUnactivatedAccounts(cutoffMillis: Long) {
+        database.userQueries.deleteUnactivatedAccounts(cutoffMillis)
     }
 }
 

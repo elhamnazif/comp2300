@@ -1,9 +1,11 @@
 package com.group8.comp2300.routes
 
 import com.group8.comp2300.dto.ActivateRequest
+import com.group8.comp2300.dto.CompleteProfileRequest
 import com.group8.comp2300.dto.ForgotPasswordRequest
 import com.group8.comp2300.dto.LoginRequest
 import com.group8.comp2300.dto.MessageResponse
+import com.group8.comp2300.dto.PreregisterRequest
 import com.group8.comp2300.dto.RefreshTokenRequest
 import com.group8.comp2300.dto.RegisterRequest
 import com.group8.comp2300.dto.ResetPasswordRequest
@@ -79,26 +81,28 @@ fun Route.authRoutes(authService: AuthService) {
         )
     }
 
-    get("/api/auth/activate") {
-        val token = call.request.queryParameters["token"]
-        if (token.isNullOrBlank()) {
-            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing activation token"))
-            return@get
-        }
-        val result = authService.activateAccount(token)
+    post("/api/auth/activate") {
+        val request = call.receive<ActivateRequest>()
+        val result = authService.activateAccount(request.token)
         result.fold(
-            onSuccess = { call.respond(HttpStatusCode.OK, MessageResponse("Account activated successfully")) },
+            onSuccess = { authResponse -> call.respond(HttpStatusCode.OK, authResponse) },
             onFailure = { error ->
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Activation failed")))
             },
         )
     }
 
-    post("/api/auth/activate") {
-        val request = call.receive<ActivateRequest>()
-        val result = authService.activateAccount(request.token)
+    get("/api/auth/activate") {
+        // GET endpoint for email link activation
+        val token = call.request.queryParameters["token"]
+        if (token.isNullOrBlank()) {
+            call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing activation token"))
+            return@get
+        }
+
+        val result = authService.activateAccount(token)
         result.fold(
-            onSuccess = { call.respond(HttpStatusCode.OK, MessageResponse("Account activated successfully")) },
+            onSuccess = { authResponse -> call.respond(HttpStatusCode.OK, authResponse) },
             onFailure = { error ->
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Activation failed")))
             },
@@ -107,10 +111,21 @@ fun Route.authRoutes(authService: AuthService) {
 
     post("/api/auth/forgot-password") {
         val request = call.receive<ForgotPasswordRequest>()
-        authService.forgotPassword(request.email)
-        call.respond(
-            HttpStatusCode.OK,
-            MessageResponse("If an account with that email exists, a password reset link has been sent"),
+        val result = authService.forgotPassword(request.email)
+        result.fold(
+            onSuccess = {
+                call.respond(
+                    HttpStatusCode.OK,
+                    MessageResponse("If an account with that email exists, a password reset link has been sent"),
+                )
+            },
+            onFailure = { error ->
+                // Rate limiting error - still return a generic message to not leak info
+                call.respond(
+                    HttpStatusCode.OK,
+                    MessageResponse("If an account with that email exists, a password reset link has been sent"),
+                )
+            },
         )
     }
 
@@ -123,6 +138,30 @@ fun Route.authRoutes(authService: AuthService) {
             },
             onFailure = { error ->
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Password reset failed")))
+            },
+        )
+    }
+
+    post("/api/auth/preregister") {
+        val request = call.receive<PreregisterRequest>()
+        val result = authService.preregister(request)
+        result.fold(
+            onSuccess = { response -> call.respond(HttpStatusCode.OK, response) },
+            onFailure = { error ->
+                when (error) {
+                    is IllegalArgumentException -> {
+                        val message = error.message ?: "Preregistration failed"
+                        val status =
+                            if (message == "An account with this email already exists") {
+                                HttpStatusCode.Conflict
+                            } else {
+                                HttpStatusCode.BadRequest
+                            }
+                        call.respond(status, mapOf("error" to message))
+                    }
+
+                    else -> call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Preregistration failed"))
+                }
             },
         )
     }
@@ -141,7 +180,31 @@ fun Route.authRoutes(authService: AuthService) {
         post("/api/auth/logout") {
             val userId = call.principal<io.ktor.server.auth.jwt.JWTPrincipal>()!!.payload.subject
             authService.logout(userId)
-            call.respond(HttpStatusCode.OK, mapOf("message" to "Logged out successfully"))
+            call.respond(HttpStatusCode.OK, MessageResponse("Logged out successfully"))
+        }
+
+        post("/api/auth/complete-profile") {
+            val userId = call.principal<io.ktor.server.auth.jwt.JWTPrincipal>()!!.payload.subject
+            val request = call.receive<CompleteProfileRequest>()
+            val result = authService.completeProfile(userId, request)
+            result.fold(
+                onSuccess = { user -> call.respond(HttpStatusCode.OK, user) },
+                onFailure = { error ->
+                    when (error) {
+                        is IllegalArgumentException ->
+                            call.respond(
+                                HttpStatusCode.BadRequest,
+                                mapOf("error" to (error.message ?: "Profile completion failed")),
+                            )
+
+                        else ->
+                            call.respond(
+                                HttpStatusCode.InternalServerError,
+                                mapOf("error" to "Profile completion failed"),
+                            )
+                    }
+                },
+            )
         }
     }
 }

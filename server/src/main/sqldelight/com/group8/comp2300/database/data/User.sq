@@ -29,3 +29,11 @@ UPDATE UserEntity SET passwordHash = ? WHERE id = ?;
 
 activateUser:
 UPDATE UserEntity SET isActivated = 1 WHERE id = ?;
+
+updateProfile:
+UPDATE UserEntity
+SET firstName = ?, lastName = ?, dateOfBirth = ?, gender = ?, sexualOrientation = ?
+WHERE id = ?;
+
+deleteUnactivatedAccounts:
+DELETE FROM UserEntity WHERE isActivated = 0 AND createdAt < ?;

@@ -20,6 +20,20 @@ interface AuthRepository {
         dateOfBirth: LocalDate?,
     ): Result<User>
 
+    suspend fun preregister(email: String, password: String): Result<String>
+
+    suspend fun completeProfile(
+        firstName: String,
+        lastName: String,
+        gender: Gender,
+        sexualOrientation: SexualOrientation,
+        dateOfBirth: LocalDate?,
+    ): Result<User>
+
+    suspend fun activateAccount(token: String): Result<Unit>
+    suspend fun forgotPassword(email: String): Result<Unit>
+    suspend fun resetPassword(token: String, newPassword: String): Result<Unit>
+
     suspend fun logout()
     fun isGuest(): Boolean
 }
