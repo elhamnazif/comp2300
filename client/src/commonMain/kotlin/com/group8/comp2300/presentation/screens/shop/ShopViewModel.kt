@@ -83,7 +83,6 @@ class ShopViewModel(private val repository: ShopRepository, private val authRepo
         selectedCategory.value = category
     }
 
-    @Suppress("UnusedParameter")
     fun addToCart(product: Product) {
         cartItemCount.update { it + 1 }
     }

@@ -24,9 +24,6 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -41,16 +38,16 @@ fun PinScreen(
     onErrorMessageCleared: () -> Unit = {},
 ) {
     var pin by rememberSaveable { mutableStateOf("") }
-    var confirmedPin by rememberSaveable { mutableStateOf("") }
+    var savedPin by rememberSaveable { mutableStateOf("") }
     var isConfirming by rememberSaveable { mutableStateOf(false) }
     var internalError: String? by remember { mutableStateOf(null) }
     var shakeTrigger by remember { mutableIntStateOf(0) }
-    var errorClearJob by remember { mutableStateOf<Job?>(null) }
 
     val haptic = LocalHapticFeedback.current
-    val onCompleteState by rememberUpdatedState(onComplete)
     val shakeOffset = remember { Animatable(0f) }
-    val coroutineScope = rememberCoroutineScope()
+    val mismatchErrorText = stringResource(Res.string.onboarding_pin_mismatch)
+
+    val displayError = internalError ?: errorMessage
 
     val displayTitle = title ?: if (isSetup) {
         if (isConfirming) {
@@ -59,7 +56,7 @@ fun PinScreen(
             stringResource(Res.string.onboarding_create_pin_title)
         }
     } else {
-        stringResource(Res.string.onboarding_create_pin_title) // Fallback if no title provided
+        stringResource(Res.string.onboarding_create_pin_title)
     }
 
     val displayDescription = description ?: if (isSetup) {
@@ -72,80 +69,66 @@ fun PinScreen(
         ""
     }
 
-    val displayError = internalError ?: errorMessage
-    val mismatchErrorText = stringResource(Res.string.onboarding_pin_mismatch)
-
-    // Handle external error triggers
+    // Shake on external error
     LaunchedEffect(errorMessage) {
         if (errorMessage != null) {
             shakeTrigger++
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            errorClearJob?.cancel()
-            errorClearJob = coroutineScope.launch {
-                delay(1200)
-                pin = ""
-                onErrorMessageCleared()
-            }
         }
     }
 
-    /* auto-advance when full */
-    LaunchedEffect(pin) {
-        if (pin.isNotEmpty()) {
-            internalError = null
-            if (errorMessage != null) {
-                onErrorMessageCleared()
-            }
-        }
-        if (pin.length == pinLength) {
-            if (isSetup && !isConfirming) {
-                // First entry complete, switch to confirmation mode
-                confirmedPin = pin
-                pin = ""
-                isConfirming = true
-            } else if (isSetup && isConfirming) {
-                // Confirmation entry complete, verify
-                if (pin == confirmedPin) {
-                    onCompleteState(pin)
-                } else {
-                    internalError = mismatchErrorText
-                    shakeTrigger++
-                    // Trigger strong haptic on error
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    errorClearJob?.cancel()
-                    errorClearJob = coroutineScope.launch {
-                        delay(1200) // Increased delay so user can read the error before it resets
-                        pin = ""
-                        internalError = null
-                        if (isSetup) {
-                            isConfirming = false
-                            confirmedPin = ""
-                        }
-                    }
-                }
-            } else {
-                // Not setup mode, just input PIN
-                onCompleteState(pin)
-                // Optionally clear PIN here if we want to reset it after entry.
-                // Wait for external error to handle reset if it's wrong.
-            }
-        }
-    }
-
-    /* Shake effect on error */
+    // Shake animation
     LaunchedEffect(shakeTrigger) {
         if (shakeTrigger > 0) {
             repeat(4) {
-                shakeOffset.animateTo(
-                    targetValue = 10f,
-                    animationSpec = tween(durationMillis = 40, easing = LinearEasing),
-                )
-                shakeOffset.animateTo(
-                    targetValue = -10f,
-                    animationSpec = tween(durationMillis = 40, easing = LinearEasing),
-                )
+                shakeOffset.animateTo(10f, tween(40, easing = LinearEasing))
+                shakeOffset.animateTo(-10f, tween(40, easing = LinearEasing))
             }
-            shakeOffset.animateTo(0f, animationSpec = tween(durationMillis = 40, easing = LinearEasing))
+            shakeOffset.animateTo(0f, tween(40, easing = LinearEasing))
+        }
+    }
+
+    // All state transitions happen synchronously in handleKey — no LaunchedEffect(pin)
+    fun handleKey(key: String) {
+        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+
+        // Any keypress while error is showing: clear error, reset, then process the key
+        if (displayError != null) {
+            internalError = null
+            onErrorMessageCleared()
+            if (isSetup) {
+                isConfirming = false
+                savedPin = ""
+            }
+            pin = ""
+        }
+
+        if (key == "⌫") {
+            if (pin.isNotEmpty()) pin = pin.dropLast(1)
+            return
+        }
+
+        if (pin.length >= pinLength) return
+        pin += key
+
+        if (pin.length == pinLength) {
+            when {
+                isSetup && !isConfirming -> {
+                    savedPin = pin
+                    pin = ""
+                    isConfirming = true
+                }
+                isSetup && isConfirming -> {
+                    if (pin == savedPin) {
+                        onComplete(pin)
+                    } else {
+                        internalError = mismatchErrorText
+                        shakeTrigger++
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                }
+                else -> onComplete(pin)
+            }
         }
     }
 
@@ -164,12 +147,10 @@ fun PinScreen(
         Spacer(Modifier.height(24.dp))
 
         AnimatedContent(
-            targetState = isConfirming, // Still useful to animate if switching confirmation states
+            targetState = isConfirming,
             label = "PinTextTransition",
-        ) { confirming ->
+        ) { _ ->
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // Just use the derived titles directly, ignoring the AnimatedContent implicit argument
-                // in favor of our more robust logic above.
                 Text(
                     text = displayTitle,
                     style = MaterialTheme.typography.titleLarge,
@@ -246,7 +227,7 @@ fun PinScreen(
                     listOf("1", "2", "3"),
                     listOf("4", "5", "6"),
                     listOf("7", "8", "9"),
-                    listOf(null, "0", "⌫"), // null = spacer
+                    listOf(null, "0", "⌫"),
                 )
 
             rows.forEach { row ->
@@ -257,33 +238,9 @@ fun PinScreen(
                             return@inner
                         }
 
-                        val isBackspace = label == "⌫"
                         KeyPadButton(
                             text = label,
-                            onClick = {
-                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                if (displayError != null) {
-                                    // Dynamic Error Reset on any keypress
-                                    errorClearJob?.cancel()
-                                    internalError = null
-                                    onErrorMessageCleared()
-                                    if (isSetup) {
-                                        isConfirming = false
-                                        confirmedPin = ""
-                                    }
-                                    pin = ""
-                                }
-
-                                if (isBackspace) {
-                                    if (pin.isNotEmpty()) {
-                                        pin = pin.dropLast(1)
-                                    }
-                                } else { // It's a digit
-                                    if (pin.length < pinLength) {
-                                        pin += label
-                                    }
-                                }
-                            },
+                            onClick = { handleKey(label) },
                         )
                     }
                 }
@@ -294,32 +251,21 @@ fun PinScreen(
 
 @Composable
 private fun KeyPadButton(text: String, onClick: () -> Unit) {
-    var pressed by remember { mutableStateOf(false) }
+    val currentOnClick by rememberUpdatedState(onClick)
 
     Box(
         contentAlignment = Alignment.Center,
         modifier =
         Modifier.size(72.dp)
             .clip(CircleShape)
-            .background(
-                if (pressed) {
-                    MaterialTheme.colorScheme.primary.copy(alpha = .3f)
-                } else {
-                    MaterialTheme.colorScheme.surfaceContainerHigh
-                },
-            )
-            .pointerInput(Unit) { detectTapGestures(onPress = { tryAwaitRelease() }, onTap = { onClick() }) }
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .pointerInput(Unit) { detectTapGestures(onTap = { currentOnClick() }) }
             .semantics { contentDescription = text },
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.headlineSmall,
-            color =
-            if (text == "⌫") {
-                MaterialTheme.colorScheme.onSurface
-            } else {
-                MaterialTheme.colorScheme.onSurface
-            },
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }

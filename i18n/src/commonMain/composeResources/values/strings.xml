@@ -44,6 +44,7 @@
     <string name="auth_error_invalid_email">Invalid email format</string>
     <string name="auth_error_password_too_short">Min 8 chars</string>
     <string name="auth_error_authentication_failed">Authentication failed</string>
+    <string name="auth_error_network">Cannot reach server. Please check your connection.</string>
     <string name="auth_error_terms_required">Please accept the Terms &amp; Conditions</string>
     <string name="auth_continue_as_guest">Continue as Guest</string>
 

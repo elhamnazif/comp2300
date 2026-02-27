@@ -1,8 +1,13 @@
 package com.group8.comp2300.presentation.screens.auth
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -42,12 +47,7 @@ fun AuthScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
-    // Auto-scroll to top on error
-    LaunchedEffect(state.errorMessage) {
-        if (state.errorMessage != null) {
-            scrollState.animateScrollTo(0)
-        }
-    }
+    val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
 
     // Date Picker Dialog
     if (state.showDatePicker) {
@@ -101,32 +101,55 @@ fun AuthScreen(
                 isRegistering = state.isRegistering,
             )
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(24.dp))
+
+            // Error banner
+            AnimatedVisibility(
+                visible = authError != null,
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                if (authError != null) {
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    ) {
+                        Text(
+                            text = authError,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
 
             // Swap Content based on step
-            if (state.isRegistering && state.step == 1) {
-                PersonalDetailsStep(
-                    state,
-                    viewModel::onEvent,
-                )
-            } else {
-                CredentialsStep(
-                    state,
-                    viewModel::onEvent,
-                )
+            AnimatedContent(
+                targetState = Pair(state.isRegistering, state.step),
+                label = "AuthContentTransition",
+                transitionSpec = {
+                    fadeIn(animationSpec = tween(300)) togetherWith fadeOut(animationSpec = tween(300))
+                }
+            ) { targetState ->
+                if (targetState.first && targetState.second == 1) {
+                    PersonalDetailsStep(
+                        state,
+                        viewModel::onEvent,
+                    )
+                } else {
+                    CredentialsStep(
+                        state,
+                        viewModel::onEvent,
+                    )
+                }
             }
 
-            // Error Display
-            if (state.errorMessage != null) {
-                Spacer(Modifier.height(16.dp))
-                Text(
-                    text = state.errorMessage!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(16.dp))
 
             // Action Buttons
             ActionButtons(
@@ -151,7 +174,30 @@ fun AuthScreen(
 
 @Composable
 private fun HeaderSection(isRegistering: Boolean) {
-    Column {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // Logo Placeholder
+        Box(
+            modifier = Modifier
+                .size(64.dp)
+                .background(
+                    MaterialTheme.colorScheme.primaryContainer,
+                    shape = androidx.compose.foundation.shape.CircleShape
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.PersonW400Outlinedfill1,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+        
+        Spacer(Modifier.height(24.dp))
+
         Text(
             text =
             if (isRegistering) {
@@ -159,8 +205,9 @@ private fun HeaderSection(isRegistering: Boolean) {
             } else {
                 stringResource(Res.string.auth_welcome_back)
             },
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
         Text(
@@ -170,8 +217,9 @@ private fun HeaderSection(isRegistering: Boolean) {
             } else {
                 stringResource(Res.string.auth_sign_in_desc)
             },
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.secondary,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
         )
     }
 }
@@ -196,7 +244,6 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
-        Spacer(Modifier.height(16.dp))
 
         AuthTextField(
             value = state.password,
@@ -235,7 +282,6 @@ private fun CredentialsStep(state: AuthViewModel.State, onEvent: (AuthViewModel.
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         )
-        Spacer(Modifier.height(16.dp))
 
         if (state.isRegistering) {
             Row(
@@ -289,7 +335,6 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
             ),
             keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
         )
-        Spacer(Modifier.height(16.dp))
 
         AuthTextField(
             value = state.lastName,
@@ -309,7 +354,6 @@ private fun PersonalDetailsStep(state: AuthViewModel.State, onEvent: (AuthViewMo
             ),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         )
-        Spacer(Modifier.height(16.dp))
 
         ClickableTextField(
             value = state.getFormattedDate(),
@@ -390,7 +434,8 @@ private fun ActionButtons(
                     else -> onEvent(AuthViewModel.AuthUiEvent.Submit(onLoginSuccess))
                 }
             },
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(50),
             enabled =
             !state.isLoading &&
                 if (state.isRegistering && state.step == 0) {
@@ -398,16 +443,16 @@ private fun ActionButtons(
                 } else if (state.isRegistering) {
                     state.isStep2Valid
                 } else {
-                    (state.email.isNotBlank() && state.password.isNotBlank())
+                    (state.email.isNotBlank() && state.password.isNotBlank() && state.emailError == null)
                 },
             colors =
             ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
             ),
         ) {
             if (state.isLoading) {
-                CircularProgressIndicator(Modifier.size(24.dp))
+                CircularProgressIndicator(Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
             } else {
                 Text(
                     when {
@@ -415,6 +460,7 @@ private fun ActionButtons(
                         state.isRegistering -> stringResource(Res.string.auth_sign_up)
                         else -> stringResource(Res.string.auth_sign_in)
                     },
+                    fontWeight = FontWeight.Bold,
                 )
             }
         }
@@ -423,7 +469,10 @@ private fun ActionButtons(
 
 @Composable
 private fun FooterSection(isRegistering: Boolean, onToggleMode: () -> Unit, onGuestParams: () -> Unit) {
-    Row(horizontalArrangement = Arrangement.Center) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
         TextButton(onClick = onToggleMode) {
             Text(
                 if (isRegistering) {
@@ -433,6 +482,7 @@ private fun FooterSection(isRegistering: Boolean, onToggleMode: () -> Unit, onGu
                 },
             )
         }
+        Spacer(Modifier.height(4.dp))
         TextButton(onClick = onGuestParams) {
             Text(stringResource(Res.string.auth_continue_as_guest), color = MaterialTheme.colorScheme.secondary)
         }

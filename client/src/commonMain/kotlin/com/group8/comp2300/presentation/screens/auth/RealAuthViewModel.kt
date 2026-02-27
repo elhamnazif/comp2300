@@ -95,12 +95,12 @@ class RealAuthViewModel(
 
             is AuthUiEvent.Submit -> submitData(event.onSuccess)
 
-            is AuthUiEvent.ClearError -> state.update { it.copy(errorMessage = null) }
+            is AuthUiEvent.ClearError -> state.update { it.copy(errorMessage = null, errorMessageRes = null) }
         }
     }
 
     private fun submitData(onSuccess: () -> Unit) {
-        state.update { it.copy(isLoading = true, errorMessage = null) }
+        state.update { it.copy(isLoading = true, errorMessage = null, errorMessageRes = null) }
 
         if (state.value.isRegistering) {
             performRegister(state.value, onSuccess)
@@ -158,12 +158,30 @@ class RealAuthViewModel(
             state.update { it.copy(isLoading = false) }
             onSuccess()
         } else {
-            val errorMessage = result.exceptionOrNull()?.message?.takeIf { it.isNotBlank() }
-                ?: "Authentication failed"
+            val exception = result.exceptionOrNull()
+            val exceptionName = exception?.let { it::class.simpleName } ?: ""
+            val exceptionMessage = exception?.message ?: ""
+
+            val isNetworkError = exceptionName.contains("Connect") ||
+                exceptionName.contains("Socket") ||
+                exceptionName.contains("Timeout") ||
+                exceptionName.contains("UnknownHost") ||
+                exceptionName.contains("EOF") ||
+                exceptionMessage.contains("Failed to connect", ignoreCase = true) ||
+                exceptionMessage.contains("Connection refused", ignoreCase = true) ||
+                exceptionMessage.contains("unexpected end of stream", ignoreCase = true)
+
+            val (errorText, errorRes) = when {
+                isNetworkError -> null to Res.string.auth_error_network
+                exceptionMessage.isNotBlank() && !exceptionMessage.contains("Exception") -> exceptionMessage to null
+                else -> null to Res.string.auth_error_authentication_failed
+            }
+
             state.update {
                 it.copy(
                     isLoading = false,
-                    errorMessage = errorMessage,
+                    errorMessage = errorText,
+                    errorMessageRes = errorRes,
                 )
             }
         }
