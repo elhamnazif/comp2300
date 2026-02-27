@@ -135,15 +135,4 @@ class JwtServiceTest {
         assertNotNull(decoded2.id)
         assertTrue(decoded1.id != decoded2.id)
     }
-
-    private inline fun <reified T : Throwable> assertFailsWith(block: () -> Unit) {
-        try {
-            block()
-            throw AssertionError("Expected ${T::class.simpleName} but no exception was thrown")
-        } catch (e: Throwable) {
-            if (e !is T) {
-                throw AssertionError("Expected ${T::class.simpleName} but got ${e::class.simpleName}")
-            }
-        }
-    }
 }
