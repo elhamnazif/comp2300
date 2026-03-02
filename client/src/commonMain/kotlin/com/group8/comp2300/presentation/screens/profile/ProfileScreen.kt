@@ -42,6 +42,7 @@ fun ProfileScreen(
     onRequireAuth: () -> Unit = {},
     onNavigateToLabResults: () -> Unit = {},
     onNavigateToPrivacySecurity: () -> Unit = {},
+    onNavigateToPrivacyLegalese: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToHelpSupport: () -> Unit = {},
     modifier: Modifier = Modifier,
@@ -79,6 +80,7 @@ fun ProfileScreen(
                 }
                 EdgeToEdgeSettings(
                     onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
+                    onNavigateToPrivacyLegalese = onNavigateToPrivacyLegalese,
                     onNavigateToNotifications = onNavigateToNotifications,
                     onNavigateToHelpSupport = onNavigateToHelpSupport,
                 )
@@ -494,6 +496,7 @@ private fun CommunityCard(modifier: Modifier = Modifier) {
 @Composable
 private fun EdgeToEdgeSettings(
     onNavigateToPrivacySecurity: () -> Unit,
+    onNavigateToPrivacyLegalese: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToHelpSupport: () -> Unit,
     modifier: Modifier = Modifier,
@@ -504,6 +507,12 @@ private fun EdgeToEdgeSettings(
             title = stringResource(Res.string.profile_privacy_security_title),
             subtitle = stringResource(Res.string.profile_biometrics_enabled),
             onClick = onNavigateToPrivacySecurity,
+        )
+        SettingsItem(
+            icon = Icons.ShieldW400Outlinedfill1,
+            title = stringResource(Res.string.profile_privacy_legalese_title),
+            subtitle = stringResource(Res.string.profile_privacy_legalese_desc),
+            onClick = onNavigateToPrivacyLegalese,
         )
         SettingsItem(
             icon = Icons.NotificationsW400Outlinedfill1,

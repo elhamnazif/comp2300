@@ -74,4 +74,7 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data object HelpSupport : Screen
+
+    @Serializable
+    data object PrivacyLegalese : Screen
 }

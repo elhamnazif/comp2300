@@ -53,3 +53,6 @@ data class CompleteProfileRequest(
     val gender: String? = null,
     val sexualOrientation: String? = null,
 )
+
+@Serializable
+data class ResendVerificationRequest(val email: String)

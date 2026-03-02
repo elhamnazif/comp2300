@@ -10,8 +10,18 @@ import com.group8.comp2300.data.remote.dto.PreregisterResponse
 import com.group8.comp2300.data.remote.dto.ProductDto
 import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
 import com.group8.comp2300.data.remote.dto.RegisterRequest
+import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
 import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
+import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.domain.model.medical.AppointmentRequest
+import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
+import com.group8.comp2300.domain.model.medical.Medication
+import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
+import com.group8.comp2300.domain.model.medical.MedicationLog
+import com.group8.comp2300.domain.model.medical.MedicationLogRequest
+import com.group8.comp2300.domain.model.medical.Mood
+import com.group8.comp2300.domain.model.medical.MoodEntryRequest
 import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -52,33 +62,35 @@ interface ApiService {
 
     suspend fun completeProfile(request: CompleteProfileRequest): User
 
+    suspend fun resendVerificationEmail(email: String): MessageResponse
+
     // Medical API methods
     suspend fun getCalendarOverview(
         year: Int,
         month: Int,
-    ): List<com.group8.comp2300.domain.model.medical.CalendarOverviewResponse>
+    ): List<CalendarOverviewResponse>
 
-    suspend fun getAppointments(): List<com.group8.comp2300.domain.model.medical.Appointment>
+    suspend fun getAppointments(): List<Appointment>
 
     suspend fun scheduleAppointment(
-        request: com.group8.comp2300.domain.model.medical.AppointmentRequest,
-    ): com.group8.comp2300.domain.model.medical.Appointment
+        request: AppointmentRequest,
+    ): Appointment
 
     suspend fun logMedication(
-        request: com.group8.comp2300.domain.model.medical.MedicationLogRequest,
-    ): com.group8.comp2300.domain.model.medical.MedicationLog
+        request: MedicationLogRequest,
+    ): MedicationLog
 
-    suspend fun getMedicationAgenda(date: String): List<com.group8.comp2300.domain.model.medical.MedicationLog>
+    suspend fun getMedicationAgenda(date: String): List<MedicationLog>
 
     suspend fun logMood(
-        request: com.group8.comp2300.domain.model.medical.MoodEntryRequest,
-    ): com.group8.comp2300.domain.model.medical.Mood
+        request: MoodEntryRequest,
+    ): Mood
 
-    suspend fun getUserMedications(): List<com.group8.comp2300.domain.model.medical.Medication>
+    suspend fun getUserMedications(): List<Medication>
 
     suspend fun createMedication(
-        request: com.group8.comp2300.domain.model.medical.MedicationCreateRequest,
-    ): com.group8.comp2300.domain.model.medical.Medication
+        request: MedicationCreateRequest,
+    ): Medication
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -103,10 +115,11 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
 
     override suspend fun getProfile(): User = client.get("/api/auth/profile").body()
 
-    override suspend fun activateAccount(token: String): AuthResponse =
-        handleAuthResponse(client.post("/api/auth/activate") {
+    override suspend fun activateAccount(token: String): AuthResponse = handleAuthResponse(
+        client.post("/api/auth/activate") {
             setBody(mapOf("token" to token))
-        })
+        },
+    )
 
     override suspend fun forgotPassword(email: String): MessageResponse = client.post("/api/auth/forgot-password") {
         setBody(ForgotPasswordRequest(email))
@@ -123,34 +136,39 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun completeProfile(request: CompleteProfileRequest): User =
         client.post("/api/auth/complete-profile") { setBody(request) }.body()
 
+    override suspend fun resendVerificationEmail(email: String): MessageResponse =
+        client.post("/api/auth/resend-verification") {
+            setBody(ResendVerificationRequest(email))
+        }.body()
+
     // --- Medical API ---
     override suspend fun getCalendarOverview(
         year: Int,
         month: Int,
-    ): List<com.group8.comp2300.domain.model.medical.CalendarOverviewResponse> =
+    ): List<CalendarOverviewResponse> =
         client.get("/api/calendar/overview?year=$year&month=$month").body()
 
-    override suspend fun getAppointments(): List<com.group8.comp2300.domain.model.medical.Appointment> =
+    override suspend fun getAppointments(): List<Appointment> =
         client.get("/api/appointments").body()
 
     override suspend fun scheduleAppointment(
-        request: com.group8.comp2300.domain.model.medical.AppointmentRequest,
-    ): com.group8.comp2300.domain.model.medical.Appointment =
+        request: AppointmentRequest,
+    ): Appointment =
         client.post("/api/appointments") { setBody(request) }.body()
 
     override suspend fun logMedication(
-        request: com.group8.comp2300.domain.model.medical.MedicationLogRequest,
-    ): com.group8.comp2300.domain.model.medical.MedicationLog =
+        request: MedicationLogRequest,
+    ): MedicationLog =
         client.post("/api/medications/logs") { setBody(request) }.body()
 
     override suspend fun getMedicationAgenda(
         date: String,
-    ): List<com.group8.comp2300.domain.model.medical.MedicationLog> =
+    ): List<MedicationLog> =
         client.get("/api/medications/agenda?date=$date").body()
 
     override suspend fun logMood(
-        request: com.group8.comp2300.domain.model.medical.MoodEntryRequest,
-    ): com.group8.comp2300.domain.model.medical.Mood = client.post("/api/moods") { setBody(request) }.body()
+        request: MoodEntryRequest,
+    ): Mood = client.post("/api/moods") { setBody(request) }.body()
 
     override suspend fun getUserMedications(): List<com.group8.comp2300.domain.model.medical.Medication> =
         client.get("/api/medications").body()

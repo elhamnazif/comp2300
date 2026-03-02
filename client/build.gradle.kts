@@ -257,6 +257,8 @@ symbolCraft {
         "face",
         // Misc
         "favorite",
+        "description",
+        "shield"
     ) {
         weights(SymbolWeight.W400, SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
         bothFills(weight = SymbolWeight.W400, variant = SymbolVariant.OUTLINED)
