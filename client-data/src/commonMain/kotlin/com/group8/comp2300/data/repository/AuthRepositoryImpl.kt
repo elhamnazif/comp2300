@@ -125,6 +125,15 @@ class AuthRepositoryImpl(
         Result.failure(e)
     }
 
+    override suspend fun resendVerificationEmail(email: String): Result<Unit> = try {
+        logger.i { "Resend verification email for: $email" }
+        apiService.resendVerificationEmail(email)
+        Result.success(Unit)
+    } catch (e: Exception) {
+        logger.e(e) { "Resend verification failed" }
+        Result.failure(e)
+    }
+
     override suspend fun resetPassword(token: String, newPassword: String): Result<Unit> = try {
         logger.i { "Password reset attempt with token" }
         apiService.resetPassword(token, newPassword)

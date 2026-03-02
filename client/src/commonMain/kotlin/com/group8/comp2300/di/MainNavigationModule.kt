@@ -33,6 +33,7 @@ val mainNavigationModule = module {
             onRequireAuth = navigator::requireAuth,
             onNavigateToLabResults = { navigator.navigate(Screen.LabResults) },
             onNavigateToPrivacySecurity = { navigator.navigate(Screen.PrivacySecurity) },
+            onNavigateToPrivacyLegalese = { navigator.navigate(Screen.PrivacyLegalese) },
             onNavigateToNotifications = { navigator.navigate(Screen.Notifications) },
             onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) },
         )

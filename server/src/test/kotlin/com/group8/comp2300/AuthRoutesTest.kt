@@ -652,6 +652,112 @@ class AuthRoutesTest {
         assertEquals(HttpStatusCode.Unauthorized, refreshResponse.status)
     }
 
+    // ============== Resend Verification Email Tests ==============
+
+    @Test
+    fun resendVerificationReturnsSuccessForExistingInactiveUser() = testApplication {
+        configureAuthTestModule()
+        val client = jsonClient()
+
+        // Register a user (inactive by default, doesn't record verification request)
+        val registerResponse = client.post("/api/auth/register") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                RegisterRequest(
+                    email = "resend.inactive@example.com",
+                    password = "Password1",
+                    firstName = "Resend",
+                    lastName = "Inactive",
+                ),
+            )
+        }
+        assertEquals(HttpStatusCode.Created, registerResponse.status)
+
+        val response = client.post("/api/auth/resend-verification") {
+            contentType(ContentType.Application.Json)
+            setBody(ResendVerificationRequest(email = "resend.inactive@example.com"))
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status, response.bodyAsText())
+        assertEquals("Verification email sent", response.body<MessageResponse>().message)
+    }
+
+    @Test
+    fun resendVerificationReturnsSuccessForNonExistentEmail() = testApplication {
+        configureAuthTestModule()
+        val client = jsonClient()
+
+        // Request resend for email that doesn't exist
+        val response = client.post("/api/auth/resend-verification") {
+            contentType(ContentType.Application.Json)
+            setBody(ResendVerificationRequest(email = "nonexistent.resend@example.com"))
+        }
+
+        // Returns success to prevent email enumeration
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("Verification email sent", response.body<MessageResponse>().message)
+    }
+
+    @Test
+    fun resendVerificationReturnsBadRequestForActivatedAccount() = testApplication {
+        val userRepo = configureAuthTestModule()
+        val client = jsonClient()
+
+        // Register and activate a user
+        val registerResponse = client.post("/api/auth/register") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                RegisterRequest(
+                    email = "resend.activated@example.com",
+                    password = "Password1",
+                    firstName = "Resend",
+                    lastName = "Activated",
+                ),
+            )
+        }
+        assertEquals(HttpStatusCode.Created, registerResponse.status)
+        val authResponse = registerResponse.body<AuthResponse>()
+        userRepo.activateUser(authResponse.user.id)
+
+        val response = client.post("/api/auth/resend-verification") {
+            contentType(ContentType.Application.Json)
+            setBody(ResendVerificationRequest(email = "resend.activated@example.com"))
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("Account is already activated", response.body<ErrorResponse>().error)
+    }
+
+    @Test
+    fun resendVerificationRateLimitedAfterPreregister() = testApplication {
+        configureAuthTestModule()
+        val client = jsonClient()
+
+        // Preregister records a verification request for rate limiting
+        val preregisterResponse = client.post("/api/auth/preregister") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                PreregisterRequest(
+                    email = "resend.ratelimited@example.com",
+                    password = "Password1",
+                ),
+            )
+        }
+        assertEquals(HttpStatusCode.OK, preregisterResponse.status)
+
+        // Immediate resend should be rate limited
+        val response = client.post("/api/auth/resend-verification") {
+            contentType(ContentType.Application.Json)
+            setBody(ResendVerificationRequest(email = "resend.ratelimited@example.com"))
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals(
+            "Please wait before requesting another verification email",
+            response.body<ErrorResponse>().error,
+        )
+    }
+
     // ============== Password Validation Tests ==============
 
     @Test
