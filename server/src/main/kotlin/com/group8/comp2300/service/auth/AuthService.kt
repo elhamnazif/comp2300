@@ -232,6 +232,27 @@ class AuthService(
         return Result.success(Unit)
     }
 
+    suspend fun resendVerificationEmail(email: String): Result<Unit> {
+        if (!userRepository.canRequestVerification(email)) {
+            return Result.failure(IllegalArgumentException("Please wait before requesting another verification email"))
+        }
+
+        val user = userRepository.findByEmail(email)
+        if (user == null) {
+            delay(TIMING_ATTACK_DELAY_MS)
+            return Result.success(Unit) // Silent success to prevent email enumeration
+        }
+
+        if (userRepository.isActivated(user.id)) {
+            return Result.failure(IllegalArgumentException("Account is already activated"))
+        }
+
+        userRepository.recordVerificationRequest(email)
+        sendActivationEmail(user.id, email)
+
+        return Result.success(Unit)
+    }
+
     fun resetPassword(token: String, newPassword: String): Result<Unit> {
         val passwordResult = Validation.validatePassword(newPassword)
         when (passwordResult) {

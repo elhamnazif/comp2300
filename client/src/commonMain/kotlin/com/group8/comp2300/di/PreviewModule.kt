@@ -112,6 +112,8 @@ class FakeAuthRepository : AuthRepository {
 
     override suspend fun forgotPassword(email: String): Result<Unit> = Result.success(Unit)
 
+    override suspend fun resendVerificationEmail(email: String): Result<Unit> = Result.success(Unit)
+
     override suspend fun resetPassword(token: String, newPassword: String): Result<Unit> = Result.success(Unit)
 
     override suspend fun logout() {

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.domain.usecase.auth.ActivateAccountUseCase
+import com.group8.comp2300.domain.usecase.auth.ResendVerificationEmailUseCase
 import comp2300.i18n.generated.resources.Res
 import comp2300.i18n.generated.resources.email_verification_error_invalid_token
 import comp2300.i18n.generated.resources.email_verification_error_network
@@ -42,6 +43,7 @@ abstract class EmailVerificationViewModel : ViewModel() {
 
 class RealEmailVerificationViewModel(
     private val activateAccountUseCase: ActivateAccountUseCase,
+    private val resendVerificationEmailUseCase: ResendVerificationEmailUseCase,
     initialEmail: String,
 ) : EmailVerificationViewModel() {
     override val state: MutableStateFlow<State> = MutableStateFlow(State(email = initialEmail))
@@ -89,11 +91,28 @@ class RealEmailVerificationViewModel(
     private fun resendEmail() {
         if (!state.value.canResend) return
 
-        // Start cooldown timer
-        startCooldown()
+        val email = state.value.email.trim()
+        if (email.isEmpty()) return
 
-        // In a real app, you would call a resend API here
-        // For now, we just start the cooldown
+        state.update { it.copy(isLoading = true, errorMessage = null, errorMessageRes = null) }
+
+        viewModelScope.launch {
+            val result = resendVerificationEmailUseCase(email)
+            if (result.isSuccess) {
+                startCooldown()
+                state.update { it.copy(isLoading = false) }
+            } else {
+                val exception = result.exceptionOrNull()
+                val (errorMsg, errorRes) = analyzeError(exception)
+                state.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = errorMsg,
+                        errorMessageRes = errorRes,
+                    )
+                }
+            }
+        }
     }
 
     private fun startCooldown() {

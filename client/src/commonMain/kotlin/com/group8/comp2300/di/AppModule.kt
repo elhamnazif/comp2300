@@ -32,6 +32,7 @@ val appModule = module {
     viewModel { params ->
         RealEmailVerificationViewModel(
             activateAccountUseCase = get(),
+            resendVerificationEmailUseCase = get(),
             initialEmail = params.get(),
         )
     } bind EmailVerificationViewModel::class

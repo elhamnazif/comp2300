@@ -32,6 +32,7 @@ interface AuthRepository {
 
     suspend fun activateAccount(token: String): Result<Unit>
     suspend fun forgotPassword(email: String): Result<Unit>
+    suspend fun resendVerificationEmail(email: String): Result<Unit>
     suspend fun resetPassword(token: String, newPassword: String): Result<Unit>
 
     suspend fun logout()

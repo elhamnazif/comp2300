@@ -10,6 +10,7 @@ import com.group8.comp2300.data.remote.dto.PreregisterResponse
 import com.group8.comp2300.data.remote.dto.ProductDto
 import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
 import com.group8.comp2300.data.remote.dto.RegisterRequest
+import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
 import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.domain.model.user.User
@@ -51,6 +52,8 @@ interface ApiService {
     suspend fun preregister(request: PreregisterRequest): PreregisterResponse
 
     suspend fun completeProfile(request: CompleteProfileRequest): User
+
+    suspend fun resendVerificationEmail(email: String): MessageResponse
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -75,10 +78,11 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
 
     override suspend fun getProfile(): User = client.get("/api/auth/profile").body()
 
-    override suspend fun activateAccount(token: String): AuthResponse =
-        handleAuthResponse(client.post("/api/auth/activate") {
+    override suspend fun activateAccount(token: String): AuthResponse = handleAuthResponse(
+        client.post("/api/auth/activate") {
             setBody(mapOf("token" to token))
-        })
+        },
+    )
 
     override suspend fun forgotPassword(email: String): MessageResponse = client.post("/api/auth/forgot-password") {
         setBody(ForgotPasswordRequest(email))
@@ -94,6 +98,11 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
 
     override suspend fun completeProfile(request: CompleteProfileRequest): User =
         client.post("/api/auth/complete-profile") { setBody(request) }.body()
+
+    override suspend fun resendVerificationEmail(email: String): MessageResponse =
+        client.post("/api/auth/resend-verification") {
+            setBody(ResendVerificationRequest(email))
+        }.body()
 
     /**
      * Catches JsonConvertException when server returns an error response like {"error": "..."}

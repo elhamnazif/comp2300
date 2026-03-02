@@ -8,6 +8,7 @@ import com.group8.comp2300.dto.MessageResponse
 import com.group8.comp2300.dto.PreregisterRequest
 import com.group8.comp2300.dto.RefreshTokenRequest
 import com.group8.comp2300.dto.RegisterRequest
+import com.group8.comp2300.dto.ResendVerificationRequest
 import com.group8.comp2300.dto.ResetPasswordRequest
 import com.group8.comp2300.service.auth.AuthService
 import io.ktor.http.HttpStatusCode
@@ -162,6 +163,23 @@ fun Route.authRoutes(authService: AuthService) {
 
                     else -> call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Preregistration failed"))
                 }
+            },
+        )
+    }
+
+    post("/api/auth/resend-verification") {
+        val request = call.receive<ResendVerificationRequest>()
+        val result = authService.resendVerificationEmail(request.email)
+        result.fold(
+            onSuccess = { call.respond(HttpStatusCode.OK, MessageResponse("Verification email sent")) },
+            onFailure = { error ->
+                val status =
+                    if (error is IllegalArgumentException) {
+                        HttpStatusCode.BadRequest
+                    } else {
+                        HttpStatusCode.InternalServerError
+                    }
+                call.respond(status, mapOf("error" to (error.message ?: "Failed to resend")))
             },
         )
     }
