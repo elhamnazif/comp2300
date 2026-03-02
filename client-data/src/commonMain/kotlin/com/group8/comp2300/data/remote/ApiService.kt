@@ -13,6 +13,13 @@ import com.group8.comp2300.data.remote.dto.RegisterRequest
 import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
 import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
+import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.domain.model.medical.AppointmentRequest
+import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
+import com.group8.comp2300.domain.model.medical.MedicationLog
+import com.group8.comp2300.domain.model.medical.MedicationLogRequest
+import com.group8.comp2300.domain.model.medical.Mood
+import com.group8.comp2300.domain.model.medical.MoodEntryRequest
 import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -58,24 +65,24 @@ interface ApiService {
     // Medical API methods
     suspend fun getCalendarOverview(
         year: Int,
-        month: Int,z
-    ): List<com.group8.comp2300.domain.model.medical.CalendarOverviewResponse>
+        month: Int,
+    ): List<CalendarOverviewResponse>
 
-    suspend fun getAppointments(): List<com.group8.comp2300.domain.model.medical.Appointment>
+    suspend fun getAppointments(): List<Appointment>
 
     suspend fun scheduleAppointment(
-        request: com.group8.comp2300.domain.model.medical.AppointmentRequest,
-    ): com.group8.comp2300.domain.model.medical.Appointment
+        request: AppointmentRequest,
+    ): Appointment
 
     suspend fun logMedication(
-        request: com.group8.comp2300.domain.model.medical.MedicationLogRequest,
-    ): com.group8.comp2300.domain.model.medical.MedicationLog
+        request: MedicationLogRequest,
+    ): MedicationLog
 
-    suspend fun getMedicationAgenda(date: String): List<com.group8.comp2300.domain.model.medical.MedicationLog>
+    suspend fun getMedicationAgenda(date: String): List<MedicationLog>
 
     suspend fun logMood(
-        request: com.group8.comp2300.domain.model.medical.MoodEntryRequest,
-    ): com.group8.comp2300.domain.model.medical.Mood
+        request: MoodEntryRequest,
+    ): Mood
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -130,30 +137,30 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun getCalendarOverview(
         year: Int,
         month: Int,
-    ): List<com.group8.comp2300.domain.model.medical.CalendarOverviewResponse> =
+    ): List<CalendarOverviewResponse> =
         client.get("/api/calendar/overview?year=$year&month=$month").body()
 
-    override suspend fun getAppointments(): List<com.group8.comp2300.domain.model.medical.Appointment> =
+    override suspend fun getAppointments(): List<Appointment> =
         client.get("/api/appointments").body()
 
     override suspend fun scheduleAppointment(
-        request: com.group8.comp2300.domain.model.medical.AppointmentRequest,
-    ): com.group8.comp2300.domain.model.medical.Appointment =
+        request: AppointmentRequest,
+    ): Appointment =
         client.post("/api/appointments") { setBody(request) }.body()
 
     override suspend fun logMedication(
-        request: com.group8.comp2300.domain.model.medical.MedicationLogRequest,
-    ): com.group8.comp2300.domain.model.medical.MedicationLog =
+        request: MedicationLogRequest,
+    ): MedicationLog =
         client.post("/api/medications/logs") { setBody(request) }.body()
 
     override suspend fun getMedicationAgenda(
         date: String,
-    ): List<com.group8.comp2300.domain.model.medical.MedicationLog> =
+    ): List<MedicationLog> =
         client.get("/api/medications/agenda?date=$date").body()
 
     override suspend fun logMood(
-        request: com.group8.comp2300.domain.model.medical.MoodEntryRequest,
-    ): com.group8.comp2300.domain.model.medical.Mood = client.post("/api/moods") { setBody(request) }.body()
+        request: MoodEntryRequest,
+    ): Mood = client.post("/api/moods") { setBody(request) }.body()
 
     /**
      * Catches JsonConvertException when server returns an error response like {"error": "..."}
