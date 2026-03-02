@@ -19,6 +19,19 @@ data class MedicationLogRequest(
 )
 
 @Serializable
+data class MedicationCreateRequest(
+    val name: String,
+    val dosage: String,
+    val quantity: String = "",
+    val frequency: String = "DAILY",
+    val instruction: String? = null,
+    val colorHex: String? = null,
+    val startDate: String, // YYYY-MM-DD
+    val endDate: String, // YYYY-MM-DD
+    val hasReminder: Boolean = true,
+)
+
+@Serializable
 data class AppointmentRequest(
     val title: String,
     val appointmentTime: Long,

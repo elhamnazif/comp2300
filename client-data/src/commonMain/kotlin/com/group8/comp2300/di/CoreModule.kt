@@ -6,6 +6,7 @@ import com.group8.comp2300.data.database.DatabaseDriverFactory
 import com.group8.comp2300.data.database.createDatabase
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
 import com.group8.comp2300.data.local.CalendarOverviewLocalDataSource
+import com.group8.comp2300.data.local.MedicalCacheManager
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
@@ -79,6 +80,7 @@ val coreModule = module {
     single { MedicationLogLocalDataSource(get()) }
     single { CalendarOverviewLocalDataSource(get()) }
     single { SyncQueueDataSource(get()) }
+    single { MedicalCacheManager(get()) }
 
     singleOf(::ShopRepositoryImpl) { bind<ShopRepository>() }
     singleOf(::MedicalRepositoryImpl) { bind<MedicalRepository>() }
@@ -87,6 +89,7 @@ val coreModule = module {
             get(),
             get(),
             co.touchlab.kermit.Logger.withTag("AuthRepository"),
+            get(),
         )
     }
     single<ClinicRepository> { ClinicRepositoryImpl() }

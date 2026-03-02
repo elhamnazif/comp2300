@@ -4,6 +4,8 @@ import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.LabResult
+import com.group8.comp2300.domain.model.medical.Medication
+import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.Mood
@@ -23,4 +25,8 @@ interface MedicalRepository {
     suspend fun getMedicationAgenda(date: String): List<MedicationLog>
 
     suspend fun logMood(request: MoodEntryRequest): Mood
+
+    suspend fun getUserMedications(): List<Medication>
+
+    suspend fun createMedication(request: MedicationCreateRequest): Medication
 }

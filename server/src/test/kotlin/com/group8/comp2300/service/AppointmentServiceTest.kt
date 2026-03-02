@@ -24,7 +24,7 @@ class AppointmentServiceTest {
         appointmentService = AppointmentService(
             appointmentRepository = appointmentRepository,
             appointmentSlotRepository = slotRepository,
-            paymentService = paymentService
+            paymentService = paymentService,
         )
     }
 
@@ -95,7 +95,7 @@ class AppointmentServiceTest {
             slotId = slotId,
             appointmentType = appointmentType,
             title = title,
-            paymentMethod = paymentMethod
+            paymentMethod = paymentMethod,
         )
 
         // Then
@@ -130,7 +130,7 @@ class AppointmentServiceTest {
             slotId = slotId,
             appointmentType = appointmentType,
             title = title,
-            paymentMethod = paymentMethod
+            paymentMethod = paymentMethod,
         )
 
         // Then
@@ -160,7 +160,7 @@ class AppointmentServiceTest {
             slotId = slotId,
             appointmentType = appointmentType,
             title = title,
-            paymentMethod = paymentMethod
+            paymentMethod = paymentMethod,
         )
 
         // Then
@@ -189,7 +189,7 @@ class AppointmentServiceTest {
             slotId = slotId,
             appointmentType = appointmentType,
             title = title,
-            paymentMethod = paymentMethod
+            paymentMethod = paymentMethod,
         )
 
         // Then
@@ -210,7 +210,7 @@ class AppointmentServiceTest {
             slotId = slotId,
             appointmentType = "CONSULTATION",
             title = "Appointment to Cancel",
-            paymentMethod = PaymentMethod.ONLINE
+            paymentMethod = PaymentMethod.ONLINE,
         )
 
         assertTrue(bookingResult.isSuccess)
@@ -219,7 +219,7 @@ class AppointmentServiceTest {
         // When
         val cancelResult = appointmentService.cancelAppointment(
             appointmentId = appointmentId,
-            userId = userId
+            userId = userId,
         )
 
         // Then
@@ -246,7 +246,7 @@ class AppointmentServiceTest {
             slotId = slotId,
             appointmentType = "CHECKUP",
             title = "Frank's Checkup",
-            paymentMethod = PaymentMethod.PHYSICAL
+            paymentMethod = PaymentMethod.PHYSICAL,
         )
 
         assertTrue(bookingResult.isSuccess)
@@ -255,7 +255,7 @@ class AppointmentServiceTest {
         // When - Other user tries to cancel
         val cancelResult = appointmentService.cancelAppointment(
             appointmentId = appointmentId,
-            userId = otherUserId
+            userId = otherUserId,
         )
 
         // Then
@@ -278,7 +278,7 @@ class AppointmentServiceTest {
             slotId = "slot-1",
             appointmentType = "CONSULTATION",
             title = "First Booking",
-            paymentMethod = PaymentMethod.ONLINE
+            paymentMethod = PaymentMethod.ONLINE,
         )
 
         assertTrue(firstBooking.isSuccess)
@@ -289,7 +289,7 @@ class AppointmentServiceTest {
             slotId = "slot-1",
             appointmentType = "CONSULTATION",
             title = "Second Booking",
-            paymentMethod = PaymentMethod.ONLINE
+            paymentMethod = PaymentMethod.ONLINE,
         )
 
         // Then
@@ -312,7 +312,7 @@ class AppointmentServiceTest {
             slotId = slotId,
             appointmentType = "CONSULTATION",
             title = "Payment Test",
-            paymentMethod = paymentMethod
+            paymentMethod = paymentMethod,
         )
 
         // Then
@@ -340,7 +340,7 @@ class AppointmentServiceTest {
             slotId = slotId,
             appointmentType = "CONSULTATION",
             title = "Refund Test",
-            paymentMethod = PaymentMethod.ONLINE
+            paymentMethod = PaymentMethod.ONLINE,
         )
 
         assertTrue(bookingResult.isSuccess)
@@ -349,7 +349,7 @@ class AppointmentServiceTest {
         // When
         val cancelResult = appointmentService.cancelAppointment(
             appointmentId = appointmentId,
-            userId = userId
+            userId = userId,
         )
 
         // Then
@@ -365,12 +365,10 @@ class TestAppointmentRepository : AppointmentRepository {
         appointments.add(appointment)
     }
 
-    override fun getAppointmentById(id: String): Appointment? {
-        return appointments.find { it.id == id }
-    }
+    override fun getAppointmentById(id: String): Appointment? = appointments.find { it.id == id }
 
-    override fun getConfirmedByUserId(userId: String): List<Appointment> {
-        return appointments.filter { it.userId == userId && it.status == "CONFIRMED" }
+    override fun getConfirmedByUserId(userId: String): List<Appointment> = appointments.filter {
+        it.userId == userId && it.status == "CONFIRMED"
     }
 
     override fun updateAppointmentStatus(id: String, status: String) {
@@ -381,20 +379,25 @@ class TestAppointmentRepository : AppointmentRepository {
         }
     }
 
-    override fun updatePaymentDetails(id: String, paymentMethod: String, paymentStatus: String, transactionId: String?) {
+    override fun updatePaymentDetails(
+        id: String,
+        paymentMethod: String,
+        paymentStatus: String,
+        transactionId: String?,
+    ) {
         val index = appointments.indexOfFirst { it.id == id }
         if (index >= 0) {
             val old = appointments[index]
             appointments[index] = old.copy(
                 paymentMethod = paymentMethod,
                 paymentStatus = paymentStatus,
-                transactionId = transactionId
+                transactionId = transactionId,
             )
         }
     }
 
-    override fun getByPaymentStatus(userId: String, paymentStatus: String): List<Appointment> {
-        return appointments.filter { it.userId == userId && it.paymentStatus == paymentStatus }
+    override fun getByPaymentStatus(userId: String, paymentStatus: String): List<Appointment> = appointments.filter {
+        it.userId == userId && it.paymentStatus == paymentStatus
     }
 
     override fun delete(id: String) {
@@ -409,36 +412,34 @@ class TestAppointmentSlotRepository : AppointmentSlotRepository {
         "slot-1" to AppointmentSlot(
             id = "slot-1",
             clinicId = "clinic-123",
-            startTime = 1709272800000L,  // March 1, 2024 10:00:00 GMT as timestamp
-            endTime = 1709276400000L,     // March 1, 2024 11:00:00 GMT as timestamp
-            isBooked = false  // Using isBooked as property name
+            startTime = 1709272800000L, // March 1, 2024 10:00:00 GMT as timestamp
+            endTime = 1709276400000L, // March 1, 2024 11:00:00 GMT as timestamp
+            isBooked = false, // Using isBooked as property name
         ),
         "slot-2" to AppointmentSlot(
             id = "slot-2",
             clinicId = "clinic-123",
-            startTime = 1709276400000L,   // March 1, 2024 11:00:00 GMT
-            endTime = 1709280000000L,      // March 1, 2024 12:00:00 GMT
-            isBooked = false
+            startTime = 1709276400000L, // March 1, 2024 11:00:00 GMT
+            endTime = 1709280000000L, // March 1, 2024 12:00:00 GMT
+            isBooked = false,
         ),
         "slot-3" to AppointmentSlot(
             id = "slot-3",
             clinicId = "clinic-123",
-            startTime = 1709287200000L,   // March 1, 2024 14:00:00 GMT
-            endTime = 1709290800000L,      // March 1, 2024 15:00:00 GMT
-            isBooked = false
+            startTime = 1709287200000L, // March 1, 2024 14:00:00 GMT
+            endTime = 1709290800000L, // March 1, 2024 15:00:00 GMT
+            isBooked = false,
         ),
         "slot-4" to AppointmentSlot(
             id = "slot-4",
             clinicId = "clinic-123",
-            startTime = 1709290800000L,   // March 1, 2024 15:00:00 GMT
-            endTime = 1709294400000L,      // March 1, 2024 16:00:00 GMT
-            isBooked = true  // Already booked slot
-        )
+            startTime = 1709290800000L, // March 1, 2024 15:00:00 GMT
+            endTime = 1709294400000L, // March 1, 2024 16:00:00 GMT
+            isBooked = true, // Already booked slot
+        ),
     )
 
-    override fun getSlotById(id: String): AppointmentSlot? {
-        return slots[id]
-    }
+    override fun getSlotById(id: String): AppointmentSlot? = slots[id]
 
     override fun updateSlotBookingStatus(id: String, isBooked: Boolean) {
         slots[id]?.let { slot ->
@@ -446,8 +447,8 @@ class TestAppointmentSlotRepository : AppointmentSlotRepository {
         }
     }
 
-    override fun getAvailableByClinic(clinicId: String): List<AppointmentSlot> {
-        return slots.values.filter { it.clinicId == clinicId && !it.isBooked }
+    override fun getAvailableByClinic(clinicId: String): List<AppointmentSlot> = slots.values.filter {
+        it.clinicId == clinicId && !it.isBooked
     }
 
     override fun createSlot(slot: AppointmentSlot) {

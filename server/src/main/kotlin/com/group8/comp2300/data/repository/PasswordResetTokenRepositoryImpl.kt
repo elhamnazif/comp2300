@@ -34,6 +34,10 @@ class PasswordResetTokenRepositoryImpl(private val database: ServerDatabase) : P
         database.passwordResetTokenQueries.deleteExpiredPasswordResetTokens(cutoffMillis)
     }
 
+    override fun deleteByUserId(userId: String) {
+        database.passwordResetTokenQueries.deleteTokensByUserId(userId)
+    }
+
     companion object {
         val TOKEN_EXPIRATION = 1.hours
     }

@@ -43,7 +43,27 @@ interface UserRepository {
     fun recordVerificationRequest(email: String)
 
     /**
+     * Clears the verification request timestamp for the given email.
+     */
+    fun clearVerificationRequest(email: String)
+
+    /**
      * Deletes unactivated accounts created before the given cutoff timestamp.
      */
     fun deleteUnactivatedAccounts(cutoffMillis: Long)
+
+    /**
+     * Checks if a verified (activated) account exists with the given email.
+     */
+    fun existsByEmailAndActivated(email: String): Boolean
+
+    /**
+     * Finds an unverified (not activated) account by email.
+     */
+    fun findByEmailAndNotActivated(email: String): User?
+
+    /**
+     * Deletes a user by their ID.
+     */
+    fun deleteById(userId: String)
 }

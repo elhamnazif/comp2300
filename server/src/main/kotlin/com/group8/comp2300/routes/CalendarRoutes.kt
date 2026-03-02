@@ -44,8 +44,17 @@ fun Route.calendarRoutes() {
 
                         val status = when {
                             dayEvents.any { it.type.name == "APPOINTMENT" } -> "APPOINTMENT"
+
                             dayEvents.any { it.status == "TAKEN" } -> "TAKEN"
+
                             dayEvents.any { it.status == "MISSED" } -> "MISSED"
+
+                            dayEvents.any { it.status == "RECORDED" } -> "TAKEN"
+
+                            // Mood/activity recorded counts as activity
+                            dayEvents.isNotEmpty() -> "TAKEN"
+
+                            // No events for this day
                             else -> "NONE"
                         }
 

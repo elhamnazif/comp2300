@@ -73,6 +73,12 @@ interface ApiService {
     suspend fun logMood(
         request: com.group8.comp2300.domain.model.medical.MoodEntryRequest,
     ): com.group8.comp2300.domain.model.medical.Mood
+
+    suspend fun getUserMedications(): List<com.group8.comp2300.domain.model.medical.Medication>
+
+    suspend fun createMedication(
+        request: com.group8.comp2300.domain.model.medical.MedicationCreateRequest,
+    ): com.group8.comp2300.domain.model.medical.Medication
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -145,6 +151,14 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun logMood(
         request: com.group8.comp2300.domain.model.medical.MoodEntryRequest,
     ): com.group8.comp2300.domain.model.medical.Mood = client.post("/api/moods") { setBody(request) }.body()
+
+    override suspend fun getUserMedications(): List<com.group8.comp2300.domain.model.medical.Medication> =
+        client.get("/api/medications").body()
+
+    override suspend fun createMedication(
+        request: com.group8.comp2300.domain.model.medical.MedicationCreateRequest,
+    ): com.group8.comp2300.domain.model.medical.Medication =
+        client.post("/api/medications") { setBody(request) }.body()
 
     /**
      * Catches JsonConvertException when server returns an error response like {"error": "..."}

@@ -143,6 +143,9 @@ VALUES (?, ?, ?);
 deleteCalendarOverviewByYearMonth:
 DELETE FROM CalendarOverviewEntity WHERE yearMonth = ?;
 
+deleteAllCalendarOverview:
+DELETE FROM CalendarOverviewEntity;
+
 -- ==========================================
 -- Sync queue for offline writes
 -- ==========================================

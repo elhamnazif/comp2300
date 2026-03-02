@@ -10,6 +10,8 @@ import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.LabResult
+import com.group8.comp2300.domain.model.medical.Medication
+import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.Mood
@@ -33,7 +35,6 @@ class MedicalRepositoryImpl(
     // ---------- READS: cache-first, then refresh from network ----------
 
     override suspend fun getCalendarOverview(year: Int, month: Int): List<CalendarOverviewResponse> {
-        // Return cached data first
         val cached = calendarOverviewLocal.getByYearMonth(year, month)
 
         return try {
@@ -41,7 +42,6 @@ class MedicalRepositoryImpl(
             calendarOverviewLocal.replaceForYearMonth(year, month, remote)
             remote
         } catch (_: Exception) {
-            // Offline — return stale cache
             cached
         }
     }
@@ -70,6 +70,14 @@ class MedicalRepositoryImpl(
         }
     }
 
+    override suspend fun getUserMedications(): List<Medication> {
+        return apiService.getUserMedications()
+    }
+
+    override suspend fun createMedication(request: MedicationCreateRequest): Medication {
+        return apiService.createMedication(request)
+    }
+
     // ---------- WRITES: save locally + queue for sync on failure ----------
 
     override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment {
@@ -79,7 +87,6 @@ class MedicalRepositoryImpl(
             remote
         } catch (_: Exception) {
             syncQueue.enqueue("APPOINTMENT", Json.encodeToString(request))
-            // Return an optimistic local placeholder
             val placeholder = Appointment(
                 id = "local-${kotlin.uuid.Uuid.random()}",
                 userId = "",
@@ -105,7 +112,6 @@ class MedicalRepositoryImpl(
             remote
         } catch (_: Exception) {
             syncQueue.enqueue("MEDICATION_LOG", Json.encodeToString(request))
-            // Return optimistic local placeholder
             val placeholder = MedicationLog(
                 id = "local-${kotlin.uuid.Uuid.random()}",
                 medicationId = request.medicationId,
@@ -125,7 +131,6 @@ class MedicalRepositoryImpl(
             remote
         } catch (_: Exception) {
             syncQueue.enqueue("MOOD", Json.encodeToString(request))
-            // Return optimistic local placeholder
             val moodType = when {
                 request.moodScore >= 5 -> com.group8.comp2300.domain.model.medical.MoodType.GREAT
                 request.moodScore >= 4 -> com.group8.comp2300.domain.model.medical.MoodType.GOOD

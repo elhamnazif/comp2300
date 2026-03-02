@@ -98,7 +98,7 @@ class AuthRoutesTest {
 
     @Test
     fun registerDuplicateEmailReturnsConflictAndMessage() = testApplication {
-        configureAuthTestModule()
+        val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
         val request =
@@ -115,6 +115,10 @@ class AuthRoutesTest {
         }
         assertEquals(HttpStatusCode.Created, firstResponse.status)
 
+        // Activate the user so they count as a verified account
+        val authResponse = firstResponse.body<AuthResponse>()
+        userRepo.activateUser(authResponse.user.id)
+
         val secondResponse = client.post("/api/auth/register") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -125,6 +129,47 @@ class AuthRoutesTest {
             "An account with this email already exists",
             secondResponse.body<ErrorResponse>().error,
         )
+    }
+
+    @Test
+    fun registerWithUnverifiedEmailSucceeds() = testApplication {
+        configureAuthTestModule()
+        val client = jsonClient()
+
+        val email = "unverified.reregister@example.com"
+
+        // First registration - don't verify
+        val firstResponse = client.post("/api/auth/register") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                RegisterRequest(
+                    email = email,
+                    password = "Password1",
+                    firstName = "First",
+                    lastName = "Attempt",
+                ),
+            )
+        }
+        assertEquals(HttpStatusCode.Created, firstResponse.status)
+
+        // Second registration with same email but different details - should succeed
+        // because the first account was never verified
+        val secondResponse = client.post("/api/auth/register") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                RegisterRequest(
+                    email = email,
+                    password = "NewPassword1",
+                    firstName = "Second",
+                    lastName = "Attempt",
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.Created, secondResponse.status, secondResponse.bodyAsText())
+        val authResponse = secondResponse.body<AuthResponse>()
+        assertEquals(email, authResponse.user.email)
+        assertEquals("Second", authResponse.user.firstName)
     }
 
     @Test
@@ -469,7 +514,7 @@ class AuthRoutesTest {
 
     @Test
     fun preregisterDuplicateEmailReturnsConflict() = testApplication {
-        configureAuthTestModule()
+        val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
         val request = PreregisterRequest(
@@ -483,6 +528,11 @@ class AuthRoutesTest {
         }
         assertEquals(HttpStatusCode.OK, firstResponse.status)
 
+        // Activate the user so they count as a verified account
+        val user = userRepo.findByEmail("preregister.dupe@example.com")
+        assertNotNull(user)
+        userRepo.activateUser(user.id)
+
         val secondResponse = client.post("/api/auth/preregister") {
             contentType(ContentType.Application.Json)
             setBody(request)
@@ -493,6 +543,42 @@ class AuthRoutesTest {
             "An account with this email already exists",
             secondResponse.body<ErrorResponse>().error,
         )
+    }
+
+    @Test
+    fun preregisterWithUnverifiedEmailSucceeds() = testApplication {
+        configureAuthTestModule()
+        val client = jsonClient()
+
+        val email = "preregister.unverified@example.com"
+
+        // First preregistration - don't verify
+        val firstResponse = client.post("/api/auth/preregister") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                PreregisterRequest(
+                    email = email,
+                    password = "Password1",
+                ),
+            )
+        }
+        assertEquals(HttpStatusCode.OK, firstResponse.status)
+
+        // Second preregistration with same email - should succeed
+        // because the first account was never verified
+        val secondResponse = client.post("/api/auth/preregister") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                PreregisterRequest(
+                    email = email,
+                    password = "NewPassword1",
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.OK, secondResponse.status, secondResponse.bodyAsText())
+        val response = secondResponse.body<PreregisterResponse>()
+        assertEquals(email, response.email)
     }
 
     // ============== Complete Profile Tests ==============

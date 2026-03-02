@@ -2,6 +2,7 @@ package com.group8.comp2300.data.repository
 
 import co.touchlab.kermit.Logger
 import com.group8.comp2300.data.auth.TokenManager
+import com.group8.comp2300.data.local.MedicalCacheManager
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
 import com.group8.comp2300.data.remote.dto.LoginRequest
@@ -28,6 +29,7 @@ class AuthRepositoryImpl(
     private val apiService: ApiService,
     private val tokenManager: TokenManager,
     private val logger: Logger,
+    private val medicalCacheManager: MedicalCacheManager,
 ) : AuthRepository {
     private val _currentUser = MutableStateFlow<User?>(null)
     override val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
@@ -97,6 +99,11 @@ class AuthRepositoryImpl(
         } finally {
             tokenManager.clearTokens()
             _currentUser.value = null
+            try {
+                medicalCacheManager.clearAll()
+            } catch (e: Exception) {
+                logger.w(e) { "Failed to clear medical cache on logout" }
+            }
         }
     }
 

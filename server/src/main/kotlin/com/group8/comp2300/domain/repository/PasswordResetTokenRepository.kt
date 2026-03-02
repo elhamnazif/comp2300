@@ -5,4 +5,5 @@ interface PasswordResetTokenRepository {
     fun findValid(tokenHash: String): String?
     fun markUsed(tokenHash: String)
     fun deleteExpired(cutoffMillis: Long)
+    fun deleteByUserId(userId: String)
 }

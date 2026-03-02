@@ -23,6 +23,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
+import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -56,6 +58,18 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
     var entryTime by remember { mutableStateOf(9 to 0) }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Show errors from the ViewModel as Snackbars
+    LaunchedEffect(state.error) {
+        state.error?.let { errorMsg ->
+            snackbarHostState.showSnackbar(
+                message = errorMsg,
+                duration = SnackbarDuration.Short,
+            )
+            viewModel.dismissError()
+        }
+    }
 
     val closeSheet = {
         showBottomSheet = false
@@ -64,6 +78,7 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
                 title = {
@@ -116,6 +131,7 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
                 CalendarCard(
                     baseDate = today,
                     isMedicationTaken = state.isMedicationTakenToday,
+                    overview = state.overview,
                     selectedDate = selectedDateForEntry,
                     onDayClick = { day ->
                         selectedDateForEntry = day
@@ -128,6 +144,9 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
                         currentSheetView = SheetView.MENU
                         selectedAppointment = null
                         showBottomSheet = true
+                    },
+                    onMonthChanged = { year, month ->
+                        viewModel.loadOverviewForMonth(year, month)
                     },
                 )
             }
@@ -143,8 +162,8 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
                     DailyActionCard(
                         isTaken = state.isMedicationTakenToday,
                         onToggle = {
-                            if (!state.isMedicationTakenToday) {
-                                viewModel.logMedication("Unknown", 1) // Provide defaults or show form
+                            if (!state.isMedicationTakenToday && state.medications.isNotEmpty()) {
+                                viewModel.logMedication(state.medications.first().id)
                             }
                         },
                     )
@@ -193,11 +212,16 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
                                 onTimeChange = { h, m -> entryTime = h to m },
                                 onBack = { currentSheetView = SheetView.MENU },
                                 content = {
-                                    MedicationForm({ name, extras ->
-                                        val dosage = extras["dosage"] as? Int ?: 1
-                                        viewModel.logMedication(name, dosage)
-                                        closeSheet()
-                                    })
+                                    MedicationForm(
+                                        medications = state.medications,
+                                        onSave = { medicationId ->
+                                            viewModel.logMedication(medicationId)
+                                            closeSheet()
+                                        },
+                                        onCreateMedication = { request ->
+                                            viewModel.createMedication(request)
+                                        },
+                                    )
                                 },
                             )
 
@@ -255,8 +279,10 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
 fun CalendarCard(
     baseDate: LocalDate,
     isMedicationTaken: Boolean,
+    overview: List<CalendarOverviewResponse>,
     selectedDate: CalendarDay?,
     onDayClick: (CalendarDay) -> Unit,
+    onMonthChanged: (Int, Int) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     var monthOffset by remember { mutableIntStateOf(0) }
@@ -264,8 +290,18 @@ fun CalendarCard(
     val displayDate =
         remember(baseDate, monthOffset) { baseDate.plus(monthOffset, DateTimeUnit.MONTH) }
 
+    // Re-fetch overview when month changes
+    LaunchedEffect(displayDate) {
+        onMonthChanged(displayDate.year, displayDate.month.number)
+    }
+
+    // Convert overview list into a date->status map for generateCalendarDays
+    val overviewMap = remember(overview) {
+        overview.associate { it.date to it.status }
+    }
+
     val calendarDays =
-        remember(displayDate) { generateCalendarDays(displayDate.year, displayDate.month) }
+        remember(displayDate, overviewMap) { generateCalendarDays(displayDate.year, displayDate.month, overviewMap) }
 
     Card(
         colors =
@@ -484,53 +520,117 @@ private fun FormChipGroup(
 }
 
 @Composable
-fun MedicationForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifier = Modifier) {
-    val meds = FormConstants.commonMeds()
-    var name by remember(meds) { mutableStateOf(meds.firstOrNull() ?: "") }
+fun MedicationForm(
+    medications: List<Medication>,
+    onSave: (String) -> Unit,
+    onCreateMedication: (com.group8.comp2300.domain.model.medical.MedicationCreateRequest) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var selectedMedId by remember(medications) { mutableStateOf(medications.firstOrNull()?.id ?: "") }
     var dosage by remember { mutableIntStateOf(1) }
+    // For "add new medication" inline form
+    var showAddNew by remember { mutableStateOf(medications.isEmpty()) }
+    var newMedName by remember { mutableStateOf("") }
+    var newMedDosage by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        FormDropdown(
-            label = stringResource(Res.string.form_medication_label),
-            options = FormConstants.commonMeds(),
-            selectedOption = name,
-            onSelectOption = { name = it },
-        )
-
-        Column {
-            Text(stringResource(Res.string.form_dosage_label), style = MaterialTheme.typography.labelMedium)
+        if (showAddNew || medications.isEmpty()) {
+            // Inline form to create a new medication
+            Text(
+                if (medications.isEmpty()) "Add your first medication" else "Add new medication",
+                style = MaterialTheme.typography.titleSmall,
+            )
+            OutlinedTextField(
+                value = newMedName,
+                onValueChange = { newMedName = it },
+                label = { Text("Medication name") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+            OutlinedTextField(
+                value = newMedDosage,
+                onValueChange = { newMedDosage = it },
+                label = { Text("Dosage (e.g. 200mg)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FormConstants.Dosages.forEach { count ->
-                    FilterChip(
-                        selected = dosage == count,
-                        onClick = { dosage = count },
-                        label = {
-                            Text(
-                                pluralStringResource(
-                                    Res.plurals.form_dosage_pill,
-                                    count,
-                                    count,
-                                ),
-                            )
-                        },
-                        leadingIcon = {
-                            if (dosage == count) {
-                                Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp))
-                            }
-                        },
-                    )
+                if (medications.isNotEmpty()) {
+                    OutlinedButton(
+                        onClick = { showAddNew = false },
+                    ) { Text("Cancel") }
+                }
+                Button(
+                    onClick = {
+                        val today = kotlin.time.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+                        onCreateMedication(
+                            com.group8.comp2300.domain.model.medical.MedicationCreateRequest(
+                                name = newMedName,
+                                dosage = newMedDosage.ifBlank { "1 tablet" },
+                                startDate = today.toString(),
+                                endDate = today.plus(1, kotlinx.datetime.DateTimeUnit.YEAR).toString(),
+                            ),
+                        )
+                        newMedName = ""
+                        newMedDosage = ""
+                        showAddNew = false
+                    },
+                    enabled = newMedName.isNotBlank(),
+                ) { Text("Create") }
+            }
+        } else {
+            // Pick from existing medications
+            val medNames = medications.map { it.name }
+            val selectedName = medications.find { it.id == selectedMedId }?.name ?: medNames.firstOrNull() ?: ""
+
+            FormDropdown(
+                label = stringResource(Res.string.form_medication_label),
+                options = medNames,
+                selectedOption = selectedName,
+                onSelectOption = { name ->
+                    selectedMedId = medications.find { it.name == name }?.id ?: ""
+                },
+            )
+
+            Column {
+                Text(stringResource(Res.string.form_dosage_label), style = MaterialTheme.typography.labelMedium)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FormConstants.Dosages.forEach { count ->
+                        FilterChip(
+                            selected = dosage == count,
+                            onClick = { dosage = count },
+                            label = {
+                                Text(
+                                    pluralStringResource(
+                                        Res.plurals.form_dosage_pill,
+                                        count,
+                                        count,
+                                    ),
+                                )
+                            },
+                            leadingIcon = {
+                                if (dosage == count) {
+                                    Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp))
+                                }
+                            },
+                        )
+                    }
                 }
             }
-        }
 
-        Button(
-            onClick = { onSave(name, mapOf("dosage" to dosage)) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = name.isNotEmpty(),
-        ) { Text(stringResource(Res.string.form_medication_title)) }
+            TextButton(onClick = { showAddNew = true }) {
+                Text("+ Add new medication")
+            }
+
+            Button(
+                onClick = { onSave(selectedMedId) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = selectedMedId.isNotEmpty(),
+            ) { Text(stringResource(Res.string.form_medication_title)) }
+        }
     }
 }
 
