@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -29,17 +31,19 @@ import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import kotlin.time.Instant
 
 @Composable
-fun CalendarScreen(modifier: Modifier = Modifier) {
+fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel = koinViewModel()) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
     val today = remember {
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     }
 
     // UI State
-    var isMedicationTaken by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
     var currentSheetView by remember { mutableStateOf(SheetView.MENU) }
 
@@ -111,7 +115,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
             item {
                 CalendarCard(
                     baseDate = today,
-                    isMedicationTaken = isMedicationTaken,
+                    isMedicationTaken = state.isMedicationTakenToday,
                     selectedDate = selectedDateForEntry,
                     onDayClick = { day ->
                         selectedDateForEntry = day
@@ -137,8 +141,12 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                         modifier = Modifier.padding(bottom = 8.dp),
                     )
                     DailyActionCard(
-                        isTaken = isMedicationTaken,
-                        onToggle = { isMedicationTaken = !isMedicationTaken },
+                        isTaken = state.isMedicationTakenToday,
+                        onToggle = {
+                            if (!state.isMedicationTakenToday) {
+                                viewModel.logMedication("Unknown", 1) // Provide defaults or show form
+                            }
+                        },
                     )
                 }
             }
@@ -151,7 +159,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                 )
             }
 
-            items(sampleAppointments) { appointment ->
+            items(state.appointments) { appointment ->
                 AppointmentCard(
                     appointment = appointment,
                     onClick = {
@@ -186,7 +194,8 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                 onBack = { currentSheetView = SheetView.MENU },
                                 content = {
                                     MedicationForm({ name, extras ->
-                                        println("Saved: $name, $extras")
+                                        val dosage = extras["dosage"] as? Int ?: 1
+                                        viewModel.logMedication(name, dosage)
                                         closeSheet()
                                     })
                                 },
@@ -202,7 +211,10 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                 onBack = { currentSheetView = SheetView.MENU },
                                 content = {
                                     AppointmentForm({ doc, extras ->
-                                        println("Saved: $doc, $extras")
+                                        val type = extras["type"] as? String ?: "Checkup"
+                                        val dt = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
+                                        val ms = dt.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                                        viewModel.scheduleAppointment(doc, type, ms)
                                         closeSheet()
                                     })
                                 },
@@ -218,7 +230,7 @@ fun CalendarScreen(modifier: Modifier = Modifier) {
                                 onBack = { currentSheetView = SheetView.MENU },
                                 content = {
                                     MoodEntryForm({ score, tags, symptoms, notes ->
-                                        println("Mood: $score, $tags, $symptoms, $notes")
+                                        viewModel.logMood(score, tags, symptoms, notes)
                                         closeSheet()
                                     })
                                 },
@@ -387,7 +399,7 @@ fun DayCell(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                day.dayOfMonth.toString(),
+                day.day.toString(),
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight =
                 if (day.isToday || isSelected) FontWeight.Bold else FontWeight.Normal,
@@ -887,13 +899,25 @@ fun AppointmentDetailSheetContent(
                     fontWeight = FontWeight.Bold,
                 )
                 Spacer(Modifier.height(4.dp))
-                Text(appointment.type, style = MaterialTheme.typography.bodyMedium)
+                Text(appointment.appointmentType, style = MaterialTheme.typography.bodyMedium)
             }
         }
         Spacer(Modifier.height(24.dp))
-        DetailRow(Icons.DateRangeW400Outlinedfill1, stringResource(Res.string.form_date_label), appointment.date)
+
+        val dt = Instant.fromEpochMilliseconds(appointment.appointmentTime)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+
+        DetailRow(
+            Icons.DateRangeW400Outlinedfill1,
+            stringResource(Res.string.form_date_label),
+            DateFormatter.formatDayMonthYear(dt.date),
+        )
         Spacer(Modifier.height(16.dp))
-        DetailRow(Icons.CheckCircleW400Outlinedfill1, stringResource(Res.string.form_time_label), appointment.time)
+        DetailRow(
+            Icons.CheckCircleW400Outlinedfill1,
+            stringResource(Res.string.form_time_label),
+            DateFormatter.formatTime(dt.hour, dt.minute),
+        )
         Spacer(Modifier.height(16.dp))
         DetailRow(
             Icons.LocationOnW400Outlined,
@@ -1009,8 +1033,12 @@ fun DailyActionCard(isTaken: Boolean, onToggle: () -> Unit, modifier: Modifier =
 
 @Composable
 fun AppointmentCard(appointment: Appointment, onClick: () -> Unit = {}, modifier: Modifier = Modifier) {
-    val day = appointment.date.split(" ").getOrNull(1) ?: appointment.date.take(3)
-    val month = appointment.date.split(" ").getOrNull(0) ?: ""
+    val dt = Instant.fromEpochMilliseconds(appointment.appointmentTime)
+        .toLocalDateTime(TimeZone.currentSystemDefault())
+
+    val day = dt.day.toString()
+    val month = dt.month.name.take(3)
+
     Row(
         modifier =
         modifier
@@ -1046,7 +1074,7 @@ fun AppointmentCard(appointment: Appointment, onClick: () -> Unit = {}, modifier
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                "${appointment.type} • ${appointment.time}",
+                "${appointment.appointmentType} • ${DateFormatter.formatTime(dt.hour, dt.minute)}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.secondary,
             )

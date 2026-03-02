@@ -22,21 +22,14 @@ enum class AdherenceStatus {
 }
 
 data class CalendarDay(
-    val dayOfMonth: Int,
+    val day: Int,
     val date: LocalDate,
     val status: AdherenceStatus,
     val isToday: Boolean,
     val isCurrentMonth: Boolean,
 )
 
-data class Appointment(val id: String, val title: String, val type: String, val date: String, val time: String)
-
 data class Doctor(val name: String)
-
-val sampleAppointments =
-    com.group8.comp2300.mock.sampleCalendarAppointments.map {
-        Appointment(it.id, it.title, it.type, it.date, it.time)
-    }
 
 val sampleDoctors = com.group8.comp2300.mock.sampleCalendarDoctors.map { Doctor(it.name) }
 
@@ -60,7 +53,7 @@ fun generateCalendarDays(year: Int, month: Month): List<CalendarDay> {
             }
 
         CalendarDay(
-            dayOfMonth = date.day,
+            day = date.day,
             date = date,
             status = status,
             isToday = isToday,
