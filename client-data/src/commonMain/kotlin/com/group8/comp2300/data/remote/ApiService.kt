@@ -170,12 +170,12 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
         request: MoodEntryRequest,
     ): Mood = client.post("/api/moods") { setBody(request) }.body()
 
-    override suspend fun getUserMedications(): List<com.group8.comp2300.domain.model.medical.Medication> =
+    override suspend fun getUserMedications(): List<Medication> =
         client.get("/api/medications").body()
 
     override suspend fun createMedication(
-        request: com.group8.comp2300.domain.model.medical.MedicationCreateRequest,
-    ): com.group8.comp2300.domain.model.medical.Medication =
+        request: MedicationCreateRequest,
+    ): Medication =
         client.post("/api/medications") { setBody(request) }.body()
 
     /**
