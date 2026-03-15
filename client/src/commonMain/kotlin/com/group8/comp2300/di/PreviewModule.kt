@@ -3,6 +3,7 @@ package com.group8.comp2300.di
 import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.Quiz
 import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
 import com.group8.comp2300.domain.model.user.Gender
@@ -53,8 +54,8 @@ class FakeShopRepository : ShopRepository {
 }
 
 class FakeAuthRepository : AuthRepository {
-    private val _currentUser = MutableStateFlow<User?>(null)
-    override val currentUser: StateFlow<User?> = _currentUser
+    private val _session = MutableStateFlow<AuthSession>(AuthSession.SignedOut)
+    override val session: StateFlow<AuthSession> = _session
 
     override suspend fun login(email: String, password: String): Result<User> {
         val user =
@@ -67,7 +68,7 @@ class FakeAuthRepository : AuthRepository {
                 sexualOrientation = SexualOrientation.PREFER_NOT_TO_SAY,
                 dateOfBirth = null,
             )
-        _currentUser.value = user
+        _session.value = AuthSession.SignedIn(user)
         return Result.success(user)
     }
 
@@ -90,7 +91,7 @@ class FakeAuthRepository : AuthRepository {
                 sexualOrientation = sexualOrientation,
                 dateOfBirth = dateOfBirth,
             )
-        _currentUser.value = user
+        _session.value = AuthSession.SignedIn(user)
         return Result.success(user)
     }
 
@@ -117,10 +118,8 @@ class FakeAuthRepository : AuthRepository {
     override suspend fun resetPassword(token: String, newPassword: String): Result<Unit> = Result.success(Unit)
 
     override suspend fun logout() {
-        _currentUser.value = null
+        _session.value = AuthSession.SignedOut
     }
-
-    override fun isGuest(): Boolean = _currentUser.value == null
 }
 
 /** Fake AuthViewModel for Compose Preview. */
@@ -128,8 +127,8 @@ class FakeAuthViewModel : AuthViewModel() {
     final override val state: StateFlow<State>
         field = MutableStateFlow(State())
 
-    private val _currentUser = MutableStateFlow<User?>(null)
-    override val currentUser: StateFlow<User?> = _currentUser
+    private val _session = MutableStateFlow<AuthSession>(AuthSession.SignedOut)
+    override val session: StateFlow<AuthSession> = _session
 
     override fun onEvent(event: AuthUiEvent) {
         /* no-op for preview */
@@ -138,8 +137,6 @@ class FakeAuthViewModel : AuthViewModel() {
     override fun logout() {
         /* no-op */
     }
-
-    override fun isGuest() = true
 }
 
 val previewModule = module {

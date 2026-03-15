@@ -16,6 +16,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import org.koin.ktor.ext.inject
 import java.util.UUID
@@ -25,72 +26,51 @@ fun Route.medicationRoutes() {
     val medicationRepository: MedicationRepository by inject()
 
     route("/api/medications") {
-        // List user's active medications
+        // List user's medications, including archived entries.
         get {
             withUserId { userId ->
-                val medications = medicationRepository.getActiveByUserId(userId)
+                val medications = medicationRepository.getAllByUserId(userId)
                 call.respond(HttpStatusCode.OK, medications)
             }
         }
 
-        // Create a new medication for the user
-        post {
+        put("/{id}") {
             withUserId { userId ->
+                val id = call.parameters["id"] ?: run {
+                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing medication id"))
+                    return@withUserId
+                }
                 val request = call.receive<MedicationCreateRequest>()
+                val validated = call.validateMedicationRequest(request) ?: return@withUserId
 
-                // Validate required fields
-                if (request.name.isBlank()) {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Medication name is required"))
-                    return@withUserId
-                }
-                if (request.dosage.isBlank()) {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Dosage is required"))
-                    return@withUserId
-                }
-                if (request.startDate.isBlank()) {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Start date is required"))
-                    return@withUserId
-                }
-                if (request.endDate.isBlank()) {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "End date is required"))
-                    return@withUserId
-                }
-
-                // Validate date format (YYYY-MM-DD)
-                val dateRegex = Regex("^\\d{4}-\\d{2}-\\d{2}$")
-                if (!dateRegex.matches(request.startDate)) {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Start date must be in YYYY-MM-DD format"))
-                    return@withUserId
-                }
-                if (!dateRegex.matches(request.endDate)) {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "End date must be in YYYY-MM-DD format"))
-                    return@withUserId
-                }
-
-                val frequency = try {
-                    MedicationFrequency.valueOf(request.frequency)
-                } catch (e: Exception) {
-                    call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid frequency: ${request.frequency}"))
+                val existing = medicationRepository.getById(id)
+                if (existing != null && existing.userId != userId) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Medication not found"))
                     return@withUserId
                 }
 
                 val medication = Medication(
-                    id = UUID.randomUUID().toString(),
+                    id = id,
                     userId = userId,
                     name = request.name,
                     dosage = request.dosage,
                     quantity = request.quantity,
-                    frequency = frequency,
+                    frequency = validated.frequency,
                     instruction = request.instruction,
-                    colorHex = request.colorHex ?: Medication.PRESET_COLORS.random(),
+                    colorHex = request.colorHex ?: existing?.colorHex ?: Medication.PRESET_COLORS.random(),
                     startDate = request.startDate,
                     endDate = request.endDate,
                     hasReminder = request.hasReminder,
-                    status = MedicationStatus.ACTIVE,
+                    status = validated.status,
                 )
 
-                medicationRepository.insert(medication)
-                call.respond(HttpStatusCode.Created, medication)
+                if (existing == null) {
+                    medicationRepository.insert(medication)
+                    call.respond(HttpStatusCode.Created, medication)
+                } else {
+                    medicationRepository.update(medication)
+                    call.respond(HttpStatusCode.OK, medication)
+                }
             }
         }
 
@@ -130,6 +110,12 @@ fun Route.medicationRoutes() {
             }
         }
 
+        get("/logs") {
+            withUserId { userId ->
+                call.respond(HttpStatusCode.OK, medicationLogRepository.getHistory(userId))
+            }
+        }
+
         post("/logs") {
             withUserId { userId ->
                 val request = call.receive<MedicationLogRequest>()
@@ -142,6 +128,11 @@ fun Route.medicationRoutes() {
                 }
 
                 val timestamp = request.timestampMs ?: System.currentTimeMillis()
+                val medication = medicationRepository.getById(request.medicationId)
+                if (medication == null || medication.userId != userId) {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Medication not found"))
+                    return@withUserId
+                }
 
                 val log = MedicationLog(
                     id = UUID.randomUUID().toString(),
@@ -156,4 +147,59 @@ fun Route.medicationRoutes() {
             }
         }
     }
+}
+
+private data class ValidMedicationRequest(
+    val frequency: MedicationFrequency,
+    val status: MedicationStatus,
+)
+
+private suspend fun io.ktor.server.application.ApplicationCall.validateMedicationRequest(
+    request: MedicationCreateRequest,
+): ValidMedicationRequest? {
+    if (request.name.isBlank()) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Medication name is required"))
+        return null
+    }
+    if (request.dosage.isBlank()) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Dosage is required"))
+        return null
+    }
+    if (request.startDate.isBlank()) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Start date is required"))
+        return null
+    }
+    if (request.endDate.isBlank()) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "End date is required"))
+        return null
+    }
+
+    val dateRegex = Regex("^\\d{4}-\\d{2}-\\d{2}$")
+    if (!dateRegex.matches(request.startDate)) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Start date must be in YYYY-MM-DD format"))
+        return null
+    }
+    if (!dateRegex.matches(request.endDate)) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "End date must be in YYYY-MM-DD format"))
+        return null
+    }
+
+    val frequency = try {
+        MedicationFrequency.valueOf(request.frequency)
+    } catch (_: Exception) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid frequency: ${request.frequency}"))
+        return null
+    }
+
+    val status = try {
+        MedicationStatus.valueOf(request.status)
+    } catch (_: Exception) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid status: ${request.status}"))
+        return null
+    }
+
+    return ValidMedicationRequest(
+        frequency = frequency,
+        status = status,
+    )
 }

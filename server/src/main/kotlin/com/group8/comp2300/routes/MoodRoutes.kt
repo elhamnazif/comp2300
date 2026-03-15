@@ -15,6 +15,12 @@ fun Route.moodRoutes() {
     val moodRepository: MoodRepository by inject()
 
     route("/api/moods") {
+        get {
+            withUserId { userId ->
+                call.respond(HttpStatusCode.OK, moodRepository.getHistory(userId))
+            }
+        }
+
         post {
             withUserId { userId ->
                 val request = call.receive<MoodEntryRequest>()

@@ -4,7 +4,6 @@ import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.config.ResendConfig
 import com.group8.comp2300.data.repository.AppointmentRepositoryImpl
 import com.group8.comp2300.data.repository.AppointmentSlotRepositoryImpl
-import com.group8.comp2300.data.repository.CalendarRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicTagRepositoryImpl
 import com.group8.comp2300.data.repository.MedicationLogRepositoryImpl
@@ -19,7 +18,6 @@ import com.group8.comp2300.data.repository.UserRepositoryImpl
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.repository.AppointmentRepository
 import com.group8.comp2300.domain.repository.AppointmentSlotRepository
-import com.group8.comp2300.domain.repository.CalendarRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.ClinicTagRepository
 import com.group8.comp2300.domain.repository.MedicationLogRepository
@@ -62,7 +60,6 @@ val serverModule = module {
     single<PasswordResetTokenRepository> { PasswordResetTokenRepositoryImpl(get()) }
     single<AppointmentRepository> { AppointmentRepositoryImpl(get()) }
     single<AppointmentSlotRepository> { AppointmentSlotRepositoryImpl(get()) }
-    single<CalendarRepository> { CalendarRepositoryImpl(get()) }
     single<ClinicTagRepository> { ClinicTagRepositoryImpl(get()) }
     single<ClinicRepository> { ClinicRepositoryImpl(get(), get()) }
     single<MedicationRepository> { MedicationRepositoryImpl(get()) }

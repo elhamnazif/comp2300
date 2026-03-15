@@ -14,19 +14,20 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 
-class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderRepository {
-    override fun getReminders(): Flow<List<Reminder>> = database.appDatabaseQueries
-        .selectAll()
+class ReminderRepositoryImpl(
+    private val database: AppDatabase,
+) : ReminderRepository {
+    override fun getReminders(): Flow<List<Reminder>> = database.appDatabaseQueries.selectAllReminders()
         .asFlow()
         .mapToList(Dispatchers.Default)
         .map { entities -> entities.map { it.toDomain() } }
 
     override suspend fun getById(id: String): Reminder? = withContext(Dispatchers.Default) {
-        database.appDatabaseQueries.selectById(id).executeAsOneOrNull()?.toDomain()
+        database.appDatabaseQueries.selectReminderById(id).executeAsOneOrNull()?.toDomain()
     }
 
     override suspend fun insert(reminder: Reminder) = withContext(Dispatchers.Default) {
-        database.appDatabaseQueries.insert(
+        database.appDatabaseQueries.insertReminder(
             id = reminder.id,
             title = reminder.title,
             description = reminder.message,
@@ -41,7 +42,7 @@ class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderReposi
     }
 
     override suspend fun update(reminder: Reminder) = withContext(Dispatchers.Default) {
-        database.appDatabaseQueries.update(
+        database.appDatabaseQueries.updateReminder(
             title = reminder.title,
             description = reminder.message,
             reminderTime = reminder.scheduledTime,
@@ -55,7 +56,7 @@ class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderReposi
     }
 
     override suspend fun delete(id: String) = withContext(Dispatchers.Default) {
-        database.appDatabaseQueries.delete(id)
+        database.appDatabaseQueries.deleteReminder(id)
         Unit
     }
 }

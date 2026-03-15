@@ -13,6 +13,13 @@ VALUES (?, ?, ?, ?);
 selectLogsByMedication:
 SELECT * FROM MedicationLogEnt WHERE medication_id = ?;
 
+selectLogsByUser:
+SELECT l.*
+FROM MedicationLogEnt l
+JOIN MedicationEntity m ON l.medication_id = m.id
+WHERE m.user_id = ?
+ORDER BY l.medication_time DESC;
+
 selectLogDetails:
 SELECT * FROM MedicationLogEnt WHERE id = ?;
 

@@ -9,8 +9,14 @@ import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
+import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
-import com.group8.comp2300.domain.repository.MedicalRepository
+import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
+import com.group8.comp2300.domain.repository.medical.CalendarDataRepository
+import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
+import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
+import com.group8.comp2300.domain.repository.medical.MoodDataRepository
+import com.group8.comp2300.domain.repository.medical.SyncCoordinator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +36,14 @@ data class CalendarUiState(
     val medications: List<Medication> = emptyList(),
 )
 
-class CalendarViewModel(private val medicalRepository: MedicalRepository) : ViewModel() {
+class CalendarViewModel(
+    private val syncCoordinator: SyncCoordinator,
+    private val calendarRepository: CalendarDataRepository,
+    private val appointmentRepository: AppointmentDataRepository,
+    private val medicationRepository: MedicationDataRepository,
+    private val medicationLogRepository: MedicationLogDataRepository,
+    private val moodRepository: MoodDataRepository,
+) : ViewModel() {
 
     private val _state = MutableStateFlow(CalendarUiState())
     val state: StateFlow<CalendarUiState> = _state.asStateFlow()
@@ -43,6 +56,7 @@ class CalendarViewModel(private val medicalRepository: MedicalRepository) : View
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             try {
+                syncCoordinator.refreshAuthenticatedData()
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 val year = now.year
                 val month = now.month.number
@@ -50,15 +64,10 @@ class CalendarViewModel(private val medicalRepository: MedicalRepository) : View
                     now.month.number.toString().padStart(2, '0')
                 }-${now.day.toString().padStart(2, '0')}"
 
-                val overview = medicalRepository.getCalendarOverview(year, month)
-                val domainAppointments = medicalRepository.getAppointments()
-                val medicationAgenda = medicalRepository.getMedicationAgenda(dateString)
-                val medications = try {
-                    medicalRepository.getUserMedications()
-                } catch (e: Exception) {
-                    co.touchlab.kermit.Logger.w(e) { "Failed to load medications" }
-                    emptyList()
-                }
+                val overview = calendarRepository.getCalendarOverview(year, month)
+                val domainAppointments = appointmentRepository.getAppointments()
+                val medicationAgenda = medicationLogRepository.getMedicationAgenda(dateString)
+                val medications = medicationRepository.getMedications().filter { it.status == MedicationStatus.ACTIVE }
 
                 val takenToday = medicationAgenda.any { it.status.name == "TAKEN" }
 
@@ -82,7 +91,7 @@ class CalendarViewModel(private val medicalRepository: MedicalRepository) : View
     fun loadOverviewForMonth(year: Int, month: Int) {
         viewModelScope.launch {
             try {
-                val overview = medicalRepository.getCalendarOverview(year, month)
+                val overview = calendarRepository.getCalendarOverview(year, month)
                 _state.update { it.copy(overview = overview) }
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message) }
@@ -94,8 +103,8 @@ class CalendarViewModel(private val medicalRepository: MedicalRepository) : View
         viewModelScope.launch {
             _state.update { it.copy(error = null) }
             try {
-                val medication = medicalRepository.createMedication(request)
-                _state.update { it.copy(medications = it.medications + medication) }
+                medicationRepository.saveMedication(request)
+                loadInitialData()
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message) }
             }
@@ -110,7 +119,7 @@ class CalendarViewModel(private val medicalRepository: MedicalRepository) : View
                     medicationId = medicationId,
                     status = MedicationLogStatus.TAKEN.name,
                 )
-                medicalRepository.logMedication(request)
+                medicationLogRepository.logMedication(request)
                 _state.update { it.copy(isMedicationTakenToday = true) }
                 loadInitialData()
             } catch (e: Exception) {
@@ -130,7 +139,7 @@ class CalendarViewModel(private val medicalRepository: MedicalRepository) : View
                     appointmentType = serverType,
                     doctorName = doctorName,
                 )
-                medicalRepository.scheduleAppointment(request)
+                appointmentRepository.scheduleAppointment(request)
                 loadInitialData()
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message) }
@@ -148,7 +157,7 @@ class CalendarViewModel(private val medicalRepository: MedicalRepository) : View
                     symptoms = symptoms,
                     notes = notes,
                 )
-                medicalRepository.logMood(request)
+                moodRepository.logMood(request)
                 loadInitialData()
             } catch (e: Exception) {
                 _state.update { it.copy(error = e.message) }

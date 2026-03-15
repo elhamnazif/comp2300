@@ -1,0 +1,9 @@
+package com.group8.comp2300.data.offline
+
+object OutboxEntityType {
+    const val APPOINTMENT = "APPOINTMENT"
+    const val MEDICATION_UPSERT = "MEDICATION_UPSERT"
+    const val MEDICATION_DELETE = "MEDICATION_DELETE"
+    const val MEDICATION_LOG = "MEDICATION_LOG"
+    const val MOOD = "MOOD"
+}

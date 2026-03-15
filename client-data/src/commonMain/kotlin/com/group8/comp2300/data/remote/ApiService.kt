@@ -15,7 +15,6 @@ import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
-import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLog
@@ -26,8 +25,10 @@ import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
@@ -65,11 +66,6 @@ interface ApiService {
     suspend fun resendVerificationEmail(email: String): MessageResponse
 
     // Medical API methods
-    suspend fun getCalendarOverview(
-        year: Int,
-        month: Int,
-    ): List<CalendarOverviewResponse>
-
     suspend fun getAppointments(): List<Appointment>
 
     suspend fun scheduleAppointment(
@@ -80,17 +76,24 @@ interface ApiService {
         request: MedicationLogRequest,
     ): MedicationLog
 
+    suspend fun getMedicationLogHistory(): List<MedicationLog>
+
     suspend fun getMedicationAgenda(date: String): List<MedicationLog>
 
     suspend fun logMood(
         request: MoodEntryRequest,
     ): Mood
 
+    suspend fun getMoodHistory(): List<Mood>
+
     suspend fun getUserMedications(): List<Medication>
 
-    suspend fun createMedication(
+    suspend fun upsertMedication(
+        id: String,
         request: MedicationCreateRequest,
     ): Medication
+
+    suspend fun deleteMedication(id: String)
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -142,12 +145,6 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
         }.body()
 
     // --- Medical API ---
-    override suspend fun getCalendarOverview(
-        year: Int,
-        month: Int,
-    ): List<CalendarOverviewResponse> =
-        client.get("/api/calendar/overview?year=$year&month=$month").body()
-
     override suspend fun getAppointments(): List<Appointment> =
         client.get("/api/appointments").body()
 
@@ -161,6 +158,9 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     ): MedicationLog =
         client.post("/api/medications/logs") { setBody(request) }.body()
 
+    override suspend fun getMedicationLogHistory(): List<MedicationLog> =
+        client.get("/api/medications/logs").body()
+
     override suspend fun getMedicationAgenda(
         date: String,
     ): List<MedicationLog> =
@@ -170,13 +170,21 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
         request: MoodEntryRequest,
     ): Mood = client.post("/api/moods") { setBody(request) }.body()
 
+    override suspend fun getMoodHistory(): List<Mood> =
+        client.get("/api/moods").body()
+
     override suspend fun getUserMedications(): List<Medication> =
         client.get("/api/medications").body()
 
-    override suspend fun createMedication(
+    override suspend fun upsertMedication(
+        id: String,
         request: MedicationCreateRequest,
     ): Medication =
-        client.post("/api/medications") { setBody(request) }.body()
+        client.put("/api/medications/$id") { setBody(request) }.body()
+
+    override suspend fun deleteMedication(id: String) {
+        client.delete("/api/medications/$id")
+    }
 
     /**
      * Catches JsonConvertException when server returns an error response like {"error": "..."}

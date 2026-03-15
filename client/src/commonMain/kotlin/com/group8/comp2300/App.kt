@@ -1,10 +1,13 @@
 package com.group8.comp2300
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
@@ -14,6 +17,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,6 +29,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import com.group8.comp2300.di.*
+import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.presentation.navigation.*
 import com.group8.comp2300.presentation.screens.auth.AuthViewModel
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -57,10 +62,17 @@ fun MainApp(
     authViewModel: AuthViewModel = koinViewModel(),
     navigator: Navigator = koinViewModel(),
 ) {
-    val currentUser by authViewModel.currentUser.collectAsState()
+    val session by authViewModel.session.collectAsState()
 
-    // Sync guest state (optional, or handle inside VMs)
-    LaunchedEffect(currentUser) { navigator.isGuest = (currentUser == null) }
+    if (session is AuthSession.Restoring) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     val currentScreen = navigator.currentScreen
     val navigationSuiteScaffoldState = rememberNavigationSuiteScaffoldState()

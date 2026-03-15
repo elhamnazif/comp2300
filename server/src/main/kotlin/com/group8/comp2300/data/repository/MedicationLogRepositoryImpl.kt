@@ -22,6 +22,11 @@ class MedicationLogRepositoryImpl(private val database: ServerDatabase) : Medica
             .executeAsList()
             .map { it.toDomain() }
 
+    override fun getHistory(userId: String): List<MedicationLog> =
+        database.medicationLogQueries.selectLogsByUser(userId)
+            .executeAsList()
+            .map { it.toDomain() }
+
     override fun getById(id: String): MedicationLog? = database.medicationLogQueries.selectLogDetails(id)
         .executeAsOneOrNull()?.toDomain()
 

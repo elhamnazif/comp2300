@@ -4,7 +4,6 @@ import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.di.serverModule
 import com.group8.comp2300.routes.appointmentRoutes
 import com.group8.comp2300.routes.authRoutes
-import com.group8.comp2300.routes.calendarRoutes
 import com.group8.comp2300.routes.medicationRoutes
 import com.group8.comp2300.routes.moodRoutes
 import com.group8.comp2300.routes.productRoutes
@@ -81,13 +80,12 @@ fun Application.module() {
         get("/api/health") { call.respond(mapOf("status" to "OK")) }
 
         authRoutes(get())
+        productRoutes()
 
         authenticate("auth-jwt", optional = devBypass) {
-            productRoutes()
             appointmentRoutes()
             medicationRoutes()
             moodRoutes()
-            calendarRoutes()
         }
     }
 }

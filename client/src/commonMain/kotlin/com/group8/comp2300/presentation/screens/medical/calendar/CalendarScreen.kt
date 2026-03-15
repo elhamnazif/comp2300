@@ -38,7 +38,12 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 @Composable
-fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel = koinViewModel()) {
+fun CalendarScreen(
+    modifier: Modifier = Modifier,
+    isGuest: Boolean = false,
+    onRequireAuth: () -> Unit = {},
+    viewModel: CalendarViewModel = koinViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     val today = remember {
@@ -201,7 +206,11 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
             ) {
                 AnimatedContent(targetState = currentSheetView, label = "SheetTransition") { view ->
                     when (view) {
-                        SheetView.MENU -> AddEntryMenu(onSelectType = { currentSheetView = it })
+                        SheetView.MENU -> AddEntryMenu(
+                            isGuest = isGuest,
+                            onRequireAuth = onRequireAuth,
+                            onSelectType = { currentSheetView = it },
+                        )
 
                         SheetView.FORM_MED ->
                             WrapperFormLayout(
@@ -565,13 +574,13 @@ fun MedicationForm(
                 }
                 Button(
                     onClick = {
-                        val today = kotlin.time.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+                        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
                         onCreateMedication(
                             com.group8.comp2300.domain.model.medical.MedicationCreateRequest(
                                 name = newMedName,
                                 dosage = newMedDosage.ifBlank { "1 tablet" },
                                 startDate = today.toString(),
-                                endDate = today.plus(1, kotlinx.datetime.DateTimeUnit.YEAR).toString(),
+                                endDate = today.plus(1, DateTimeUnit.YEAR).toString(),
                             ),
                         )
                         newMedName = ""
@@ -755,7 +764,11 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
 }
 
 @Composable
-private fun AddEntryMenu(onSelectType: (SheetView) -> Unit) {
+private fun AddEntryMenu(
+    isGuest: Boolean,
+    onRequireAuth: () -> Unit,
+    onSelectType: (SheetView) -> Unit,
+) {
     Column(
         modifier =
         Modifier.fillMaxWidth()
@@ -775,13 +788,23 @@ private fun AddEntryMenu(onSelectType: (SheetView) -> Unit) {
             color = MaterialTheme.colorScheme.primaryContainer,
             onClick = { onSelectType(SheetView.FORM_MED) },
         )
-        MenuSelectionCard(
-            title = stringResource(Res.string.calendar_menu_track_appt),
-            subtitle = stringResource(Res.string.calendar_menu_track_appt_desc),
-            icon = Icons.DateRangeW400Outlinedfill1,
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            onClick = { onSelectType(SheetView.FORM_APPT) },
-        )
+        if (isGuest) {
+            MenuSelectionCard(
+                title = stringResource(Res.string.calendar_menu_track_appt),
+                subtitle = "Create an account to book and sync appointments",
+                icon = Icons.DateRangeW400Outlinedfill1,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                onClick = onRequireAuth,
+            )
+        } else {
+            MenuSelectionCard(
+                title = stringResource(Res.string.calendar_menu_track_appt),
+                subtitle = stringResource(Res.string.calendar_menu_track_appt_desc),
+                icon = Icons.DateRangeW400Outlinedfill1,
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                onClick = { onSelectType(SheetView.FORM_APPT) },
+            )
+        }
         MenuSelectionCard(
             title = stringResource(Res.string.calendar_menu_track_mood),
             subtitle = stringResource(Res.string.calendar_menu_track_mood_desc),

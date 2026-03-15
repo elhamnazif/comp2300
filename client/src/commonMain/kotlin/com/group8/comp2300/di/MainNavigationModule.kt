@@ -1,11 +1,16 @@
 package com.group8.comp2300.di
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.group8.comp2300.domain.model.session.AuthSession
+import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.presentation.screens.home.HomeScreen
 import com.group8.comp2300.presentation.screens.medical.MedicationScreen
 import com.group8.comp2300.presentation.screens.medical.calendar.CalendarScreen
 import com.group8.comp2300.presentation.screens.profile.ProfileScreen
+import org.koin.compose.koinInject
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
@@ -23,28 +28,40 @@ val mainNavigationModule = module {
     }
 
     navigation<Screen.Calendar> {
-        CalendarScreen()
+        val navigator = LocalNavigator.current
+        val authRepository = koinInject<AuthRepository>()
+        val session by authRepository.session.collectAsState()
+        CalendarScreen(
+            isGuest = session !is AuthSession.SignedIn,
+            onRequireAuth = { navigator.requireAuth(Screen.Calendar) },
+        )
     }
 
     navigation<Screen.Profile> {
         val navigator = LocalNavigator.current
+        val authRepository = koinInject<AuthRepository>()
+        val session by authRepository.session.collectAsState()
+        val isSignedIn = session is AuthSession.SignedIn
         ProfileScreen(
-            isGuest = navigator.isGuest,
-            onRequireAuth = navigator::requireAuth,
-            onNavigateToLabResults = { navigator.navigate(Screen.LabResults) },
-            onNavigateToPrivacySecurity = { navigator.navigate(Screen.PrivacySecurity) },
+            isGuest = !isSignedIn,
+            onRequireAuth = { navigator.requireAuth(Screen.Profile) },
+            onNavigateToLabResults = {
+                if (isSignedIn) navigator.navigate(Screen.LabResults) else navigator.requireAuth(Screen.Profile)
+            },
+            onNavigateToPrivacySecurity = {
+                if (isSignedIn) navigator.navigate(Screen.PrivacySecurity) else navigator.requireAuth(Screen.Profile)
+            },
             onNavigateToPrivacyLegalese = { navigator.navigate(Screen.PrivacyLegalese) },
-            onNavigateToNotifications = { navigator.navigate(Screen.Notifications) },
+            onNavigateToNotifications = {
+                if (isSignedIn) navigator.navigate(Screen.Notifications) else navigator.requireAuth(Screen.Profile)
+            },
             onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) },
         )
     }
 
     navigation<Screen.Medication> {
-        val navigator = LocalNavigator.current
         MedicationScreen(
-            isGuest = navigator.isGuest,
-            onRequireAuth = navigator::requireAuth,
-            onBack = navigator::goBack,
+            onBack = LocalNavigator.current::goBack,
         )
     }
 }

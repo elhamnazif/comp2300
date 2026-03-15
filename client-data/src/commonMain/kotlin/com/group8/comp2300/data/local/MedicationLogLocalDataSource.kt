@@ -44,10 +44,18 @@ class MedicationLogLocalDataSource(private val database: AppDatabase) {
         )
     }
 
+    fun deleteById(id: String) {
+        database.appDatabaseQueries.deleteMedicationLogById(id)
+    }
+
     fun replaceAll(logs: List<MedicationLog>) {
         database.appDatabaseQueries.transaction {
             database.appDatabaseQueries.deleteAllMedicationLogs()
-            logs.forEach { insert(it) }
+            logs.forEach(::insert)
         }
+    }
+
+    fun deleteAll() {
+        database.appDatabaseQueries.deleteAllMedicationLogs()
     }
 }

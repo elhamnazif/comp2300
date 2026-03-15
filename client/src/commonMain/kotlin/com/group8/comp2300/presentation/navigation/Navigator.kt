@@ -14,7 +14,7 @@ abstract class Navigator : ViewModel() {
     abstract val backStack: MutableList<Screen>
     abstract val currentScreen: Screen?
 
-    abstract var isGuest: Boolean
+    abstract var postLoginTarget: Screen?
 
     abstract fun navigate(screen: Screen)
 
@@ -22,7 +22,9 @@ abstract class Navigator : ViewModel() {
 
     abstract fun clearAndGoTo(screen: Screen)
 
-    abstract fun requireAuth()
+    abstract fun requireAuth(targetScreen: Screen? = null)
+
+    abstract fun onAuthSuccess()
 }
 
 @OptIn(SavedStateHandleSaveableApi::class)
@@ -51,13 +53,18 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
     override val currentScreen: Screen?
         get() = backStack.lastOrNull()
 
-    override var isGuest: Boolean by savedStateHandle.saveable { mutableStateOf(true) }
+    override var postLoginTarget: Screen? by savedStateHandle.saveable {
+        mutableStateOf<Screen?>(null)
+    }
 
     override fun navigate(screen: Screen) {
         backStack.add(screen)
     }
 
     override fun goBack() {
+        if (currentScreen == Screen.Login) {
+            postLoginTarget = null
+        }
         if (backStack.size > 1) {
             backStack.removeAt(backStack.lastIndex)
         }
@@ -68,8 +75,26 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
         backStack.add(screen)
     }
 
-    override fun requireAuth() {
-        navigate(Screen.Login)
+    override fun requireAuth(targetScreen: Screen?) {
+        postLoginTarget = targetScreen
+        if (currentScreen != Screen.Login) {
+            backStack.add(Screen.Login)
+        }
+    }
+
+    override fun onAuthSuccess() {
+        val target = postLoginTarget
+        postLoginTarget = null
+        if (currentScreen == Screen.Login && backStack.isNotEmpty()) {
+            backStack.removeAt(backStack.lastIndex)
+        }
+        if (target != null) {
+            if (backStack.lastOrNull() != target) {
+                backStack.add(target)
+            }
+        } else {
+            clearAndGoTo(Screen.Home)
+        }
     }
 }
 
@@ -79,6 +104,7 @@ class FakeNavigator(startDestination: Screen = Screen.Onboarding) : Navigator() 
 
     override val currentScreen: Screen?
         get() = backStack.lastOrNull()
+    override var postLoginTarget: Screen? = null
 
     override fun navigate(screen: Screen) {
         backStack.add(screen)
@@ -95,9 +121,13 @@ class FakeNavigator(startDestination: Screen = Screen.Onboarding) : Navigator() 
         backStack.add(screen)
     }
 
-    override fun requireAuth() {
+    override fun requireAuth(targetScreen: Screen?) {
+        postLoginTarget = targetScreen
         navigate(Screen.Login)
     }
 
-    override var isGuest: Boolean = true
+    override fun onAuthSuccess() {
+        postLoginTarget = null
+        clearAndGoTo(Screen.Home)
+    }
 }

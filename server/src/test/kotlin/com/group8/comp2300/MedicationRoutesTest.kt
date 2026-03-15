@@ -23,6 +23,7 @@ import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.put
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
@@ -76,14 +77,44 @@ class MedicationRoutesTest {
         assertTrue(medications.isEmpty())
     }
 
-    // ============== Create Medication Tests ==============
+    @Test
+    fun listMedicationsIncludesArchivedEntries() = testApplication {
+        val (medicationRepository, accessToken, userId) = configureMedicationTestModuleWithUser()
+        val client = jsonClient()
+
+        medicationRepository.insert(
+            Medication(
+                id = "med-archived",
+                userId = userId,
+                name = "Archived Medication",
+                dosage = "1 pill",
+                quantity = "10mg",
+                frequency = MedicationFrequency.DAILY,
+                startDate = "2026-01-01",
+                endDate = "2026-12-31",
+                hasReminder = true,
+                status = MedicationStatus.ARCHIVED,
+            ),
+        )
+
+        val response = client.get("/api/medications") {
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        val medications = response.body<List<Medication>>()
+        assertEquals(1, medications.size)
+        assertEquals(MedicationStatus.ARCHIVED, medications.single().status)
+    }
+
+    // ============== Upsert Medication Tests ==============
 
     @Test
-    fun createMedicationRequiresAuthentication() = testApplication {
+    fun upsertMedicationRequiresAuthentication() = testApplication {
         configureMedicationTestModule()
         val client = jsonClient()
 
-        val response = client.post("/api/medications") {
+        val response = client.put("/api/medications/test-med") {
             header(HttpHeaders.ContentType, "application/json")
             setBody(
                 mapOf(
@@ -99,11 +130,11 @@ class MedicationRoutesTest {
     }
 
     @Test
-    fun createMedicationWithValidDataReturnsCreated() = testApplication {
+    fun upsertMedicationWithValidDataReturnsCreated() = testApplication {
         val (_, accessToken) = configureMedicationTestModuleWithUser()
         val client = jsonClient()
 
-        val response = client.post("/api/medications") {
+        val response = client.put("/api/medications/test-med") {
             header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(HttpHeaders.ContentType, "application/json")
             setBody(
@@ -121,6 +152,7 @@ class MedicationRoutesTest {
 
         assertEquals(HttpStatusCode.Created, response.status, response.bodyAsText())
         val medication = response.body<Medication>()
+        assertEquals("test-med", medication.id)
         assertEquals("Test Medication", medication.name)
         assertEquals("2 pills", medication.dosage)
         assertEquals(MedicationFrequency.DAILY, medication.frequency)
@@ -128,11 +160,11 @@ class MedicationRoutesTest {
     }
 
     @Test
-    fun createMedicationWithBlankNameReturnsBadRequest() = testApplication {
+    fun upsertMedicationWithBlankNameReturnsBadRequest() = testApplication {
         val (_, accessToken) = configureMedicationTestModuleWithUser()
         val client = jsonClient()
 
-        val response = client.post("/api/medications") {
+        val response = client.put("/api/medications/test-med") {
             header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(HttpHeaders.ContentType, "application/json")
             setBody(
@@ -150,11 +182,11 @@ class MedicationRoutesTest {
     }
 
     @Test
-    fun createMedicationWithBlankDosageReturnsBadRequest() = testApplication {
+    fun upsertMedicationWithBlankDosageReturnsBadRequest() = testApplication {
         val (_, accessToken) = configureMedicationTestModuleWithUser()
         val client = jsonClient()
 
-        val response = client.post("/api/medications") {
+        val response = client.put("/api/medications/test-med") {
             header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(HttpHeaders.ContentType, "application/json")
             setBody(
@@ -172,11 +204,11 @@ class MedicationRoutesTest {
     }
 
     @Test
-    fun createMedicationWithMissingStartDateReturnsBadRequest() = testApplication {
+    fun upsertMedicationWithMissingStartDateReturnsBadRequest() = testApplication {
         val (_, accessToken) = configureMedicationTestModuleWithUser()
         val client = jsonClient()
 
-        val response = client.post("/api/medications") {
+        val response = client.put("/api/medications/test-med") {
             header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(HttpHeaders.ContentType, "application/json")
             setBody(
@@ -194,11 +226,11 @@ class MedicationRoutesTest {
     }
 
     @Test
-    fun createMedicationWithInvalidDateFormatReturnsBadRequest() = testApplication {
+    fun upsertMedicationWithInvalidDateFormatReturnsBadRequest() = testApplication {
         val (_, accessToken) = configureMedicationTestModuleWithUser()
         val client = jsonClient()
 
-        val response = client.post("/api/medications") {
+        val response = client.put("/api/medications/test-med") {
             header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(HttpHeaders.ContentType, "application/json")
             setBody(
@@ -216,11 +248,11 @@ class MedicationRoutesTest {
     }
 
     @Test
-    fun createMedicationWithInvalidFrequencyReturnsBadRequest() = testApplication {
+    fun upsertMedicationWithInvalidFrequencyReturnsBadRequest() = testApplication {
         val (_, accessToken) = configureMedicationTestModuleWithUser()
         val client = jsonClient()
 
-        val response = client.post("/api/medications") {
+        val response = client.put("/api/medications/test-med") {
             header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(HttpHeaders.ContentType, "application/json")
             setBody(
@@ -236,6 +268,33 @@ class MedicationRoutesTest {
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
         assertTrue(response.body<ErrorResponse>().error.contains("Invalid frequency"))
+    }
+
+    @Test
+    fun upsertMedicationUsesClientProvidedId() = testApplication {
+        val (_, accessToken) = configureMedicationTestModuleWithUser()
+        val client = jsonClient()
+
+        val response = client.put("/api/medications/client-med-1") {
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
+            header(HttpHeaders.ContentType, "application/json")
+            setBody(
+                MedicationCreateRequest(
+                    name = "Stable ID Medication",
+                    dosage = "2 tablets",
+                    quantity = "50mg",
+                    frequency = "DAILY",
+                    startDate = "2026-01-01",
+                    endDate = "2026-12-31",
+                    status = MedicationStatus.ARCHIVED.name,
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.Created, response.status, response.bodyAsText())
+        val medication = response.body<Medication>()
+        assertEquals("client-med-1", medication.id)
+        assertEquals(MedicationStatus.ARCHIVED, medication.status)
     }
 
     // ============== Medication Agenda Tests ==============
@@ -318,12 +377,56 @@ class MedicationRoutesTest {
     }
 
     @Test
-    fun logMedicationWithValidDataReturnsCreated() = testApplication {
-        val (medRepo, accessToken) = configureMedicationTestModuleWithUser()
+    fun logMedicationRejectsMedicationOwnedByAnotherUser() = testApplication {
+        val (medicationRepository, accessToken) = configureMedicationTestModuleWithUser()
         val client = jsonClient()
 
-        // First create a medication
-        val createResponse = client.post("/api/medications") {
+        medicationRepository.insert(
+            Medication(
+                id = "other-user-med",
+                userId = "different-user",
+                name = "External Medication",
+                dosage = "1 pill",
+                quantity = "10mg",
+                frequency = MedicationFrequency.DAILY,
+                startDate = "2026-01-01",
+                endDate = "2026-12-31",
+                hasReminder = true,
+                status = MedicationStatus.ACTIVE,
+            ),
+        )
+
+        val response = client.post("/api/medications/logs") {
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
+            header(HttpHeaders.ContentType, "application/json")
+            setBody(
+                MedicationLogRequest(
+                    medicationId = "other-user-med",
+                    status = "TAKEN",
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.NotFound, response.status)
+        assertEquals("Medication not found", response.body<ErrorResponse>().error)
+    }
+
+    @Test
+    fun getMedicationLogHistoryRequiresAuthentication() = testApplication {
+        configureMedicationTestModule()
+        val client = jsonClient()
+
+        val response = client.get("/api/medications/logs")
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun logMedicationWithValidDataReturnsCreated() = testApplication {
+        val (_, accessToken) = configureMedicationTestModuleWithUser()
+        val client = jsonClient()
+
+        val createResponse = client.put("/api/medications/test-med") {
             header(HttpHeaders.Authorization, "Bearer $accessToken")
             header(HttpHeaders.ContentType, "application/json")
             setBody(
@@ -355,6 +458,41 @@ class MedicationRoutesTest {
         assertEquals(MedicationLogStatus.TAKEN, log.status)
     }
 
+    @Test
+    fun getMedicationLogHistoryReturnsUserLogs() = testApplication {
+        val (_, accessToken) = configureMedicationTestModuleWithUser()
+        val client = jsonClient()
+
+        val createResponse = client.put("/api/medications/history-med") {
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
+            header(HttpHeaders.ContentType, "application/json")
+            setBody(
+                MedicationCreateRequest(
+                    name = "History Med",
+                    dosage = "1 pill",
+                    startDate = "2026-01-01",
+                    endDate = "2026-12-31",
+                ),
+            )
+        }
+        val medication = createResponse.body<Medication>()
+
+        client.post("/api/medications/logs") {
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
+            header(HttpHeaders.ContentType, "application/json")
+            setBody(MedicationLogRequest(medication.id, "TAKEN", 1_700_000_000_000))
+        }
+
+        val historyResponse = client.get("/api/medications/logs") {
+            header(HttpHeaders.Authorization, "Bearer $accessToken")
+        }
+
+        assertEquals(HttpStatusCode.OK, historyResponse.status)
+        val history = historyResponse.body<List<MedicationLog>>()
+        assertEquals(1, history.size)
+        assertEquals(medication.id, history.single().medicationId)
+    }
+
     @Serializable
     private data class ErrorResponse(val error: String)
 }
@@ -364,6 +502,7 @@ class MedicationRoutesTest {
 private data class MedicationTestSetup(
     val medicationRepository: MedicationRepository,
     val accessToken: String,
+    val userId: String,
 )
 
 private fun ApplicationTestBuilder.configureMedicationTestModule() {
@@ -449,7 +588,7 @@ private fun ApplicationTestBuilder.configureMedicationTestModuleWithUser(): Medi
         }
     }
 
-    return MedicationTestSetup(medicationRepository, accessToken)
+    return MedicationTestSetup(medicationRepository, accessToken, userId)
 }
 
 private fun ApplicationTestBuilder.jsonClient() = createClient {

@@ -29,6 +29,7 @@ data class MedicationCreateRequest(
     val startDate: String, // YYYY-MM-DD
     val endDate: String, // YYYY-MM-DD
     val hasReminder: Boolean = true,
+    val status: String = MedicationStatus.ACTIVE.name,
 )
 
 @Serializable

@@ -1,13 +1,16 @@
 package com.group8.comp2300.di
 
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import com.group8.comp2300.domain.model.session.AuthSession
+import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.presentation.screens.medical.BookingDetailsScreen
 import com.group8.comp2300.presentation.screens.medical.BookingScreen
 import com.group8.comp2300.presentation.screens.medical.BookingViewModel
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
@@ -33,13 +36,15 @@ val medicalNavigationModule = module {
 
     navigation<Screen.ClinicDetail>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         val navigator = LocalNavigator.current
+        val authRepository = koinInject<AuthRepository>()
+        val session by authRepository.session.collectAsState()
 
         BookingDetailsScreen(
             clinicId = route.clinicId,
             onBack = navigator::goBack,
             onConfirm = {
-                if (navigator.isGuest) {
-                    navigator.requireAuth()
+                if (session !is AuthSession.SignedIn) {
+                    navigator.requireAuth(Screen.ClinicDetail(route.clinicId))
                 } else {
                     // TODO: Handle booking confirmation
                 }

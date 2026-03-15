@@ -18,88 +18,50 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.mock.sampleMedications
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.group8.comp2300.domain.model.medical.Medication
+import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
+import com.group8.comp2300.domain.model.medical.MedicationFrequency
+import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 
-enum class MedicationStatus {
-    Active,
-    Archived,
-}
-
-data class Medication(
-    val id: String,
-    val name: String,
-    val dosage: String,
-    val frequency: String,
-    val instructions: String,
-    val color: Color,
-    val status: MedicationStatus = MedicationStatus.Active,
-)
-
 private object MedConstants {
-    val PresetColors =
-        listOf(
-            Color(0xFF42A5F5), // Blue
-            Color(0xFFEF5350), // Red
-            Color(0xFF66BB6A), // Green
-            Color(0xFFFFA726), // Orange
-            Color(0xFFAB47BC), // Purple
-            Color(0xFF26C6DA), // Cyan
-            Color(0xFF78909C), // Blue Grey
-        )
-
-    val Frequencies = listOf("Daily", "Twice Daily", "Weekly", "On Demand")
+    val PresetColors = Medication.PRESET_COLORS.map(::parseColorHex)
+    val Frequencies = MedicationFrequency.entries
 }
 
 @Composable
 fun MedicationScreen(
     modifier: Modifier = Modifier,
-    isGuest: Boolean = false,
-    onRequireAuth: () -> Unit = {},
     onBack: (() -> Unit)? = null,
+    viewModel: MedicationViewModel = koinViewModel(),
 ) {
-    val medications = remember {
-        mutableStateListOf<Medication>().apply {
-            addAll(
-                sampleMedications.map { domainMed ->
-                    Medication(
-                        id = domainMed.id,
-                        name = domainMed.name,
-                        dosage = domainMed.dosage,
-                        frequency = domainMed.frequency.displayName,
-                        instructions = domainMed.instruction.orEmpty(),
-                        color =
-                        try {
-                            // Simple hex parsing (simplified)
-                            val hex = domainMed.colorHex?.removePrefix("#") ?: "42A5F5"
-                            Color(hex.toLong(16) or 0xFF00000000)
-                        } catch (e: Exception) {
-                            MedConstants.PresetColors.first()
-                        },
-                        status =
-                        if (domainMed.status == com.group8.comp2300.domain.model.medical.MedicationStatus.ACTIVE) {
-                            MedicationStatus.Active
-                        } else {
-                            MedicationStatus.Archived
-                        },
-                    )
-                },
-            )
-        }
-    }
-
-    // Sheet State
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
     var showBottomSheet by remember { mutableStateOf(false) }
     var editingMedication by remember { mutableStateOf<Medication?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    LaunchedEffect(state.error) {
+        state.error?.let { error ->
+            snackbarHostState.showSnackbar(error)
+            viewModel.dismissError()
+        }
+    }
+
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
                 title = { Text(stringResource(Res.string.medical_medication_title), fontWeight = FontWeight.Bold) },
@@ -110,12 +72,8 @@ fun MedicationScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    if (isGuest) {
-                        onRequireAuth()
-                    } else {
-                        editingMedication = null // Null means "New Mode"
-                        showBottomSheet = true
-                    }
+                    editingMedication = null
+                    showBottomSheet = true
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
             ) {
@@ -126,12 +84,14 @@ fun MedicationScreen(
             }
         },
     ) { innerPadding ->
+        val activeMeds = state.medications.filter { it.status == MedicationStatus.ACTIVE }
+        val archivedMeds = state.medications.filter { it.status == MedicationStatus.ARCHIVED }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(innerPadding).background(MaterialTheme.colorScheme.surface),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            val activeMeds = medications.filter { it.status == MedicationStatus.Active }
             item {
                 SectionHeader(
                     title = stringResource(Res.string.medical_medication_section_active),
@@ -140,24 +100,19 @@ fun MedicationScreen(
             }
 
             if (activeMeds.isEmpty()) {
-                item {
-                    EmptyStateMessage(
-                        stringResource(Res.string.medical_medication_empty_active),
-                    )
-                }
+                item { EmptyStateMessage(stringResource(Res.string.medical_medication_empty_active)) }
             } else {
-                items(activeMeds, key = { it.id }) { med ->
+                items(activeMeds, key = Medication::id) { medication ->
                     MedicationCard(
-                        medication = med,
+                        medication = medication,
                         onClick = {
-                            editingMedication = med
+                            editingMedication = medication
                             showBottomSheet = true
                         },
                     )
                 }
             }
 
-            val archivedMeds = medications.filter { it.status == MedicationStatus.Archived }
             if (archivedMeds.isNotEmpty()) {
                 item {
                     Spacer(Modifier.height(16.dp))
@@ -166,11 +121,11 @@ fun MedicationScreen(
                         count = archivedMeds.size,
                     )
                 }
-                items(archivedMeds, key = { it.id }) { med ->
+                items(archivedMeds, key = Medication::id) { medication ->
                     MedicationCard(
-                        medication = med,
+                        medication = medication,
                         onClick = {
-                            editingMedication = med
+                            editingMedication = medication
                             showBottomSheet = true
                         },
                         isArchived = true,
@@ -178,24 +133,19 @@ fun MedicationScreen(
                 }
             }
 
-            item { Spacer(Modifier.height(80.dp)) } // Space for FAB
+            item { Spacer(Modifier.height(80.dp)) }
         }
 
         if (showBottomSheet) {
             ModalBottomSheet(onDismissRequest = { showBottomSheet = false }, sheetState = sheetState) {
                 MedicationFormSheet(
                     medicationToEdit = editingMedication,
-                    onSave = { med ->
-                        val index = medications.indexOfFirst { it.id == med.id }
-                        if (index != -1) {
-                            medications[index] = med // Update existing
-                        } else {
-                            medications.add(med) // Add new
-                        }
+                    onSave = { request, id ->
+                        viewModel.saveMedication(request = request, id = id)
                         showBottomSheet = false
                     },
-                    onDelete = { medId ->
-                        medications.removeAll { it.id == medId }
+                    onDelete = { medicationId ->
+                        viewModel.deleteMedication(medicationId)
                         showBottomSheet = false
                     },
                     onCancel = { showBottomSheet = false },
@@ -249,17 +199,16 @@ fun MedicationCard(
         colors = CardDefaults.cardColors(containerColor = containerColor),
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            // Color Indicator
+            val color = parseColorHex(medication.colorHex)
             Box(
-                modifier = Modifier.size(48.dp).clip(CircleShape).background(medication.color.copy(alpha = 0.2f)),
+                modifier = Modifier.size(48.dp).clip(CircleShape).background(color.copy(alpha = 0.2f)),
                 contentAlignment = Alignment.Center,
             ) {
-                Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(medication.color))
+                Box(modifier = Modifier.size(20.dp).clip(CircleShape).background(color))
             }
 
             Spacer(Modifier.width(16.dp))
 
-            // Details
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = medication.name,
@@ -282,15 +231,15 @@ fun MedicationCard(
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        text = "${medication.dosage} • ${medication.frequency}",
+                        text = "${medication.dosage} • ${medication.frequency.displayName}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.secondary,
                     )
                 }
-                if (medication.instructions.isNotEmpty()) {
+                medication.instruction?.takeIf(String::isNotBlank)?.let { instruction ->
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = stringResource(Res.string.medical_medication_note_format, medication.instructions),
+                        text = stringResource(Res.string.medical_medication_note_format, instruction),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.tertiary,
                         maxLines = 1,
@@ -311,22 +260,18 @@ fun MedicationCard(
 @Composable
 fun MedicationFormSheet(
     medicationToEdit: Medication?,
-    onSave: (Medication) -> Unit,
+    onSave: (MedicationCreateRequest, String?) -> Unit,
     onDelete: (String) -> Unit,
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val isEditMode = medicationToEdit != null
-
-    // Form State
     var name by remember { mutableStateOf(medicationToEdit?.name ?: "") }
     var dosage by remember { mutableStateOf(medicationToEdit?.dosage ?: "") }
     var frequency by remember { mutableStateOf(medicationToEdit?.frequency ?: MedConstants.Frequencies.first()) }
-    var instructions by remember { mutableStateOf(medicationToEdit?.instructions ?: "") }
-    var selectedColor by remember { mutableStateOf(medicationToEdit?.color ?: MedConstants.PresetColors.first()) }
-    var status by remember { mutableStateOf(medicationToEdit?.status ?: MedicationStatus.Active) }
-
-    // Validation
+    var instructions by remember { mutableStateOf(medicationToEdit?.instruction.orEmpty()) }
+    var selectedColor by remember { mutableStateOf(parseColorHex(medicationToEdit?.colorHex)) }
+    var status by remember { mutableStateOf(medicationToEdit?.status ?: MedicationStatus.ACTIVE) }
     val isFormValid = name.isNotBlank() && dosage.isNotBlank()
 
     Column(
@@ -338,7 +283,6 @@ fun MedicationFormSheet(
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -365,7 +309,6 @@ fun MedicationFormSheet(
             }
         }
 
-        // Name & Dosage
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
@@ -387,7 +330,6 @@ fun MedicationFormSheet(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         )
 
-        // Frequency Selection
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 stringResource(Res.string.medical_medication_form_frequency_label),
@@ -398,21 +340,13 @@ fun MedicationFormSheet(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                MedConstants.Frequencies.forEach { freq ->
-                    val freqRes =
-                        when (freq) {
-                            "Daily" -> Res.string.medical_medication_freq_daily
-                            "Twice Daily" -> Res.string.medical_medication_freq_twice_daily
-                            "Weekly" -> Res.string.medical_medication_freq_weekly
-                            "On Demand" -> Res.string.medical_medication_freq_on_demand
-                            else -> Res.string.medical_medication_freq_daily // Fallback
-                        }
+                MedConstants.Frequencies.forEach { option ->
                     FilterChip(
-                        selected = frequency == freq,
-                        onClick = { frequency = freq },
-                        label = { Text(stringResource(freqRes)) },
+                        selected = frequency == option,
+                        onClick = { frequency = option },
+                        label = { Text(option.displayName) },
                         leadingIcon = {
-                            if (frequency == freq) {
+                            if (frequency == option) {
                                 Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(18.dp))
                             }
                         },
@@ -421,7 +355,6 @@ fun MedicationFormSheet(
             }
         }
 
-        // Color Picker
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 stringResource(Res.string.medical_medication_form_color_tag_label),
@@ -452,7 +385,6 @@ fun MedicationFormSheet(
             }
         }
 
-        // Optional Instructions
         OutlinedTextField(
             value = instructions,
             onValueChange = { instructions = it },
@@ -462,15 +394,14 @@ fun MedicationFormSheet(
             maxLines = 3,
         )
 
-        // Archive Toggle (Only in Edit Mode)
         if (isEditMode) {
             Surface(
                 onClick = {
                     status =
-                        if (status == MedicationStatus.Active) {
-                            MedicationStatus.Archived
+                        if (status == MedicationStatus.ACTIVE) {
+                            MedicationStatus.ARCHIVED
                         } else {
-                            MedicationStatus.Active
+                            MedicationStatus.ACTIVE
                         }
                 },
                 shape = RoundedCornerShape(12.dp),
@@ -489,7 +420,7 @@ fun MedicationFormSheet(
                             fontWeight = FontWeight.SemiBold,
                         )
                         Text(
-                            if (status == MedicationStatus.Archived) {
+                            if (status == MedicationStatus.ARCHIVED) {
                                 stringResource(Res.string.medical_medication_form_archive_status_on)
                             } else {
                                 stringResource(Res.string.medical_medication_form_archive_status_off)
@@ -499,14 +430,9 @@ fun MedicationFormSheet(
                         )
                     }
                     Switch(
-                        checked = status == MedicationStatus.Archived,
-                        onCheckedChange = { isChecked ->
-                            status =
-                                if (isChecked) {
-                                    MedicationStatus.Archived
-                                } else {
-                                    MedicationStatus.Active
-                                }
+                        checked = status == MedicationStatus.ARCHIVED,
+                        onCheckedChange = { checked ->
+                            status = if (checked) MedicationStatus.ARCHIVED else MedicationStatus.ACTIVE
                         },
                     )
                 }
@@ -515,20 +441,24 @@ fun MedicationFormSheet(
 
         Spacer(Modifier.height(8.dp))
 
-        // Actions
         Button(
             onClick = {
-                val newMed =
-                    Medication(
-                        id = medicationToEdit?.id ?: Clock.System.now().toString(), // Simple ID generation
+                val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+                onSave(
+                    MedicationCreateRequest(
                         name = name,
                         dosage = dosage,
-                        frequency = frequency,
-                        instructions = instructions,
-                        color = selectedColor,
-                        status = status,
-                    )
-                onSave(newMed)
+                        quantity = medicationToEdit?.quantity.orEmpty(),
+                        frequency = frequency.name,
+                        instruction = instructions.takeIf(String::isNotBlank),
+                        colorHex = selectedColor.toHexString(),
+                        startDate = medicationToEdit?.startDate ?: today.toString(),
+                        endDate = medicationToEdit?.endDate ?: today.plus(1, DateTimeUnit.YEAR).toString(),
+                        hasReminder = medicationToEdit?.hasReminder ?: true,
+                        status = status.name,
+                    ),
+                    medicationToEdit?.id,
+                )
             },
             modifier = Modifier.fillMaxWidth(),
             enabled = isFormValid,
@@ -550,3 +480,19 @@ fun MedicationFormSheet(
         }
     }
 }
+
+private fun parseColorHex(hex: String?): Color = try {
+    val raw = (hex ?: Medication.PRESET_COLORS.first()).removePrefix("#")
+    Color((raw.toLong(16) or 0xFF000000).toULong())
+} catch (_: Exception) {
+    Color(0xFF42A5F5)
+}
+
+private fun Color.toHexString(): String {
+    val red = (this.red * 255).toInt().coerceIn(0, 255)
+    val green = (this.green * 255).toInt().coerceIn(0, 255)
+    val blue = (this.blue * 255).toInt().coerceIn(0, 255)
+    return "#${red.hex2()}${green.hex2()}${blue.hex2()}"
+}
+
+private fun Int.hex2(): String = toString(16).uppercase().padStart(2, '0')

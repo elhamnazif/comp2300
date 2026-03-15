@@ -29,10 +29,18 @@ class MoodLocalDataSource(private val database: AppDatabase) {
         )
     }
 
+    fun deleteById(id: String) {
+        database.appDatabaseQueries.deleteMoodById(id)
+    }
+
     fun replaceAll(moods: List<Mood>) {
         database.appDatabaseQueries.transaction {
             database.appDatabaseQueries.deleteAllMoods()
-            moods.forEach { insert(it) }
+            moods.forEach(::insert)
         }
+    }
+
+    fun deleteAll() {
+        database.appDatabaseQueries.deleteAllMoods()
     }
 }

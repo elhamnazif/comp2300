@@ -15,6 +15,8 @@ interface MedicationLogRepository {
      */
     fun getLogsByMedication(medicationId: String): List<MedicationLog>
 
+    fun getHistory(userId: String): List<MedicationLog>
+
     /**
      * Retrieves a single log entry by its unique ID.
      */

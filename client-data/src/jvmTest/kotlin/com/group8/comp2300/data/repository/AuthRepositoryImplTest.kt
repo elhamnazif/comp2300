@@ -1,0 +1,209 @@
+package com.group8.comp2300.data.repository
+
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import com.group8.comp2300.data.auth.TokenManagerImpl
+import com.group8.comp2300.data.database.AppDatabase
+import com.group8.comp2300.data.local.MedicationLocalDataSource
+import com.group8.comp2300.data.local.OutboxDataSource
+import com.group8.comp2300.data.local.OutboxState
+import com.group8.comp2300.data.local.PersonalDataCleaner
+import com.group8.comp2300.data.local.SessionDataSource
+import com.group8.comp2300.data.remote.ApiService
+import com.group8.comp2300.data.remote.dto.AuthResponse
+import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
+import com.group8.comp2300.data.remote.dto.ForgotPasswordRequest
+import com.group8.comp2300.data.remote.dto.LoginRequest
+import com.group8.comp2300.data.remote.dto.MessageResponse
+import com.group8.comp2300.data.remote.dto.PreregisterRequest
+import com.group8.comp2300.data.remote.dto.PreregisterResponse
+import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
+import com.group8.comp2300.data.remote.dto.RegisterRequest
+import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
+import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
+import com.group8.comp2300.data.remote.dto.TokenResponse
+import com.group8.comp2300.data.repository.medical.TestSyncCoordinator
+import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.domain.model.medical.AppointmentRequest
+import com.group8.comp2300.domain.model.medical.Medication
+import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
+import com.group8.comp2300.domain.model.medical.MedicationFrequency
+import com.group8.comp2300.domain.model.medical.MedicationLog
+import com.group8.comp2300.domain.model.medical.MedicationLogRequest
+import com.group8.comp2300.domain.model.medical.MedicationStatus
+import com.group8.comp2300.domain.model.medical.Mood
+import com.group8.comp2300.domain.model.medical.MoodEntryRequest
+import com.group8.comp2300.domain.model.session.AuthSession
+import com.group8.comp2300.domain.model.user.Gender
+import com.group8.comp2300.domain.model.user.SexualOrientation
+import com.group8.comp2300.domain.model.user.User
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
+
+class AuthRepositoryImplTest {
+    @Test
+    fun loginSetsSignedInSessionAndTriggersSync() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val tokenManager = TokenManagerImpl(sessionDataSource)
+        val syncCoordinator = TestSyncCoordinator()
+        val apiService = FakeApiService()
+        val repository = AuthRepositoryImpl(
+            apiService = apiService,
+            tokenManager = tokenManager,
+            personalDataCleaner = PersonalDataCleaner(db),
+            syncCoordinator = syncCoordinator,
+        )
+
+        waitForSession(repository)
+        val result = repository.login("user@example.com", "pw")
+
+        assertTrue(result.isSuccess)
+        val session = repository.session.value
+        assertIs<AuthSession.SignedIn>(session)
+        assertEquals("user-1", session.user.id)
+        assertEquals("user-1", tokenManager.getUserId())
+        assertEquals(1, syncCoordinator.flushCalls)
+        assertEquals(1, syncCoordinator.refreshCalls)
+    }
+
+    @Test
+    fun expiredRestoreClearsSessionAndPersonalData() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val tokenManager = TokenManagerImpl(sessionDataSource)
+        tokenManager.saveTokens(
+            userId = "user-1",
+            accessToken = "access",
+            refreshToken = "refresh",
+            expiresAt = Clock.System.now().toEpochMilliseconds() - 1,
+        )
+
+        MedicationLocalDataSource(db).insert(sampleMedication())
+        OutboxDataSource(db).enqueue(
+            entityType = "MEDICATION_UPSERT",
+            payload = "{}",
+            localId = "med-1",
+            state = OutboxState.PENDING,
+        )
+
+        val repository = AuthRepositoryImpl(
+            apiService = FakeApiService(),
+            tokenManager = tokenManager,
+            personalDataCleaner = PersonalDataCleaner(db),
+            syncCoordinator = TestSyncCoordinator(),
+        )
+
+        waitForSession(repository)
+
+        assertIs<AuthSession.SignedOut>(repository.session.value)
+        assertNull(tokenManager.getUserId())
+        assertTrue(MedicationLocalDataSource(db).getAll().isEmpty())
+        assertTrue(OutboxDataSource(db).getAll().isEmpty())
+    }
+
+    @Test
+    fun logoutClearsLocalPersonalData() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val tokenManager = TokenManagerImpl(sessionDataSource)
+        val repository = AuthRepositoryImpl(
+            apiService = FakeApiService(),
+            tokenManager = tokenManager,
+            personalDataCleaner = PersonalDataCleaner(db),
+            syncCoordinator = TestSyncCoordinator(),
+        )
+
+        waitForSession(repository)
+        repository.login("user@example.com", "pw")
+        MedicationLocalDataSource(db).insert(sampleMedication())
+        OutboxDataSource(db).enqueue(
+            entityType = "MEDICATION_UPSERT",
+            payload = "{}",
+            localId = "med-1",
+            state = OutboxState.PENDING,
+        )
+
+        repository.logout()
+
+        assertIs<AuthSession.SignedOut>(repository.session.value)
+        assertNull(tokenManager.getUserId())
+        assertTrue(MedicationLocalDataSource(db).getAll().isEmpty())
+        assertTrue(OutboxDataSource(db).getAll().isEmpty())
+    }
+
+    private suspend fun waitForSession(repository: AuthRepositoryImpl) {
+        val deadline = Clock.System.now() + 2.seconds
+        while (repository.session.value is AuthSession.Restoring && Clock.System.now() < deadline) {
+            delay(10)
+        }
+    }
+}
+
+internal fun newDatabase(): AppDatabase {
+    val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+    AppDatabase.Schema.create(driver)
+    return AppDatabase(driver)
+}
+
+internal fun sampleMedication(id: String = "med-1", userId: String = "") = Medication(
+    id = id,
+    userId = userId,
+    name = "Vitamin D",
+    dosage = "1 tablet",
+    quantity = "1000 IU",
+    frequency = MedicationFrequency.DAILY,
+    instruction = null,
+    colorHex = "#42A5F5",
+    startDate = "2026-03-01",
+    endDate = "2026-12-31",
+    hasReminder = true,
+    status = MedicationStatus.ACTIVE,
+)
+
+internal open class FakeApiService(
+    var profileUser: User = User(
+        id = "user-1",
+        email = "user@example.com",
+        firstName = "Test",
+        lastName = "User",
+        gender = Gender.PREFER_NOT_TO_SAY,
+        sexualOrientation = SexualOrientation.PREFER_NOT_TO_SAY,
+        dateOfBirth = null,
+    ),
+    var medications: MutableList<Medication> = mutableListOf(),
+    var medicationLogs: MutableList<MedicationLog> = mutableListOf(),
+    var moods: MutableList<Mood> = mutableListOf(),
+    var appointments: MutableList<Appointment> = mutableListOf(),
+) : ApiService {
+    override suspend fun getHealth(): Map<String, String> = emptyMap()
+    override suspend fun getProducts() = emptyList<com.group8.comp2300.data.remote.dto.ProductDto>()
+    override suspend fun getProduct(id: String) = error("unused")
+    override suspend fun register(request: RegisterRequest): AuthResponse = AuthResponse(profileUser, "access", "refresh")
+    override suspend fun login(request: LoginRequest): AuthResponse = AuthResponse(profileUser, "access", "refresh")
+    override suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse = error("unused")
+    override suspend fun logout() = Unit
+    override suspend fun getProfile(): User = profileUser
+    override suspend fun activateAccount(token: String): AuthResponse = AuthResponse(profileUser, "access", "refresh")
+    override suspend fun forgotPassword(email: String): MessageResponse = MessageResponse("ok")
+    override suspend fun resetPassword(token: String, newPassword: String): MessageResponse = MessageResponse("ok")
+    override suspend fun preregister(request: PreregisterRequest): PreregisterResponse = PreregisterResponse(request.email, "ok")
+    override suspend fun completeProfile(request: CompleteProfileRequest): User = profileUser
+    override suspend fun resendVerificationEmail(email: String): MessageResponse = MessageResponse("ok")
+    override suspend fun getAppointments(): List<Appointment> = appointments.toList()
+    override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment = error("unused")
+    override suspend fun logMedication(request: MedicationLogRequest): MedicationLog = error("unused")
+    override suspend fun getMedicationLogHistory(): List<MedicationLog> = medicationLogs.toList()
+    override suspend fun getMedicationAgenda(date: String): List<MedicationLog> = error("unused")
+    override suspend fun logMood(request: MoodEntryRequest): Mood = error("unused")
+    override suspend fun getMoodHistory(): List<Mood> = moods.toList()
+    override suspend fun getUserMedications(): List<Medication> = medications.toList()
+    override suspend fun upsertMedication(id: String, request: MedicationCreateRequest): Medication = error("unused")
+    override suspend fun deleteMedication(id: String) = Unit
+}

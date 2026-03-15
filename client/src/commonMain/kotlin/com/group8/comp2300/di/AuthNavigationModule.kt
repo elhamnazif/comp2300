@@ -1,5 +1,9 @@
 package com.group8.comp2300.di
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+import com.group8.comp2300.domain.model.session.AuthSession
+import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.presentation.screens.auth.AuthScreen
@@ -8,23 +12,26 @@ import com.group8.comp2300.presentation.screens.auth.EmailVerificationScreen
 import com.group8.comp2300.presentation.screens.auth.ForgotPasswordScreen
 import com.group8.comp2300.presentation.screens.auth.OnboardingScreen
 import com.group8.comp2300.presentation.screens.auth.ResetPasswordScreen
+import org.koin.compose.koinInject
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
 val authNavigationModule = module {
     navigation<Screen.Onboarding> {
         val navigator = LocalNavigator.current
+        val authRepository = koinInject<AuthRepository>()
+        val session by authRepository.session.collectAsState()
         OnboardingScreen(
             onFinish = { navigator.clearAndGoTo(Screen.Home) },
-            isGuest = navigator.isGuest,
-            onRequireAuth = navigator::requireAuth,
+            isGuest = session !is AuthSession.SignedIn,
+            onRequireAuth = { navigator.requireAuth(Screen.Home) },
         )
     }
 
     navigation<Screen.Login> {
         val navigator = LocalNavigator.current
         AuthScreen(
-            onLoginSuccess = navigator::goBack,
+            onLoginSuccess = navigator::onAuthSuccess,
             onDismiss = navigator::goBack,
             onNavigateToEmailVerification = { email ->
                 navigator.navigate(Screen.EmailVerification(email))

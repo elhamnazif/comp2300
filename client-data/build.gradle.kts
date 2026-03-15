@@ -67,6 +67,12 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
         }
 
+        jvmTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.sqlDelight.driver.sqlite)
+        }
+
         iosMain.dependencies {
             implementation(libs.sqlDelight.driver.native)
             implementation(libs.ktor.client.darwin)

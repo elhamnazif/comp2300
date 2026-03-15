@@ -34,11 +34,3 @@ data class Medication(
             )
     }
 }
-
-// --- Composite "Grouped" Class ---
-
-/**
- * Represents a Medication along with its full weekly schedule.
- * Use this for the "Medication Details" screen.
- */
-data class MedicationWithSchedules(val medication: Medication, val schedules: List<MedicationSchedule>)
