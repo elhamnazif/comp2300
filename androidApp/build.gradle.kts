@@ -23,12 +23,31 @@ android {
             @TaskAction
             fun run() {
                 try {
-                    execOperations.exec {
+                    val result = execOperations.exec {
                         commandLine = listOf("adb", "reverse", "tcp:8080", "tcp:8080")
                         isIgnoreExitValue = true
                     }
+                    if (result.exitValue == 0) {
+                        logger.lifecycle("✓ ADB port reverse configured: tcp:8080 → tcp:8080")
+                    } else {
+                        logger.lifecycle("⚠ ADB port reverse failed (exit code ${result.exitValue}). Ensure an emulator or device is connected.")
+                    }
                 } catch (_: Exception) {
-                    // Ignore if adb not available or no device connected
+                    logger.lifecycle(
+                        $$"""
+                        |⚠ ADB not found. Port reverse skipped.
+                        |
+                        |To set up ADB:
+                        |  1. Install Android Studio: https://developer.android.com/studio
+                        |  2. ADB is included in the Android SDK platform-tools
+                        |  3. Add to your PATH:
+                        |       Linux/macOS: export PATH="$PATH:$HOME/Android/Sdk/platform-tools"
+                        |       Windows: Add %LOCALAPPDATA%\Android\Sdk\platform-tools to PATH
+                        |  4. Or install standalone platform-tools: https://developer.android.com/tools/releases/platform-tools
+                        |
+                        |Docs: https://developer.android.com/tools/adb
+                        """.trimMargin()
+                    )
                 }
             }
         }
