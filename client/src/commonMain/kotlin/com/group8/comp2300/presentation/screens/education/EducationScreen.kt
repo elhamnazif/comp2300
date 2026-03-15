@@ -22,9 +22,9 @@ import com.group8.comp2300.presentation.components.ScreenHeader
 import com.group8.comp2300.presentation.screens.auth.components.color
 import com.group8.comp2300.presentation.screens.auth.components.icon
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArticleW500Outlined
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.PlayCircleW500Outlined
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.QuizW500Outlined
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArticleW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.PlayCircleW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.QuizW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.SearchW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -178,7 +178,7 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
 
             if (item.type == ContentType.VIDEO) {
                 Icon(
-                    Icons.PlayCircleW500Outlined,
+                    Icons.PlayCircleW400Outlinedfill1,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(48.dp).align(Alignment.Center),
@@ -232,9 +232,9 @@ fun StandardContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
                 Icon(
                     imageVector =
                     when (item.type) {
-                        ContentType.VIDEO -> Icons.PlayCircleW500Outlined
-                        ContentType.QUIZ -> Icons.QuizW500Outlined
-                        ContentType.ARTICLE -> Icons.ArticleW500Outlined
+                        ContentType.VIDEO -> Icons.PlayCircleW400Outlinedfill1
+                        ContentType.QUIZ -> Icons.QuizW400Outlinedfill1
+                        ContentType.ARTICLE -> Icons.ArticleW400Outlinedfill1
                     },
                     contentDescription = null,
                     tint = item.category.color,

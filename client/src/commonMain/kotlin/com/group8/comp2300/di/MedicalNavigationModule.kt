@@ -1,8 +1,8 @@
 package com.group8.comp2300.di
 
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.presentation.navigation.LocalNavigator

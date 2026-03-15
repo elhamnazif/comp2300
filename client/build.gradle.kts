@@ -171,59 +171,20 @@ dependencies {
 }
 
 symbolCraft {
-    // Basic configuration
     packageName.set("com.group8.comp2300.symbols")
     outputDirectory.set(layout.buildDirectory.dir("generated/symbolcraft").map { it.asFile.absolutePath })
     cacheEnabled.set(true)
-
-    // Preview generation configuration (optional)
     generatePreview.set(false)
 
-    // Convenient batch configuration methods
-    materialSymbols("chevron_right", "chevron_left") {
-        standardWeights()
-    }
-
-    // expand_more and expand_less (replacing keyboard_arrow_down/up)
-    materialSymbols("expand_more", "expand_less") {
-        standardWeights()
-    }
-
-    // phone icon
-    materialSymbols("call") {
-        weights(SymbolWeight.W400, SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
-        bothFills(weight = SymbolWeight.W400, variant = SymbolVariant.OUTLINED)
-        bothFills(weight = SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
-    }
-
-    // Batch configure multiple icons
-    materialSymbols(
-        "star",
-        "bookmark",
-        "fingerprint",
-        "health_and_safety",
-        "stethoscope",
-        "play_circle",
-        "article",
-        "quiz",
-        "lightbulb",
-        "shield",
-        "visibility",
-        "visibility_off",
-        "calendar_month",
-        "local_pharmacy",
-        "mark_email_read",
-        "password",
-    ) {
-        weights(SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
-    }
-
-    // Icons replacing material-icons-core
     materialSymbols(
         // Navigation
         "arrow_back",
         "arrow_forward",
         "arrow_drop_down",
+        "chevron_right",
+        "chevron_left",
+        "expand_more",
+        "expand_less",
         "home",
         "person",
         // Actions
@@ -255,14 +216,31 @@ symbolCraft {
         "lock",
         "account_box",
         "face",
+        "password",
+        "visibility",
+        "visibility_off",
+        "fingerprint",
+        // Medical
+        "health_and_safety",
+        "stethoscope",
+        "local_pharmacy",
+        // Education
+        "star",
+        "bookmark",
+        "play_circle",
+        "article",
+        "quiz",
+        "lightbulb",
+        // Calendar & Reminders
+        "calendar_month",
+        "mark_email_read",
         // Misc
         "favorite",
         "description",
-        "shield"
+        "shield",
+        "call",
     ) {
-        weights(SymbolWeight.W400, SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
         bothFills(weight = SymbolWeight.W400, variant = SymbolVariant.OUTLINED)
-        bothFills(weight = SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
     }
 }
 

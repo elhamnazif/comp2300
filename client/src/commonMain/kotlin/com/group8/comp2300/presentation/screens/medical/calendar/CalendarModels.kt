@@ -34,11 +34,7 @@ data class Doctor(val name: String)
 
 val sampleDoctors = com.group8.comp2300.mock.sampleCalendarDoctors.map { Doctor(it.name) }
 
-fun generateCalendarDays(
-    year: Int,
-    month: Month,
-    overviewMap: Map<String, String> = emptyMap(),
-): List<CalendarDay> {
+fun generateCalendarDays(year: Int, month: Month, overviewMap: Map<String, String> = emptyMap()): List<CalendarDay> {
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val firstOfMonth = LocalDate(year, month, 1)
     val startOffset = firstOfMonth.dayOfWeek.isoDayNumber % 7

@@ -1,8 +1,8 @@
 package com.group8.comp2300.presentation.screens.auth
 
 import androidx.lifecycle.viewModelScope
-import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.core.Validation
+import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.usecase.auth.LoginUseCase
 import com.group8.comp2300.domain.usecase.auth.PreregisterUseCase

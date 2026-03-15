@@ -57,10 +57,8 @@ abstract class CompleteProfileViewModel : ViewModel() {
     }
 }
 
-class RealCompleteProfileViewModel(
-    private val completeProfileUseCase: CompleteProfileUseCase,
-    initialEmail: String,
-) : CompleteProfileViewModel() {
+class RealCompleteProfileViewModel(private val completeProfileUseCase: CompleteProfileUseCase, initialEmail: String) :
+    CompleteProfileViewModel() {
 
     override val state: MutableStateFlow<State> = MutableStateFlow(State(email = initialEmail))
 

@@ -266,7 +266,7 @@ private fun ClinicSummaryHeader(clinic: Clinic) {
 
                 Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.StarW500Outlined, null, tint = Color(0xFFFFB300), modifier = Modifier.size(16.dp))
+                    Icon(Icons.StarW400Outlinedfill1, null, tint = Color(0xFFFFB300), modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(
                         stringResource(Res.string.medical_booking_details_verified_clinic),

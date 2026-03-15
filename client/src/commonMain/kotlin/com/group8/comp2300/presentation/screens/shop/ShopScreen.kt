@@ -44,9 +44,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.session.AuthSession
-import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.components.shimmerEffect
 import com.group8.comp2300.presentation.navigation.LocalNavigator

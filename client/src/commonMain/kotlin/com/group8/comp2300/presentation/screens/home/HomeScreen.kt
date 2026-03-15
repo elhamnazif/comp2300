@@ -58,9 +58,9 @@ fun HomeScreen(
                     Icon(
                         imageVector =
                         if (isPrivacyMode) {
-                            Icons.VisibilityW500Outlined
+                            Icons.VisibilityW400Outlinedfill1
                         } else {
-                            Icons.VisibilityOffW500Outlined
+                            Icons.VisibilityOffW400Outlinedfill1
                         },
                         contentDescription = stringResource(Res.string.home_toggle_privacy_desc),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -85,7 +85,7 @@ fun HomeScreen(
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
-                    imageVector = Icons.ShieldW500Outlined,
+                    imageVector = Icons.ShieldW400Outlinedfill1,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(48.dp),
@@ -125,7 +125,7 @@ fun HomeScreen(
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(
-                        Icons.LightbulbW500Outlined,
+                        Icons.LightbulbW400Outlinedfill1,
                         null,
                         tint = MaterialTheme.colorScheme.onTertiaryContainer,
                     )
@@ -156,7 +156,7 @@ fun HomeScreen(
             )
 
             SmartActionButton(
-                icon = Icons.LocalPharmacyW500Outlined,
+                icon = Icons.LocalPharmacyW400Outlinedfill1,
                 label = stringResource(Res.string.home_menu_shop),
                 color = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.weight(1f),
@@ -164,7 +164,7 @@ fun HomeScreen(
             )
 
             SmartActionButton(
-                icon = Icons.CalendarMonthW500Outlined,
+                icon = Icons.CalendarMonthW400Outlinedfill1,
                 label = stringResource(Res.string.home_menu_history),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.weight(1f),
@@ -176,7 +176,7 @@ fun HomeScreen(
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             SmartActionButton(
-                icon = Icons.StethoscopeW500Outlined,
+                icon = Icons.StethoscopeW400Outlinedfill1,
                 label = stringResource(Res.string.home_menu_symptom_check),
                 color = MaterialTheme.colorScheme.tertiaryContainer,
                 modifier = Modifier.weight(1f),

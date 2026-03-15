@@ -764,11 +764,7 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
 }
 
 @Composable
-private fun AddEntryMenu(
-    isGuest: Boolean,
-    onRequireAuth: () -> Unit,
-    onSelectType: (SheetView) -> Unit,
-) {
+private fun AddEntryMenu(isGuest: Boolean, onRequireAuth: () -> Unit, onSelectType: (SheetView) -> Unit) {
     Column(
         modifier =
         Modifier.fillMaxWidth()

@@ -221,9 +221,9 @@ private fun CredentialsForm(
                 IconButton(onClick = { onEvent(AuthViewModel.AuthUiEvent.TogglePasswordVisibility) }) {
                     val icon =
                         if (state.isPasswordVisible) {
-                            Icons.VisibilityW500Outlined
+                            Icons.VisibilityW400Outlinedfill1
                         } else {
-                            Icons.VisibilityOffW500Outlined
+                            Icons.VisibilityOffW400Outlinedfill1
                         }
                     Icon(icon, contentDescription = stringResource(Res.string.auth_toggle_password_desc))
                 }

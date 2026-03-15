@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.group8.comp2300.domain.model.education.ContentCategory
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
-import com.group8.comp2300.symbols.icons.materialsymbols.Icons as MaterialIcons
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 
 /**
  * UI-specific extension properties for ContentCategory. These are kept in client since they
@@ -23,9 +23,9 @@ val ContentCategory.color: Color
 val ContentCategory.icon: ImageVector
     get() =
         when (this) {
-            ContentCategory.PUBERTY -> MaterialIcons.FaceW400Outlinedfill1
-            ContentCategory.RELATIONSHIPS -> MaterialIcons.FavoriteW400Outlinedfill1
-            ContentCategory.STI -> MaterialIcons.HealthAndSafetyW500Outlined
-            ContentCategory.IDENTITY -> MaterialIcons.FingerprintW500Outlined
-            ContentCategory.SEXUAL_HEALTH -> MaterialIcons.FaceW400Outlinedfill1
+            ContentCategory.PUBERTY -> Icons.FaceW400Outlinedfill1
+            ContentCategory.RELATIONSHIPS -> Icons.FavoriteW400Outlinedfill1
+            ContentCategory.STI -> Icons.HealthAndSafetyW400Outlinedfill1
+            ContentCategory.IDENTITY -> Icons.FingerprintW400Outlinedfill1
+            ContentCategory.SEXUAL_HEALTH -> Icons.FaceW400Outlinedfill1
         }
