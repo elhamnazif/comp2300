@@ -1,0 +1,29 @@
+CREATE TABLE RoutineEnt (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    routine_name TEXT NOT NULL,
+    repeat_type TEXT NOT NULL CHECK (repeat_type IN ('DAILY', 'WEEKLY')),
+    days_of_week TEXT NOT NULL DEFAULT '',
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    has_reminder INTEGER NOT NULL DEFAULT 1 CHECK (has_reminder IN (0, 1)),
+    status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'ARCHIVED'))
+);
+
+insertRoutine:
+INSERT INTO RoutineEnt (id, user_id, routine_name, repeat_type, days_of_week, start_date, end_date, has_reminder, status)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectRoutineById:
+SELECT * FROM RoutineEnt WHERE id = ?;
+
+selectRoutinesByUserId:
+SELECT * FROM RoutineEnt WHERE user_id = ? ORDER BY routine_name ASC;
+
+updateRoutineById:
+UPDATE RoutineEnt
+SET routine_name = ?, repeat_type = ?, days_of_week = ?, start_date = ?, end_date = ?, has_reminder = ?, status = ?
+WHERE id = ?;
+
+deleteRoutineById:
+DELETE FROM RoutineEnt WHERE id = ?;

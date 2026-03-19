@@ -9,11 +9,15 @@ import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.OutboxItem
 import com.group8.comp2300.data.local.OutboxState
+import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
+import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
+import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.repository.medical.SyncCoordinator
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -25,6 +29,8 @@ class SyncCoordinatorImpl(
     private val apiService: ApiService,
     private val appointmentLocal: AppointmentLocalDataSource,
     private val medicationLocal: MedicationLocalDataSource,
+    private val routineLocal: RoutineLocalDataSource,
+    private val routineOccurrenceOverrideLocal: RoutineOccurrenceOverrideLocalDataSource,
     private val medicationLogLocal: MedicationLogLocalDataSource,
     private val moodLocal: MoodLocalDataSource,
 ) : SyncCoordinator {
@@ -61,11 +67,15 @@ class SyncCoordinatorImpl(
         if (tokenManager.getUserId() == null || tokenManager.isTokenExpired()) return
 
         val remoteMedications = apiService.getUserMedications()
+        val remoteRoutines = apiService.getUserRoutines()
+        val remoteOverrides = apiService.getRoutineOccurrenceOverrides()
         val remoteLogs = apiService.getMedicationLogHistory()
         val remoteMoods = apiService.getMoodHistory()
         val remoteAppointments = apiService.getAppointments()
 
         medicationLocal.replaceAll(remoteMedications)
+        routineLocal.replaceAll(remoteRoutines)
+        routineOccurrenceOverrideLocal.replaceAll(remoteOverrides)
         medicationLogLocal.replaceAll(remoteLogs)
         moodLocal.replaceAll(remoteMoods)
         appointmentLocal.replaceAll(remoteAppointments)
@@ -88,6 +98,23 @@ class SyncCoordinatorImpl(
 
             OutboxEntityType.MEDICATION_DELETE -> {
                 apiService.deleteMedication(item.localId)
+            }
+
+            OutboxEntityType.ROUTINE_UPSERT -> {
+                val request = Json.decodeFromString<RoutineCreateRequest>(item.payload)
+                val serverResult = apiService.upsertRoutine(item.localId, request)
+                routineLocal.insert(serverResult)
+            }
+
+            OutboxEntityType.ROUTINE_DELETE -> {
+                apiService.deleteRoutine(item.localId)
+            }
+
+            OutboxEntityType.ROUTINE_OCCURRENCE_OVERRIDE_UPSERT -> {
+                val request = Json.decodeFromString<RoutineOccurrenceOverrideRequest>(item.payload)
+                val serverResult = apiService.upsertRoutineOccurrenceOverride(request)
+                routineOccurrenceOverrideLocal.deleteById(item.localId)
+                routineOccurrenceOverrideLocal.insert(serverResult)
             }
 
             OutboxEntityType.MEDICATION_LOG -> {

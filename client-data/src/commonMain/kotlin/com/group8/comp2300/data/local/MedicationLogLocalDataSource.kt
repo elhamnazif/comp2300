@@ -13,6 +13,8 @@ class MedicationLogLocalDataSource(private val database: AppDatabase) {
                 medicationId = entity.medicationId,
                 medicationTime = entity.medicationTime,
                 status = MedicationLogStatus.valueOf(entity.status),
+                routineId = entity.routineId,
+                occurrenceTimeMs = entity.occurrenceTimeMs,
                 medicationName = entity.medicationName,
             )
         }
@@ -30,6 +32,8 @@ class MedicationLogLocalDataSource(private val database: AppDatabase) {
                     medicationId = entity.medicationId,
                     medicationTime = entity.medicationTime,
                     status = MedicationLogStatus.valueOf(entity.status),
+                    routineId = entity.routineId,
+                    occurrenceTimeMs = entity.occurrenceTimeMs,
                     medicationName = entity.medicationName,
                 )
             }
@@ -40,6 +44,8 @@ class MedicationLogLocalDataSource(private val database: AppDatabase) {
             medicationId = log.medicationId,
             medicationTime = log.medicationTime,
             status = log.status.name,
+            routineId = log.routineId,
+            occurrenceTimeMs = log.occurrenceTimeMs,
             medicationName = log.medicationName,
         )
     }

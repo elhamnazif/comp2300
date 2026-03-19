@@ -13,6 +13,8 @@ import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.local.ProductLocalDataSource
 import com.group8.comp2300.data.local.ReminderLocalDataSource
+import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
+import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
 import com.group8.comp2300.data.offline.SyncCoordinatorImpl
@@ -32,6 +34,7 @@ import com.group8.comp2300.data.repository.medical.CalendarDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MedicationDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MedicationLogDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MoodDataRepositoryImpl
+import com.group8.comp2300.data.repository.medical.RoutineDataRepositoryImpl
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
@@ -43,6 +46,7 @@ import com.group8.comp2300.domain.repository.medical.CalendarDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
 import com.group8.comp2300.domain.repository.medical.MoodDataRepository
+import com.group8.comp2300.domain.repository.medical.RoutineDataRepository
 import com.group8.comp2300.domain.repository.medical.SyncCoordinator
 import com.group8.comp2300.domain.usecase.auth.ActivateAccountUseCase
 import com.group8.comp2300.domain.usecase.auth.CompleteProfileUseCase
@@ -94,21 +98,24 @@ val coreModule = module {
     // Offline-first local data sources
     single { AppointmentLocalDataSource(get()) }
     single { MedicationLocalDataSource(get()) }
+    single { RoutineLocalDataSource(get()) }
+    single { RoutineOccurrenceOverrideLocalDataSource(get()) }
     single { MoodLocalDataSource(get()) }
     single { MedicationLogLocalDataSource(get()) }
     single { ReminderLocalDataSource(get()) }
     single { OutboxDataSource(get()) }
     single { ProductLocalDataSource(get()) }
     single { PersonalDataCleaner(get()) }
-    single<SyncCoordinator> { SyncCoordinatorImpl(get(), get(), get(), get(), get(), get(), get()) }
+    single<SyncCoordinator> { SyncCoordinatorImpl(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
     single { QueuedWriteDispatcher(get(), get(), get()) }
 
     single<ShopRepository> { ShopRepositoryImpl(get(), get()) }
     single<AppointmentDataRepository> { AppointmentDataRepositoryImpl(get(), get(), get()) }
     single<MedicationDataRepository> { MedicationDataRepositoryImpl(get(), get(), get()) }
-    single<MedicationLogDataRepository> { MedicationLogDataRepositoryImpl(get(), get(), get()) }
+    single<RoutineDataRepository> { RoutineDataRepositoryImpl(get(), get(), get()) }
+    single<MedicationLogDataRepository> { MedicationLogDataRepositoryImpl(get(), get(), get(), get(), get()) }
     single<MoodDataRepository> { MoodDataRepositoryImpl(get(), get(), get()) }
-    single<CalendarDataRepository> { CalendarDataRepositoryImpl(get(), get()) }
+    single<CalendarDataRepository> { CalendarDataRepositoryImpl(get(), get(), get(), get(), get()) }
     single<LabResultsRepository> { LabResultsRepositoryImpl() }
     single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get()) }
     single<ClinicRepository> { ClinicRepositoryImpl() }

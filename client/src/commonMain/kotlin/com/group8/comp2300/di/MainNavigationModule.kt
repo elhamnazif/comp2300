@@ -22,6 +22,7 @@ val mainNavigationModule = module {
             onNavigateToCalendar = { navigator.navigate(Screen.Calendar) },
             onNavigateToEducation = { navigator.navigate(Screen.Education) },
             onNavigateToMedication = { navigator.navigate(Screen.Medication) },
+            onNavigateToRoutines = { navigator.navigate(Screen.Routines) },
             onNavigateToSymptomChecker = { navigator.navigate(Screen.SelfDiagnosis) },
             onNavigateToClinicMap = { navigator.navigate(Screen.Booking) },
         )
@@ -29,11 +30,8 @@ val mainNavigationModule = module {
 
     navigation<Screen.Calendar> {
         val navigator = LocalNavigator.current
-        val authRepository = koinInject<AuthRepository>()
-        val session by authRepository.session.collectAsState()
         CalendarScreen(
-            isGuest = session !is AuthSession.SignedIn,
-            onRequireAuth = { navigator.requireAuth(Screen.Calendar) },
+            onNavigateToMedication = { navigator.navigate(Screen.Medication) },
         )
     }
 
@@ -60,8 +58,10 @@ val mainNavigationModule = module {
     }
 
     navigation<Screen.Medication> {
+        val navigator = LocalNavigator.current
         MedicationScreen(
-            onBack = LocalNavigator.current::goBack,
+            onBack = navigator::goBack,
+            onNavigateToRoutines = { navigator.navigate(Screen.Routines) },
         )
     }
 }

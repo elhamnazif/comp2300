@@ -8,7 +8,7 @@ CREATE TABLE MedicationEntity (
     instruction TEXT,
     color_hex TEXT,
     start_date TEXT NOT NULL,
-    end_date TEXT NOT NULL,
+    end_date TEXT,
     has_reminder INTEGER DEFAULT 1 CHECK (has_reminder IN (0, 1)),
     status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'ARCHIVED'))
 );

@@ -126,7 +126,7 @@ CREATE TABLE MedicationEntity (
     instruction TEXT,
     color_hex TEXT,
     start_date TEXT NOT NULL,
-    end_date TEXT NOT NULL,
+    end_date TEXT,
     has_reminder INTEGER NOT NULL DEFAULT 1,
     status TEXT NOT NULL
 );
@@ -168,6 +168,8 @@ CREATE TABLE MedicationLogEntity (
     medicationId TEXT NOT NULL,
     medicationTime INTEGER NOT NULL,
     status TEXT NOT NULL,
+    routineId TEXT,
+    occurrenceTimeMs INTEGER,
     medicationName TEXT
 );
 
@@ -182,8 +184,8 @@ WHERE medicationTime >= ?
 ORDER BY medicationTime ASC;
 
 insertMedicationLog:
-INSERT OR REPLACE INTO MedicationLogEntity (id, medicationId, medicationTime, status, medicationName)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO MedicationLogEntity (id, medicationId, medicationTime, status, routineId, occurrenceTimeMs, medicationName)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 deleteAllMedicationLogs:
 DELETE FROM MedicationLogEntity;
@@ -191,6 +193,141 @@ DELETE FROM MedicationLogEntity;
 deleteMedicationLogById:
 DELETE FROM MedicationLogEntity
 WHERE id = ?;
+
+CREATE TABLE RoutineEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    userId TEXT NOT NULL,
+    routineName TEXT NOT NULL,
+    repeatType TEXT NOT NULL,
+    daysOfWeek TEXT NOT NULL DEFAULT '',
+    startDate TEXT NOT NULL,
+    endDate TEXT,
+    hasReminder INTEGER NOT NULL DEFAULT 1,
+    status TEXT NOT NULL
+);
+
+selectAllRoutines:
+SELECT * FROM RoutineEntity
+ORDER BY routineName ASC;
+
+selectRoutineById:
+SELECT * FROM RoutineEntity
+WHERE id = ?;
+
+insertRoutine:
+INSERT OR REPLACE INTO RoutineEntity (
+    id,
+    userId,
+    routineName,
+    repeatType,
+    daysOfWeek,
+    startDate,
+    endDate,
+    hasReminder,
+    status
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteRoutineById:
+DELETE FROM RoutineEntity
+WHERE id = ?;
+
+deleteAllRoutines:
+DELETE FROM RoutineEntity;
+
+CREATE TABLE RoutineMedicationEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    routineId TEXT NOT NULL REFERENCES RoutineEntity(id) ON DELETE CASCADE,
+    medicationId TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE
+);
+
+selectRoutineMedicationLinksByRoutineId:
+SELECT * FROM RoutineMedicationEntity
+WHERE routineId = ?
+ORDER BY medicationId ASC;
+
+insertRoutineMedicationLink:
+INSERT OR REPLACE INTO RoutineMedicationEntity (id, routineId, medicationId)
+VALUES (?, ?, ?);
+
+deleteRoutineMedicationLinksByRoutineId:
+DELETE FROM RoutineMedicationEntity
+WHERE routineId = ?;
+
+deleteAllRoutineMedicationLinks:
+DELETE FROM RoutineMedicationEntity;
+
+CREATE TABLE RoutineTimeEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    routineId TEXT NOT NULL REFERENCES RoutineEntity(id) ON DELETE CASCADE,
+    timeOfDayMs INTEGER NOT NULL
+);
+
+selectRoutineTimesByRoutineId:
+SELECT * FROM RoutineTimeEntity
+WHERE routineId = ?
+ORDER BY timeOfDayMs ASC;
+
+insertRoutineTime:
+INSERT OR REPLACE INTO RoutineTimeEntity (id, routineId, timeOfDayMs)
+VALUES (?, ?, ?);
+
+deleteRoutineTimesByRoutineId:
+DELETE FROM RoutineTimeEntity
+WHERE routineId = ?;
+
+deleteAllRoutineTimes:
+DELETE FROM RoutineTimeEntity;
+
+CREATE TABLE RoutineOccurrenceOverrideEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    routineId TEXT NOT NULL REFERENCES RoutineEntity(id) ON DELETE CASCADE,
+    originalOccurrenceTimeMs INTEGER NOT NULL,
+    rescheduledOccurrenceTimeMs INTEGER NOT NULL,
+    UNIQUE(routineId, originalOccurrenceTimeMs)
+);
+
+selectAllRoutineOccurrenceOverrides:
+SELECT * FROM RoutineOccurrenceOverrideEntity
+ORDER BY rescheduledOccurrenceTimeMs ASC;
+
+insertRoutineOccurrenceOverride:
+INSERT OR REPLACE INTO RoutineOccurrenceOverrideEntity (
+    id,
+    routineId,
+    originalOccurrenceTimeMs,
+    rescheduledOccurrenceTimeMs
+)
+VALUES (?, ?, ?, ?);
+
+deleteRoutineOccurrenceOverrideById:
+DELETE FROM RoutineOccurrenceOverrideEntity
+WHERE id = ?;
+
+deleteAllRoutineOccurrenceOverrides:
+DELETE FROM RoutineOccurrenceOverrideEntity;
+
+CREATE TABLE RoutineReminderEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    routineId TEXT NOT NULL REFERENCES RoutineEntity(id) ON DELETE CASCADE,
+    offsetMins INTEGER NOT NULL
+);
+
+selectRoutineReminderOffsetsByRoutineId:
+SELECT * FROM RoutineReminderEntity
+WHERE routineId = ?
+ORDER BY offsetMins ASC;
+
+insertRoutineReminderOffset:
+INSERT OR REPLACE INTO RoutineReminderEntity (id, routineId, offsetMins)
+VALUES (?, ?, ?);
+
+deleteRoutineReminderOffsetsByRoutineId:
+DELETE FROM RoutineReminderEntity
+WHERE routineId = ?;
+
+deleteAllRoutineReminderOffsets:
+DELETE FROM RoutineReminderEntity;
 
 CREATE TABLE ProductEntity (
     id TEXT NOT NULL PRIMARY KEY,

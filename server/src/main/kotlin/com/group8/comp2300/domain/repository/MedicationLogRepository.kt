@@ -22,11 +22,6 @@ interface MedicationLogRepository {
      */
     fun getById(id: String): MedicationLog?
 
-    /**
-     * Returns the medication schedule/agenda for a specific day.
-     * @param userId
-     * @param dateString Expected format: "YYYY-MM-DD".
-     */
     fun getDailyAgenda(userId: String, dateString: String): List<MedicationLog>
 
     /**

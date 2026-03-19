@@ -5,7 +5,6 @@ import com.group8.comp2300.data.offline.OutboxEntityType
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
-import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.model.session.userOrNull
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
@@ -21,13 +20,10 @@ class AppointmentDataRepositoryImpl(
     override suspend fun getAppointments(): List<Appointment> = appointmentLocal.getAll()
 
     override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment {
-        val user = (authRepository.session.value as? AuthSession.SignedIn)?.user
-            ?: error("Sign in required to schedule appointments")
-
         val localId = Uuid.random().toString()
         val placeholder = Appointment(
             id = localId,
-            userId = user.id,
+            userId = authRepository.session.value.userOrNull?.id.orEmpty(),
             title = request.title,
             appointmentTime = request.appointmentTime,
             appointmentType = request.appointmentType,

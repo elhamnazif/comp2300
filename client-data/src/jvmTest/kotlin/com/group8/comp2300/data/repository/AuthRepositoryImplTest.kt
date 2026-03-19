@@ -32,6 +32,11 @@ import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.Mood
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
+import com.group8.comp2300.domain.model.medical.Routine
+import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
+import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
@@ -161,9 +166,6 @@ internal fun sampleMedication(id: String = "med-1", userId: String = "") = Medic
     frequency = MedicationFrequency.DAILY,
     instruction = null,
     colorHex = "#42A5F5",
-    startDate = "2026-03-01",
-    endDate = "2026-12-31",
-    hasReminder = true,
     status = MedicationStatus.ACTIVE,
 )
 
@@ -178,6 +180,8 @@ internal open class FakeApiService(
         dateOfBirth = null,
     ),
     var medications: MutableList<Medication> = mutableListOf(),
+    var routines: MutableList<Routine> = mutableListOf(),
+    var routineOccurrenceOverrides: MutableList<RoutineOccurrenceOverride> = mutableListOf(),
     var medicationLogs: MutableList<MedicationLog> = mutableListOf(),
     var moods: MutableList<Mood> = mutableListOf(),
     var appointments: MutableList<Appointment> = mutableListOf(),
@@ -200,10 +204,15 @@ internal open class FakeApiService(
     override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment = error("unused")
     override suspend fun logMedication(request: MedicationLogRequest): MedicationLog = error("unused")
     override suspend fun getMedicationLogHistory(): List<MedicationLog> = medicationLogs.toList()
-    override suspend fun getMedicationAgenda(date: String): List<MedicationLog> = error("unused")
+    override suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda> = error("unused")
     override suspend fun logMood(request: MoodEntryRequest): Mood = error("unused")
     override suspend fun getMoodHistory(): List<Mood> = moods.toList()
     override suspend fun getUserMedications(): List<Medication> = medications.toList()
     override suspend fun upsertMedication(id: String, request: MedicationCreateRequest): Medication = error("unused")
     override suspend fun deleteMedication(id: String) = Unit
+    override suspend fun getUserRoutines(): List<Routine> = routines.toList()
+    override suspend fun upsertRoutine(id: String, request: RoutineCreateRequest): Routine = error("unused")
+    override suspend fun deleteRoutine(id: String) = Unit
+    override suspend fun getRoutineOccurrenceOverrides(): List<RoutineOccurrenceOverride> = routineOccurrenceOverrides.toList()
+    override suspend fun upsertRoutineOccurrenceOverride(request: RoutineOccurrenceOverrideRequest): RoutineOccurrenceOverride = error("unused")
 }

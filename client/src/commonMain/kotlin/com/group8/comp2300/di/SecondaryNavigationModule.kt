@@ -3,6 +3,7 @@ package com.group8.comp2300.di
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.presentation.screens.medical.LabResultsScreen
+import com.group8.comp2300.presentation.screens.medical.RoutineScreen
 import com.group8.comp2300.presentation.screens.medical.SelfDiagnosisScreen
 import com.group8.comp2300.presentation.screens.profile.HelpSupportScreen
 import com.group8.comp2300.presentation.screens.profile.NotificationsScreen
@@ -38,6 +39,13 @@ val secondaryNavigationModule = module {
     navigation<Screen.Notifications> {
         val navigator = LocalNavigator.current
         NotificationsScreen(
+            onBack = navigator::goBack,
+        )
+    }
+
+    navigation<Screen.Routines> {
+        val navigator = LocalNavigator.current
+        RoutineScreen(
             onBack = navigator::goBack,
         )
     }

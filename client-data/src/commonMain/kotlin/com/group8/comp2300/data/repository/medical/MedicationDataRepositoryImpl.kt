@@ -23,26 +23,30 @@ class MedicationDataRepositoryImpl(
 
     override suspend fun saveMedication(request: MedicationCreateRequest, id: String?): Medication {
         val medicationId = id ?: Uuid.random().toString()
+        val normalizedRequest =
+            request.copy(
+                name = request.name.trim(),
+                dosage = request.dosage.trim(),
+                quantity = request.quantity.trim(),
+                instruction = request.instruction?.trim()?.takeIf(String::isNotEmpty),
+            )
         val medication = Medication(
             id = medicationId,
             userId = authRepository.session.value.userOrNull?.id.orEmpty(),
-            name = request.name.trim(),
-            dosage = request.dosage.trim(),
-            quantity = request.quantity.trim(),
-            frequency = MedicationFrequency.valueOf(request.frequency),
-            instruction = request.instruction?.trim()?.takeIf(String::isNotEmpty),
-            colorHex = request.colorHex,
-            startDate = request.startDate,
-            endDate = request.endDate,
-            hasReminder = request.hasReminder,
-            status = MedicationStatus.valueOf(request.status),
+            name = normalizedRequest.name,
+            dosage = normalizedRequest.dosage,
+            quantity = normalizedRequest.quantity,
+            frequency = MedicationFrequency.valueOf(normalizedRequest.frequency),
+            instruction = normalizedRequest.instruction,
+            colorHex = normalizedRequest.colorHex,
+            status = MedicationStatus.valueOf(normalizedRequest.status),
         )
 
         medicationLocal.insert(medication)
         queuedWriteDispatcher.replacePending(
             entityType = OutboxEntityType.MEDICATION_UPSERT,
             localId = medicationId,
-            payload = Json.encodeToString(request),
+            payload = Json.encodeToString(normalizedRequest),
         )
         return medicationLocal.getById(medicationId) ?: medication
     }

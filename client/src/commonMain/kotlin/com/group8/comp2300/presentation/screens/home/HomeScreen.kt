@@ -30,6 +30,7 @@ fun HomeScreen(
     onNavigateToEducation: () -> Unit,
     onNavigateToCalendar: () -> Unit,
     onNavigateToMedication: () -> Unit,
+    onNavigateToRoutines: () -> Unit,
     modifier: Modifier = Modifier,
     onNavigateToSymptomChecker: () -> Unit = {},
     onNavigateToClinicMap: () -> Unit = {},
@@ -149,7 +150,7 @@ fun HomeScreen(
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             SmartActionButton(
                 icon = Icons.AddW400Outlined,
-                label = stringResource(Res.string.home_menu_log_pill),
+                label = stringResource(Res.string.home_menu_medication_cabinet),
                 color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToMedication,
@@ -192,10 +193,11 @@ fun HomeScreen(
             )
 
             SmartActionButton(
-                icon = Icons.SendW400Outlined,
-                label = stringResource(Res.string.home_menu_partner_notify),
+                icon = Icons.DateRangeW400Outlinedfill1,
+                label = "Schedules",
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.weight(1f),
+                onClick = onNavigateToRoutines,
             )
         }
 

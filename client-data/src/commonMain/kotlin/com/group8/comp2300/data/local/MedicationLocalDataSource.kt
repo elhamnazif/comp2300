@@ -10,12 +10,12 @@ class MedicationLocalDataSource(private val database: AppDatabase) {
     fun getAll(): List<Medication> =
         database.appDatabaseQueries.selectAllMedications()
             .executeAsList()
-            .map(MedicationEntity::toDomain)
+            .map(::toDomain)
 
     fun getById(id: String): Medication? =
         database.appDatabaseQueries.selectMedicationById(id)
             .executeAsOneOrNull()
-            ?.toDomain()
+            ?.let(::toDomain)
 
     fun insert(medication: Medication) {
         database.appDatabaseQueries.insertMedication(
@@ -27,9 +27,9 @@ class MedicationLocalDataSource(private val database: AppDatabase) {
             frequency = medication.frequency.name,
             instruction = medication.instruction,
             color_hex = medication.colorHex,
-            start_date = medication.startDate,
-            end_date = medication.endDate,
-            has_reminder = if (medication.hasReminder) 1L else 0L,
+            start_date = "",
+            end_date = null,
+            has_reminder = 0L,
             status = medication.status.name,
         )
     }
@@ -48,19 +48,16 @@ class MedicationLocalDataSource(private val database: AppDatabase) {
     fun deleteAll() {
         database.appDatabaseQueries.deleteAllMedications()
     }
-}
 
-private fun MedicationEntity.toDomain() = Medication(
-    id = id,
-    userId = userId,
-    name = med_name,
-    dosage = dosage,
-    quantity = quantity,
-    frequency = MedicationFrequency.valueOf(frequency),
-    instruction = instruction,
-    colorHex = color_hex,
-    startDate = start_date,
-    endDate = end_date,
-    hasReminder = has_reminder == 1L,
-    status = MedicationStatus.valueOf(status),
-)
+    private fun toDomain(entity: MedicationEntity): Medication = Medication(
+        id = entity.id,
+        userId = entity.userId,
+        name = entity.med_name,
+        dosage = entity.dosage,
+        quantity = entity.quantity,
+        frequency = MedicationFrequency.valueOf(entity.frequency),
+        instruction = entity.instruction,
+        colorHex = entity.color_hex,
+        status = MedicationStatus.valueOf(entity.status),
+    )
+}

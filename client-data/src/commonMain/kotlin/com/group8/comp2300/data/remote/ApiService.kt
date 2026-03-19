@@ -21,6 +21,11 @@ import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.Mood
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
+import com.group8.comp2300.domain.model.medical.Routine
+import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
+import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -78,7 +83,7 @@ interface ApiService {
 
     suspend fun getMedicationLogHistory(): List<MedicationLog>
 
-    suspend fun getMedicationAgenda(date: String): List<MedicationLog>
+    suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda>
 
     suspend fun logMood(
         request: MoodEntryRequest,
@@ -94,6 +99,18 @@ interface ApiService {
     ): Medication
 
     suspend fun deleteMedication(id: String)
+
+    suspend fun getUserRoutines(): List<Routine>
+
+    suspend fun upsertRoutine(id: String, request: RoutineCreateRequest): Routine
+
+    suspend fun deleteRoutine(id: String)
+
+    suspend fun getRoutineOccurrenceOverrides(): List<RoutineOccurrenceOverride>
+
+    suspend fun upsertRoutineOccurrenceOverride(
+        request: RoutineOccurrenceOverrideRequest,
+    ): RoutineOccurrenceOverride
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -161,10 +178,10 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun getMedicationLogHistory(): List<MedicationLog> =
         client.get("/api/medications/logs").body()
 
-    override suspend fun getMedicationAgenda(
+    override suspend fun getRoutineAgenda(
         date: String,
-    ): List<MedicationLog> =
-        client.get("/api/medications/agenda?date=$date").body()
+    ): List<RoutineDayAgenda> =
+        client.get("/api/routines/agenda?date=$date").body()
 
     override suspend fun logMood(
         request: MoodEntryRequest,
@@ -185,6 +202,24 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun deleteMedication(id: String) {
         client.delete("/api/medications/$id")
     }
+
+    override suspend fun getUserRoutines(): List<Routine> =
+        client.get("/api/routines").body()
+
+    override suspend fun upsertRoutine(id: String, request: RoutineCreateRequest): Routine =
+        client.put("/api/routines/$id") { setBody(request) }.body()
+
+    override suspend fun deleteRoutine(id: String) {
+        client.delete("/api/routines/$id")
+    }
+
+    override suspend fun getRoutineOccurrenceOverrides(): List<RoutineOccurrenceOverride> =
+        client.get("/api/routines/occurrence-overrides").body()
+
+    override suspend fun upsertRoutineOccurrenceOverride(
+        request: RoutineOccurrenceOverrideRequest,
+    ): RoutineOccurrenceOverride =
+        client.put("/api/routines/occurrence-overrides") { setBody(request) }.body()
 
     /**
      * Catches JsonConvertException when server returns an error response like {"error": "..."}

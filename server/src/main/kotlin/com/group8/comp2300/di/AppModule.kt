@@ -8,12 +8,12 @@ import com.group8.comp2300.data.repository.ClinicRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicTagRepositoryImpl
 import com.group8.comp2300.data.repository.MedicationLogRepositoryImpl
 import com.group8.comp2300.data.repository.MedicationRepositoryImpl
-import com.group8.comp2300.data.repository.MedicationScheduleRepositoryImpl
 import com.group8.comp2300.data.repository.MoodRepositoryImpl
 import com.group8.comp2300.data.repository.PasswordResetTokenRepositoryImpl
 import com.group8.comp2300.data.repository.ProductRepositoryImpl
 import com.group8.comp2300.data.repository.RefreshTokenRepositoryImpl
-import com.group8.comp2300.data.repository.ReminderRepositoryImpl
+import com.group8.comp2300.data.repository.RoutineRepositoryImpl
+import com.group8.comp2300.data.repository.RoutineOccurrenceOverrideRepositoryImpl
 import com.group8.comp2300.data.repository.UserRepositoryImpl
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.repository.AppointmentRepository
@@ -22,12 +22,12 @@ import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.ClinicTagRepository
 import com.group8.comp2300.domain.repository.MedicationLogRepository
 import com.group8.comp2300.domain.repository.MedicationRepository
-import com.group8.comp2300.domain.repository.MedicationScheduleRepository
 import com.group8.comp2300.domain.repository.MoodRepository
 import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
 import com.group8.comp2300.domain.repository.ProductRepository
 import com.group8.comp2300.domain.repository.RefreshTokenRepository
-import com.group8.comp2300.domain.repository.ReminderRepository
+import com.group8.comp2300.domain.repository.RoutineRepository
+import com.group8.comp2300.domain.repository.RoutineOccurrenceOverrideRepository
 import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.security.JwtService
@@ -63,10 +63,10 @@ val serverModule = module {
     single<ClinicTagRepository> { ClinicTagRepositoryImpl(get()) }
     single<ClinicRepository> { ClinicRepositoryImpl(get(), get()) }
     single<MedicationRepository> { MedicationRepositoryImpl(get()) }
+    single<RoutineRepository> { RoutineRepositoryImpl(get()) }
+    single<RoutineOccurrenceOverrideRepository> { RoutineOccurrenceOverrideRepositoryImpl(get()) }
     single<MedicationLogRepository> { MedicationLogRepositoryImpl(get()) }
-    single<MedicationScheduleRepository> { MedicationScheduleRepositoryImpl(get()) }
     single<MoodRepository> { MoodRepositoryImpl(get()) }
-    single<ReminderRepository> { ReminderRepositoryImpl(get()) }
 
     // Email
     single { EmailService(ResendConfig.apiKey, ResendConfig.fromEmail, ResendConfig.appName) }

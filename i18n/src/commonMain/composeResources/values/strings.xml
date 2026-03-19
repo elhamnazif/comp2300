@@ -131,7 +131,7 @@
     <string name="home_protected_label">Protected</string>
     <string name="home_streak_label_format">%1$d Day Streak</string>
     <string name="home_daily_insight_title">Daily Insight</string>
-    <string name="home_menu_log_pill">Log Pill</string>
+    <string name="home_menu_medication_cabinet">Medication\nCabinet</string>
     <string name="home_menu_shop">Shop</string>
     <string name="home_menu_history">History</string>
     <string name="home_menu_symptom_check">Symptom Check</string>

@@ -16,6 +16,7 @@ import com.group8.comp2300.presentation.screens.auth.ResetPasswordViewModel
 import com.group8.comp2300.presentation.screens.education.EducationViewModel
 import com.group8.comp2300.presentation.screens.medical.BookingViewModel
 import com.group8.comp2300.presentation.screens.medical.MedicationViewModel
+import com.group8.comp2300.presentation.screens.medical.RoutineViewModel
 import com.group8.comp2300.presentation.screens.medical.calendar.CalendarViewModel
 import com.group8.comp2300.presentation.screens.profile.ProfileViewModel
 import com.group8.comp2300.presentation.screens.shop.ShopViewModel
@@ -57,4 +58,5 @@ val appModule = module {
     viewModelOf(::ProfileViewModel)
     viewModelOf(::CalendarViewModel)
     viewModelOf(::MedicationViewModel)
+    viewModelOf(::RoutineViewModel)
 }

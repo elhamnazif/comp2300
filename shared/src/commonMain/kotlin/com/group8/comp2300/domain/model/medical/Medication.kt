@@ -16,9 +16,6 @@ data class Medication(
     val frequency: MedicationFrequency,
     val instruction: String? = null,
     val colorHex: String? = null,
-    val startDate: String, // YYYY-MM-DD
-    val endDate: String, // YYYY-MM-DD
-    val hasReminder: Boolean = true,
     val status: MedicationStatus = MedicationStatus.ACTIVE,
 ) {
     companion object {

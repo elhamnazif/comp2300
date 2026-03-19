@@ -61,6 +61,9 @@ sealed interface Screen : NavKey {
     data object Medication : Screen
 
     @Serializable
+    data object Routines : Screen
+
+    @Serializable
     data object SelfDiagnosis : Screen
 
     @Serializable
