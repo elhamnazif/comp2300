@@ -14,14 +14,6 @@ data class MedicalRecordResponse(
     val createdAt: Long   // Unix timestamp
 )
 
-/**
- * Input DTO: Expected from the client when they want to rename a file.
- * (This replaces sending the new name in the URL query parameters).
- */
-@Serializable
-data class RenameRecordRequest(
-    val newName: String
-)
 
 /**
  * Standardized Response DTO: Useful for consistent success/error messages.
