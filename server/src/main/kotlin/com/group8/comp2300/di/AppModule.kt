@@ -10,6 +10,7 @@ import com.group8.comp2300.data.repository.ClinicTagRepositoryImpl
 import com.group8.comp2300.data.repository.MedicationLogRepositoryImpl
 import com.group8.comp2300.data.repository.MedicationRepositoryImpl
 import com.group8.comp2300.data.repository.MedicationScheduleRepositoryImpl
+import com.group8.comp2300.data.repository.MedicalRecordRepositoryImpl
 import com.group8.comp2300.data.repository.MoodRepositoryImpl
 import com.group8.comp2300.data.repository.PasswordResetTokenRepositoryImpl
 import com.group8.comp2300.data.repository.ProductRepositoryImpl
@@ -25,6 +26,7 @@ import com.group8.comp2300.domain.repository.ClinicTagRepository
 import com.group8.comp2300.domain.repository.MedicationLogRepository
 import com.group8.comp2300.domain.repository.MedicationRepository
 import com.group8.comp2300.domain.repository.MedicationScheduleRepository
+import com.group8.comp2300.domain.repository.MedicalRecordRepository
 import com.group8.comp2300.domain.repository.MoodRepository
 import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
 import com.group8.comp2300.domain.repository.ProductRepository
@@ -39,6 +41,7 @@ import com.group8.comp2300.service.auth.AuthService
 import com.group8.comp2300.service.email.EmailService
 import com.group8.comp2300.service.payment.PaymentService
 import com.group8.comp2300.service.payment.PaymentServiceImpl
+import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import org.koin.dsl.module
 
 val serverModule = module {
@@ -70,6 +73,7 @@ val serverModule = module {
     single<MedicationScheduleRepository> { MedicationScheduleRepositoryImpl(get()) }
     single<MoodRepository> { MoodRepositoryImpl(get()) }
     single<ReminderRepository> { ReminderRepositoryImpl(get()) }
+    single<MedicalRecordRepository> { MedicalRecordRepositoryImpl(get()) }
 
     // Email
     single { EmailService(ResendConfig.apiKey, ResendConfig.fromEmail, ResendConfig.appName) }
@@ -86,4 +90,5 @@ val serverModule = module {
     }
     single<PaymentService> { PaymentServiceImpl() }
     single { AppointmentService(get(), get(), get()) }
+    single { MedicalRecordService(repository = get()) }
 }
