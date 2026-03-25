@@ -10,7 +10,3 @@ data class MedicalRecord(
     val createdAt: Long = 0L
 )
 
-@Serializable
-data class RenameRequest(
-    val newName: String
-)
