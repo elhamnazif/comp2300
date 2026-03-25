@@ -1,6 +1,5 @@
 package com.group8.comp2300.dto
 
-import com.group8.comp2300.domain.model.medical.MedicalRecord
 import kotlinx.serialization.Serializable
 
 /**
@@ -10,8 +9,8 @@ import kotlinx.serialization.Serializable
 data class MedicalRecordResponse(
     val id: String,
     val fileName: String,
-    val fileSize: Long,   // Size in bytes
-    val createdAt: Long   // Unix timestamp
+    val fileSize: Long,
+    val createdAt: Long = System.currentTimeMillis()
 )
 
 
