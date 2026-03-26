@@ -99,5 +99,45 @@ fun Route.medicalRecordRoutes() {
                 }
             }
         }
+
+        get("/api/medical-records/user") {
+            val userId = "user-123" // Replace with actual JWT extraction logic
+
+            // Grab the "?sort=" parameter from the URL, or null if it doesn't exist
+            val sortParam = call.request.queryParameters["sort"]
+
+            val records = service.getRecordsForUser(userId, sortParam)
+            call.respond(HttpStatusCode.OK, records)
+        }
+
+        put("/api/medical-records/{id}/reupload") {
+            val userId = "user-123" // Replace with actual JWT logic
+            val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest)
+
+            val multipart = call.receiveMultipart()
+            var fileBytes: ByteArray? = null
+            var fileName: String? = null
+
+            // Parse the incoming file
+            multipart.forEachPart { part ->
+                if (part is PartData.FileItem) {
+                    fileName = part.originalFileName
+                    fileBytes = part.streamProvider().readBytes()
+                }
+                part.dispose()
+            }
+
+            if (fileBytes != null && fileName != null) {
+                val success = service.reuploadRecord(id, userId, fileName!!, fileBytes!!)
+
+                if (success) {
+                    call.respond(HttpStatusCode.OK, mapOf("message" to "File successfully reuploaded"))
+                } else {
+                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Record not found or user unauthorized"))
+                }
+            } else {
+                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing file data"))
+            }
+        }
     }
 }

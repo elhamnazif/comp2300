@@ -1,6 +1,7 @@
 package com.group8.comp2300.service.medicalRecords
 
 import com.group8.comp2300.domain.model.medical.MedicalRecord
+import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
 import com.group8.comp2300.dto.MedicalRecordResponse
 import io.ktor.http.content.*
@@ -106,6 +107,44 @@ class MedicalRecordService(
         val path = repository.getFilePath(id, userId) ?: return null
         val file = File(path)
         return if (file.exists()) file else null
+    }
+
+    fun getRecordsForUser(userId: String, sortQuery: String?): List<MedicalRecord> {
+        val sortOrder = when (sortQuery?.uppercase()) {
+            "DATE_ASC" -> MedicalRecordSortOrder.DATE_ASC
+            "NAME_ASC" -> MedicalRecordSortOrder.NAME_ASC
+            "NAME_DESC" -> MedicalRecordSortOrder.NAME_DESC
+            else -> MedicalRecordSortOrder.DATE_DESC // Safely fallback to default
+        }
+        return repository.getRecordsByUserId(userId, sortOrder)
+    }
+
+    fun reuploadRecord(id: String, userId: String, newFileName: String, fileBytes: ByteArray): Boolean {
+        // Find the old file path
+        val oldPath = repository.getFilePath(id, userId) ?: return false
+
+        // Safely delete the old physical file
+        val oldFile = File(oldPath)
+        if (oldFile.exists()) {
+            oldFile.delete()
+        }
+
+        // Create and save the new physical file
+        val safeName = if (newFileName.endsWith(".pdf", ignoreCase = true)) newFileName else "$newFileName.pdf"
+        val newTimestamp = System.currentTimeMillis()
+        val newPath = "$uploadDir/$id-$newTimestamp.pdf" // Unique name prevents cache issues
+
+        File(newPath).writeBytes(fileBytes)
+
+        // Update database record with the new details
+        return repository.updateRecordMetadata(
+            id = id,
+            userId = userId,
+            newName = safeName,
+            newPath = newPath,
+            newSize = fileBytes.size.toLong(),
+            newTimestamp = newTimestamp
+        )
     }
 }
 

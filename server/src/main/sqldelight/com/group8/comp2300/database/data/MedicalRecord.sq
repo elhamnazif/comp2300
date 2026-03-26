@@ -35,6 +35,25 @@ deleteRecordById:
 DELETE FROM MedicalRecordEnt
 WHERE id = ? AND userId = ?;
 
+-- Sorting Queries
+getRecordsByUserIdDateDesc:
+SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY createdAt DESC;
+
+getRecordsByUserIdDateAsc:
+SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY createdAt ASC;
+
+getRecordsByUserIdNameAsc:
+SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY fileName COLLATE NOCASE ASC;
+
+getRecordsByUserIdNameDesc:
+SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY fileName COLLATE NOCASE DESC;
+
+-- Reupload Query
+updateRecordMetadata:
+UPDATE MedicalRecordEnt
+SET fileName = ?, storagePath = ?, fileSize = ?, createdAt = ?
+WHERE id = ? AND userId = ?;
+
 -- Helper to check how many rows were affected by the last UPDATE/DELETE
 changes:
 SELECT changes();

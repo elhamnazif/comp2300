@@ -3,10 +3,12 @@ package com.group8.comp2300.data.repository
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.database.data.MedicalRecordEnt
 import com.group8.comp2300.domain.model.medical.MedicalRecord
+import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
 import kotlin.time.Clock
 
 class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : MedicalRecordRepository {
+    private val queries = database.medicalRecordQueries
 
     override fun insert(
         id: String,
@@ -26,16 +28,15 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
         )
     }
 
-    override fun getRecordsByUserId(userId: String): List<MedicalRecord> {
-        // pass a 'mapper' lambda directly into the query function
-        return database.medicalRecordQueries.getRecordsByUserId(userId) { id, fileName, fileSize, createdAt ->
-            MedicalRecord(
-                id = id,
-                fileName = fileName,
-                fileSize = fileSize,
-                createdAt = createdAt
-            )
-        }.executeAsList()
+    override fun getRecordsByUserId(userId: String, sortOrder: MedicalRecordSortOrder): List<MedicalRecord> {
+        val sqlQuery = when (sortOrder) {
+            MedicalRecordSortOrder.DATE_DESC -> queries.getRecordsByUserIdDateDesc(userId)
+            MedicalRecordSortOrder.DATE_ASC -> queries.getRecordsByUserIdDateAsc(userId)
+            MedicalRecordSortOrder.NAME_ASC -> queries.getRecordsByUserIdNameAsc(userId)
+            MedicalRecordSortOrder.NAME_DESC -> queries.getRecordsByUserIdNameDesc(userId)
+        }
+
+        return sqlQuery.executeAsList().map {it.toDomain()}
     }
 
     override fun getFilePath(id: String, userId: String): String? {
@@ -52,7 +53,28 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
         database.medicalRecordQueries.deleteRecordById(id, userId)
         return database.medicalRecordQueries.changes().executeAsOne() > 0
     }
+
+    override fun updateRecordMetadata(
+        id: String,
+        userId: String,
+        newName: String,
+        newPath: String,
+        newSize: Long,
+        newTimestamp: Long
+    ): Boolean {
+        queries.updateRecordMetadata(
+            fileName = newName,
+            storagePath = newPath,
+            fileSize = newSize,
+            createdAt = newTimestamp,
+            id = id,
+            userId = userId
+        )
+        // Check if a row was actually changed
+        return queries.changes().executeAsOne() > 0
+    }
 }
+
 
 /**
  * Extension function to map the SQLDelight Entity to our clean Domain Model.
