@@ -6,137 +6,111 @@ import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import com.group8.comp2300.service.medicalRecords.toDto
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.koin.ktor.ext.get
-
+import org.koin.ktor.ext.inject
+import kotlinx.io.readByteArray
+import io.ktor.utils.io.readRemaining
 
 fun Route.medicalRecordRoutes() {
-    val service = get<MedicalRecordService>()
+    // Use inject() so it lazily resolves from the Koin context we set up in the test
+    val service by inject<MedicalRecordService>()
 
-    route("/api/medical-records") {
+    authenticate("auth-jwt") {
+        // Removed the extra "/api/medical-records" nesting here
+        // because it's usually handled in the main Application.kt or the Test setup
+        route("/api/medical-records") {
 
-        post("/upload") {
-            // 1. The HTTP-level check (Fast reject)
-            val contentLength = call.request.header(HttpHeaders.ContentLength)?.toLong() ?: 0L
-            val maxFileSize = 10 * 1024 * 1024L // 10 MB
-
-            if (contentLength > maxFileSize) {
-                call.respond(
-                    HttpStatusCode.PayloadTooLarge,
-                    ApiResponse(false, "File exceeds the 10MB limit.")
-                )
-                return@post
-            }
-
-            withUserId { userId ->
-                val multipart = call.receiveMultipart()
-                var success = false
-
-                multipart.forEachPart { part ->
-                    if (part is PartData.FileItem) {
-                        val record = service.uploadMedicalRecord(userId, part)
-                        if (record != null) success = true
+            post("/upload") {
+                withUserId { userId ->
+                    val multipart = call.receiveMultipart()
+                    var success = false
+                    multipart.forEachPart { part ->
+                        if (part is PartData.FileItem) {
+                            val record = service.uploadMedicalRecord(userId, part)
+                            if (record != null) success = true
+                        }
+                        part.dispose()
                     }
-                    part.dispose()
-                }
-
-                if (success) {
-                    call.respond(HttpStatusCode.Created, ApiResponse(true, "File uploaded successfully"))
-                } else {
-                    // If the service rejected it, it returns null
-                    call.respond(HttpStatusCode.BadRequest, ApiResponse(false, "Upload failed or file was invalid"))
+                    if (success) call.respond(HttpStatusCode.Created, ApiResponse(true, "Success"))
+                    else call.respond(HttpStatusCode.BadRequest, ApiResponse(false, "Failed"))
                 }
             }
-        }
 
-        get("/user") {
-            withUserId { userId ->
-                val records = service.getRecordsForUser(userId).map { it.toDto() }
-                call.respond(HttpStatusCode.OK, records)
-            }
-        }
-
-        get("/download/{id}") {
-            val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-            withUserId { userId ->
-                val file = service.getPhysicalFile(id, userId)
-                if (file != null && file.exists()) {
-                    call.response.header(
-                        HttpHeaders.ContentDisposition,
-                        ContentDisposition.Inline.withParameter(ContentDisposition.Parameters.FileName, file.name).toString()
-                    )
-                    call.respondFile(file)
-                } else {
-                    call.respond(HttpStatusCode.NotFound, ApiResponse(false, "File not found"))
+            get("/user") {
+                withUserId { userId ->
+                    val sortParam = call.request.queryParameters["sort"]
+                    val records = service.getRecordsForUser(userId, sortParam).map { it.toDto() }
+                    call.respond(HttpStatusCode.OK, records)
                 }
             }
-        }
 
-        patch("/rename/{id}") {
-            val id = call.parameters["id"] ?: return@patch call.respond(HttpStatusCode.BadRequest)
-            withUserId { userId ->
-                val request = call.receiveNullable<RenameRequest>()
-                    ?: return@withUserId call.respond(HttpStatusCode.BadRequest, ApiResponse(false, "Invalid request"))
+            put("/reupload/{id}") {
+                val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest)
 
-                if (service.renameRecord(id, userId, request.newName)) {
-                    call.respond(HttpStatusCode.OK, ApiResponse(true, "Renamed successfully"))
-                } else {
-                    call.respond(HttpStatusCode.NotFound, ApiResponse(false, "Record not found"))
+                withUserId { userId ->
+                    val multipart = call.receiveMultipart()
+                    var success = false
+
+                    multipart.forEachPart { part ->
+                        if (part is PartData.FileItem) {
+                            val fileName = part.originalFileName ?: "updated_file"
+                            // Read the file stream into a ByteArray for the service
+                            val fileBytes = part.provider().readRemaining().readByteArray()
+
+                            success = service.reuploadRecord(id, userId, fileName, fileBytes)
+                        }
+                        part.dispose()
+                    }
+
+                    if (success) {
+                        call.respond(HttpStatusCode.OK, ApiResponse(true, "File updated successfully"))
+                    } else {
+                        call.respond(HttpStatusCode.InternalServerError, ApiResponse(false, "Failed to update file"))
+                    }
                 }
             }
-        }
 
-        delete("/{id}") {
-            val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
-            withUserId { userId ->
-                if (service.deleteRecord(id, userId)) {
-                    call.respond(HttpStatusCode.NoContent)
-                } else {
-                    call.respond(HttpStatusCode.NotFound, ApiResponse(false, "Delete failed"))
+            get("/download/{id}") {
+                val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+                withUserId { userId ->
+                    val file = service.getPhysicalFile(id, userId)
+                    if (file?.exists() == true) {
+                        call.response.header(HttpHeaders.ContentDisposition,
+                            ContentDisposition.Inline.withParameter(ContentDisposition.Parameters.FileName, file.name).toString())
+                        call.respondFile(file)
+                    } else {
+                        call.respond(HttpStatusCode.NotFound, ApiResponse(false, "File not found"))
+                    }
                 }
             }
-        }
 
-        get("/api/medical-records/user") {
-            val userId = "user-123" // Replace with actual JWT extraction logic
+            patch("/rename/{id}") {
+                val id = call.parameters["id"] ?: return@patch call.respond(HttpStatusCode.BadRequest)
+                withUserId { userId ->
+                    val request = call.receiveNullable<RenameRequest>()
+                        ?: return@withUserId call.respond(HttpStatusCode.BadRequest)
 
-            // Grab the "?sort=" parameter from the URL, or null if it doesn't exist
-            val sortParam = call.request.queryParameters["sort"]
-
-            val records = service.getRecordsForUser(userId, sortParam)
-            call.respond(HttpStatusCode.OK, records)
-        }
-
-        put("/api/medical-records/{id}/reupload") {
-            val userId = "user-123" // Replace with actual JWT logic
-            val id = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest)
-
-            val multipart = call.receiveMultipart()
-            var fileBytes: ByteArray? = null
-            var fileName: String? = null
-
-            // Parse the incoming file
-            multipart.forEachPart { part ->
-                if (part is PartData.FileItem) {
-                    fileName = part.originalFileName
-                    fileBytes = part.streamProvider().readBytes()
+                    if (service.renameRecord(id, userId, request.newName)) {
+                        call.respond(HttpStatusCode.OK, ApiResponse(true, "Renamed"))
+                    } else {
+                        call.respond(HttpStatusCode.NotFound)
+                    }
                 }
-                part.dispose()
             }
 
-            if (fileBytes != null && fileName != null) {
-                val success = service.reuploadRecord(id, userId, fileName!!, fileBytes!!)
-
-                if (success) {
-                    call.respond(HttpStatusCode.OK, mapOf("message" to "File successfully reuploaded"))
-                } else {
-                    call.respond(HttpStatusCode.NotFound, mapOf("error" to "Record not found or user unauthorized"))
+            delete("/{id}") {
+                val id = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest)
+                withUserId { userId ->
+                    if (service.deleteRecord(id, userId)) {
+                        call.respond(HttpStatusCode.NoContent)
+                    } else {
+                        // This returns 404 if the record doesn't exist or belongs to someone else
+                        call.respond(HttpStatusCode.NotFound, ApiResponse(false, "Delete failed"))
+                    }
                 }
-            } else {
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Missing file data"))
             }
         }
     }

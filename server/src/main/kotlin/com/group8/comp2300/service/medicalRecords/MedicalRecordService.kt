@@ -14,39 +14,42 @@ import java.util.*
 
 class MedicalRecordService(
     private val repository: MedicalRecordRepository,
-    private val uploadDir: String = "uploads" // Directory where PDFs are stored
+    private val uploadDir: String = "uploads"
 ) {
 
+    // Define safe file types for the app (Documents + Images)
+    private val allowedExtensions = setOf("pdf", "jpg", "jpeg", "png", "docx", "doc")
+
     init {
-        // Create uploads folder if it doesn't exist
         val dir = File(uploadDir)
         if (!dir.exists()) dir.mkdirs()
     }
 
-    /**
-     * Handles the multipart file upload from Ktor.
-     * Generates a unique ID and saves the physical file before updating the DB.
-     */
     suspend fun uploadMedicalRecord(userId: String, part: PartData.FileItem): MedicalRecord? = withContext(Dispatchers.IO) {
         val fileId = UUID.randomUUID().toString()
-        val originalName = part.originalFileName ?: "unknown.pdf"
-        val extension = originalName.substringAfterLast(".", "pdf")
+        val originalName = part.originalFileName ?: "upload_${System.currentTimeMillis()}"
 
-        // Only allow PDFs
-        if (extension.lowercase() != "pdf") return@withContext null
+        // Safely extract the extension
+        val extension = originalName.substringAfterLast(".", "").lowercase()
 
-        val physicalFile = File(uploadDir, "$fileId.$extension")
+        // Security check: reject unsupported or potentially dangerous files
+        if (extension.isNotEmpty() && extension !in allowedExtensions) {
+            return@withContext null
+        }
+
+        // Construct the physical file name preserving the real extension
+        val storageFileName = if (extension.isNotEmpty()) "$fileId.$extension" else fileId
+        val physicalFile = File(uploadDir, storageFileName)
 
         try {
             val readChannel = part.provider()
             readChannel.copyTo(physicalFile.writeChannel())
 
-            // Check file size
             val actualSize = physicalFile.length()
             val maxFileSize = 10 * 1024 * 1024L // 10 MB
 
             if (actualSize > maxFileSize) {
-                physicalFile.delete() // File too big
+                physicalFile.delete()
                 return@withContext null
             }
 
@@ -68,75 +71,70 @@ class MedicalRecordService(
         }
     }
 
-    /**
-     * Fetches all records for a user.
-     */
-    fun getRecordsForUser(userId: String): List<MedicalRecord> {
-        return repository.getRecordsByUserId(userId)
+    fun getRecordsForUser(userId: String, sortQuery: String?): List<MedicalRecord> {
+        val sortOrder = when (sortQuery?.uppercase()) {
+            "DATE_ASC" -> MedicalRecordSortOrder.DATE_ASC
+            "NAME_ASC" -> MedicalRecordSortOrder.NAME_ASC
+            "NAME_DESC" -> MedicalRecordSortOrder.NAME_DESC
+            else -> MedicalRecordSortOrder.DATE_DESC
+        }
+        return repository.getRecordsByUserId(userId, sortOrder)
     }
 
-    /**
-     * Safely deletes the database record and the physical file.
-     */
     fun deleteRecord(id: String, userId: String): Boolean {
         val path = repository.getFilePath(id, userId) ?: return false
-
         val wasDbDeleted = repository.delete(id, userId)
 
         if (wasDbDeleted) {
             val file = File(path)
             if (file.exists()) file.delete()
         }
-
         return wasDbDeleted
     }
 
-    /**
-     * Renames the file in the database.
-     */
     fun renameRecord(id: String, userId: String, newName: String): Boolean {
-        // Basic validation: Ensure it ends with .pdf
-        val sanitizedName = if (newName.lowercase().endsWith(".pdf")) newName else "$newName.pdf"
+        // Default sort order: DATE_DESC
+        val currentRecord = repository.getRecordsByUserId(userId, MedicalRecordSortOrder.DATE_DESC)
+            .find { it.id == id } ?: return false
+
+        val originalExtension = currentRecord.fileName.substringAfterLast(".", "")
+        val newExtension = newName.substringAfterLast(".", "").lowercase()
+
+        val sanitizedName = if (originalExtension.isNotEmpty() && newExtension != originalExtension) {
+            "$newName.$originalExtension"
+        } else {
+            newName
+        }
+
         return repository.updateFileName(id, userId, sanitizedName)
     }
 
-    /**
-     * Returns the physical file object for streaming/downloading.
-     */
     fun getPhysicalFile(id: String, userId: String): File? {
         val path = repository.getFilePath(id, userId) ?: return null
         val file = File(path)
         return if (file.exists()) file else null
     }
 
-    fun getRecordsForUser(userId: String, sortQuery: String?): List<MedicalRecord> {
-        val sortOrder = when (sortQuery?.uppercase()) {
-            "DATE_ASC" -> MedicalRecordSortOrder.DATE_ASC
-            "NAME_ASC" -> MedicalRecordSortOrder.NAME_ASC
-            "NAME_DESC" -> MedicalRecordSortOrder.NAME_DESC
-            else -> MedicalRecordSortOrder.DATE_DESC // Safely fallback to default
-        }
-        return repository.getRecordsByUserId(userId, sortOrder)
-    }
-
     fun reuploadRecord(id: String, userId: String, newFileName: String, fileBytes: ByteArray): Boolean {
-        // Find the old file path
         val oldPath = repository.getFilePath(id, userId) ?: return false
 
-        // Safely delete the old physical file
         val oldFile = File(oldPath)
-        if (oldFile.exists()) {
-            oldFile.delete()
+        if (oldFile.exists()) oldFile.delete()
+
+        // Handle the extension dynamically for the re-uploaded file
+        val extension = newFileName.substringAfterLast(".", "").lowercase()
+        val safeName = if (extension.isNotEmpty() && !newFileName.lowercase().endsWith(".$extension")) {
+            "$newFileName.$extension"
+        } else {
+            newFileName
         }
 
-        // Create and save the new physical file
-        val safeName = if (newFileName.endsWith(".pdf", ignoreCase = true)) newFileName else "$newFileName.pdf"
         val newTimestamp = System.currentTimeMillis()
-        val newPath = "$uploadDir/$id-$newTimestamp.pdf" // Unique name prevents cache issues
+        val storageFileName = if (extension.isNotEmpty()) "$id-$newTimestamp.$extension" else "$id-$newTimestamp"
+        val newPath = "$uploadDir/$storageFileName"
 
         File(newPath).writeBytes(fileBytes)
 
-        // Update database record with the new details
         return repository.updateRecordMetadata(
             id = id,
             userId = userId,
@@ -148,9 +146,6 @@ class MedicalRecordService(
     }
 }
 
-/**
- * Helper to convert the internal MedicalRecord domain model into a DTO for JSON responses.
- */
 fun MedicalRecord.toDto(): MedicalRecordResponse {
     return MedicalRecordResponse(
         id = this.id,

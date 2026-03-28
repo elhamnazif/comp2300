@@ -2,6 +2,7 @@
 # Platform
 agp = "8.13.2"
 kotlin = "2.3.10"
+mockk = "1.13.10"
 
 # Compose
 composeMultiplatform = "1.11.0-alpha02"
@@ -170,6 +171,7 @@ androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "an
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
 androidx-core = { module = "androidx.test:core", version.ref = "core" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 # Server
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }

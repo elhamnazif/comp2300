@@ -3,7 +3,8 @@ package com.group8.comp2300.dto
 import kotlinx.serialization.Serializable
 
 /**
- * Output DTO: Sent to the client when they request their medical records.
+ * Note: fileName should include extensions like .jpg, .jpeg, .png, .doc, .docx
+ * depending on what the user uploaded.
  */
 @Serializable
 data class MedicalRecordResponse(
