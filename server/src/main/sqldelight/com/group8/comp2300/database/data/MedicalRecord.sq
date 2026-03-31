@@ -1,26 +1,22 @@
 CREATE TABLE MedicalRecordEnt (
-    id TEXT NOT NULL PRIMARY KEY,      -- Use UUID.randomUUID().toString()
+    id TEXT NOT NULL PRIMARY KEY,
     userId TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
     fileName TEXT NOT NULL,
-    storagePath TEXT NOT NULL,        -- Actual path: "uploads/uuid-123.pdf"
-    fileSize INTEGER NOT NULL,        -- Size in bytes
-    createdAt INTEGER NOT NULL        -- Unix timestamp
+    storagePath TEXT NOT NULL, -- Actual path: "uploads/uuid-123.pdf"
+    fileSize INTEGER NOT NULL, -- Size in bytes
+    createdAt INTEGER NOT NULL -- Unix timestamp
 );
 
--- Insert a new record after a successful upload
 insertRecord:
 INSERT INTO MedicalRecordEnt(id, userId, fileName, storagePath, fileSize, createdAt)
 VALUES (?, ?, ?, ?, ?, ?);
 
--- Get all metadata of records excluding filepath for UI list view
 getRecordsByUserId:
 SELECT id, fileName, fileSize, createdAt
 FROM MedicalRecordEnt
 WHERE userId = ?
 ORDER BY createdAt DESC;
 
--- Get file path to view record
--- returns path if ID exists AND user owns it
 getFilePathById:
 SELECT storagePath
 FROM MedicalRecordEnt
@@ -35,7 +31,11 @@ deleteRecordById:
 DELETE FROM MedicalRecordEnt
 WHERE id = ? AND userId = ?;
 
--- Sorting Queries
+getRecordById:
+SELECT *
+FROM MedicalRecordEnt
+WHERE id = ? AND userId = ?;
+
 getRecordsByUserIdDateDesc:
 SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY createdAt DESC;
 
@@ -48,12 +48,10 @@ SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY fileName COLLATE NOCASE
 getRecordsByUserIdNameDesc:
 SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY fileName COLLATE NOCASE DESC;
 
--- Reupload Query
 updateRecordMetadata:
 UPDATE MedicalRecordEnt
 SET fileName = ?, storagePath = ?, fileSize = ?, createdAt = ?
 WHERE id = ? AND userId = ?;
 
--- Helper to check how many rows were affected by the last UPDATE/DELETE
 changes:
 SELECT changes();

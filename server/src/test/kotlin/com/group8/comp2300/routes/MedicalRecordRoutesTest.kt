@@ -39,10 +39,6 @@ class MedicalRecordRoutesTest {
         File(testUploadDir).deleteRecursively()
     }
 
-    /**
-     * Pass the specific instances into the environment so Ktor
-     * uses the same in-memory seeded database.
-     */
     private fun Application.configureTestEnv(
         database: com.group8.comp2300.database.ServerDatabase,
         repository: MedicalRecordRepositoryImpl,
@@ -103,10 +99,7 @@ class MedicalRecordRoutesTest {
 
         assertEquals(HttpStatusCode.OK, response.status)
 
-        // Pass SortOrder to the repository call
         val updatedRecord = repository.getRecordsByUserId("user-1", MedicalRecordSortOrder.DATE_DESC).first()
-
-        // Match expected output: service appends the original extension (.pdf)
         assertEquals("$requestedName.pdf", updatedRecord.fileName)
     }
 
@@ -145,7 +138,6 @@ class MedicalRecordRoutesTest {
 
         application { configureTestEnv(database, repository, service) }
 
-        // 1. Seed User
         database.userQueries.insertUser(
             id = "user-1", email = "down@vita.com", passwordHash = "hash",
             firstName = "Test", lastName = "User", phone = null, dateOfBirth = null,
@@ -153,7 +145,6 @@ class MedicalRecordRoutesTest {
             createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L,
         )
 
-        // 2. Prepare physical dummy files and DB entries
         val filesToTest = listOf(
             Triple("pdf-1", "report.pdf", ContentType.Application.Pdf),
             Triple("img-1", "rash.png", ContentType.Image.PNG),
@@ -162,7 +153,7 @@ class MedicalRecordRoutesTest {
 
         filesToTest.forEach { (id, fileName, _) ->
             val physicalFile = File(testUploadDir, "$id.${fileName.substringAfterLast(".")}")
-            physicalFile.writeText("Dummy content for $fileName") // Create the file on disk
+            physicalFile.writeText("Dummy content for $fileName")
 
             repository.insert(
                 id = id,
@@ -174,7 +165,6 @@ class MedicalRecordRoutesTest {
             )
         }
 
-        // 3. Run the tests
         filesToTest.forEach { (id, fileName, expectedType) ->
             val response = client.get("/api/medical-records/download/$id") {
                 header(HttpHeaders.Authorization, "Bearer $testToken")
@@ -188,12 +178,24 @@ class MedicalRecordRoutesTest {
             val disposition = response.headers[HttpHeaders.ContentDisposition]
             assertNotNull(disposition, "Content-Disposition header is missing")
 
-            // FIX: Removed the escaped quotes \" to make the check more resilient
             val expectedFileOnDisk = "$id.${fileName.substringAfterLast(".")}"
             assertTrue(
                 disposition.contains(expectedFileOnDisk),
                 "Header '$disposition' should contain filename '$expectedFileOnDisk'",
             )
         }
+    }
+
+    @Test
+    fun `unauthenticated request returns 401`() = testApplication {
+        val database = createServerDatabase("jdbc:sqlite::memory:")
+        val repository = MedicalRecordRepositoryImpl(database)
+        val service = MedicalRecordService(repository, uploadDir = testUploadDir)
+
+        application { configureTestEnv(database, repository, service) }
+
+        val response = client.get("/api/medical-records/user")
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
     }
 }

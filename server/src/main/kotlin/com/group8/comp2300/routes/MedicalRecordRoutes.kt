@@ -1,9 +1,11 @@
 package com.group8.comp2300.routes
 
-import com.group8.comp2300.dto.ApiResponse
+import com.group8.comp2300.dto.ErrorResponse
+import com.group8.comp2300.dto.MessageResponse
 import com.group8.comp2300.dto.RenameRequest
+import com.group8.comp2300.dto.toDto
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
-import com.group8.comp2300.service.medicalRecords.toDto
+import com.group8.comp2300.service.medicalRecords.UploadResult
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.auth.*
@@ -15,28 +17,35 @@ import kotlinx.io.readByteArray
 import org.koin.ktor.ext.inject
 
 fun Route.medicalRecordRoutes() {
-    // Use inject() so it lazily resolves from the Koin context we set up in the test
     val service by inject<MedicalRecordService>()
 
     authenticate("auth-jwt") {
-        // Removed the extra "/api/medical-records" nesting here
-        // because it's usually handled in the main Application.kt or the Test setup
         route("/api/medical-records") {
             post("/upload") {
                 withUserId { userId ->
                     val multipart = call.receiveMultipart()
-                    var success = false
+                    var result: UploadResult? = null
                     multipart.forEachPart { part ->
-                        if (part is PartData.FileItem) {
-                            val record = service.uploadMedicalRecord(userId, part)
-                            if (record != null) success = true
+                        if (part is PartData.FileItem && result == null) {
+                            result = service.uploadMedicalRecord(userId, part)
                         }
                         part.dispose()
                     }
-                    if (success) {
-                        call.respond(HttpStatusCode.Created, ApiResponse(true, "Success"))
-                    } else {
-                        call.respond(HttpStatusCode.BadRequest, ApiResponse(false, "Failed"))
+                    when (val r = result) {
+                        is UploadResult.Success -> call.respond(
+                            HttpStatusCode.Created,
+                            MessageResponse("File uploaded successfully"),
+                        )
+
+                        is UploadResult.Failed -> call.respond(
+                            HttpStatusCode.BadRequest,
+                            ErrorResponse(r.reason),
+                        )
+
+                        null -> call.respond(
+                            HttpStatusCode.BadRequest,
+                            ErrorResponse("No file provided"),
+                        )
                     }
                 }
             }
@@ -54,23 +63,32 @@ fun Route.medicalRecordRoutes() {
 
                 withUserId { userId ->
                     val multipart = call.receiveMultipart()
-                    var success = false
+                    var result: UploadResult? = null
 
                     multipart.forEachPart { part ->
-                        if (part is PartData.FileItem) {
+                        if (part is PartData.FileItem && result == null) {
                             val fileName = part.originalFileName ?: "updated_file"
-                            // Read the file stream into a ByteArray for the service
                             val fileBytes = part.provider().readRemaining().readByteArray()
-
-                            success = service.reuploadRecord(id, userId, fileName, fileBytes)
+                            result = service.reuploadRecord(id, userId, fileName, fileBytes)
                         }
                         part.dispose()
                     }
 
-                    if (success) {
-                        call.respond(HttpStatusCode.OK, ApiResponse(true, "File updated successfully"))
-                    } else {
-                        call.respond(HttpStatusCode.InternalServerError, ApiResponse(false, "Failed to update file"))
+                    when (val r = result) {
+                        is UploadResult.Success -> call.respond(
+                            HttpStatusCode.OK,
+                            MessageResponse("File updated successfully"),
+                        )
+
+                        is UploadResult.Failed -> call.respond(
+                            HttpStatusCode.BadRequest,
+                            ErrorResponse(r.reason),
+                        )
+
+                        null -> call.respond(
+                            HttpStatusCode.BadRequest,
+                            ErrorResponse("No file provided"),
+                        )
                     }
                 }
             }
@@ -89,7 +107,7 @@ fun Route.medicalRecordRoutes() {
                         )
                         call.respondFile(file)
                     } else {
-                        call.respond(HttpStatusCode.NotFound, ApiResponse(false, "File not found"))
+                        call.respond(HttpStatusCode.NotFound, ErrorResponse("File not found"))
                     }
                 }
             }
@@ -101,9 +119,9 @@ fun Route.medicalRecordRoutes() {
                         ?: return@withUserId call.respond(HttpStatusCode.BadRequest)
 
                     if (service.renameRecord(id, userId, request.newName)) {
-                        call.respond(HttpStatusCode.OK, ApiResponse(true, "Renamed"))
+                        call.respond(HttpStatusCode.OK, MessageResponse("Renamed successfully"))
                     } else {
-                        call.respond(HttpStatusCode.NotFound)
+                        call.respond(HttpStatusCode.NotFound, ErrorResponse("Record not found"))
                     }
                 }
             }
@@ -114,8 +132,7 @@ fun Route.medicalRecordRoutes() {
                     if (service.deleteRecord(id, userId)) {
                         call.respond(HttpStatusCode.NoContent)
                     } else {
-                        // This returns 404 if the record doesn't exist or belongs to someone else
-                        call.respond(HttpStatusCode.NotFound, ApiResponse(false, "Delete failed"))
+                        call.respond(HttpStatusCode.NotFound, ErrorResponse("Record not found or delete failed"))
                     }
                 }
             }

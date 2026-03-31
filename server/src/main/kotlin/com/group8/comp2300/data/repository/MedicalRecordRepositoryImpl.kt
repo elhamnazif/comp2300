@@ -5,7 +5,6 @@ import com.group8.comp2300.database.data.MedicalRecordEnt
 import com.group8.comp2300.domain.model.medical.MedicalRecord
 import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
-import kotlin.time.Clock
 
 class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : MedicalRecordRepository {
     private val queries = database.medicalRecordQueries
@@ -27,6 +26,9 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
             createdAt = createdAt,
         )
     }
+
+    override fun getRecordById(id: String, userId: String): MedicalRecord? =
+        database.medicalRecordQueries.getRecordById(id, userId).executeAsOneOrNull()?.toDomain()
 
     override fun getRecordsByUserId(userId: String, sortOrder: MedicalRecordSortOrder): List<MedicalRecord> {
         val sqlQuery = when (sortOrder) {
@@ -69,15 +71,11 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
             id = id,
             userId = userId,
         )
-        // Check if a row was actually changed
+        // Check if a row was actually updated
         return queries.changes().executeAsOne() > 0
     }
 }
 
-/**
- * Extension function to map the SQLDelight Entity to our clean Domain Model.
- * This ensures the storagePath stays hidden from the UI layers.
- */
 private fun MedicalRecordEnt.toDomain(): MedicalRecord = MedicalRecord(
     id = id,
     fileName = fileName,
