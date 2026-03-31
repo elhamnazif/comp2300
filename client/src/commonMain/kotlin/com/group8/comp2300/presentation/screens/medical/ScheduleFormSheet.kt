@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
@@ -18,7 +19,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,15 +58,24 @@ fun ScheduleFormSheet(
     val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
     var name by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.name ?: "") }
     var timesOfDayMs by remember(routineToEdit?.id, title) {
-        mutableStateOf(routineToEdit?.timesOfDayMs?.sorted()?.distinct()?.ifEmpty { listOf(9 * 60 * 60 * 1000L) } ?: listOf(9 * 60 * 60 * 1000L))
+        mutableStateOf(
+            routineToEdit?.timesOfDayMs?.sorted()?.distinct()?.ifEmpty { listOf(9 * 60 * 60 * 1000L) }
+                ?: listOf(9 * 60 * 60 * 1000L),
+        )
     }
-    var repeatType by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.repeatType ?: RoutineRepeatType.DAILY) }
-    var daysOfWeek by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.daysOfWeek?.toSet() ?: setOf(1, 2, 3, 4, 5)) }
+    var repeatType by remember(routineToEdit?.id, title) {
+        mutableStateOf(routineToEdit?.repeatType ?: RoutineRepeatType.DAILY)
+    }
+    var daysOfWeek by remember(routineToEdit?.id, title) {
+        mutableStateOf(routineToEdit?.daysOfWeek?.toSet() ?: setOf(1, 2, 3, 4, 5))
+    }
     var startDate by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.startDate ?: today.toString()) }
     var endDate by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.endDate ?: today.toString()) }
     var ongoing by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.endDate == null) }
     var hasReminder by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.hasReminder ?: true) }
-    var offsets by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.reminderOffsetsMins?.toSet() ?: setOf(0)) }
+    var offsets by remember(routineToEdit?.id, title) {
+        mutableStateOf(routineToEdit?.reminderOffsetsMins?.toSet() ?: setOf(0))
+    }
     var status by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.status ?: RoutineStatus.ACTIVE) }
     var selectedMedicationIds by remember(routineToEdit?.id, title, initialSelectedMedicationIds) {
         mutableStateOf((routineToEdit?.medicationIds?.toSet() ?: initialSelectedMedicationIds).toSet())
@@ -94,7 +103,11 @@ fun ScheduleFormSheet(
             Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             if (routineToEdit != null && onDelete != null) {
                 IconButton(onClick = { onDelete(routineToEdit.id) }) {
-                    Icon(Icons.DeleteW400Outlined, contentDescription = "Delete schedule", tint = MaterialTheme.colorScheme.error)
+                    Icon(
+                        Icons.DeleteW400Outlined,
+                        contentDescription = "Delete schedule",
+                        tint = MaterialTheme.colorScheme.error,
+                    )
                 }
             }
         }
@@ -144,8 +157,14 @@ fun ScheduleFormSheet(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FilterChip(selected = repeatType == RoutineRepeatType.DAILY, onClick = { repeatType = RoutineRepeatType.DAILY }, label = { Text("Every day") })
-            FilterChip(selected = repeatType == RoutineRepeatType.WEEKLY, onClick = { repeatType = RoutineRepeatType.WEEKLY }, label = { Text("Specific days") })
+            FilterChip(selected = repeatType == RoutineRepeatType.DAILY, onClick = {
+                repeatType =
+                    RoutineRepeatType.DAILY
+            }, label = { Text("Every day") })
+            FilterChip(selected = repeatType == RoutineRepeatType.WEEKLY, onClick = {
+                repeatType =
+                    RoutineRepeatType.WEEKLY
+            }, label = { Text("Specific days") })
         }
 
         if (repeatType == RoutineRepeatType.WEEKLY) {
@@ -167,7 +186,9 @@ fun ScheduleFormSheet(
             }
         }
 
-        DateValueField(label = "Start date", value = LocalDate.parse(startDate), onClick = { activeDatePicker = "start" })
+        DateValueField(label = "Start date", value = LocalDate.parse(startDate), onClick = {
+            activeDatePicker = "start"
+        })
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -225,7 +246,11 @@ fun ScheduleFormSheet(
 
         if (!showMedicationPicker && selectedMedicationIds.isNotEmpty()) {
             val selectedNames = medications.filter { it.id in selectedMedicationIds }.joinToString { it.name }
-            Text(selectedNames, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+            Text(
+                selectedNames,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
         } else {
             medications.forEach { medication ->
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -240,7 +265,8 @@ fun ScheduleFormSheet(
                     Column {
                         Text(medication.name, fontWeight = FontWeight.SemiBold)
                         Text(
-                            medication.quantity.takeIf(String::isNotBlank)?.let { "${medication.dosage} • $it" } ?: medication.dosage,
+                            medication.quantity.takeIf(String::isNotBlank)?.let { "${medication.dosage} • $it" }
+                                ?: medication.dosage,
                             color = MaterialTheme.colorScheme.secondary,
                         )
                     }

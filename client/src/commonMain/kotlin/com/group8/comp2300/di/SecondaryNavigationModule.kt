@@ -1,7 +1,6 @@
 package com.group8.comp2300.di
 
 import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
@@ -12,6 +11,7 @@ import com.group8.comp2300.presentation.screens.profile.HelpSupportScreen
 import com.group8.comp2300.presentation.screens.profile.NotificationsScreen
 import com.group8.comp2300.presentation.screens.profile.PrivacyLegaleseScreen
 import com.group8.comp2300.presentation.screens.profile.PrivacySecurityScreen
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation

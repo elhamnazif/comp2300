@@ -22,7 +22,7 @@ class SyncCoordinatorImpl(
 
         mutex.withLock {
             outbox.getPending().forEach { item ->
-                if (item.retryCount >= MAX_RETRIES) {
+                if (item.retryCount >= MaxRetries) {
                     outbox.updateState(item.id, OutboxState.FAILED, "Retry limit reached")
                     return@forEach
                 }
@@ -52,6 +52,6 @@ class SyncCoordinatorImpl(
     }
 
     private companion object {
-        const val MAX_RETRIES = 5
+        const val MaxRetries = 5
     }
 }

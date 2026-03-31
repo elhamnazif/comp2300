@@ -303,7 +303,12 @@ private fun MedicationCard(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = if (isArchived) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surfaceContainerLow,
+            containerColor =
+            if (isArchived) {
+                MaterialTheme.colorScheme.surfaceContainerHighest
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerLow
+            },
         ),
     ) {
         Row(
@@ -311,7 +316,9 @@ private fun MedicationCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Box(
-                modifier = Modifier.size(44.dp).background(parseColorHex(medication.colorHex).copy(alpha = 0.18f), CircleShape),
+                modifier = Modifier.size(
+                    44.dp,
+                ).background(parseColorHex(medication.colorHex).copy(alpha = 0.18f), CircleShape),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(modifier = Modifier.size(18.dp).background(parseColorHex(medication.colorHex), CircleShape))
@@ -326,7 +333,11 @@ private fun MedicationCard(
                     style = MaterialTheme.typography.labelLarge,
                 )
                 medication.instruction?.takeIf(String::isNotBlank)?.let {
-                    Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        it,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
             Icon(Icons.EditW400Outlinedfill1, contentDescription = "Edit medication")
@@ -348,6 +359,7 @@ private fun medicationScheduleLabel(linkedRoutines: List<Routine>): String {
 
     return when (routine.repeatType) {
         RoutineRepeatType.DAILY -> "Daily$timeLabel"
+
         RoutineRepeatType.WEEKLY -> {
             val days = routine.daysOfWeek.sorted().joinToString { day -> scheduleWeekdayLabel(day) }
             if (days.isBlank()) "Scheduled$timeLabel" else "$days$timeLabel"
@@ -407,7 +419,11 @@ fun MedicationFormSheet(
             )
             if (medicationToEdit != null) {
                 IconButton(onClick = { onDelete(medicationToEdit.id) }) {
-                    Icon(Icons.DeleteW400Outlined, contentDescription = "Delete medication", tint = MaterialTheme.colorScheme.error)
+                    Icon(
+                        Icons.DeleteW400Outlined,
+                        contentDescription = "Delete medication",
+                        tint = MaterialTheme.colorScheme.error,
+                    )
                 }
             }
         }
@@ -446,7 +462,13 @@ fun MedicationFormSheet(
                             .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
                             .border(
                                 width = if (selectedColor == color) 2.dp else 0.dp,
-                                color = if (selectedColor == color) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                color = if (selectedColor ==
+                                    color
+                                ) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    Color.Transparent
+                                },
                                 shape = CircleShape,
                             )
                             .padding(4.dp)

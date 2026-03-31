@@ -1,57 +1,26 @@
 package com.group8.comp2300
 
-import com.group8.comp2300.data.repository.MedicationLogRepositoryImpl
-import com.group8.comp2300.data.repository.MedicationRepositoryImpl
-import com.group8.comp2300.data.repository.RefreshTokenRepositoryImpl
-import com.group8.comp2300.data.repository.RoutineOccurrenceOverrideRepositoryImpl
-import com.group8.comp2300.data.repository.RoutineRepositoryImpl
-import com.group8.comp2300.data.repository.UserRepositoryImpl
+import com.group8.comp2300.data.repository.*
 import com.group8.comp2300.database.ServerDatabase
-import com.group8.comp2300.domain.model.medical.Medication
-import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationFrequency
-import com.group8.comp2300.domain.model.medical.MedicationLog
-import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
-import com.group8.comp2300.domain.model.medical.MedicationLogRequest
-import com.group8.comp2300.domain.model.medical.MedicationLogStatus
-import com.group8.comp2300.domain.model.medical.Routine
-import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
-import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
-import com.group8.comp2300.domain.model.medical.RoutineRepeatType
-import com.group8.comp2300.domain.model.medical.RoutineStatus
-import com.group8.comp2300.domain.repository.MedicationLogRepository
-import com.group8.comp2300.domain.repository.MedicationRepository
-import com.group8.comp2300.domain.repository.RefreshTokenRepository
-import com.group8.comp2300.domain.repository.RoutineOccurrenceOverrideRepository
-import com.group8.comp2300.domain.repository.RoutineRepository
-import com.group8.comp2300.domain.repository.UserRepository
+import com.group8.comp2300.domain.model.medical.*
+import com.group8.comp2300.domain.model.user.Gender
+import com.group8.comp2300.domain.model.user.SexualOrientation
+import com.group8.comp2300.domain.repository.*
 import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.routes.medicationRoutes
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
-import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.Application
-import io.ktor.server.application.install
-import io.ktor.server.auth.Authentication
-import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.routing.routing
-import io.ktor.server.testing.ApplicationTestBuilder
-import io.ktor.server.testing.testApplication
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.routing.*
+import io.ktor.server.testing.*
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
@@ -63,8 +32,7 @@ import org.koin.ktor.plugin.Koin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import com.group8.comp2300.domain.model.user.Gender
-import com.group8.comp2300.domain.model.user.SexualOrientation
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class MedicationRoutesTest {
     @Test
@@ -136,7 +104,8 @@ class MedicationRoutesTest {
 
     @Test
     fun movingOccurrenceReturnsRescheduledAgendaOnTargetDay() = testApplication {
-        val (medicationRepository, routineRepository, overrideRepository, token, userId) = configureMedicationTestModuleWithUser()
+        val (medicationRepository, routineRepository, overrideRepository, token, userId) =
+            configureMedicationTestModuleWithUser()
         val client = jsonClient()
 
         medicationRepository.insert(
@@ -323,7 +292,13 @@ class MedicationRoutesTest {
     }
 }
 
-private fun ApplicationTestBuilder.configureMedicationTestModuleWithUser(): Quintuple<MedicationRepository, RoutineRepository, RoutineOccurrenceOverrideRepository, String, String> {
+private fun ApplicationTestBuilder.configureMedicationTestModuleWithUser(): Quintuple<
+    MedicationRepository,
+    RoutineRepository,
+    RoutineOccurrenceOverrideRepository,
+    String,
+    String,
+    > {
     val db = createServerDatabase("jdbc:sqlite::memory:")
     val jwtService = JwtServiceImpl("test-secret-key-must-be-long-enough", "test-issuer", "test-audience")
     val userRepo = UserRepositoryImpl(db)
@@ -349,7 +324,16 @@ private fun ApplicationTestBuilder.configureMedicationTestModuleWithUser(): Quin
     val token = jwtService.generateAccessToken(userId)
 
     application {
-        configureTestModule(db, jwtService, userRepo, refreshRepo, medicationRepo, routineRepo, routineOccurrenceOverrideRepo, medicationLogRepo)
+        configureTestModule(
+            db,
+            jwtService,
+            userRepo,
+            refreshRepo,
+            medicationRepo,
+            routineRepo,
+            routineOccurrenceOverrideRepo,
+            medicationLogRepo,
+        )
     }
     return Quintuple(medicationRepo, routineRepo, routineOccurrenceOverrideRepo, token, userId)
 }
@@ -394,12 +378,11 @@ private fun Application.configureTestModule(
     }
 }
 
-private fun ApplicationTestBuilder.jsonClient() =
-    createClient {
-        install(ClientContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true })
-        }
+private fun ApplicationTestBuilder.jsonClient() = createClient {
+    install(ClientContentNegotiation) {
+        json(Json { ignoreUnknownKeys = true })
     }
+}
 
 @Serializable
 private data class Quintuple<A, B, C, D, E>(val first: A, val second: B, val third: C, val fourth: D, val fifth: E)

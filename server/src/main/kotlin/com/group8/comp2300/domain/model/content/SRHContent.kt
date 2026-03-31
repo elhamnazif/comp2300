@@ -2,7 +2,7 @@ package com.group8.comp2300.domain.model.content
 
 enum class ContentType {
     ARTICLE,
-    VIDEO
+    VIDEO,
 }
 
 enum class ContentTopic {
@@ -12,7 +12,7 @@ enum class ContentTopic {
     MENSTRUAL_HEALTH,
     CONSENT,
     RELATIONSHIPS,
-    GENERAL_HEALTH
+    GENERAL_HEALTH,
 }
 
 data class SRHContent(
@@ -22,21 +22,19 @@ data class SRHContent(
     val contentType: ContentType,
     val topics: List<ContentTopic>,
     val keywords: List<String>,
-    val contentUrl: String,           // URL to full article or video
+    val contentUrl: String, // URL to full article or video
     val thumbnailUrl: String?,
     val author: String?,
     val publishedDate: String,
-    val estimatedReadTime: Int?       // Minutes, null for videos
+    // Minutes, null for videos
+    val estimatedReadTime: Int?,
 )
 
 data class SearchRequest(
     val query: String? = null,
     val topics: List<ContentTopic> = emptyList(),
     val keywords: List<String> = emptyList(),
-    val contentType: ContentType? = null
+    val contentType: ContentType? = null,
 )
 
-data class SearchResult(
-    val content: SRHContent,
-    val relevanceScore: Double
-)
+data class SearchResult(val content: SRHContent, val relevanceScore: Double)

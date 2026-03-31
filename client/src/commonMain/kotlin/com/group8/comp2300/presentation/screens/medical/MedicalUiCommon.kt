@@ -78,12 +78,7 @@ fun TimeValueField(label: String, value: Long, onClick: () -> Unit) {
 }
 
 @Composable
-private fun MedicalValueField(
-    label: String,
-    value: String,
-    icon: ImageVector,
-    onClick: () -> Unit,
-) {
+private fun MedicalValueField(label: String, value: String, icon: ImageVector, onClick: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(6.dp),

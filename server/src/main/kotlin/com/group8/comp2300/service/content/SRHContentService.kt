@@ -3,9 +3,7 @@ package com.group8.comp2300.service.content
 import com.group8.comp2300.domain.model.content.*
 import com.group8.comp2300.domain.repository.SRHContentRepository
 
-class SRHContentService(
-    private val repository: SRHContentRepository
-) {
+class SRHContentService(private val repository: SRHContentRepository) {
 
     /**
      * Search and filter content based on user request
@@ -49,7 +47,7 @@ class SRHContentService(
         return results.map { content ->
             SearchResult(
                 content = content,
-                relevanceScore = calculateRelevance(content, request)
+                relevanceScore = calculateRelevance(content, request),
             )
         }.sortedByDescending { it.relevanceScore }
     }
@@ -57,16 +55,12 @@ class SRHContentService(
     /**
      * Get full content by ID (for viewing after clicking)
      */
-    fun getContentById(id: String): SRHContent? {
-        return repository.getById(id)
-    }
+    fun getContentById(id: String): SRHContent? = repository.getById(id)
 
     /**
      * Get all available topics (for filter UI)
      */
-    fun getAllTopics(): List<ContentTopic> {
-        return ContentTopic.values().toList()
-    }
+    fun getAllTopics(): List<ContentTopic> = ContentTopic.values().toList()
 
     /**
      * Get popular keywords (for suggestions)
@@ -89,13 +83,15 @@ class SRHContentService(
 
         // Title matches are most important
         if (!request.query.isNullOrEmpty() &&
-            content.title.contains(request.query, ignoreCase = true)) {
+            content.title.contains(request.query, ignoreCase = true)
+        ) {
             score += 3.0
         }
 
         // Description matches are second most important
         if (!request.query.isNullOrEmpty() &&
-            content.description.contains(request.query, ignoreCase = true)) {
+            content.description.contains(request.query, ignoreCase = true)
+        ) {
             score += 2.0
         }
 

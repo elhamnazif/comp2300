@@ -23,11 +23,7 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun RoutineScreen(
-    modifier: Modifier = Modifier,
-    onBack: () -> Unit,
-    viewModel: RoutineViewModel = koinViewModel(),
-) {
+fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: RoutineViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -79,7 +75,11 @@ fun RoutineScreen(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            Text("No schedules yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text(
+                                "No schedules yet",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.Bold,
+                            )
                             Text(
                                 "Create reminder schedules like Morning meds or Bedtime meds.",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -158,10 +158,18 @@ private fun RoutineCard(
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(
-            containerColor = if (isArchived) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surfaceContainerLow,
+            containerColor =
+            if (isArchived) {
+                MaterialTheme.colorScheme.surfaceContainerHighest
+            } else {
+                MaterialTheme.colorScheme.surfaceContainerLow
+            },
         ),
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -233,6 +241,7 @@ private fun RoutineCard(
 
 private fun routineRepeatSummary(routine: Routine): String = when (routine.repeatType) {
     com.group8.comp2300.domain.model.medical.RoutineRepeatType.DAILY -> "Every day"
+
     com.group8.comp2300.domain.model.medical.RoutineRepeatType.WEEKLY -> {
         routine.daysOfWeek.sorted().joinToString { day ->
             when (day) {

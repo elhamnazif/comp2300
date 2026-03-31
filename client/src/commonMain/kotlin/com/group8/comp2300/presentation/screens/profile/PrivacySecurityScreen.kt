@@ -17,11 +17,7 @@ import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun PrivacySecurityScreen(
-    onBack: () -> Unit,
-    onChangePin: (String) -> Unit = {},
-    modifier: Modifier = Modifier,
-) {
+fun PrivacySecurityScreen(onBack: () -> Unit, onChangePin: (String) -> Unit = {}, modifier: Modifier = Modifier) {
     var biometricsEnabled by remember { mutableStateOf(true) }
     var dataEncryptionEnabled by remember { mutableStateOf(true) }
     var anonymousReporting by remember { mutableStateOf(false) }

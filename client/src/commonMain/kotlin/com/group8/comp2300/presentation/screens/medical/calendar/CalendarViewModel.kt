@@ -8,8 +8,8 @@ import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLog
-import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
+import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
 import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
@@ -64,7 +64,10 @@ class CalendarViewModel(
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 val year = now.year
                 val month = now.month.number
-                val todayDateString = "${now.year}-${now.month.number.toString().padStart(2, '0')}-${now.day.toString().padStart(2, '0')}"
+                val todayDateString = "${now.year}-${now.month.number.toString().padStart(
+                    2,
+                    '0',
+                )}-${now.day.toString().padStart(2, '0')}"
                 val dateString = dateStringOverride ?: _state.value.selectedDate.ifBlank { todayDateString }
 
                 _state.update {
@@ -112,7 +115,9 @@ class CalendarViewModel(
         viewModelScope.launch {
             runCatching { medicationRepository.saveMedication(request) }
                 .onSuccess { loadInitialData(_state.value.selectedDate.takeIf(String::isNotBlank)) }
-                .onFailure { error -> _state.update { state -> state.copy(error = error.errorMessage("Failed to save medication")) } }
+                .onFailure { error ->
+                    _state.update { state -> state.copy(error = error.errorMessage("Failed to save medication")) }
+                }
         }
     }
 
@@ -120,7 +125,9 @@ class CalendarViewModel(
         viewModelScope.launch {
             runCatching { medicationLogRepository.logMedication(request) }
                 .onSuccess { loadInitialData(_state.value.selectedDate.takeIf(String::isNotBlank)) }
-                .onFailure { error -> _state.update { state -> state.copy(error = error.errorMessage("Failed to log medication")) } }
+                .onFailure { error ->
+                    _state.update { state -> state.copy(error = error.errorMessage("Failed to log medication")) }
+                }
         }
     }
 
@@ -136,7 +143,9 @@ class CalendarViewModel(
                     timestampMs = timestampMs,
                 )
             }.onSuccess(onLoaded)
-                .onFailure { error -> _state.update { state -> state.copy(error = error.errorMessage("Failed to load matching doses")) } }
+                .onFailure { error ->
+                    _state.update { state -> state.copy(error = error.errorMessage("Failed to load matching doses")) }
+                }
         }
     }
 
@@ -144,7 +153,9 @@ class CalendarViewModel(
         viewModelScope.launch {
             runCatching { medicationLogRepository.rescheduleRoutineOccurrence(request) }
                 .onSuccess { loadInitialData(_state.value.selectedDate.takeIf(String::isNotBlank)) }
-                .onFailure { error -> _state.update { state -> state.copy(error = error.errorMessage("Failed to move scheduled dose")) } }
+                .onFailure { error ->
+                    _state.update { state -> state.copy(error = error.errorMessage("Failed to move scheduled dose")) }
+                }
         }
     }
 
@@ -159,7 +170,9 @@ class CalendarViewModel(
                 )
                 appointmentRepository.scheduleAppointment(request)
             }.onSuccess { loadInitialData() }
-                .onFailure { error -> _state.update { state -> state.copy(error = error.errorMessage("Failed to save appointment")) } }
+                .onFailure { error ->
+                    _state.update { state -> state.copy(error = error.errorMessage("Failed to save appointment")) }
+                }
         }
     }
 
@@ -175,7 +188,9 @@ class CalendarViewModel(
                     ),
                 )
             }.onSuccess { loadInitialData() }
-                .onFailure { error -> _state.update { state -> state.copy(error = error.errorMessage("Failed to log mood")) } }
+                .onFailure { error ->
+                    _state.update { state -> state.copy(error = error.errorMessage("Failed to log mood")) }
+                }
         }
     }
 
