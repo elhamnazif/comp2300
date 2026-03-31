@@ -28,10 +28,10 @@ private fun seedDevUser(database: ServerDatabase) {
     if (repo.findById(JwtConfig.DEV_USER_ID) == null) {
         repo.insert(
             id = JwtConfig.DEV_USER_ID,
-            email = "dev@vita.local",
-            passwordHash = PasswordHasher.hash("devpassword1"),
-            firstName = "Dev",
-            lastName = "User",
+            email = "dev@example.com",
+            passwordHash = PasswordHasher.hash("password123"),
+            firstName = "John",
+            lastName = "Adams",
             phone = null,
             dateOfBirth = null,
             gender = null,
