@@ -19,6 +19,7 @@ import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400Outlinedfill1
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -153,31 +154,107 @@ private fun RoutineCard(
     isArchived: Boolean = false,
 ) {
     val linked = medications.filter { it.id in routine.medicationIds }
+    val reminderMeta = reminderMetaLabel(routine.reminderOffsetsMins)
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = if (isArchived) MaterialTheme.colorScheme.surfaceContainerHighest else MaterialTheme.colorScheme.surfaceContainerLow,
         ),
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text(routine.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                routine.timesOfDayMs.sorted().distinct().forEach { timeOfDayMs ->
-                    Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(999.dp)) {
-                        Text(
-                            formatTimeOfDayMs(timeOfDayMs),
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+        Column(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    routine.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f),
+                )
+                if (routine.hasReminder && routine.reminderOffsetsMins.isNotEmpty()) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.NotificationsW400Outlinedfill1,
+                            contentDescription = "Reminders enabled",
+                            tint = MaterialTheme.colorScheme.primary,
                         )
+                        reminderMeta?.let {
+                            Text(
+                                it,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        }
                     }
                 }
             }
-            Text(scheduleSummary(routine), color = MaterialTheme.colorScheme.secondary)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                linked.forEach { medication ->
-                    AssistChip(onClick = {}, label = { Text(medication.name) })
+            Text(
+                "${formatTimesSummary(routine.timesOfDayMs)} • ${routineRepeatSummary(routine)}",
+                color = MaterialTheme.colorScheme.secondary,
+            )
+            if (linked.isNotEmpty()) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    linked.take(3).forEach { medication ->
+                        Surface(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(999.dp),
+                        ) {
+                            Text(
+                                medication.name,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        }
+                    }
+                    if (linked.size > 3) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(999.dp),
+                        ) {
+                            Text(
+                                "+${linked.size - 3}",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+private fun routineRepeatSummary(routine: Routine): String = when (routine.repeatType) {
+    com.group8.comp2300.domain.model.medical.RoutineRepeatType.DAILY -> "Every day"
+    com.group8.comp2300.domain.model.medical.RoutineRepeatType.WEEKLY -> {
+        routine.daysOfWeek.sorted().joinToString { day ->
+            when (day) {
+                0 -> "Sun"
+                1 -> "Mon"
+                2 -> "Tue"
+                3 -> "Wed"
+                4 -> "Thu"
+                5 -> "Fri"
+                6 -> "Sat"
+                else -> ""
+            }
+        }
+    }
+}
+
+private fun reminderMetaLabel(offsets: List<Int>): String? {
+    val unique = offsets.sorted().distinct()
+    return when {
+        unique.isEmpty() -> null
+        unique == listOf(0) -> null
+        unique.size == 1 -> "${unique.first()}m"
+        else -> "${unique.size}x"
     }
 }

@@ -19,7 +19,6 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -75,6 +74,10 @@ fun ScheduleFormSheet(
     var activeDatePicker by remember { mutableStateOf<String?>(null) }
     var editingTimeIndex by remember { mutableStateOf<Int?>(null) }
     var showTimePicker by remember { mutableStateOf(false) }
+    var showMedicationPicker by remember(routineToEdit?.id, title, initialSelectedMedicationIds) {
+        mutableStateOf(routineToEdit != null || initialSelectedMedicationIds.isEmpty())
+    }
+    val invalidEndDate = !ongoing && LocalDate.parse(endDate) < LocalDate.parse(startDate)
 
     Column(
         modifier = Modifier
@@ -96,19 +99,14 @@ fun ScheduleFormSheet(
             }
         }
 
-        subtitle?.takeIf(String::isNotBlank)?.let {
-            Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-
-        OutlinedTextField(
+        MedicalFormTextField(
+            label = "Schedule name",
             value = name,
             onValueChange = { name = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Schedule name") },
-            placeholder = { Text("Morning meds") },
+            placeholder = "Morning meds",
         )
 
-        Text("Times", fontWeight = FontWeight.SemiBold)
+        Text("Dose times", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             timesOfDayMs.forEachIndexed { index, timeOfDayMs ->
                 Row(
@@ -123,21 +121,13 @@ fun ScheduleFormSheet(
                         },
                         label = { Text(formatTimeOfDayMs(timeOfDayMs)) },
                     )
-                    Row {
-                        TextButton(onClick = {
-                            editingTimeIndex = index
-                            showTimePicker = true
-                        }) {
-                            Text("Edit")
-                        }
-                        TextButton(
-                            onClick = {
-                                timesOfDayMs = timesOfDayMs.toMutableList().apply { removeAt(index) }.sorted()
-                            },
-                            enabled = timesOfDayMs.size > 1,
-                        ) {
-                            Text("Remove")
-                        }
+                    TextButton(
+                        onClick = {
+                            timesOfDayMs = timesOfDayMs.toMutableList().apply { removeAt(index) }.sorted()
+                        },
+                        enabled = timesOfDayMs.size > 1,
+                    ) {
+                        Text("Remove")
                     }
                 }
             }
@@ -149,13 +139,13 @@ fun ScheduleFormSheet(
             }
         }
 
-        Text("Repeat", fontWeight = FontWeight.SemiBold)
+        Text("Repeat", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            FilterChip(selected = repeatType == RoutineRepeatType.DAILY, onClick = { repeatType = RoutineRepeatType.DAILY }, label = { Text("Daily") })
-            FilterChip(selected = repeatType == RoutineRepeatType.WEEKLY, onClick = { repeatType = RoutineRepeatType.WEEKLY }, label = { Text("Selected days") })
+            FilterChip(selected = repeatType == RoutineRepeatType.DAILY, onClick = { repeatType = RoutineRepeatType.DAILY }, label = { Text("Every day") })
+            FilterChip(selected = repeatType == RoutineRepeatType.WEEKLY, onClick = { repeatType = RoutineRepeatType.WEEKLY }, label = { Text("Specific days") })
         }
 
         if (repeatType == RoutineRepeatType.WEEKLY) {
@@ -188,6 +178,9 @@ fun ScheduleFormSheet(
         }
         if (!ongoing) {
             DateValueField(label = "End date", value = LocalDate.parse(endDate), onClick = { activeDatePicker = "end" })
+            if (invalidEndDate) {
+                Text("End date must be on or after the start date.", color = MaterialTheme.colorScheme.error)
+            }
         }
 
         Row(
@@ -195,10 +188,7 @@ fun ScheduleFormSheet(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Reminders", fontWeight = FontWeight.SemiBold)
-                Text("Choose when reminder alerts should fire.", color = MaterialTheme.colorScheme.secondary)
-            }
+            Text("Reminders", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             Switch(checked = hasReminder, onCheckedChange = { hasReminder = it })
         }
         if (hasReminder) {
@@ -220,20 +210,40 @@ fun ScheduleFormSheet(
             }
         }
 
-        Text("Linked medications", fontWeight = FontWeight.SemiBold)
-        medications.forEach { medication ->
-            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = medication.id in selectedMedicationIds,
-                    onCheckedChange = { checked ->
-                        selectedMedicationIds = selectedMedicationIds.toMutableSet().apply {
-                            if (checked) add(medication.id) else remove(medication.id)
-                        }
-                    },
-                )
-                Column {
-                    Text(medication.name, fontWeight = FontWeight.SemiBold)
-                    Text(medication.dosage, color = MaterialTheme.colorScheme.secondary)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text("Included medications", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            if (medications.size > 1) {
+                TextButton(onClick = { showMedicationPicker = !showMedicationPicker }) {
+                    Text(if (showMedicationPicker) "Done" else "Change")
+                }
+            }
+        }
+
+        if (!showMedicationPicker && selectedMedicationIds.isNotEmpty()) {
+            val selectedNames = medications.filter { it.id in selectedMedicationIds }.joinToString { it.name }
+            Text(selectedNames, color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        } else {
+            medications.forEach { medication ->
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = medication.id in selectedMedicationIds,
+                        onCheckedChange = { checked ->
+                            selectedMedicationIds = selectedMedicationIds.toMutableSet().apply {
+                                if (checked) add(medication.id) else remove(medication.id)
+                            }
+                        },
+                    )
+                    Column {
+                        Text(medication.name, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            medication.quantity.takeIf(String::isNotBlank)?.let { "${medication.dosage} • $it" } ?: medication.dosage,
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
                 }
             }
         }
@@ -270,7 +280,11 @@ fun ScheduleFormSheet(
                     routineToEdit?.id,
                 )
             },
-            enabled = name.isNotBlank() && timesOfDayMs.isNotEmpty() && selectedMedicationIds.isNotEmpty() && (repeatType != RoutineRepeatType.WEEKLY || daysOfWeek.isNotEmpty()),
+            enabled = name.isNotBlank() &&
+                timesOfDayMs.isNotEmpty() &&
+                selectedMedicationIds.isNotEmpty() &&
+                !invalidEndDate &&
+                (repeatType != RoutineRepeatType.WEEKLY || daysOfWeek.isNotEmpty()),
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(if (routineToEdit == null) "Save schedule" else "Update schedule")

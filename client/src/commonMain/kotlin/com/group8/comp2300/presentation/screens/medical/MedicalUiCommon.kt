@@ -1,68 +1,129 @@
 package com.group8.comp2300.presentation.screens.medical
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.CheckCircleW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DateRangeW400Outlinedfill1
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import kotlin.time.Instant
 
 @Composable
+fun MedicalFormTextField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    minLines: Int = 1,
+) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Medium,
+        )
+        TextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            minLines = minLines,
+            singleLine = minLines == 1,
+            placeholder = placeholder?.let { { Text(it) } },
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+                errorIndicatorColor = Color.Transparent,
+            ),
+        )
+    }
+}
+
+@Composable
 fun DateValueField(label: String, value: LocalDate, onClick: () -> Unit) {
-    OutlinedTextField(
+    MedicalValueField(
+        label = label,
         value = DateFormatter.formatDayMonthYear(value),
-        onValueChange = {},
-        readOnly = true,
-        label = { Text(label) },
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        enabled = false,
-        colors =
-        OutlinedTextFieldDefaults.colors(
-            disabledTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
-            disabledBorderColor = androidx.compose.material3.MaterialTheme.colorScheme.outline,
-        ),
-        trailingIcon = { androidx.compose.material3.Icon(Icons.DateRangeW400Outlinedfill1, null) },
+        icon = Icons.DateRangeW400Outlinedfill1,
+        onClick = onClick,
     )
 }
 
 @Composable
 fun TimeValueField(label: String, value: Long, onClick: () -> Unit) {
     val totalMinutes = (value / 60_000L).toInt()
-    OutlinedTextField(
+    MedicalValueField(
+        label = label,
         value = DateFormatter.formatTime(totalMinutes / 60, totalMinutes % 60),
-        onValueChange = {},
-        readOnly = true,
-        label = { Text(label) },
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        enabled = false,
-        colors =
-        OutlinedTextFieldDefaults.colors(
-            disabledTextColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
-            disabledBorderColor = androidx.compose.material3.MaterialTheme.colorScheme.outline,
-        ),
-        trailingIcon = { androidx.compose.material3.Icon(Icons.CheckCircleW400Outlinedfill1, null) },
+        icon = Icons.CheckCircleW400Outlinedfill1,
+        onClick = onClick,
     )
+}
+
+@Composable
+private fun MedicalValueField(
+    label: String,
+    value: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Medium,
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(0.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+        ) {
+            TextField(
+                value = value,
+                onValueChange = {},
+                modifier = Modifier.fillMaxWidth(),
+                readOnly = true,
+                singleLine = true,
+                enabled = false,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+                trailingIcon = {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                    )
+                },
+                colors = TextFieldDefaults.colors(
+                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    disabledIndicatorColor = Color.Transparent,
+                ),
+            )
+        }
+    }
 }
 
 @Composable

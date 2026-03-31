@@ -24,7 +24,6 @@ import org.koin.compose.viewmodel.koinViewModel
 
 private enum class MedicationSheetStep {
     FORM,
-    SCHEDULE_LINKS,
     SCHEDULE_FORM,
 }
 
@@ -32,7 +31,6 @@ private enum class MedicationSheetStep {
 fun MedicationScreen(
     modifier: Modifier = Modifier,
     onBack: (() -> Unit)? = null,
-    onNavigateToRoutines: () -> Unit = {},
     viewModel: MedicationViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -52,6 +50,10 @@ fun MedicationScreen(
 
     val activeMedications = state.medications.filter { it.status == MedicationStatus.ACTIVE }
     val archivedMedications = state.medications.filter { it.status == MedicationStatus.ARCHIVED }
+
+    fun linkedRoutinesFor(medication: Medication): List<Routine> = state.routines.filter { routine ->
+        routine.status == RoutineStatus.ACTIVE && medication.id in routine.medicationIds
+    }
 
     Scaffold(
         modifier = modifier,
@@ -112,7 +114,7 @@ fun MedicationScreen(
                         items(activeMedications, key = Medication::id) { medication ->
                             MedicationCard(
                                 medication = medication,
-                                linkedScheduleCount = state.linkedRoutineCounts[medication.id] ?: 0,
+                                linkedRoutines = linkedRoutinesFor(medication),
                                 onClick = {
                                     editingMedication = medication
                                     editingRoutine = null
@@ -132,7 +134,7 @@ fun MedicationScreen(
                         items(archivedMedications, key = Medication::id) { medication ->
                             MedicationCard(
                                 medication = medication,
-                                linkedScheduleCount = state.linkedRoutineCounts[medication.id] ?: 0,
+                                linkedRoutines = linkedRoutinesFor(medication),
                                 isArchived = true,
                                 onClick = {
                                     editingMedication = medication
@@ -161,21 +163,29 @@ fun MedicationScreen(
         ) {
             when (sheetStep) {
                 MedicationSheetStep.FORM -> {
-                    val linkedSchedules = editingMedication?.let { medication ->
-                        state.routines.filter { routine ->
-                            routine.status == RoutineStatus.ACTIVE && medication.id in routine.medicationIds
-                        }
-                    }.orEmpty()
+                    val linkedSchedules = editingMedication?.let(::linkedRoutinesFor).orEmpty()
 
                     MedicationFormSheet(
                         medicationToEdit = editingMedication,
                         linkedSchedules = linkedSchedules,
-                        onSave = { request, id ->
+                        onSave = { request, id, addScheduleAfterSave ->
                             viewModel.saveMedication(request, id) { savedMedication ->
                                 editingMedication = savedMedication
-                                if (id != null) {
-                                    showSheet = false
-                                    sheetStep = MedicationSheetStep.FORM
+                                when {
+                                    id != null -> {
+                                        showSheet = false
+                                        sheetStep = MedicationSheetStep.FORM
+                                    }
+
+                                    addScheduleAfterSave -> {
+                                        editingRoutine = null
+                                        sheetStep = MedicationSheetStep.SCHEDULE_FORM
+                                    }
+
+                                    else -> {
+                                        showSheet = false
+                                        sheetStep = MedicationSheetStep.FORM
+                                    }
                                 }
                             }
                         },
@@ -198,14 +208,6 @@ fun MedicationScreen(
                                     sheetStep = MedicationSheetStep.SCHEDULE_FORM
                                 }
                             },
-                        onLinkExistingSchedules = editingMedication
-                            ?.takeIf { it.status == MedicationStatus.ACTIVE }
-                            ?.let {
-                                {
-                                    editingRoutine = null
-                                    sheetStep = MedicationSheetStep.SCHEDULE_LINKS
-                                }
-                            },
                         onEditSchedule = { routine ->
                             editingRoutine = routine
                             sheetStep = MedicationSheetStep.SCHEDULE_FORM
@@ -218,36 +220,10 @@ fun MedicationScreen(
                     )
                 }
 
-                MedicationSheetStep.SCHEDULE_LINKS -> editingMedication?.let { medication ->
-                    MedicationScheduleLinkSheet(
-                        medication = medication,
-                        routines = state.routines.filter { it.status == RoutineStatus.ACTIVE },
-                        onBack = { sheetStep = MedicationSheetStep.FORM },
-                        onCreateSchedule = {
-                            editingRoutine = null
-                            sheetStep = MedicationSheetStep.SCHEDULE_FORM
-                        },
-                        onOpenSchedulesScreen = {
-                            showSheet = false
-                            editingRoutine = null
-                            sheetStep = MedicationSheetStep.FORM
-                            onNavigateToRoutines()
-                        },
-                        onSaveLinks = { selectedRoutineIds ->
-                            viewModel.updateRoutineLinks(medication.id, selectedRoutineIds)
-                            sheetStep = MedicationSheetStep.FORM
-                        },
-                    )
-                }
-
                 MedicationSheetStep.SCHEDULE_FORM -> editingMedication?.let { medication ->
                     ScheduleFormSheet(
                         title = if (editingRoutine == null) "Add schedule" else "Edit schedule",
-                        subtitle = if (editingRoutine == null) {
-                            "This schedule will include ${medication.name}. You can add more medications if needed."
-                        } else {
-                            null
-                        },
+                        subtitle = null,
                         routineToEdit = editingRoutine,
                         medications = state.medications.filter { it.status == MedicationStatus.ACTIVE },
                         initialSelectedMedicationIds = setOf(medication.id),
@@ -277,7 +253,7 @@ fun MedicationScreen(
 fun SectionHeader(title: String, count: Int, modifier: Modifier = Modifier) {
     Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
         Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.width(8.dp))
+        Spacer(Modifier.size(8.dp))
         Badge { Text(count.toString()) }
     }
 }
@@ -303,7 +279,7 @@ private fun MedicationEmptyState(onAddMedication: () -> Unit, modifier: Modifier
         ) {
             Text("No medications yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text(
-                "Add your first medication to start tracking doses and schedules.",
+                "Add a medication to start tracking doses and reminders.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -317,7 +293,7 @@ private fun MedicationEmptyState(onAddMedication: () -> Unit, modifier: Modifier
 @Composable
 private fun MedicationCard(
     medication: Medication,
-    linkedScheduleCount: Int,
+    linkedRoutines: List<Routine>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isArchived: Boolean = false,
@@ -340,12 +316,12 @@ private fun MedicationCard(
             ) {
                 Box(modifier = Modifier.size(18.dp).background(parseColorHex(medication.colorHex), CircleShape))
             }
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.size(16.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(medication.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text("${medication.dosage}$quantityLabel", color = MaterialTheme.colorScheme.secondary)
                 Text(
-                    medicationScheduleLabel(linkedScheduleCount),
+                    medicationScheduleLabel(linkedRoutines),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelLarge,
                 )
@@ -358,21 +334,35 @@ private fun MedicationCard(
     }
 }
 
-private fun medicationScheduleLabel(linkedScheduleCount: Int): String = when (linkedScheduleCount) {
-    0 -> "No schedules"
-    1 -> "1 schedule"
-    else -> "$linkedScheduleCount schedules"
+private fun medicationScheduleLabel(linkedRoutines: List<Routine>): String {
+    if (linkedRoutines.isEmpty()) return "No schedule"
+    if (linkedRoutines.size > 1) return "${linkedRoutines.size} schedules"
+
+    val routine = linkedRoutines.single()
+    val times = routine.timesOfDayMs.sorted().distinct()
+    val timeLabel = when (times.size) {
+        0 -> ""
+        1 -> " at ${formatTimeOfDayMs(times.single())}"
+        else -> " • ${times.size} times"
+    }
+
+    return when (routine.repeatType) {
+        RoutineRepeatType.DAILY -> "Daily$timeLabel"
+        RoutineRepeatType.WEEKLY -> {
+            val days = routine.daysOfWeek.sorted().joinToString { day -> scheduleWeekdayLabel(day) }
+            if (days.isBlank()) "Scheduled$timeLabel" else "$days$timeLabel"
+        }
+    }
 }
 
 @Composable
 fun MedicationFormSheet(
     medicationToEdit: Medication?,
     linkedSchedules: List<Routine>,
-    onSave: (MedicationCreateRequest, String?) -> Unit,
+    onSave: (MedicationCreateRequest, String?, Boolean) -> Unit,
     onDelete: (String) -> Unit,
     onCancel: () -> Unit,
     onAddSchedule: (() -> Unit)? = null,
-    onLinkExistingSchedules: (() -> Unit)? = null,
     onEditSchedule: (Routine) -> Unit = {},
     onRemoveSchedule: (Routine) -> Unit = {},
 ) {
@@ -380,13 +370,30 @@ fun MedicationFormSheet(
     var dosage by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.dosage ?: "") }
     var quantity by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.quantity ?: "") }
     var instruction by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.instruction ?: "") }
-    var frequency by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.frequency ?: MedicationFrequency.DAILY) }
+    val frequency = medicationToEdit?.frequency ?: MedicationFrequency.DAILY
     var status by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.status ?: MedicationStatus.ACTIVE) }
     var selectedColor by remember(medicationToEdit?.id) { mutableStateOf(parseColorHex(medicationToEdit?.colorHex)) }
+    val canSave = name.isNotBlank() && dosage.isNotBlank()
+
+    fun save(addScheduleAfterSave: Boolean) {
+        onSave(
+            MedicationCreateRequest(
+                name = name,
+                dosage = dosage,
+                quantity = quantity,
+                frequency = frequency.name,
+                instruction = instruction.takeIf(String::isNotBlank),
+                colorHex = selectedColor.toHexString(),
+                status = status.name,
+            ),
+            medicationToEdit?.id,
+            addScheduleAfterSave,
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -405,112 +412,103 @@ fun MedicationFormSheet(
             }
         }
 
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Medication name") },
-        )
-        OutlinedTextField(
+        MedicalFormTextField(label = "Medication name", value = name, onValueChange = { name = it })
+        MedicalFormTextField(
+            label = "Dose taken each time",
             value = dosage,
             onValueChange = { dosage = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Dose") },
-            placeholder = { Text("1 tablet") },
+            placeholder = "1 tablet",
         )
-        OutlinedTextField(
+        MedicalFormTextField(
+            label = "Strength",
             value = quantity,
             onValueChange = { quantity = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Strength") },
-            placeholder = { Text("500 mg") },
+            placeholder = "500 mg",
         )
-        OutlinedTextField(
+        MedicalFormTextField(
+            label = "Instructions",
             value = instruction,
             onValueChange = { instruction = it },
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 3,
-            label = { Text("Instructions") },
+            minLines = 2,
         )
 
-        Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(16.dp)) {
-            Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("Schedules", fontWeight = FontWeight.SemiBold)
-                if (medicationToEdit == null) {
-                    Text(
-                        "Save this medication first. Then you can add schedules or keep it unscheduled and log it whenever you take it.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                } else {
-                    if (linkedSchedules.isEmpty()) {
-                        Text("No schedules yet. You can still log this medication anytime from Calendar.", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    } else {
-                        linkedSchedules.forEach { routine ->
-                            Surface(color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(14.dp)) {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                                ) {
-                                    Text(routine.name, fontWeight = FontWeight.SemiBold)
-                                    Text(scheduleLinkSummary(routine), color = MaterialTheme.colorScheme.secondary)
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        TextButton(onClick = { onEditSchedule(routine) }) {
-                                            Text("Edit")
-                                        }
-                                        TextButton(onClick = { onRemoveSchedule(routine) }) {
-                                            Text("Remove from medication")
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilledTonalButton(onClick = { onAddSchedule?.invoke() }, enabled = onAddSchedule != null) {
-                            Text(if (linkedSchedules.isEmpty()) "Add schedule" else "Add another schedule")
-                        }
-                        OutlinedButton(onClick = { onLinkExistingSchedules?.invoke() }, enabled = onLinkExistingSchedules != null) {
-                            Text("Link existing")
-                        }
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Color tag", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Medication.PRESET_COLORS.forEach { swatch ->
+                    val color = parseColorHex(swatch)
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
+                            .border(
+                                width = if (selectedColor == color) 2.dp else 0.dp,
+                                color = if (selectedColor == color) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                shape = CircleShape,
+                            )
+                            .padding(4.dp)
+                            .clickable { selectedColor = color },
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize().background(color, CircleShape))
                     }
                 }
             }
         }
 
-        Text("Color tag", fontWeight = FontWeight.SemiBold)
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Medication.PRESET_COLORS.forEach { swatch ->
-                val color = parseColorHex(swatch)
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(color, CircleShape)
-                        .border(
-                            width = if (selectedColor == color) 3.dp else 0.dp,
-                            color = if (selectedColor == color) MaterialTheme.colorScheme.onSurface else Color.Transparent,
-                            shape = CircleShape,
-                        )
-                        .clickable { selectedColor = color },
-                )
-            }
-        }
-
         if (medicationToEdit != null) {
+            HorizontalDivider(modifier = Modifier.padding(top = 4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text("Schedules", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                TextButton(onClick = { onAddSchedule?.invoke() }, enabled = onAddSchedule != null) {
+                    Text("Add")
+                }
+            }
+            if (linkedSchedules.isEmpty()) {
+                Text("No schedule", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else {
+                linkedSchedules.forEachIndexed { index, routine ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.Top,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(routine.name, fontWeight = FontWeight.SemiBold)
+                            Text(
+                                scheduleLinkSummary(routine),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            TextButton(onClick = { onEditSchedule(routine) }) {
+                                Text("Edit")
+                            }
+                            TextButton(onClick = { onRemoveSchedule(routine) }) {
+                                Text("Remove")
+                            }
+                        }
+                    }
+                    if (index != linkedSchedules.lastIndex) {
+                        HorizontalDivider()
+                    }
+                }
+            }
+
+            HorizontalDivider()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Archive medication", fontWeight = FontWeight.SemiBold)
-                    Text(
-                        "Archived medications stay in the cabinet and disappear from active schedules.",
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                }
+                Text("Archived", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Switch(
                     checked = status == MedicationStatus.ARCHIVED,
                     onCheckedChange = { isArchived ->
@@ -520,25 +518,30 @@ fun MedicationFormSheet(
             }
         }
 
-        Button(
-            onClick = {
-                onSave(
-                    MedicationCreateRequest(
-                        name = name,
-                        dosage = dosage,
-                        quantity = quantity,
-                        frequency = frequency.name,
-                        instruction = instruction.takeIf(String::isNotBlank),
-                        colorHex = selectedColor.toHexString(),
-                        status = status.name,
-                    ),
-                    medicationToEdit?.id,
-                )
-            },
-            enabled = name.isNotBlank() && dosage.isNotBlank(),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(if (medicationToEdit == null) "Save medication" else "Update medication")
+        Spacer(Modifier.height(4.dp))
+        if (medicationToEdit == null) {
+            Button(
+                onClick = { save(addScheduleAfterSave = true) },
+                enabled = canSave,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Save and add schedule")
+            }
+            OutlinedButton(
+                onClick = { save(addScheduleAfterSave = false) },
+                enabled = canSave,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Save medication")
+            }
+        } else {
+            Button(
+                onClick = { save(addScheduleAfterSave = false) },
+                enabled = canSave,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Update medication")
+            }
         }
 
         TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
@@ -547,89 +550,13 @@ fun MedicationFormSheet(
     }
 }
 
-@Composable
-private fun MedicationScheduleLinkSheet(
-    medication: Medication,
-    routines: List<Routine>,
-    onBack: () -> Unit,
-    onCreateSchedule: () -> Unit,
-    onOpenSchedulesScreen: () -> Unit,
-    onSaveLinks: (Set<String>) -> Unit,
-) {
-    var selectedRoutineIds by remember(medication.id, routines) {
-        mutableStateOf(routines.filter { medication.id in it.medicationIds }.map(Routine::id).toSet())
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Text("Schedules for ${medication.name}", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text(
-            "Choose which schedules should include this medication.",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-
-        if (routines.isEmpty()) {
-            Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(16.dp)) {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    Text("No schedules yet", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                    Text(
-                        "Create a schedule like Morning meds or Bedtime meds, then link this medication to it.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Button(onClick = onCreateSchedule) {
-                        Text("Create schedule")
-                    }
-                }
-            }
-        } else {
-            routines.forEach { routine ->
-                val checked = routine.id in selectedRoutineIds
-                Surface(
-                    modifier = Modifier.fillMaxWidth().clickable {
-                        selectedRoutineIds = selectedRoutineIds.toMutableSet().apply {
-                            if (!add(routine.id)) remove(routine.id)
-                        }
-                    },
-                    color = MaterialTheme.colorScheme.surfaceContainerLow,
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(routine.name, fontWeight = FontWeight.SemiBold)
-                            Text(scheduleLinkSummary(routine), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        androidx.compose.material3.Checkbox(
-                            checked = checked,
-                            onCheckedChange = { shouldCheck ->
-                                selectedRoutineIds = selectedRoutineIds.toMutableSet().apply {
-                                    if (shouldCheck) add(routine.id) else remove(routine.id)
-                                }
-                            },
-                        )
-                    }
-                }
-            }
-        }
-
-        FilledTonalButton(onClick = onCreateSchedule, modifier = Modifier.fillMaxWidth()) {
-            Text("Create schedule")
-        }
-        OutlinedButton(onClick = onOpenSchedulesScreen, modifier = Modifier.fillMaxWidth()) {
-            Text("Open schedules screen")
-        }
-        Button(onClick = { onSaveLinks(selectedRoutineIds) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Save schedule links")
-        }
-        TextButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
-            Text("Back")
-        }
-    }
+private fun scheduleWeekdayLabel(day: Int): String = when (day) {
+    0 -> "Sun"
+    1 -> "Mon"
+    2 -> "Tue"
+    3 -> "Wed"
+    4 -> "Thu"
+    5 -> "Fri"
+    6 -> "Sat"
+    else -> ""
 }

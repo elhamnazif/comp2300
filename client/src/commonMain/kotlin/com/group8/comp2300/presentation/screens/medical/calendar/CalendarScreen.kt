@@ -1,12 +1,12 @@
 package com.group8.comp2300.presentation.screens.medical.calendar
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -27,7 +28,12 @@ import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400Outlinedfill1
+import comp2300.i18n.generated.resources.Res
+import comp2300.i18n.generated.resources.form_mood_journal_label
+import comp2300.i18n.generated.resources.form_mood_log_button
 import kotlinx.datetime.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -67,6 +73,17 @@ fun CalendarScreen(
 
     val selectedDate = selectedDateForEntry?.date ?: today
     val activeMedications = state.medications.filter { it.status == MedicationStatus.ACTIVE }
+    val selectedAppointments = remember(state.appointments, selectedDate) {
+        state.appointments.filter { appointment ->
+            Instant.fromEpochMilliseconds(appointment.appointmentTime)
+                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .date == selectedDate
+        }
+    }
+    var expandedRoutineKeys by remember(
+        selectedDate,
+        state.routineAgenda.map { "${it.routineId}:${it.occurrenceTimeMs}" },
+    ) { mutableStateOf(emptySet<String>()) }
 
     Scaffold(
         modifier = modifier,
@@ -92,7 +109,7 @@ fun CalendarScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(innerPadding).background(MaterialTheme.colorScheme.surface),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             item {
                 CalendarCard(
@@ -109,19 +126,30 @@ fun CalendarScreen(
             }
 
             item {
+                CalendarDayHeader(
+                    date = selectedDate,
+                    agenda = state.routineAgenda,
+                    extraLogCount = state.manualLogs.size,
+                    appointmentCount = selectedAppointments.size,
+                )
+            }
+
+            item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        "For ${DateFormatter.formatDayMonthYear(selectedDate)}",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                    )
-                    RoutineAgendaSummaryCard(agenda = state.routineAgenda)
+                    Text("Scheduled doses", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                     if (state.routineAgenda.isEmpty()) {
-                        EmptyStateMessage("No scheduled doses are due on this day.")
+                        EmptyStateMessage("No scheduled doses for this day.")
                     } else {
                         state.routineAgenda.forEach { routine ->
+                            val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
                             RoutineAgendaCard(
                                 routine = routine,
+                                isExpanded = routineKey in expandedRoutineKeys,
+                                onToggleExpanded = {
+                                    expandedRoutineKeys = expandedRoutineKeys.toMutableSet().apply {
+                                        if (!add(routineKey)) remove(routineKey)
+                                    }
+                                },
                                 onLogMedication = { medicationId, status ->
                                     viewModel.logMedication(
                                         MedicationLogRequest(
@@ -163,12 +191,10 @@ fun CalendarScreen(
                 }
             }
 
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Medication activity", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.secondary)
-                    if (state.manualLogs.isEmpty()) {
-                        EmptyStateMessage("No medication activity logged for this day.")
-                    } else {
+            if (state.manualLogs.isNotEmpty()) {
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("Extra logs", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         state.manualLogs.forEach { log ->
                             ManualLogCard(log = log)
                         }
@@ -176,15 +202,19 @@ fun CalendarScreen(
                 }
             }
 
-            item {
-                Text("Upcoming appointments", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.secondary)
-            }
-            items(state.appointments) { appointment ->
-                AppointmentCard(appointment = appointment, onClick = {
-                    selectedAppointment = appointment
-                    currentSheetView = SheetView.DETAILS_APPT
-                    showBottomSheet = true
-                })
+            if (selectedAppointments.isNotEmpty()) {
+                item {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text("Appointments", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        selectedAppointments.forEach { appointment ->
+                            AppointmentCard(appointment = appointment, onClick = {
+                                selectedAppointment = appointment
+                                currentSheetView = SheetView.DETAILS_APPT
+                                showBottomSheet = true
+                            })
+                        }
+                    }
+                }
             }
             item { Spacer(Modifier.height(72.dp)) }
         }
@@ -204,6 +234,7 @@ fun CalendarScreen(
         ) {
             when (currentSheetView) {
                 SheetView.MENU -> AddEntryMenu(
+                    selectedDate = selectedDate,
                     onSelectType = { currentSheetView = it },
                 )
 
@@ -367,19 +398,45 @@ fun CalendarScreen(
 }
 
 @Composable
-private fun RoutineAgendaSummaryCard(agenda: List<RoutineDayAgenda>) {
+private fun CalendarDayHeader(
+    date: LocalDate,
+    agenda: List<RoutineDayAgenda>,
+    extraLogCount: Int,
+    appointmentCount: Int,
+) {
     val allDoses = agenda.flatMap(RoutineDayAgenda::medications)
     val taken = allDoses.count { it.status == MedicationLogStatus.TAKEN }
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh)) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    val unresolved = allDoses.count {
+        it.status == MedicationLogStatus.PENDING ||
+            it.status == MedicationLogStatus.MISSED ||
+            it.status == MedicationLogStatus.SNOOZED
+    }
+    val summary = when {
+        allDoses.isEmpty() -> "No scheduled doses"
+        else -> "$taken of ${allDoses.size} taken"
+    }
+    val meta = buildList {
+        if (allDoses.isNotEmpty() && unresolved > 0) add("$unresolved unresolved")
+        if (extraLogCount > 0) add("$extraLogCount extra log${if (extraLogCount == 1) "" else "s"}")
+        if (appointmentCount > 0) add("$appointmentCount appointment${if (appointmentCount == 1) "" else "s"}")
+    }.joinToString(" • ")
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            DateFormatter.formatDayMonthYear(date),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            summary,
+            style = MaterialTheme.typography.titleMedium,
+            color = if (allDoses.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+        )
+        if (meta.isNotBlank()) {
             Text(
-                if (allDoses.isEmpty()) "No medications due today" else "$taken of ${allDoses.size} medications completed",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                "Track scheduled doses here. Use Log medication for extra or off-schedule doses.",
-                color = MaterialTheme.colorScheme.secondary,
+                meta,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -388,43 +445,139 @@ private fun RoutineAgendaSummaryCard(agenda: List<RoutineDayAgenda>) {
 @Composable
 private fun RoutineAgendaCard(
     routine: RoutineDayAgenda,
+    isExpanded: Boolean,
+    onToggleExpanded: () -> Unit,
     onLogMedication: (String, MedicationLogStatus) -> Unit,
     onLogAll: (MedicationLogStatus) -> Unit,
     onMoveDose: () -> Unit,
 ) {
     val occurrence = Instant.fromEpochMilliseconds(routine.occurrenceTimeMs).toLocalDateTime(TimeZone.currentSystemDefault())
+    val actionableMeds = remember(routine.medications) {
+        routine.medications.filter {
+            it.status == MedicationLogStatus.PENDING ||
+                it.status == MedicationLogStatus.MISSED ||
+                it.status == MedicationLogStatus.SNOOZED
+        }
+    }
+    val routineCompleted = actionableMeds.isEmpty()
+    val showReviewToggle = routine.medications.size > 1 && actionableMeds.isNotEmpty()
+    val reminderMeta = reminderMetaLabel(routine.reminderOffsetsMins)
+
     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(DateFormatter.formatTime(occurrence.hour, occurrence.minute), fontWeight = FontWeight.Bold)
-                Spacer(Modifier.size(8.dp))
-                Text(routine.routineName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            }
-            if (routine.isRescheduled) {
-                val originalOccurrence = Instant.fromEpochMilliseconds(routine.originalOccurrenceTimeMs)
-                    .toLocalDateTime(TimeZone.currentSystemDefault())
-                Text(
-                    "Moved from ${DateFormatter.formatDayMonthYear(originalOccurrence.date)} at ${DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute)}",
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
-            if (routine.hasReminder && routine.reminderOffsetsMins.isNotEmpty()) {
-                Text(
-                    "Reminder: ${routine.reminderOffsetsMins.joinToString { if (it == 0) "at time" else "$it min before" }}",
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { onLogAll(MedicationLogStatus.TAKEN) }, modifier = Modifier.weight(1f)) { Text("Mark all taken") }
-                OutlinedButton(onClick = { onLogAll(MedicationLogStatus.SKIPPED) }, modifier = Modifier.weight(1f)) { Text("Mark all skipped") }
-            }
-            if (routine.medications.any { it.status == MedicationLogStatus.PENDING || it.status == MedicationLogStatus.MISSED }) {
-                OutlinedButton(onClick = onMoveDose, modifier = Modifier.fillMaxWidth()) {
-                    Text(if (routine.isRescheduled) "Move again" else "Move dose")
+        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top,
+            ) {
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        DateFormatter.formatTime(occurrence.hour, occurrence.minute),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(routine.routineName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                }
+                if (routine.hasReminder && routine.reminderOffsetsMins.isNotEmpty()) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.NotificationsW400Outlinedfill1,
+                            contentDescription = "Reminders enabled",
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        reminderMeta?.let {
+                            Text(
+                                it,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
                 }
             }
-            routine.medications.forEach { medication ->
-                RoutineMedicationRow(medication = medication, onLogMedication = onLogMedication)
+
+            Text(
+                routineMedicationSummary(routine.medications),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            buildList {
+                if (routine.isRescheduled) {
+                    val originalOccurrence = Instant.fromEpochMilliseconds(routine.originalOccurrenceTimeMs)
+                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                    add(
+                        "Moved from ${DateFormatter.formatDayMonthYear(originalOccurrence.date)} at ${DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute)}",
+                    )
+                }
+                if (routineCompleted) {
+                    add(routineCompletionSummary(routine.medications))
+                }
+            }.forEach { metaLine ->
+                Text(
+                    metaLine,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+
+            if (!routineCompleted) {
+                if (routine.medications.size == 1) {
+                    val medication = routine.medications.single()
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.TAKEN) },
+                            modifier = Modifier.weight(1f),
+                        ) { Text("Taken") }
+                        OutlinedButton(
+                            onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.SKIPPED) },
+                            modifier = Modifier.weight(1f),
+                        ) { Text("Skip") }
+                    }
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = { onLogAll(MedicationLogStatus.TAKEN) }, modifier = Modifier.weight(1f)) {
+                            Text("Take all")
+                        }
+                        OutlinedButton(onClick = { onLogAll(MedicationLogStatus.SKIPPED) }, modifier = Modifier.weight(1f)) {
+                            Text("Skip all")
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (showReviewToggle) {
+                            TextButton(onClick = onToggleExpanded) {
+                                Text(if (isExpanded) "Hide medications" else "Review individually")
+                            }
+                        } else {
+                            Spacer(Modifier.width(1.dp))
+                        }
+                        TextButton(onClick = onMoveDose) {
+                            Text(if (routine.isRescheduled) "Move again" else "Move")
+                        }
+                    }
+                }
+                if (routine.medications.size == 1) {
+                    TextButton(onClick = onMoveDose, modifier = Modifier.fillMaxWidth()) {
+                        Text(if (routine.isRescheduled) "Move again" else "Move dose")
+                    }
+                }
+            }
+
+            if (routine.medications.size > 1 && isExpanded) {
+                HorizontalDivider()
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    routine.medications.forEach { medication ->
+                        RoutineMedicationRow(medication = medication, onLogMedication = onLogMedication)
+                    }
+                }
             }
         }
     }
@@ -435,21 +588,29 @@ private fun RoutineMedicationRow(
     medication: RoutineMedicationAgenda,
     onLogMedication: (String, MedicationLogStatus) -> Unit,
 ) {
-    Surface(color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(medication.medicationName, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-                AssistChip(onClick = {}, enabled = false, label = { Text(medication.status.displayName) })
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(medication.medicationName, fontWeight = FontWeight.SemiBold)
+                Text(medication.dosage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Text(medication.dosage, color = MaterialTheme.colorScheme.secondary)
-            if (medication.status == MedicationLogStatus.PENDING || medication.status == MedicationLogStatus.MISSED) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.TAKEN) }, modifier = Modifier.weight(1f)) {
-                        Text("Taken")
-                    }
-                    OutlinedButton(onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.SKIPPED) }, modifier = Modifier.weight(1f)) {
-                        Text("Skipped")
-                    }
+            Text(
+                medication.status.displayName,
+                style = MaterialTheme.typography.labelMedium,
+                color = medicationStatusColor(medication.status),
+            )
+        }
+        if (
+            medication.status == MedicationLogStatus.PENDING ||
+            medication.status == MedicationLogStatus.MISSED ||
+            medication.status == MedicationLogStatus.SNOOZED
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.TAKEN) }, modifier = Modifier.weight(1f)) {
+                    Text("Taken")
+                }
+                OutlinedButton(onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.SKIPPED) }, modifier = Modifier.weight(1f)) {
+                    Text("Skip")
                 }
             }
         }
@@ -457,12 +618,63 @@ private fun RoutineMedicationRow(
 }
 
 @Composable
+private fun medicationStatusColor(status: MedicationLogStatus): Color = when (status) {
+    MedicationLogStatus.TAKEN -> Color(0xFF2E7D32)
+    MedicationLogStatus.SKIPPED, MedicationLogStatus.MISSED -> MaterialTheme.colorScheme.error
+    MedicationLogStatus.SNOOZED -> MaterialTheme.colorScheme.primary
+    MedicationLogStatus.PENDING -> MaterialTheme.colorScheme.onSurfaceVariant
+}
+
+private fun routineMedicationSummary(medications: List<RoutineMedicationAgenda>): String = when (medications.size) {
+    0 -> ""
+    1 -> "${medications.single().medicationName} • ${medications.single().dosage}"
+    2 -> medications.joinToString(" • ") { it.medicationName }
+    else -> "${medications[0].medicationName}, ${medications[1].medicationName} +${medications.size - 2}"
+}
+
+private fun routineCompletionSummary(medications: List<RoutineMedicationAgenda>): String {
+    val taken = medications.count { it.status == MedicationLogStatus.TAKEN }
+    val skipped = medications.count { it.status == MedicationLogStatus.SKIPPED || it.status == MedicationLogStatus.MISSED }
+    return when {
+        taken == medications.size -> "All medications taken"
+        skipped == medications.size -> "Marked skipped"
+        taken > 0 && skipped > 0 -> "$taken taken • $skipped skipped"
+        else -> "Completed"
+    }
+}
+
+private fun reminderMetaLabel(offsets: List<Int>): String? {
+    val unique = offsets.sorted().distinct()
+    return when {
+        unique.isEmpty() -> null
+        unique == listOf(0) -> null
+        unique.size == 1 -> "${unique.first()}m"
+        else -> "${unique.size}x"
+    }
+}
+
+@Composable
 private fun ManualLogCard(log: MedicationLog) {
     val dateTime = Instant.fromEpochMilliseconds(log.medicationTime).toLocalDateTime(TimeZone.currentSystemDefault())
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(log.medicationName ?: "Medication", fontWeight = FontWeight.SemiBold)
-            Text("${log.status.displayName} at ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}", color = MaterialTheme.colorScheme.secondary)
+    Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(log.medicationName ?: "Medication", fontWeight = FontWeight.SemiBold)
+                Text(
+                    "${log.status.displayName} at ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            Text(
+                "Extra",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }
@@ -518,11 +730,16 @@ fun CalendarCard(
 fun DayCell(day: CalendarDay, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val alpha = if (day.isCurrentMonth) 1f else 0.3f
     val borderColor = when {
-        isSelected -> MaterialTheme.colorScheme.primary
+        isSelected -> Color.Transparent
         day.isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
         else -> Color.Transparent
     }
-    val backgroundColor = if (day.isToday) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else Color.Transparent
+    val backgroundColor = when {
+        isSelected -> MaterialTheme.colorScheme.primaryContainer
+        day.isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+        else -> Color.Transparent
+    }
+    val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
     val statusDotColor = when (day.status) {
         AdherenceStatus.TAKEN -> Color(0xFF4CAF50)
         AdherenceStatus.MISSED -> MaterialTheme.colorScheme.error
@@ -540,10 +757,19 @@ fun DayCell(day: CalendarDay, isSelected: Boolean, onClick: () -> Unit, modifier
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(day.day.toString(), fontWeight = if (day.isToday || isSelected) FontWeight.Bold else FontWeight.Normal)
+            Text(
+                day.day.toString(),
+                fontWeight = if (day.isToday || isSelected) FontWeight.Bold else FontWeight.Normal,
+                color = contentColor,
+            )
             if (day.status != AdherenceStatus.NONE && day.isCurrentMonth) {
                 Spacer(Modifier.height(4.dp))
-                Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(statusDotColor))
+                Box(
+                    modifier = Modifier
+                        .size(width = 16.dp, height = 4.dp)
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(statusDotColor),
+                )
             }
         }
     }
@@ -573,11 +799,11 @@ private fun ManualMedicationLogForm(
                 }
             }
             Button(onClick = { onSave(selectedMedId, selectedStatus) }, enabled = selectedMedId.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
-                Text("Save medication log")
+                Text("Save log")
             }
         }
         TextButton(onClick = onOpenMedicationCabinet, modifier = Modifier.fillMaxWidth()) {
-            Text("Open medication cabinet")
+            Text("Manage medications")
         }
     }
 }
@@ -591,12 +817,14 @@ private fun ResolveMedicationLogSheet(
     onLogExtraDose: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onBack) { Text("Back") }
-            Text("Match scheduled dose", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = "Back")
+            }
+            Text("Match scheduled dose?", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         }
         Text(
-            "Choose whether $medicationName should complete a nearby scheduled dose or be saved as an extra dose.",
+            "$medicationName is close to a scheduled dose. Match it or keep it as an extra log.",
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         candidates.forEach { candidate ->
@@ -610,21 +838,25 @@ private fun ResolveMedicationLogSheet(
                         color = MaterialTheme.colorScheme.secondary,
                     )
                     Button(onClick = { onAttach(candidate) }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Apply to scheduled dose")
+                        Text("Count toward schedule")
                     }
                 }
             }
         }
         OutlinedButton(onClick = onLogExtraDose, modifier = Modifier.fillMaxWidth()) {
-            Text("Log as extra dose")
+            Text("Save as extra log")
         }
     }
 }
 
 @Composable
-private fun AddEntryMenu(onSelectType: (SheetView) -> Unit) {
+private fun AddEntryMenu(selectedDate: LocalDate, onSelectType: (SheetView) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Add entry", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(
+            DateFormatter.formatDayMonthYear(selectedDate),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         Button(onClick = { onSelectType(SheetView.FORM_MED) }, modifier = Modifier.fillMaxWidth()) { Text("Log medication") }
         OutlinedButton(onClick = { onSelectType(SheetView.FORM_APPT) }, modifier = Modifier.fillMaxWidth()) { Text("Add appointment") }
         OutlinedButton(onClick = { onSelectType(SheetView.FORM_MOOD) }, modifier = Modifier.fillMaxWidth()) { Text("Log mood") }
@@ -644,8 +876,10 @@ private fun WrapperFormLayout(
     var activeDatePicker by remember { mutableStateOf(false) }
     var activeTimePicker by remember { mutableStateOf(false) }
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onBack) { Text("Back") }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = "Back")
+            }
             Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         }
         DateValueField(label = "Date", value = entryDate, onClick = { activeDatePicker = true })
@@ -695,18 +929,67 @@ private fun AppointmentForm(onSave: (String, String) -> Unit) {
 
 @Composable
 private fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit) {
-    var score by remember { mutableIntStateOf(3) }
+    var moodScore by remember { mutableIntStateOf(3) }
+    val selectedTags = remember { mutableStateListOf<String>() }
+    val selectedSymptoms = remember { mutableStateListOf<String>() }
     var notes by remember { mutableStateOf("") }
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Text("How are you feeling?", fontWeight = FontWeight.SemiBold)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            (1..5).forEach { option ->
-                FilterChip(selected = score == option, onClick = { score = option }, label = { Text(option.toString()) })
+
+    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = FormConstants.moodLabels()[moodScore - 1],
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold,
+            )
+            Spacer(Modifier.height(16.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                FormConstants.MoodEmojis.forEachIndexed { index, emoji ->
+                    val score = index + 1
+                    val isSelected = moodScore == score
+                    val scale by animateFloatAsState(if (isSelected) 1.5f else 1.0f, label = "scale")
+
+                    Text(
+                        text = emoji,
+                        style = MaterialTheme.typography.headlineLarge,
+                        modifier = Modifier
+                            .graphicsLayer(scaleX = scale, scaleY = scale)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) { moodScore = score },
+                    )
+                }
             }
+            Slider(
+                value = moodScore.toFloat(),
+                onValueChange = { moodScore = it.toInt() },
+                valueRange = 1f..5f,
+                steps = 3,
+            )
         }
-        OutlinedTextField(value = notes, onValueChange = { notes = it }, modifier = Modifier.fillMaxWidth(), minLines = 3, label = { Text("Notes") })
-        Button(onClick = { onSave(score, emptyList(), emptyList(), notes) }, modifier = Modifier.fillMaxWidth()) {
-            Text("Save mood")
+
+        HorizontalDivider()
+
+        OutlinedTextField(
+            value = notes,
+            onValueChange = { notes = it },
+            label = { Text(stringResource(Res.string.form_mood_journal_label)) },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 3,
+        )
+
+        Button(
+            onClick = { onSave(moodScore, selectedTags, selectedSymptoms, notes) },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(Res.string.form_mood_log_button))
         }
     }
 }
@@ -726,10 +1009,14 @@ private fun AppointmentDetailSheetContent(appointment: Appointment, onDelete: ()
 @Composable
 fun AppointmentCard(appointment: Appointment, onClick: () -> Unit = {}) {
     val dateTime = Instant.fromEpochMilliseconds(appointment.appointmentTime).toLocalDateTime(TimeZone.currentSystemDefault())
-    Card(onClick = onClick, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
-        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Surface(
+        onClick = onClick,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(16.dp),
+    ) {
+        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(appointment.title, fontWeight = FontWeight.SemiBold)
-            Text("${DateFormatter.formatDayMonthYear(dateTime.date)} • ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}", color = MaterialTheme.colorScheme.secondary)
+            Text(DateFormatter.formatTime(dateTime.hour, dateTime.minute), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

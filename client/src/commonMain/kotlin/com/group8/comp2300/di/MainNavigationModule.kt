@@ -61,7 +61,6 @@ val mainNavigationModule = module {
         val navigator = LocalNavigator.current
         MedicationScreen(
             onBack = navigator::goBack,
-            onNavigateToRoutines = { navigator.navigate(Screen.Routines) },
         )
     }
 }
