@@ -1,7 +1,10 @@
 package com.group8.comp2300.util
 
+import io.ktor.utils.io.core.toByteArray
 import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Security.CC_SHA256
+import kotlinx.cinterop.refTo
+import net.sergeych.sprintf.format
+import platform.CoreCrypto.CC_SHA256
 
 @OptIn(ExperimentalForeignApi::class)
 actual fun sha256(input: String): String {
