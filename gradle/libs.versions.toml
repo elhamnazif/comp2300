@@ -1,19 +1,19 @@
 [versions]
 # Platform
 agp = "8.13.2"
-kotlin = "2.3.10"
+kotlin = "2.3.20"
 
 # Compose
-composeMultiplatform = "1.11.0-alpha02"
+composeMultiplatform = "1.11.0-alpha04"
 material3AdaptiveNavigationSuite = "1.10.0-alpha05"
-androidxAdaptive = "1.3.0-alpha04"
+androidxAdaptive = "1.3.0-alpha06"
 reorderable = "3.0.0"
 vico = "2.4.3"
 
 # AndroidX
-androidxActivityCompose = "1.12.4"
-androidxLifecycle = "2.10.0-alpha08"
-androidxNav3 = "1.1.0-alpha02"
+androidxActivityCompose = "1.13.0"
+androidxLifecycle = "2.10.0"
+androidxNav3 = "1.1.0-beta01"
 androidxSavedstate = "1.4.0"
 
 # Kotlinx
@@ -22,33 +22,33 @@ kotlinxDatetime = "0.7.1"
 kotlinxSerialization = "1.10.0"
 
 # Networking
-ktor = "3.4.0"
+ktor = "3.4.2"
 
 # Storage
-sqldelight = "2.2.1"
+sqldelight = "2.3.2"
 multiplatformSettings = "1.3.0"
-alarmee = "2.4.0"
+alarmee = "2.6.0"
 mokoPermissions = "0.20.1"
 
 # DI
-koin = "4.2.0-RC1"
+koin = "4.2.0"
 
 # Logging
-kermit = "2.0.8"
+kermit = "2.1.0"
 
 # UI
-materialKolor = "5.0.0-alpha06"
+materialKolor = "5.0.0-alpha07"
 sketch = "4.3.1"
 symbolcraft = "0.3.4"
 maplibre = "0.12.1"
 
 # Build tools
 buildkonfig = "0.17.1"
-openapiGenerator = "7.20.0"
-spmForKmp = "1.4.8"
+openapiGenerator = "7.21.0"
+spmForKmp = "1.7.0"
 
 # Code quality
-spotless = "8.2.1"
+spotless = "8.4.0"
 ktlint = "1.8.0"
 detekt = "2.0.0-alpha.2"
 detektCompose = "0.5.6"
@@ -58,15 +58,15 @@ junit = "4.13.2"
 androidxTestExt = "1.3.0"
 androidxEspresso = "3.7.0"
 runner = "1.7.0"
-core = "1.7.0"
-mockk = "1.13.10"
+core = "1.18.0"
+mockk = "1.14.9"
 
 # Server
 logback = "1.5.32"
 bcrypt = "0.10.2"
 javaJwt = "4.5.1"
-resend = "4.12.0"
-uiTooling = "1.10.4"
+resend = "4.13.0"
+uiTooling = "1.10.6"
 
 [libraries]
 # Compose

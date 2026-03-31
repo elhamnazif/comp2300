@@ -1,8 +1,8 @@
+import io.github.frankois944.spmForKmp.swiftPackageConfig
 import io.github.kingsword09.symbolcraft.model.SymbolVariant
 import io.github.kingsword09.symbolcraft.model.SymbolWeight
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import java.net.URI
 
 plugins {
@@ -45,22 +45,27 @@ kotlin {
         )
     }
 
-    targets
-        .withType<KotlinNativeTarget>()
-        .matching { it.konanTarget.family.isAppleFamily }
-        .configureEach {
-            compilations {
-                getByName("main") {
-                    cinterops.create("spmMaplibre")
-                }
-            }
-            binaries {
-                framework {
-                    baseName = "clientKit"
-                    isStatic = true
-                }
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach { target ->
+        target.swiftPackageConfig(cinteropName = "spmMaplibre") {
+            dependency {
+                remotePackageVersion(
+                    url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
+                    products = { add("MapLibre", exportToKotlin = true) },
+                    packageName = "maplibre-gl-native-distribution",
+                    version = "6.17.1",
+                )
             }
         }
+        target.binaries {
+            framework {
+                baseName = "clientKit"
+                isStatic = true
+            }
+        }
+    }
 
     sourceSets {
         commonMain {
@@ -236,17 +241,4 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().con
 // Workaround for prepareAndroidMainArtProfile which doesn't seem to respect srcDir dependencies
 tasks.matching { it.name.contains("prepareAndroidMainArtProfile", ignoreCase = true) }.configureEach {
     dependsOn("generateSymbolCraftIcons")
-}
-
-swiftPackageConfig {
-    create("spmMaplibre") {
-        dependency {
-            remotePackageVersion(
-                url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
-                products = { add("MapLibre", exportToKotlin = true) },
-                packageName = "maplibre-gl-native-distribution",
-                version = "6.17.1",
-            )
-        }
-    }
 }
