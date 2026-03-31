@@ -30,7 +30,6 @@ import com.group8.comp2300.presentation.components.shimmerEffect
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ChevronRightW400Outlined
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -109,17 +108,16 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
         modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .verticalScroll(rememberScrollState())
-            .padding(24.dp),
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        ScreenHeader(horizontalPadding = 0.dp) {
-            Spacer(Modifier.height(24.dp))
+        ScreenHeader(horizontalPadding = 24.dp) {
+            Spacer(Modifier.height(16.dp))
 
             // Hero Section
             HeroSection()
 
-            Spacer(Modifier.height(40.dp))
+            Spacer(Modifier.height(32.dp))
 
             // Feature Preview Cards
             Text(
@@ -129,7 +127,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
                 modifier = Modifier.align(Alignment.Start),
             )
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
             FeatureCard(
                 icon = Icons.CheckCircleW400Outlinedfill1,
@@ -167,19 +165,12 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
             Button(
                 onClick = onRequireAuth,
                 modifier = Modifier.fillMaxWidth().height(48.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
             ) {
                 Text(
-                    stringResource(Res.string.profile_sign_in),
+                    stringResource(Res.string.profile_sign_in_label),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            OutlinedButton(onClick = onRequireAuth, modifier = Modifier.fillMaxWidth().height(48.dp)) {
-                Text(stringResource(Res.string.profile_create_account), style = MaterialTheme.typography.titleMedium)
             }
 
             Spacer(Modifier.height(24.dp))
@@ -198,7 +189,6 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
 @Composable
 private fun HeroSection(modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        // Hero Icon
         Surface(
             shape = CircleShape,
             color = MaterialTheme.colorScheme.primaryContainer,
@@ -206,7 +196,7 @@ private fun HeroSection(modifier: Modifier = Modifier) {
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    Icons.PersonW400Outlinedfill1,
+                    Icons.HealthAndSafetyW400Outlined,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier.size(64.dp),
@@ -216,7 +206,6 @@ private fun HeroSection(modifier: Modifier = Modifier) {
 
         Spacer(Modifier.height(24.dp))
 
-        // Hero Text
         Text(
             text = stringResource(Res.string.profile_hero_title),
             style = MaterialTheme.typography.headlineMedium,
@@ -230,7 +219,6 @@ private fun HeroSection(modifier: Modifier = Modifier) {
             text = stringResource(Res.string.profile_hero_desc),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.padding(horizontal = 16.dp),
         )
     }
 }
