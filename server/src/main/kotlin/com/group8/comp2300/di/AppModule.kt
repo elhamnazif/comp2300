@@ -1,5 +1,6 @@
 package com.group8.comp2300.di
 
+import com.group8.comp2300.config.DevSeeder
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.config.ResendConfig
 import com.group8.comp2300.data.repository.AppointmentRepositoryImpl
@@ -40,7 +41,9 @@ import com.group8.comp2300.service.payment.PaymentServiceImpl
 import org.koin.dsl.module
 
 val serverModule = module {
-    single<ServerDatabase> { createServerDatabase() }
+    single<ServerDatabase> {
+        createServerDatabase().also { DevSeeder.seedIfDevBypassEnabled(it) }
+    }
 
     // Security
     single<JwtService> {

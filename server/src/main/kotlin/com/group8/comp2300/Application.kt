@@ -1,5 +1,6 @@
 package com.group8.comp2300
 
+import com.group8.comp2300.config.Environment
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.di.serverModule
 import com.group8.comp2300.routes.appointmentRoutes
@@ -50,7 +51,7 @@ fun Application.module() {
     }
 
     val jwtService: JwtService = get()
-    val devBypass = JwtConfig.devAuthBypass
+    val devBypass = Environment.devAuthBypass
 
     install(Authentication) {
         jwt("auth-jwt") {
