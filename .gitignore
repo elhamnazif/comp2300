@@ -24,3 +24,5 @@ kls_database.db
 *.log
 .env
 maplibre-cache
+uploads/
+!uploads/.gitkeep

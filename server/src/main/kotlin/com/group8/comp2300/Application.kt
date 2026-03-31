@@ -5,6 +5,8 @@ import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.di.serverModule
 import com.group8.comp2300.routes.appointmentRoutes
 import com.group8.comp2300.routes.authRoutes
+import com.group8.comp2300.routes.calendarRoutes
+import com.group8.comp2300.routes.medicalRecordRoutes
 import com.group8.comp2300.routes.medicationRoutes
 import com.group8.comp2300.routes.moodRoutes
 import com.group8.comp2300.routes.productRoutes
@@ -87,6 +89,8 @@ fun Application.module() {
             appointmentRoutes()
             medicationRoutes()
             moodRoutes()
+            calendarRoutes()
+            medicalRecordRoutes()
         }
     }
 }
