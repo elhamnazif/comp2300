@@ -69,16 +69,6 @@ fun generateCalendarDays(year: Int, month: Month, overviewMap: Map<String, Strin
     }
 }
 
-enum class SheetView {
-    MENU,
-    FORM_MED,
-    FORM_RESCHEDULE,
-    RESOLVE_MED,
-    FORM_APPT,
-    FORM_MOOD,
-    DETAILS_APPT,
-}
-
 object FormConstants {
     @Composable
     fun commonMeds() = listOf(

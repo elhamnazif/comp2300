@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,14 +32,34 @@ import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400Outlinedfill1
+import comp2300.i18n.generated.resources.*
 import comp2300.i18n.generated.resources.Res
-import comp2300.i18n.generated.resources.form_mood_journal_label
-import comp2300.i18n.generated.resources.form_mood_log_button
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import kotlin.time.Instant
+
+private sealed interface CalendarSheetState {
+    data object Hidden : CalendarSheetState
+
+    data object Menu : CalendarSheetState
+
+    data object FormMedication : CalendarSheetState
+
+    data class FormReschedule(val routine: RoutineDayAgenda) : CalendarSheetState
+
+    data class ResolveMedication(
+        val pendingLog: MedicationLogRequest,
+        val candidates: List<MedicationOccurrenceCandidate>,
+    ) : CalendarSheetState
+
+    data object FormAppointment : CalendarSheetState
+
+    data object FormMood : CalendarSheetState
+
+    data class AppointmentDetails(val appointment: Appointment) : CalendarSheetState
+}
 
 @Composable
 fun CalendarScreen(
@@ -50,16 +71,12 @@ fun CalendarScreen(
     val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val snackbarHostState = remember { SnackbarHostState() }
+    val timeZone = remember { TimeZone.currentSystemDefault() }
 
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var currentSheetView by remember { mutableStateOf(SheetView.MENU) }
+    var sheetUiState by remember { mutableStateOf<CalendarSheetState>(CalendarSheetState.Hidden) }
     var selectedDateForEntry by remember { mutableStateOf<CalendarDay?>(null) }
-    var selectedAppointment by remember { mutableStateOf<Appointment?>(null) }
     var entryDate by remember { mutableStateOf(today) }
     var entryTime by remember { mutableStateOf(9 to 0) }
-    var pendingMedicationLog by remember { mutableStateOf<MedicationLogRequest?>(null) }
-    var pendingOccurrenceCandidates by remember { mutableStateOf<List<MedicationOccurrenceCandidate>>(emptyList()) }
-    var pendingRoutineReschedule by remember { mutableStateOf<RoutineDayAgenda?>(null) }
 
     LaunchedEffect(Unit) {
         selectedDateForEntry =
@@ -79,7 +96,7 @@ fun CalendarScreen(
     val selectedAppointments = remember(state.appointments, selectedDate) {
         state.appointments.filter { appointment ->
             Instant.fromEpochMilliseconds(appointment.appointmentTime)
-                .toLocalDateTime(TimeZone.currentSystemDefault())
+                .toLocalDateTime(timeZone)
                 .date == selectedDate
         }
     }
@@ -91,7 +108,9 @@ fun CalendarScreen(
     Scaffold(
         modifier = modifier,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = { AppTopBar(title = { Text("Calendar", fontWeight = FontWeight.Bold) }) },
+        topBar = {
+            AppTopBar(title = { Text(stringResource(Res.string.calendar_title), fontWeight = FontWeight.Bold) })
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 selectedDateForEntry =
@@ -103,16 +122,14 @@ fun CalendarScreen(
                         isCurrentMonth = true,
                     )
                 entryDate = selectedDate
-                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+                val now = Clock.System.now().toLocalDateTime(timeZone)
                 entryTime = now.hour to now.minute
-                currentSheetView = SheetView.MENU
-                selectedAppointment = null
-                pendingMedicationLog = null
-                pendingOccurrenceCandidates = emptyList()
-                pendingRoutineReschedule = null
-                showBottomSheet = true
+                sheetUiState = CalendarSheetState.Menu
             }) {
-                Icon(Icons.AddW400Outlinedfill1, contentDescription = "Add entry")
+                Icon(
+                    Icons.AddW400Outlinedfill1,
+                    contentDescription = stringResource(Res.string.calendar_add_entry_desc),
+                )
             }
         },
     ) { innerPadding ->
@@ -131,7 +148,7 @@ fun CalendarScreen(
                         entryDate = day.date
                         viewModel.loadAgendaForDate(day.date.toString())
                     },
-                    onMonthChanged = viewModel::loadOverviewForMonth,
+                    onMonthChange = viewModel::loadOverviewForMonth,
                 )
             }
 
@@ -145,152 +162,128 @@ fun CalendarScreen(
             }
 
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        "Scheduled doses",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    if (state.routineAgenda.isEmpty()) {
-                        EmptyStateMessage("No scheduled doses for this day.")
-                    } else {
-                        state.routineAgenda.forEach { routine ->
-                            val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
-                            RoutineAgendaCard(
-                                routine = routine,
-                                isExpanded = routineKey in expandedRoutineKeys,
-                                onToggleExpanded = {
-                                    expandedRoutineKeys = expandedRoutineKeys.toMutableSet().apply {
-                                        if (!add(routineKey)) remove(routineKey)
-                                    }
-                                },
-                                onLogMedication = { medicationId, status ->
-                                    viewModel.logMedication(
-                                        MedicationLogRequest(
-                                            medicationId = medicationId,
-                                            status = status.name,
-                                            timestampMs = if (status ==
-                                                MedicationLogStatus.TAKEN
-                                            ) {
-                                                Clock.System.now().toEpochMilliseconds()
-                                            } else {
-                                                routine.occurrenceTimeMs
-                                            },
-                                            routineId = routine.routineId,
-                                            occurrenceTimeMs = routine.occurrenceTimeMs,
-                                            linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
-                                        ),
-                                    )
-                                },
-                                onLogAll = { status ->
-                                    routine.medications.forEach { medication ->
-                                        viewModel.logMedication(
-                                            MedicationLogRequest(
-                                                medicationId = medication.medicationId,
-                                                status = status.name,
-                                                timestampMs = if (status ==
-                                                    MedicationLogStatus.TAKEN
-                                                ) {
-                                                    Clock.System.now().toEpochMilliseconds()
-                                                } else {
-                                                    routine.occurrenceTimeMs
-                                                },
-                                                routineId = routine.routineId,
-                                                occurrenceTimeMs = routine.occurrenceTimeMs,
-                                                linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
-                                            ),
-                                        )
-                                    }
-                                },
-                                onMoveDose = {
-                                    val occurrence = Instant.fromEpochMilliseconds(routine.occurrenceTimeMs)
-                                        .toLocalDateTime(TimeZone.currentSystemDefault())
-                                    entryDate = occurrence.date
-                                    entryTime = occurrence.hour to occurrence.minute
-                                    pendingRoutineReschedule = routine
-                                    currentSheetView = SheetView.FORM_RESCHEDULE
-                                    showBottomSheet = true
-                                },
+                Text(
+                    stringResource(Res.string.calendar_scheduled_doses),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+
+            if (state.routineAgenda.isEmpty()) {
+                item {
+                    EmptyStateMessage(stringResource(Res.string.calendar_no_scheduled_doses_day))
+                }
+            } else {
+                items(
+                    items = state.routineAgenda,
+                    key = { "${it.routineId}:${it.occurrenceTimeMs}" },
+                ) { routine ->
+                    val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
+                    RoutineAgendaCard(
+                        routine = routine,
+                        isExpanded = routineKey in expandedRoutineKeys,
+                        onToggleExpansion = {
+                            expandedRoutineKeys = expandedRoutineKeys.toMutableSet().apply {
+                                if (!add(routineKey)) remove(routineKey)
+                            }
+                        },
+                        onLogMedication = { medicationId, status ->
+                            viewModel.logMedication(
+                                routineLogRequest(
+                                    routine = routine,
+                                    medicationId = medicationId,
+                                    status = status,
+                                ),
                             )
-                        }
-                    }
+                        },
+                        onLogAll = { status ->
+                            val loggedAt = Clock.System.now().toEpochMilliseconds()
+                            routine.medications.forEach { medication ->
+                                viewModel.logMedication(
+                                    routineLogRequest(
+                                        routine = routine,
+                                        medicationId = medication.medicationId,
+                                        status = status,
+                                        nowMs = loggedAt,
+                                    ),
+                                )
+                            }
+                        },
+                        onMoveDose = {
+                            val occurrence = Instant.fromEpochMilliseconds(routine.occurrenceTimeMs)
+                                .toLocalDateTime(timeZone)
+                            entryDate = occurrence.date
+                            entryTime = occurrence.hour to occurrence.minute
+                            sheetUiState = CalendarSheetState.FormReschedule(routine)
+                        },
+                    )
                 }
             }
 
             if (state.manualLogs.isNotEmpty()) {
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(
-                            "Extra logs",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        state.manualLogs.forEach { log ->
-                            ManualLogCard(log = log)
-                        }
-                    }
+                    Text(
+                        stringResource(Res.string.calendar_extra_logs),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                items(
+                    items = state.manualLogs,
+                    key = { if (it.id.isBlank()) "manual:${it.medicationTime}" else it.id },
+                ) { log ->
+                    ManualLogCard(log = log)
                 }
             }
 
             if (selectedAppointments.isNotEmpty()) {
                 item {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(
-                            "Appointments",
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        selectedAppointments.forEach { appointment ->
-                            AppointmentCard(appointment = appointment, onClick = {
-                                selectedAppointment = appointment
-                                currentSheetView = SheetView.DETAILS_APPT
-                                showBottomSheet = true
-                            })
-                        }
-                    }
+                    Text(
+                        stringResource(Res.string.calendar_appointments),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                items(
+                    items = selectedAppointments,
+                    key = { if (it.id.isBlank()) "appt:${it.appointmentTime}" else it.id },
+                ) { appointment ->
+                    AppointmentCard(
+                        appointment = appointment,
+                        onClick = { sheetUiState = CalendarSheetState.AppointmentDetails(appointment) },
+                    )
                 }
             }
             item { Spacer(Modifier.height(72.dp)) }
         }
     }
 
-    if (showBottomSheet) {
+    if (sheetUiState != CalendarSheetState.Hidden) {
         ModalBottomSheet(
-            onDismissRequest = {
-                showBottomSheet = false
-                selectedAppointment = null
-                pendingMedicationLog = null
-                pendingOccurrenceCandidates = emptyList()
-                pendingRoutineReschedule = null
-            },
+            onDismissRequest = { sheetUiState = CalendarSheetState.Hidden },
             sheetState = sheetState,
             containerColor = MaterialTheme.colorScheme.surface,
         ) {
-            when (currentSheetView) {
-                SheetView.MENU -> AddEntryMenu(
+            when (val activeSheet = sheetUiState) {
+                CalendarSheetState.Hidden -> Unit
+
+                CalendarSheetState.Menu -> AddEntryMenu(
                     selectedDate = selectedDate,
-                    onSelectType = { currentSheetView = it },
+                    onSelectType = { sheetUiState = it },
                 )
 
-                SheetView.FORM_MED -> WrapperFormLayout(
-                    title = "Log medication",
+                CalendarSheetState.FormMedication -> WrapperFormLayout(
+                    title = stringResource(Res.string.form_medication_title),
                     entryDate = entryDate,
                     entryTime = entryTime,
                     onDateChange = { entryDate = it },
                     onTimeChange = { h, m -> entryTime = h to m },
-                    onBack = {
-                        pendingMedicationLog = null
-                        pendingOccurrenceCandidates = emptyList()
-                        currentSheetView = SheetView.MENU
-                    },
+                    onBack = { sheetUiState = CalendarSheetState.Menu },
                 ) {
                     ManualMedicationLogForm(
                         medications = activeMedications,
                         onSave = { medicationId, status ->
-                            val logDateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
-                            val timestampMs = logDateTime.toInstant(
-                                TimeZone.currentSystemDefault(),
-                            ).toEpochMilliseconds()
+                            val timestampMs = entryDateTimeToEpochMs(entryDate, entryTime, timeZone)
                             val baseRequest = MedicationLogRequest(
                                 medicationId = medicationId,
                                 status = status.name,
@@ -304,137 +297,127 @@ fun CalendarScreen(
                                     viewModel.logMedication(
                                         baseRequest.copy(linkMode = MedicationLogLinkMode.EXTRA_DOSE),
                                     )
-                                    showBottomSheet = false
+                                    sheetUiState = CalendarSheetState.Hidden
                                 } else {
-                                    pendingMedicationLog = baseRequest
-                                    pendingOccurrenceCandidates = candidates
-                                    currentSheetView = SheetView.RESOLVE_MED
+                                    sheetUiState = CalendarSheetState.ResolveMedication(
+                                        pendingLog = baseRequest,
+                                        candidates = candidates,
+                                    )
                                 }
                             }
                         },
                         onOpenMedicationCabinet = {
-                            showBottomSheet = false
+                            sheetUiState = CalendarSheetState.Hidden
                             onNavigateToMedication()
                         },
                     )
                 }
 
-                SheetView.FORM_RESCHEDULE -> pendingRoutineReschedule?.let { routine ->
-                    WrapperFormLayout(
-                        title = "Move scheduled dose",
-                        entryDate = entryDate,
-                        entryTime = entryTime,
-                        onDateChange = { entryDate = it },
-                        onTimeChange = { h, m -> entryTime = h to m },
-                        onBack = {
-                            pendingRoutineReschedule = null
-                            currentSheetView = SheetView.MENU
-                        },
-                    ) {
-                        val originalOccurrence = Instant.fromEpochMilliseconds(routine.originalOccurrenceTimeMs)
-                            .toLocalDateTime(TimeZone.currentSystemDefault())
-                        Text(
-                            "This only changes the selected dose. Future doses will stay on their usual schedule.",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        if (routine.isRescheduled) {
-                            Text(
-                                "Originally due ${DateFormatter.formatDayMonthYear(
-                                    originalOccurrence.date,
-                                )} at ${DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute)}",
-                                color = MaterialTheme.colorScheme.secondary,
-                            )
-                        }
-                        Button(
-                            onClick = {
-                                val targetDateTime =
-                                    LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
-                                viewModel.rescheduleRoutineOccurrence(
-                                    RoutineOccurrenceOverrideRequest(
-                                        routineId = routine.routineId,
-                                        originalOccurrenceTimeMs = routine.originalOccurrenceTimeMs,
-                                        rescheduledOccurrenceTimeMs = targetDateTime
-                                            .toInstant(TimeZone.currentSystemDefault())
-                                            .toEpochMilliseconds(),
-                                    ),
-                                )
-                                pendingRoutineReschedule = null
-                                showBottomSheet = false
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("Save moved dose")
-                        }
-                    }
-                }
-
-                SheetView.RESOLVE_MED -> pendingMedicationLog?.let { pendingLog ->
-                    ResolveMedicationLogSheet(
-                        medicationName = state.medications.firstOrNull {
-                            it.id == pendingLog.medicationId
-                        }?.name.orEmpty(),
-                        candidates = pendingOccurrenceCandidates,
-                        onBack = {
-                            pendingOccurrenceCandidates = emptyList()
-                            currentSheetView = SheetView.FORM_MED
-                        },
-                        onAttach = { candidate ->
-                            viewModel.logMedication(
-                                pendingLog.copy(
-                                    routineId = candidate.routineId,
-                                    occurrenceTimeMs = candidate.occurrenceTimeMs,
-                                    linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
-                                ),
-                            )
-                            pendingMedicationLog = null
-                            pendingOccurrenceCandidates = emptyList()
-                            showBottomSheet = false
-                        },
-                        onLogExtraDose = {
-                            viewModel.logMedication(pendingLog.copy(linkMode = MedicationLogLinkMode.EXTRA_DOSE))
-                            pendingMedicationLog = null
-                            pendingOccurrenceCandidates = emptyList()
-                            showBottomSheet = false
-                        },
-                    )
-                }
-
-                SheetView.FORM_APPT -> WrapperFormLayout(
-                    title = "Add appointment",
+                is CalendarSheetState.FormReschedule -> WrapperFormLayout(
+                    title = stringResource(Res.string.calendar_move_scheduled_dose_title),
                     entryDate = entryDate,
                     entryTime = entryTime,
                     onDateChange = { entryDate = it },
                     onTimeChange = { h, m -> entryTime = h to m },
-                    onBack = { currentSheetView = SheetView.MENU },
+                    onBack = { sheetUiState = CalendarSheetState.Menu },
+                ) {
+                    val originalOccurrence = Instant.fromEpochMilliseconds(activeSheet.routine.originalOccurrenceTimeMs)
+                        .toLocalDateTime(timeZone)
+                    Text(
+                        stringResource(Res.string.calendar_move_scheduled_dose_desc),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (activeSheet.routine.isRescheduled) {
+                        Text(
+                            stringResource(
+                                Res.string.calendar_move_scheduled_dose_originally_due,
+                                DateFormatter.formatDayMonthYear(originalOccurrence.date),
+                                DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute),
+                            ),
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            val targetDateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
+                            viewModel.rescheduleRoutineOccurrence(
+                                RoutineOccurrenceOverrideRequest(
+                                    routineId = activeSheet.routine.routineId,
+                                    originalOccurrenceTimeMs = activeSheet.routine.originalOccurrenceTimeMs,
+                                    rescheduledOccurrenceTimeMs =
+                                    targetDateTime.toInstant(timeZone).toEpochMilliseconds(),
+                                ),
+                            )
+                            sheetUiState = CalendarSheetState.Hidden
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(Res.string.calendar_save_moved_dose))
+                    }
+                }
+
+                is CalendarSheetState.ResolveMedication -> ResolveMedicationLogSheet(
+                    medicationName = state.medications.firstOrNull {
+                        it.id == activeSheet.pendingLog.medicationId
+                    }?.name.orEmpty(),
+                    candidates = activeSheet.candidates,
+                    onBack = { sheetUiState = CalendarSheetState.FormMedication },
+                    onAttach = { candidate ->
+                        viewModel.logMedication(
+                            activeSheet.pendingLog.copy(
+                                routineId = candidate.routineId,
+                                occurrenceTimeMs = candidate.occurrenceTimeMs,
+                                linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
+                            ),
+                        )
+                        sheetUiState = CalendarSheetState.Hidden
+                    },
+                    onLogExtraDose = {
+                        viewModel.logMedication(
+                            activeSheet.pendingLog.copy(linkMode = MedicationLogLinkMode.EXTRA_DOSE),
+                        )
+                        sheetUiState = CalendarSheetState.Hidden
+                    },
+                )
+
+                CalendarSheetState.FormAppointment -> WrapperFormLayout(
+                    title = stringResource(Res.string.calendar_form_add_appointment_title),
+                    entryDate = entryDate,
+                    entryTime = entryTime,
+                    onDateChange = { entryDate = it },
+                    onTimeChange = { h, m -> entryTime = h to m },
+                    onBack = { sheetUiState = CalendarSheetState.Menu },
                 ) {
                     AppointmentForm { doctorName, appointmentType ->
                         val dateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
                         viewModel.scheduleAppointment(
                             doctorName,
                             appointmentType,
-                            dateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
+                            dateTime.toInstant(timeZone).toEpochMilliseconds(),
                         )
-                        showBottomSheet = false
+                        sheetUiState = CalendarSheetState.Hidden
                     }
                 }
 
-                SheetView.FORM_MOOD -> WrapperFormLayout(
-                    title = "Log mood",
+                CalendarSheetState.FormMood -> WrapperFormLayout(
+                    title = stringResource(Res.string.form_mood_title),
                     entryDate = entryDate,
                     entryTime = entryTime,
                     onDateChange = { entryDate = it },
                     onTimeChange = { h, m -> entryTime = h to m },
-                    onBack = { currentSheetView = SheetView.MENU },
+                    onBack = { sheetUiState = CalendarSheetState.Menu },
                 ) {
-                    MoodEntryForm { score, tags, symptoms, notes ->
-                        viewModel.logMood(score, tags, symptoms, notes)
-                        showBottomSheet = false
+                    MoodEntryForm { score, notes ->
+                        viewModel.logMood(score, emptyList(), emptyList(), notes)
+                        sheetUiState = CalendarSheetState.Hidden
                     }
                 }
 
-                SheetView.DETAILS_APPT -> selectedAppointment?.let {
-                    AppointmentDetailSheetContent(it, onDelete = { showBottomSheet = false })
-                }
+                is CalendarSheetState.AppointmentDetails ->
+                    AppointmentDetailSheetContent(
+                        activeSheet.appointment,
+                        onClose = { sheetUiState = CalendarSheetState.Hidden },
+                    )
             }
         }
     }
@@ -454,15 +437,38 @@ private fun CalendarDayHeader(
             it.status == MedicationLogStatus.MISSED ||
             it.status == MedicationLogStatus.SNOOZED
     }
-    val summary = when {
-        allDoses.isEmpty() -> "No scheduled doses"
-        else -> "$taken of ${allDoses.size} taken"
+    val summary =
+        if (allDoses.isEmpty()) {
+            stringResource(Res.string.calendar_no_scheduled_doses)
+        } else {
+            stringResource(Res.string.calendar_taken_summary, taken, allDoses.size)
+        }
+    val metaItems = mutableListOf<String>()
+    if (allDoses.isNotEmpty() && unresolved > 0) {
+        metaItems +=
+            if (unresolved == 1) {
+                stringResource(Res.string.calendar_unresolved_one)
+            } else {
+                stringResource(Res.string.calendar_unresolved_many, unresolved)
+            }
     }
-    val meta = buildList {
-        if (allDoses.isNotEmpty() && unresolved > 0) add("$unresolved unresolved")
-        if (extraLogCount > 0) add("$extraLogCount extra log${if (extraLogCount == 1) "" else "s"}")
-        if (appointmentCount > 0) add("$appointmentCount appointment${if (appointmentCount == 1) "" else "s"}")
-    }.joinToString(" • ")
+    if (extraLogCount > 0) {
+        metaItems +=
+            if (extraLogCount == 1) {
+                stringResource(Res.string.calendar_extra_log_one)
+            } else {
+                stringResource(Res.string.calendar_extra_log_many, extraLogCount)
+            }
+    }
+    if (appointmentCount > 0) {
+        metaItems +=
+            if (appointmentCount == 1) {
+                stringResource(Res.string.calendar_appointment_one)
+            } else {
+                stringResource(Res.string.calendar_appointment_many, appointmentCount)
+            }
+    }
+    val meta = metaItems.joinToString(" • ")
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
@@ -470,11 +476,15 @@ private fun CalendarDayHeader(
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
-        Text(
-            summary,
-            style = MaterialTheme.typography.titleMedium,
-            color = if (allDoses.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-        )
+                Text(
+                    summary,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (allDoses.isEmpty()) {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    },
+                )
         if (meta.isNotBlank()) {
             Text(
                 meta,
@@ -489,7 +499,7 @@ private fun CalendarDayHeader(
 private fun RoutineAgendaCard(
     routine: RoutineDayAgenda,
     isExpanded: Boolean,
-    onToggleExpanded: () -> Unit,
+    onToggleExpansion: () -> Unit,
     onLogMedication: (String, MedicationLogStatus) -> Unit,
     onLogAll: (MedicationLogStatus) -> Unit,
     onMoveDose: () -> Unit,
@@ -507,6 +517,19 @@ private fun RoutineAgendaCard(
     val routineCompleted = actionableMeds.isEmpty()
     val showReviewToggle = routine.medications.size > 1 && actionableMeds.isNotEmpty()
     val reminderMeta = reminderMetaLabel(routine.reminderOffsetsMins)
+    val metaLines = mutableListOf<String>()
+    if (routine.isRescheduled) {
+        val originalOccurrence = Instant.fromEpochMilliseconds(routine.originalOccurrenceTimeMs)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+        metaLines += stringResource(
+            Res.string.calendar_moved_from,
+            DateFormatter.formatDayMonthYear(originalOccurrence.date),
+            DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute),
+        )
+    }
+    if (routineCompleted) {
+        metaLines += routineCompletionSummary(routine.medications)
+    }
 
     Card(
         colors =
@@ -543,7 +566,7 @@ private fun RoutineAgendaCard(
                     ) {
                         Icon(
                             Icons.NotificationsW400Outlinedfill1,
-                            contentDescription = "Reminders enabled",
+                            contentDescription = stringResource(Res.string.calendar_reminders_enabled_desc),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp),
                         )
@@ -563,20 +586,7 @@ private fun RoutineAgendaCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
-            buildList {
-                if (routine.isRescheduled) {
-                    val originalOccurrence = Instant.fromEpochMilliseconds(routine.originalOccurrenceTimeMs)
-                        .toLocalDateTime(TimeZone.currentSystemDefault())
-                    add(
-                        "Moved from ${DateFormatter.formatDayMonthYear(
-                            originalOccurrence.date,
-                        )} at ${DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute)}",
-                    )
-                }
-                if (routineCompleted) {
-                    add(routineCompletionSummary(routine.medications))
-                }
-            }.forEach { metaLine ->
+            metaLines.forEach { metaLine ->
                 Text(
                     metaLine,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -591,21 +601,21 @@ private fun RoutineAgendaCard(
                         Button(
                             onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.TAKEN) },
                             modifier = Modifier.weight(1f),
-                        ) { Text("Taken") }
+                        ) { Text(stringResource(Res.string.calendar_taken_action)) }
                         OutlinedButton(
                             onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.SKIPPED) },
                             modifier = Modifier.weight(1f),
-                        ) { Text("Skip") }
+                        ) { Text(stringResource(Res.string.calendar_skip_action)) }
                     }
                 } else {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(onClick = { onLogAll(MedicationLogStatus.TAKEN) }, modifier = Modifier.weight(1f)) {
-                            Text("Take all")
+                            Text(stringResource(Res.string.calendar_take_all_action))
                         }
                         OutlinedButton(onClick = {
                             onLogAll(MedicationLogStatus.SKIPPED)
                         }, modifier = Modifier.weight(1f)) {
-                            Text("Skip all")
+                            Text(stringResource(Res.string.calendar_skip_all_action))
                         }
                     }
                     Row(
@@ -614,20 +624,38 @@ private fun RoutineAgendaCard(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         if (showReviewToggle) {
-                            TextButton(onClick = onToggleExpanded) {
-                                Text(if (isExpanded) "Hide medications" else "Review individually")
+                            TextButton(onClick = onToggleExpansion) {
+                                Text(
+                                    if (isExpanded) {
+                                        stringResource(Res.string.calendar_hide_medications)
+                                    } else {
+                                        stringResource(Res.string.calendar_review_individually)
+                                    },
+                                )
                             }
                         } else {
                             Spacer(Modifier.width(1.dp))
                         }
                         TextButton(onClick = onMoveDose) {
-                            Text(if (routine.isRescheduled) "Move again" else "Move")
+                            Text(
+                                if (routine.isRescheduled) {
+                                    stringResource(Res.string.calendar_move_again_action)
+                                } else {
+                                    stringResource(Res.string.calendar_move_action)
+                                },
+                            )
                         }
                     }
                 }
                 if (routine.medications.size == 1) {
                     TextButton(onClick = onMoveDose, modifier = Modifier.fillMaxWidth()) {
-                        Text(if (routine.isRescheduled) "Move again" else "Move dose")
+                        Text(
+                            if (routine.isRescheduled) {
+                                stringResource(Res.string.calendar_move_again_action)
+                            } else {
+                                stringResource(Res.string.calendar_move_dose_action)
+                            },
+                        )
                     }
                 }
             }
@@ -674,12 +702,12 @@ private fun RoutineMedicationRow(
                 Button(onClick = {
                     onLogMedication(medication.medicationId, MedicationLogStatus.TAKEN)
                 }, modifier = Modifier.weight(1f)) {
-                    Text("Taken")
+                    Text(stringResource(Res.string.calendar_taken_action))
                 }
                 OutlinedButton(onClick = {
                     onLogMedication(medication.medicationId, MedicationLogStatus.SKIPPED)
                 }, modifier = Modifier.weight(1f)) {
-                    Text("Skip")
+                    Text(stringResource(Res.string.calendar_skip_action))
                 }
             }
         }
@@ -701,6 +729,7 @@ private fun routineMedicationSummary(medications: List<RoutineMedicationAgenda>)
     else -> "${medications[0].medicationName}, ${medications[1].medicationName} +${medications.size - 2}"
 }
 
+@Composable
 private fun routineCompletionSummary(medications: List<RoutineMedicationAgenda>): String {
     val taken = medications.count { it.status == MedicationLogStatus.TAKEN }
     val skipped = medications.count {
@@ -708,10 +737,10 @@ private fun routineCompletionSummary(medications: List<RoutineMedicationAgenda>)
             it.status == MedicationLogStatus.MISSED
     }
     return when {
-        taken == medications.size -> "All medications taken"
-        skipped == medications.size -> "Marked skipped"
-        taken > 0 && skipped > 0 -> "$taken taken • $skipped skipped"
-        else -> "Completed"
+        taken == medications.size -> stringResource(Res.string.calendar_all_medications_taken)
+        skipped == medications.size -> stringResource(Res.string.calendar_marked_skipped)
+        taken > 0 && skipped > 0 -> stringResource(Res.string.calendar_taken_skipped_summary, taken, skipped)
+        else -> stringResource(Res.string.calendar_completed)
     }
 }
 
@@ -735,15 +764,22 @@ private fun ManualLogCard(log: MedicationLog) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(log.medicationName ?: "Medication", fontWeight = FontWeight.SemiBold)
                 Text(
-                    "${log.status.displayName} at ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}",
+                    log.medicationName ?: stringResource(Res.string.calendar_medication_fallback),
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    stringResource(
+                        Res.string.calendar_log_status_at_time,
+                        log.status.displayName,
+                        DateFormatter.formatTime(dateTime.hour, dateTime.minute),
+                    ),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
             Text(
-                "Extra",
+                stringResource(Res.string.calendar_extra_label),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -757,13 +793,14 @@ fun CalendarCard(
     overview: List<CalendarOverviewResponse>,
     selectedDate: CalendarDay?,
     onDayClick: (CalendarDay) -> Unit,
-    onMonthChanged: (Int, Int) -> Unit = { _, _ -> },
+    onMonthChange: (Int, Int) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     var monthOffset by remember { mutableIntStateOf(0) }
     val displayDate = remember(baseDate, monthOffset) { baseDate.plus(monthOffset, DateTimeUnit.MONTH) }
+    val currentMonthChange by rememberUpdatedState(onMonthChange)
     LaunchedEffect(displayDate) {
-        onMonthChanged(displayDate.year, displayDate.month.number)
+        currentMonthChange(displayDate.year, displayDate.month.number)
     }
     val overviewMap = remember(overview) { overview.associate { it.date to it.status } }
     val calendarDays =
@@ -780,7 +817,10 @@ fun CalendarCard(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = { monthOffset-- }) {
-                    Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = "Previous month")
+                    Icon(
+                        Icons.ArrowBackW400Outlinedfill1,
+                        contentDescription = stringResource(Res.string.calendar_prev_month_desc),
+                    )
                 }
                 Text(
                     DateFormatter.formatMonthYear(displayDate),
@@ -790,13 +830,21 @@ fun CalendarCard(
                 IconButton(onClick = { monthOffset++ }) {
                     Icon(
                         Icons.ArrowBackW400Outlinedfill1,
-                        contentDescription = "Next month",
+                        contentDescription = stringResource(Res.string.calendar_next_month_desc),
                         modifier = Modifier.rotate(180f),
                     )
                 }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
+                listOf(
+                    stringResource(Res.string.day_initial_sun),
+                    stringResource(Res.string.day_initial_mon),
+                    stringResource(Res.string.day_initial_tue),
+                    stringResource(Res.string.day_initial_wed),
+                    stringResource(Res.string.day_initial_thu),
+                    stringResource(Res.string.day_initial_fri),
+                    stringResource(Res.string.day_initial_sat),
+                ).forEach { day ->
                     Text(
                         day,
                         modifier = Modifier.weight(1f),
@@ -834,7 +882,12 @@ fun DayCell(day: CalendarDay, isSelected: Boolean, onClick: () -> Unit, modifier
         day.isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
         else -> Color.Transparent
     }
-    val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+    val contentColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
     val statusDotColor = when (day.status) {
         AdherenceStatus.TAKEN -> Color(0xFF4CAF50)
         AdherenceStatus.MISSED -> MaterialTheme.colorScheme.error
@@ -880,10 +933,10 @@ private fun ManualMedicationLogForm(
     var selectedStatus by remember { mutableStateOf(MedicationLogStatus.TAKEN) }
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         if (medications.isEmpty()) {
-            EmptyStateMessage("No medications yet.")
+            EmptyStateMessage(stringResource(Res.string.calendar_no_medications_yet))
         } else {
             SimpleDropdown(
-                label = "Medication",
+                label = stringResource(Res.string.form_medication_label),
                 options = medications.map { it.id to "${it.name} • ${it.dosage}" },
                 selectedKey = selectedMedId,
                 onSelect = { selectedMedId = it },
@@ -898,11 +951,11 @@ private fun ManualMedicationLogForm(
             Button(onClick = {
                 onSave(selectedMedId, selectedStatus)
             }, enabled = selectedMedId.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
-                Text("Save log")
+                Text(stringResource(Res.string.calendar_save_log))
             }
         }
         TextButton(onClick = onOpenMedicationCabinet, modifier = Modifier.fillMaxWidth()) {
-            Text("Manage medications")
+            Text(stringResource(Res.string.calendar_manage_medications))
         }
     }
 }
@@ -918,12 +971,16 @@ private fun ResolveMedicationLogSheet(
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
-                Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = "Back")
+                Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = stringResource(Res.string.common_back_desc))
             }
-            Text("Match scheduled dose?", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(
+                stringResource(Res.string.calendar_match_scheduled_dose_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
         }
         Text(
-            "$medicationName is close to a scheduled dose. Match it or keep it as an extra log.",
+            stringResource(Res.string.calendar_match_scheduled_dose_desc, medicationName),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         candidates.forEach { candidate ->
@@ -936,43 +993,47 @@ private fun ResolveMedicationLogSheet(
                     val occurrence = Instant.fromEpochMilliseconds(candidate.occurrenceTimeMs)
                         .toLocalDateTime(TimeZone.currentSystemDefault())
                     Text(
-                        "${DateFormatter.formatDayMonthYear(
-                            occurrence.date,
-                        )} at ${DateFormatter.formatTime(
-                            occurrence.hour,
-                            occurrence.minute,
-                        )} • ${candidate.status.displayName}",
+                        stringResource(
+                            Res.string.calendar_occurrence_status,
+                            DateFormatter.formatDayMonthYear(occurrence.date),
+                            DateFormatter.formatTime(occurrence.hour, occurrence.minute),
+                            candidate.status.displayName,
+                        ),
                         color = MaterialTheme.colorScheme.secondary,
                     )
                     Button(onClick = { onAttach(candidate) }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Count toward schedule")
+                        Text(stringResource(Res.string.calendar_count_toward_schedule))
                     }
                 }
             }
         }
         OutlinedButton(onClick = onLogExtraDose, modifier = Modifier.fillMaxWidth()) {
-            Text("Save as extra log")
+            Text(stringResource(Res.string.calendar_save_as_extra_log))
         }
     }
 }
 
 @Composable
-private fun AddEntryMenu(selectedDate: LocalDate, onSelectType: (SheetView) -> Unit) {
+private fun AddEntryMenu(selectedDate: LocalDate, onSelectType: (CalendarSheetState) -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("Add entry", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+        Text(
+            stringResource(Res.string.calendar_add_entry_title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
         Text(
             DateFormatter.formatDayMonthYear(selectedDate),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Button(onClick = {
-            onSelectType(SheetView.FORM_MED)
-        }, modifier = Modifier.fillMaxWidth()) { Text("Log medication") }
+            onSelectType(CalendarSheetState.FormMedication)
+        }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.calendar_menu_log_med)) }
         OutlinedButton(onClick = {
-            onSelectType(SheetView.FORM_APPT)
-        }, modifier = Modifier.fillMaxWidth()) { Text("Add appointment") }
+            onSelectType(CalendarSheetState.FormAppointment)
+        }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.calendar_menu_track_appt)) }
         OutlinedButton(onClick = {
-            onSelectType(SheetView.FORM_MOOD)
-        }, modifier = Modifier.fillMaxWidth()) { Text("Log mood") }
+            onSelectType(CalendarSheetState.FormMood)
+        }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.calendar_menu_track_mood)) }
     }
 }
 
@@ -991,15 +1052,23 @@ private fun WrapperFormLayout(
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) {
-                Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = "Back")
+                Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = stringResource(Res.string.common_back_desc))
             }
             Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         }
-        DateValueField(label = "Date", value = entryDate, onClick = { activeDatePicker = true })
-        TimeValueField(label = "Time", value = ((entryTime.first * 60L) + entryTime.second) * 60_000L, onClick = {
+        DateValueField(
+            label = stringResource(Res.string.form_date_label),
+            value = entryDate,
+            onClick = { activeDatePicker = true },
+        )
+        TimeValueField(
+            label = stringResource(Res.string.form_time_label),
+            value = ((entryTime.first * 60L) + entryTime.second) * 60_000L,
+            onClick = {
             activeTimePicker =
                 true
-        })
+        },
+        )
         content()
     }
     if (activeDatePicker) {
@@ -1028,30 +1097,33 @@ private fun WrapperFormLayout(
 @Composable
 private fun AppointmentForm(onSave: (String, String) -> Unit) {
     var doctorName by remember { mutableStateOf("") }
-    var appointmentType by remember { mutableStateOf("Consultation") }
+    var appointmentType by remember { mutableStateOf("CONSULTATION") }
+    val appointmentOptions = listOf(
+        "CONSULTATION" to stringResource(Res.string.appt_type_consultation),
+        "LAB_TEST" to stringResource(Res.string.appt_type_labwork),
+        "FOLLOW_UP" to stringResource(Res.string.appt_type_followup),
+    )
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         OutlinedTextField(value = doctorName, onValueChange = {
             doctorName = it
-        }, modifier = Modifier.fillMaxWidth(), label = { Text("Doctor / clinic") })
+        }, modifier = Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.form_appt_doctor_label)) })
         SimpleDropdown(
-            label = "Appointment type",
-            options = listOf("Consultation", "Lab work", "Follow-up").associateBy { it }.map { it.key to it.value },
+            label = stringResource(Res.string.form_appt_type_label),
+            options = appointmentOptions,
             selectedKey = appointmentType,
             onSelect = { appointmentType = it },
         )
         Button(onClick = {
             onSave(doctorName, appointmentType)
         }, enabled = doctorName.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
-            Text("Save appointment")
+            Text(stringResource(Res.string.calendar_save_appointment))
         }
     }
 }
 
 @Composable
-private fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit) {
+private fun MoodEntryForm(onSave: (Int, String) -> Unit) {
     var moodScore by remember { mutableIntStateOf(3) }
-    val selectedTags = remember { mutableStateListOf<String>() }
-    val selectedSymptoms = remember { mutableStateListOf<String>() }
     var notes by remember { mutableStateOf("") }
 
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -1106,7 +1178,7 @@ private fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> U
         )
 
         Button(
-            onClick = { onSave(moodScore, selectedTags, selectedSymptoms, notes) },
+            onClick = { onSave(moodScore, notes) },
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text(stringResource(Res.string.form_mood_log_button))
@@ -1115,7 +1187,7 @@ private fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> U
 }
 
 @Composable
-private fun AppointmentDetailSheetContent(appointment: Appointment, onDelete: () -> Unit) {
+private fun AppointmentDetailSheetContent(appointment: Appointment, onClose: () -> Unit) {
     val dateTime = Instant.fromEpochMilliseconds(
         appointment.appointmentTime,
     ).toLocalDateTime(TimeZone.currentSystemDefault())
@@ -1128,16 +1200,23 @@ private fun AppointmentDetailSheetContent(appointment: Appointment, onDelete: ()
         )
         Text(appointment.appointmentType, color = MaterialTheme.colorScheme.secondary)
         appointment.notes?.takeIf(String::isNotBlank)?.let { Text(it) }
-        TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) { Text("Close") }
+        TextButton(onClick = onClose, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(Res.string.calendar_close_action))
+        }
     }
 }
 
 @Composable
-fun AppointmentCard(appointment: Appointment, onClick: () -> Unit = {}) {
+fun AppointmentCard(
+    appointment: Appointment,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {},
+) {
     val dateTime = Instant.fromEpochMilliseconds(
         appointment.appointmentTime,
     ).toLocalDateTime(TimeZone.currentSystemDefault())
     Surface(
+        modifier = modifier,
         onClick = onClick,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(16.dp),
@@ -1154,6 +1233,25 @@ fun AppointmentCard(appointment: Appointment, onClick: () -> Unit = {}) {
         }
     }
 }
+
+private fun entryDateTimeToEpochMs(entryDate: LocalDate, entryTime: Pair<Int, Int>, timeZone: TimeZone): Long {
+    val logDateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
+    return logDateTime.toInstant(timeZone).toEpochMilliseconds()
+}
+
+private fun routineLogRequest(
+    routine: RoutineDayAgenda,
+    medicationId: String,
+    status: MedicationLogStatus,
+    nowMs: Long = Clock.System.now().toEpochMilliseconds(),
+): MedicationLogRequest = MedicationLogRequest(
+    medicationId = medicationId,
+    status = status.name,
+    timestampMs = if (status == MedicationLogStatus.TAKEN) nowMs else routine.occurrenceTimeMs,
+    routineId = routine.routineId,
+    occurrenceTimeMs = routine.occurrenceTimeMs,
+    linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
+)
 
 @Composable
 private fun SimpleDropdown(

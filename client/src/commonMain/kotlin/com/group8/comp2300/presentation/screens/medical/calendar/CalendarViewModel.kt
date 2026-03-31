@@ -165,7 +165,7 @@ class CalendarViewModel(
                 val request = AppointmentRequest(
                     title = "Appointment with $doctorName",
                     appointmentTime = appointmentTimeMs,
-                    appointmentType = mapAppointmentType(appointmentType),
+                    appointmentType = normalizeAppointmentType(appointmentType),
                     doctorName = doctorName,
                 )
                 appointmentRepository.scheduleAppointment(request)
@@ -199,16 +199,33 @@ class CalendarViewModel(
     }
 
     companion object {
-        fun mapAppointmentType(displayType: String): String = when (displayType.lowercase()) {
-            "consultation" -> "CONSULTATION"
-            "lab work", "labwork" -> "LAB_TEST"
-            "follow-up", "follow up", "followup" -> "FOLLOW_UP"
-            "checkup", "check-up" -> "CHECKUP"
-            "screening" -> "SCREENING"
-            "vaccination" -> "VACCINATION"
-            "emergency" -> "EMERGENCY"
-            else -> "OTHER"
+        fun normalizeAppointmentType(type: String): String {
+            val normalized = type.trim().uppercase()
+            if (normalized in knownAppointmentTypes) {
+                return normalized
+            }
+            return when (type.lowercase()) {
+                "consultation" -> "CONSULTATION"
+                "lab work", "labwork" -> "LAB_TEST"
+                "follow-up", "follow up", "followup" -> "FOLLOW_UP"
+                "checkup", "check-up" -> "CHECKUP"
+                "screening" -> "SCREENING"
+                "vaccination" -> "VACCINATION"
+                "emergency" -> "EMERGENCY"
+                else -> "OTHER"
+            }
         }
+
+        private val knownAppointmentTypes = setOf(
+            "CONSULTATION",
+            "LAB_TEST",
+            "FOLLOW_UP",
+            "CHECKUP",
+            "SCREENING",
+            "VACCINATION",
+            "EMERGENCY",
+            "OTHER",
+        )
     }
 }
 
