@@ -1,6 +1,7 @@
 package com.group8.comp2300.data.repository.medical
 
 import com.group8.comp2300.data.local.RoutineLocalDataSource
+import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.offline.MedicalOfflineMutations
 import com.group8.comp2300.data.offline.QueuedOfflineStore
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
@@ -16,6 +17,7 @@ class RoutineDataRepositoryImpl(
     private val authRepository: AuthRepository,
     private val routineLocal: RoutineLocalDataSource,
     private val queuedWriteDispatcher: QueuedWriteDispatcher,
+    private val routineNotificationScheduler: RoutineNotificationScheduler,
 ) : RoutineDataRepository {
     private val routineWrites = QueuedOfflineStore(
         mutation = MedicalOfflineMutations.routineUpsert,
@@ -43,6 +45,7 @@ class RoutineDataRepositoryImpl(
     override suspend fun getRoutines(): List<Routine> = routineLocal.getAll()
 
     override suspend fun saveRoutine(request: RoutineCreateRequest, id: String?): Routine {
+        val previousRoutine = id?.let(routineLocal::getById)
         val normalizedRequest =
             request.copy(
                 name = request.name.trim(),
@@ -56,12 +59,16 @@ class RoutineDataRepositoryImpl(
                 },
                 medicationIds = request.medicationIds.distinct(),
             )
-        return routineWrites.write(normalizedRequest, id)
+        return routineWrites.write(normalizedRequest, id).also { savedRoutine ->
+            routineNotificationScheduler.syncRoutine(routine = savedRoutine, previousRoutine = previousRoutine)
+        }
     }
 
     override suspend fun deleteRoutine(id: String) {
+        val existingRoutine = routineLocal.getById(id)
         queuedWriteDispatcher.deletePending(MedicalOfflineMutations.routineUpsert, id)
         routineLocal.deleteById(id)
+        existingRoutine?.let(routineNotificationScheduler::removeRoutine)
         if (authRepository.session.value.userOrNull != null) {
             queuedWriteDispatcher.replacePending(MedicalOfflineMutations.routineDelete, id, Unit)
         }

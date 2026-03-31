@@ -34,6 +34,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import com.group8.comp2300.di.*
+import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.presentation.navigation.*
 import com.group8.comp2300.presentation.screens.auth.AuthViewModel
@@ -45,6 +46,7 @@ import com.materialkolor.DynamicMaterialExpressiveTheme
 import com.materialkolor.PaletteStyle
 import org.koin.compose.KoinApplication
 import org.koin.compose.KoinApplicationPreview
+import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.module.dsl.viewModel
@@ -70,6 +72,7 @@ fun MainApp(
     navigator: Navigator = koinViewModel(),
     pinLockViewModel: PinLockViewModel = koinViewModel(),
 ) {
+    val notificationBootstrap: RoutineNotificationBootstrap = koinInject()
     val session by authViewModel.session.collectAsState()
     val isPinLocked by pinLockViewModel.isLocked.collectAsState()
     val isPinSet by pinLockViewModel.isPinSet.collectAsState()
@@ -79,6 +82,10 @@ fun MainApp(
         if (isPinSet != null) {
             navigator.setStartDestination(if (isPinSet == true) Screen.Home else Screen.Onboarding)
         }
+    }
+
+    LaunchedEffect(Unit) {
+        notificationBootstrap.synchronize()
     }
 
     if (session is AuthSession.Restoring || isPinSet == null) {

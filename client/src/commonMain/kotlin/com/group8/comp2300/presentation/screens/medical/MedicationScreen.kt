@@ -16,10 +16,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.presentation.components.AppTopBar
+import com.group8.comp2300.presentation.notifications.NotificationPermissionResult
+import com.group8.comp2300.presentation.notifications.rememberNotificationPermissionRequester
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DeleteW400Outlined
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.EditW400Outlinedfill1
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
 
 private enum class MedicationSheetStep {
@@ -35,6 +38,8 @@ fun MedicationScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    val requestNotificationPermission = rememberNotificationPermissionRequester()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
     var editingMedication by remember { mutableStateOf<Medication?>(null) }
@@ -228,9 +233,22 @@ fun MedicationScreen(
                         medications = state.medications.filter { it.status == MedicationStatus.ACTIVE },
                         initialSelectedMedicationIds = setOf(medication.id),
                         onSave = { request, id ->
-                            viewModel.saveRoutine(request, id) {
-                                editingRoutine = null
-                                sheetStep = MedicationSheetStep.FORM
+                            coroutineScope.launch {
+                                val permissionResult =
+                                    if (request.hasReminder && request.reminderOffsetsMins.isNotEmpty()) {
+                                        requestNotificationPermission()
+                                    } else {
+                                        NotificationPermissionResult.GRANTED
+                                    }
+                                viewModel.saveRoutine(request, id) {
+                                    editingRoutine = null
+                                    sheetStep = MedicationSheetStep.FORM
+                                }
+                                if (permissionResult != NotificationPermissionResult.GRANTED) {
+                                    snackbarHostState.showSnackbar(
+                                        "Schedule saved, but notifications are disabled in system settings.",
+                                    )
+                                }
                             }
                         },
                         onDelete = { routineId ->

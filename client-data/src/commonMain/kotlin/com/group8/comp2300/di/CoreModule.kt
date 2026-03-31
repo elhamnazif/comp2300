@@ -16,6 +16,11 @@ import com.group8.comp2300.data.local.ReminderLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
+import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
+import com.group8.comp2300.data.notifications.RoutineNotificationPlatform
+import com.group8.comp2300.data.notifications.RoutineNotificationRegistry
+import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
+import com.group8.comp2300.data.notifications.RoutineNotificationSchedulerImpl
 import com.group8.comp2300.data.offline.AppointmentMutationHandler
 import com.group8.comp2300.data.offline.CompositeOfflineDataRefresher
 import com.group8.comp2300.data.offline.MedicalOfflineDataRefresher
@@ -74,6 +79,7 @@ import com.group8.comp2300.domain.usecase.shop.GetProductsUseCase
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
+import com.russhwolf.settings.Settings
 
 val coreModule = module {
     single {
@@ -120,6 +126,17 @@ val coreModule = module {
     single { OutboxDataSource(get()) }
     single { ProductLocalDataSource(get()) }
     single { PersonalDataCleaner(get()) }
+    single { Settings() }
+    single { RoutineNotificationRegistry(get()) }
+    single<RoutineNotificationScheduler> {
+        RoutineNotificationSchedulerImpl(
+            routineLocal = get(),
+            routineOccurrenceOverrideLocal = get(),
+            registry = get(),
+            platform = get<RoutineNotificationPlatform>(),
+        )
+    }
+    single { RoutineNotificationBootstrap(get()) }
     singleOf(::AppointmentMutationHandler) { bind<OfflineMutationHandler>() }
     singleOf(::MedicationUpsertMutationHandler) { bind<OfflineMutationHandler>() }
     singleOf(::MedicationDeleteMutationHandler) { bind<OfflineMutationHandler>() }
@@ -138,8 +155,8 @@ val coreModule = module {
     single<ShopRepository> { ShopRepositoryImpl(get(), get()) }
     single<AppointmentDataRepository> { AppointmentDataRepositoryImpl(get(), get(), get()) }
     single<MedicationDataRepository> { MedicationDataRepositoryImpl(get(), get(), get()) }
-    single<RoutineDataRepository> { RoutineDataRepositoryImpl(get(), get(), get()) }
-    single<MedicationLogDataRepository> { MedicationLogDataRepositoryImpl(get(), get(), get(), get(), get()) }
+    single<RoutineDataRepository> { RoutineDataRepositoryImpl(get(), get(), get(), get()) }
+    single<MedicationLogDataRepository> { MedicationLogDataRepositoryImpl(get(), get(), get(), get(), get(), get()) }
     single<MoodDataRepository> { MoodDataRepositoryImpl(get(), get(), get()) }
     single<CalendarDataRepository> { CalendarDataRepositoryImpl(get(), get(), get(), get(), get()) }
     single<LabResultsRepository> { LabResultsRepositoryImpl() }

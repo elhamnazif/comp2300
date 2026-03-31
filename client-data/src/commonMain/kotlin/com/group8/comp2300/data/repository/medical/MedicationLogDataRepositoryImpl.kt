@@ -4,6 +4,7 @@ import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
+import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.offline.MedicalOfflineMutations
 import com.group8.comp2300.data.offline.QueuedOfflineStore
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
@@ -21,6 +22,7 @@ class MedicationLogDataRepositoryImpl(
     private val routineOccurrenceOverrideLocal: RoutineOccurrenceOverrideLocalDataSource,
     private val medicationLogLocal: MedicationLogLocalDataSource,
     private val queuedWriteDispatcher: QueuedWriteDispatcher,
+    private val routineNotificationScheduler: RoutineNotificationScheduler,
 ) : MedicationLogDataRepository {
     private val occurrenceOverrideWrites = QueuedOfflineStore(
         mutation = MedicalOfflineMutations.routineOccurrenceOverrideUpsert,
@@ -103,6 +105,7 @@ class MedicationLogDataRepositoryImpl(
             request = request,
             id = "${request.routineId}:${request.originalOccurrenceTimeMs}",
         )
+        routine?.let { routineNotificationScheduler.syncRoutine(it) }
         return optimisticOverride.copy(routineId = routine?.id ?: request.routineId)
     }
 

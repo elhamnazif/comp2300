@@ -7,6 +7,7 @@ import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.local.OutboxItem
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
+import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
@@ -23,6 +24,7 @@ class MedicalOfflineDataRefresher(
     private val routineOccurrenceOverrideLocal: RoutineOccurrenceOverrideLocalDataSource,
     private val medicationLogLocal: MedicationLogLocalDataSource,
     private val moodLocal: MoodLocalDataSource,
+    private val routineNotificationScheduler: RoutineNotificationScheduler,
 ) : OfflineDataRefresher {
     override suspend fun refreshAuthenticatedData() {
         val remoteMedications = apiService.getUserMedications()
@@ -38,6 +40,7 @@ class MedicalOfflineDataRefresher(
         medicationLogLocal.replaceAll(remoteLogs)
         moodLocal.replaceAll(remoteMoods)
         appointmentLocal.replaceAll(remoteAppointments)
+        routineNotificationScheduler.syncAllRoutines()
     }
 }
 

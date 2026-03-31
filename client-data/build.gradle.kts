@@ -53,6 +53,7 @@ kotlin {
             implementation(libs.koin.core)
             implementation(libs.kermit)
             implementation(libs.kermit.koin)
+            implementation(libs.multiplatformSettings)
         }
 
         commonTest.dependencies { implementation(libs.kotlin.test) }
@@ -60,6 +61,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.sqlDelight.driver.android)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.alarmee)
         }
 
         jvmMain.dependencies {
@@ -76,6 +78,7 @@ kotlin {
         iosMain.dependencies {
             implementation(libs.sqlDelight.driver.native)
             implementation(libs.ktor.client.darwin)
+            implementation(libs.alarmee)
         }
     }
 
