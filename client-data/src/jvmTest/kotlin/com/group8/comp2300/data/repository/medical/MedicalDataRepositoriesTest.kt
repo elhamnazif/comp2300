@@ -4,25 +4,19 @@ import com.group8.comp2300.data.auth.TokenManagerImpl
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
-import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.OutboxState
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
+import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
-import com.group8.comp2300.data.offline.SyncCoordinatorImpl
-import com.group8.comp2300.data.repository.FakeApiService
 import com.group8.comp2300.data.repository.newDatabase
 import com.group8.comp2300.data.repository.sampleMedication
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationLog
-import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
-import com.group8.comp2300.domain.model.medical.Mood
-import com.group8.comp2300.domain.model.medical.MoodType
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
@@ -35,7 +29,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
@@ -51,11 +44,7 @@ class MedicalDataRepositoriesTest {
         val repository = MedicationDataRepositoryImpl(
             authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             medicationLocal = MedicationLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(
-                TokenManagerImpl(SessionDataSource(db)),
-                outbox,
-                TestSyncCoordinator(),
-            ),
+            queuedWriteDispatcher = dispatcher(db, outbox),
         )
 
         repository.saveMedication(
@@ -73,18 +62,16 @@ class MedicalDataRepositoriesTest {
     }
 
     @Test
-    fun guestRoutineSaveQueuesPendingWrite() = runTest {
+    fun guestRoutineSaveQueuesPendingWriteAndSyncsNotifications() = runTest {
         val db = newDatabase()
         val outbox = OutboxDataSource(db)
+        val notificationScheduler = RecordingRoutineNotificationScheduler()
         MedicationLocalDataSource(db).insert(sampleMedication())
         val repository = RoutineDataRepositoryImpl(
             authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             routineLocal = RoutineLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(
-                TokenManagerImpl(SessionDataSource(db)),
-                outbox,
-                TestSyncCoordinator(),
-            ),
+            queuedWriteDispatcher = dispatcher(db, outbox),
+            routineNotificationScheduler = notificationScheduler,
         )
 
         repository.saveRoutine(
@@ -100,6 +87,7 @@ class MedicalDataRepositoriesTest {
 
         assertEquals(1, RoutineLocalDataSource(db).getAll().size)
         assertEquals("ROUTINE_UPSERT", outbox.getAll().single().entityType)
+        assertEquals(listOf("Morning meds"), notificationScheduler.syncedRoutineNames)
     }
 
     @Test
@@ -109,11 +97,7 @@ class MedicalDataRepositoriesTest {
         val repository = AppointmentDataRepositoryImpl(
             authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             appointmentLocal = AppointmentLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(
-                TokenManagerImpl(SessionDataSource(db)),
-                outbox,
-                TestSyncCoordinator(),
-            ),
+            queuedWriteDispatcher = dispatcher(db, outbox),
         )
 
         repository.scheduleAppointment(
@@ -135,17 +119,9 @@ class MedicalDataRepositoriesTest {
         val db = newDatabase()
         MedicationLocalDataSource(db).insert(sampleMedication())
         RoutineLocalDataSource(db).insert(
-            Routine(
+            routine(
                 id = "routine-1",
-                userId = "",
-                name = "Morning meds",
                 timesOfDayMs = listOf(9 * 60 * 60 * 1000L),
-                repeatType = RoutineRepeatType.DAILY,
-                startDate = "2026-03-17",
-                hasReminder = true,
-                reminderOffsetsMins = listOf(0),
-                status = RoutineStatus.ACTIVE,
-                medicationIds = listOf("med-1"),
             ),
         )
         val outbox = OutboxDataSource(db)
@@ -155,11 +131,8 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(
-                TokenManagerImpl(SessionDataSource(db)),
-                outbox,
-                TestSyncCoordinator(),
-            ),
+            queuedWriteDispatcher = dispatcher(db, outbox),
+            routineNotificationScheduler = RecordingRoutineNotificationScheduler(),
         )
 
         repository.logMedication(
@@ -181,17 +154,9 @@ class MedicalDataRepositoriesTest {
         val db = newDatabase()
         MedicationLocalDataSource(db).insert(sampleMedication())
         RoutineLocalDataSource(db).insert(
-            Routine(
+            routine(
                 id = "routine-1",
-                userId = "",
-                name = "Morning meds",
                 timesOfDayMs = listOf(9 * 60 * 60 * 1000L, 21 * 60 * 60 * 1000L),
-                repeatType = RoutineRepeatType.DAILY,
-                startDate = "2026-03-17",
-                hasReminder = true,
-                reminderOffsetsMins = listOf(0),
-                status = RoutineStatus.ACTIVE,
-                medicationIds = listOf("med-1"),
             ),
         )
         val repository = MedicationLogDataRepositoryImpl(
@@ -199,11 +164,8 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(
-                TokenManagerImpl(SessionDataSource(db)),
-                OutboxDataSource(db),
-                TestSyncCoordinator(),
-            ),
+            queuedWriteDispatcher = dispatcher(db, OutboxDataSource(db)),
+            routineNotificationScheduler = RecordingRoutineNotificationScheduler(),
         )
         val agenda = repository.getRoutineAgenda("2026-03-17")
         val timestampMs = LocalDateTime(2026, Month.MARCH, 17, 10, 0, 0, 0)
@@ -218,34 +180,24 @@ class MedicalDataRepositoriesTest {
     }
 
     @Test
-    fun reschedulingOccurrenceMovesAgendaAndQueuesWrite() = runTest {
+    fun reschedulingOccurrenceMovesAgendaQueuesWriteAndResyncsNotifications() = runTest {
         val db = newDatabase()
         MedicationLocalDataSource(db).insert(sampleMedication())
         RoutineLocalDataSource(db).insert(
-            Routine(
+            routine(
                 id = "routine-1",
-                userId = "",
-                name = "Morning meds",
                 timesOfDayMs = listOf(9 * 60 * 60 * 1000L),
-                repeatType = RoutineRepeatType.DAILY,
-                startDate = "2026-03-17",
-                hasReminder = true,
-                reminderOffsetsMins = listOf(0),
-                status = RoutineStatus.ACTIVE,
-                medicationIds = listOf("med-1"),
             ),
         )
         val outbox = OutboxDataSource(db)
+        val notificationScheduler = RecordingRoutineNotificationScheduler()
         val repository = MedicationLogDataRepositoryImpl(
             medicationLocal = MedicationLocalDataSource(db),
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(
-                TokenManagerImpl(SessionDataSource(db)),
-                outbox,
-                TestSyncCoordinator(),
-            ),
+            queuedWriteDispatcher = dispatcher(db, outbox),
+            routineNotificationScheduler = notificationScheduler,
         )
         val originalTimestamp = LocalDateTime(2026, Month.MARCH, 17, 9, 0, 0, 0)
             .toInstant(TimeZone.currentSystemDefault())
@@ -271,6 +223,7 @@ class MedicalDataRepositoriesTest {
         assertEquals(movedTimestamp, rescheduledAgenda.occurrenceTimeMs)
         assertEquals(originalTimestamp, rescheduledAgenda.originalOccurrenceTimeMs)
         assertEquals("ROUTINE_OCCURRENCE_OVERRIDE_UPSERT", outbox.getAll().single().entityType)
+        assertEquals(listOf("Morning meds"), notificationScheduler.syncedRoutineNames)
     }
 }
 
@@ -292,6 +245,7 @@ private class FakeSessionAuthRepository(initialSession: AuthSession) : AuthRepos
     override val session: StateFlow<AuthSession> = _session
 
     override suspend fun login(email: String, password: String) = error("unused")
+
     override suspend fun register(
         email: String,
         password: String,
@@ -303,6 +257,7 @@ private class FakeSessionAuthRepository(initialSession: AuthSession) : AuthRepos
     ) = error("unused")
 
     override suspend fun preregister(email: String, password: String) = error("unused")
+
     override suspend fun completeProfile(
         firstName: String,
         lastName: String,
@@ -310,9 +265,42 @@ private class FakeSessionAuthRepository(initialSession: AuthSession) : AuthRepos
         sexualOrientation: com.group8.comp2300.domain.model.user.SexualOrientation,
         dateOfBirth: kotlinx.datetime.LocalDate?,
     ) = error("unused")
+
     override suspend fun activateAccount(token: String) = error("unused")
     override suspend fun forgotPassword(email: String) = error("unused")
     override suspend fun resendVerificationEmail(email: String) = error("unused")
     override suspend fun resetPassword(token: String, newPassword: String) = error("unused")
     override suspend fun logout() = Unit
 }
+
+private class RecordingRoutineNotificationScheduler : RoutineNotificationScheduler {
+    val syncedRoutineNames = mutableListOf<String>()
+
+    override suspend fun syncRoutine(routine: Routine, previousRoutine: Routine?) {
+        syncedRoutineNames += routine.name
+    }
+
+    override suspend fun removeRoutine(routine: Routine) = Unit
+
+    override suspend fun syncAllRoutines() = Unit
+}
+
+private fun dispatcher(db: com.group8.comp2300.data.database.AppDatabase, outbox: OutboxDataSource) =
+    QueuedWriteDispatcher(
+        TokenManagerImpl(SessionDataSource(db)),
+        outbox,
+        TestSyncCoordinator(),
+    )
+
+private fun routine(id: String, timesOfDayMs: List<Long>) = Routine(
+    id = id,
+    userId = "",
+    name = "Morning meds",
+    timesOfDayMs = timesOfDayMs,
+    repeatType = RoutineRepeatType.DAILY,
+    startDate = "2026-03-17",
+    hasReminder = true,
+    reminderOffsetsMins = listOf(0),
+    status = RoutineStatus.ACTIVE,
+    medicationIds = listOf("med-1"),
+)

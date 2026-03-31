@@ -25,10 +25,10 @@ kotlin {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
     }
 
+    jvm()
+
     iosArm64()
     iosSimulatorArm64()
-
-    jvm()
 
     compilerOptions {
         freeCompilerArgs.addAll(
@@ -59,9 +59,11 @@ kotlin {
         commonTest.dependencies { implementation(libs.kotlin.test) }
 
         androidMain.dependencies {
+            implementation(libs.compose.ui)
             implementation(libs.sqlDelight.driver.android)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.alarmee)
+            implementation(libs.androidx.core)
         }
 
         jvmMain.dependencies {

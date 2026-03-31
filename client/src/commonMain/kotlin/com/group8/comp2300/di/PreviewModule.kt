@@ -1,8 +1,11 @@
 package com.group8.comp2300.di
 
+import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
+import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.Quiz
 import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
@@ -145,6 +148,16 @@ val previewModule = module {
     singleOf(::FakeEducationRepository) { bind<EducationRepository>() }
     singleOf(::FakeShopRepository) { bind<ShopRepository>() }
     singleOf(::FakeAuthRepository) { bind<AuthRepository>() }
+    single<RoutineNotificationScheduler> {
+        object : RoutineNotificationScheduler {
+            override suspend fun syncRoutine(routine: Routine, previousRoutine: Routine?) = Unit
+
+            override suspend fun removeRoutine(routine: Routine) = Unit
+
+            override suspend fun syncAllRoutines() = Unit
+        }
+    }
+    single { RoutineNotificationBootstrap(get()) }
 
     viewModelOf(::FakeAuthViewModel) { bind<AuthViewModel>() }
     viewModelOf(::ShopViewModel)

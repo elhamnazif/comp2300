@@ -62,7 +62,8 @@ fun CalendarScreen(
     var pendingRoutineReschedule by remember { mutableStateOf<RoutineDayAgenda?>(null) }
 
     LaunchedEffect(Unit) {
-        selectedDateForEntry = CalendarDay(today.day, today, AdherenceStatus.NONE, isToday = true, isCurrentMonth = true)
+        selectedDateForEntry =
+            CalendarDay(today.day, today, AdherenceStatus.NONE, isToday = true, isCurrentMonth = true)
         viewModel.loadAgendaForDate(today.toString())
     }
 
@@ -93,7 +94,14 @@ fun CalendarScreen(
         topBar = { AppTopBar(title = { Text("Calendar", fontWeight = FontWeight.Bold) }) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
-                selectedDateForEntry = CalendarDay(selectedDate.day, selectedDate, AdherenceStatus.NONE, isToday = selectedDate == today, isCurrentMonth = true)
+                selectedDateForEntry =
+                    CalendarDay(
+                        selectedDate.day,
+                        selectedDate,
+                        AdherenceStatus.NONE,
+                        isToday = selectedDate == today,
+                        isCurrentMonth = true,
+                    )
                 entryDate = selectedDate
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
                 entryTime = now.hour to now.minute
@@ -138,7 +146,11 @@ fun CalendarScreen(
 
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Scheduled doses", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        "Scheduled doses",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
                     if (state.routineAgenda.isEmpty()) {
                         EmptyStateMessage("No scheduled doses for this day.")
                     } else {
@@ -157,7 +169,13 @@ fun CalendarScreen(
                                         MedicationLogRequest(
                                             medicationId = medicationId,
                                             status = status.name,
-                                            timestampMs = if (status == MedicationLogStatus.TAKEN) Clock.System.now().toEpochMilliseconds() else routine.occurrenceTimeMs,
+                                            timestampMs = if (status ==
+                                                MedicationLogStatus.TAKEN
+                                            ) {
+                                                Clock.System.now().toEpochMilliseconds()
+                                            } else {
+                                                routine.occurrenceTimeMs
+                                            },
                                             routineId = routine.routineId,
                                             occurrenceTimeMs = routine.occurrenceTimeMs,
                                             linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
@@ -170,7 +188,13 @@ fun CalendarScreen(
                                             MedicationLogRequest(
                                                 medicationId = medication.medicationId,
                                                 status = status.name,
-                                                timestampMs = if (status == MedicationLogStatus.TAKEN) Clock.System.now().toEpochMilliseconds() else routine.occurrenceTimeMs,
+                                                timestampMs = if (status ==
+                                                    MedicationLogStatus.TAKEN
+                                                ) {
+                                                    Clock.System.now().toEpochMilliseconds()
+                                                } else {
+                                                    routine.occurrenceTimeMs
+                                                },
                                                 routineId = routine.routineId,
                                                 occurrenceTimeMs = routine.occurrenceTimeMs,
                                                 linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
@@ -196,7 +220,11 @@ fun CalendarScreen(
             if (state.manualLogs.isNotEmpty()) {
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("Extra logs", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Extra logs",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                         state.manualLogs.forEach { log ->
                             ManualLogCard(log = log)
                         }
@@ -207,7 +235,11 @@ fun CalendarScreen(
             if (selectedAppointments.isNotEmpty()) {
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text("Appointments", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "Appointments",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                         selectedAppointments.forEach { appointment ->
                             AppointmentCard(appointment = appointment, onClick = {
                                 selectedAppointment = appointment
@@ -256,7 +288,9 @@ fun CalendarScreen(
                         medications = activeMedications,
                         onSave = { medicationId, status ->
                             val logDateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
-                            val timestampMs = logDateTime.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+                            val timestampMs = logDateTime.toInstant(
+                                TimeZone.currentSystemDefault(),
+                            ).toEpochMilliseconds()
                             val baseRequest = MedicationLogRequest(
                                 medicationId = medicationId,
                                 status = status.name,
@@ -267,7 +301,9 @@ fun CalendarScreen(
                                 timestampMs = timestampMs,
                             ) { candidates ->
                                 if (candidates.isEmpty()) {
-                                    viewModel.logMedication(baseRequest.copy(linkMode = MedicationLogLinkMode.EXTRA_DOSE))
+                                    viewModel.logMedication(
+                                        baseRequest.copy(linkMode = MedicationLogLinkMode.EXTRA_DOSE),
+                                    )
                                     showBottomSheet = false
                                 } else {
                                     pendingMedicationLog = baseRequest
@@ -303,13 +339,16 @@ fun CalendarScreen(
                         )
                         if (routine.isRescheduled) {
                             Text(
-                                "Originally due ${DateFormatter.formatDayMonthYear(originalOccurrence.date)} at ${DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute)}",
+                                "Originally due ${DateFormatter.formatDayMonthYear(
+                                    originalOccurrence.date,
+                                )} at ${DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute)}",
                                 color = MaterialTheme.colorScheme.secondary,
                             )
                         }
                         Button(
                             onClick = {
-                                val targetDateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
+                                val targetDateTime =
+                                    LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
                                 viewModel.rescheduleRoutineOccurrence(
                                     RoutineOccurrenceOverrideRequest(
                                         routineId = routine.routineId,
@@ -331,7 +370,9 @@ fun CalendarScreen(
 
                 SheetView.RESOLVE_MED -> pendingMedicationLog?.let { pendingLog ->
                     ResolveMedicationLogSheet(
-                        medicationName = state.medications.firstOrNull { it.id == pendingLog.medicationId }?.name.orEmpty(),
+                        medicationName = state.medications.firstOrNull {
+                            it.id == pendingLog.medicationId
+                        }?.name.orEmpty(),
                         candidates = pendingOccurrenceCandidates,
                         onBack = {
                             pendingOccurrenceCandidates = emptyList()
@@ -453,7 +494,9 @@ private fun RoutineAgendaCard(
     onLogAll: (MedicationLogStatus) -> Unit,
     onMoveDose: () -> Unit,
 ) {
-    val occurrence = Instant.fromEpochMilliseconds(routine.occurrenceTimeMs).toLocalDateTime(TimeZone.currentSystemDefault())
+    val occurrence = Instant.fromEpochMilliseconds(
+        routine.occurrenceTimeMs,
+    ).toLocalDateTime(TimeZone.currentSystemDefault())
     val actionableMeds = remember(routine.medications) {
         routine.medications.filter {
             it.status == MedicationLogStatus.PENDING ||
@@ -467,9 +510,9 @@ private fun RoutineAgendaCard(
 
     Card(
         colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-            ),
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -487,7 +530,11 @@ private fun RoutineAgendaCard(
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold,
                     )
-                    Text(routine.routineName, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        routine.routineName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
                 }
                 if (routine.hasReminder && routine.reminderOffsetsMins.isNotEmpty()) {
                     Row(
@@ -521,7 +568,9 @@ private fun RoutineAgendaCard(
                     val originalOccurrence = Instant.fromEpochMilliseconds(routine.originalOccurrenceTimeMs)
                         .toLocalDateTime(TimeZone.currentSystemDefault())
                     add(
-                        "Moved from ${DateFormatter.formatDayMonthYear(originalOccurrence.date)} at ${DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute)}",
+                        "Moved from ${DateFormatter.formatDayMonthYear(
+                            originalOccurrence.date,
+                        )} at ${DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute)}",
                     )
                 }
                 if (routineCompleted) {
@@ -553,7 +602,9 @@ private fun RoutineAgendaCard(
                         Button(onClick = { onLogAll(MedicationLogStatus.TAKEN) }, modifier = Modifier.weight(1f)) {
                             Text("Take all")
                         }
-                        OutlinedButton(onClick = { onLogAll(MedicationLogStatus.SKIPPED) }, modifier = Modifier.weight(1f)) {
+                        OutlinedButton(onClick = {
+                            onLogAll(MedicationLogStatus.SKIPPED)
+                        }, modifier = Modifier.weight(1f)) {
                             Text("Skip all")
                         }
                     }
@@ -602,7 +653,11 @@ private fun RoutineMedicationRow(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(medication.medicationName, fontWeight = FontWeight.SemiBold)
-                Text(medication.dosage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    medication.dosage,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             Text(
                 medication.status.displayName,
@@ -616,10 +671,14 @@ private fun RoutineMedicationRow(
             medication.status == MedicationLogStatus.SNOOZED
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.TAKEN) }, modifier = Modifier.weight(1f)) {
+                Button(onClick = {
+                    onLogMedication(medication.medicationId, MedicationLogStatus.TAKEN)
+                }, modifier = Modifier.weight(1f)) {
                     Text("Taken")
                 }
-                OutlinedButton(onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.SKIPPED) }, modifier = Modifier.weight(1f)) {
+                OutlinedButton(onClick = {
+                    onLogMedication(medication.medicationId, MedicationLogStatus.SKIPPED)
+                }, modifier = Modifier.weight(1f)) {
                     Text("Skip")
                 }
             }
@@ -644,7 +703,10 @@ private fun routineMedicationSummary(medications: List<RoutineMedicationAgenda>)
 
 private fun routineCompletionSummary(medications: List<RoutineMedicationAgenda>): String {
     val taken = medications.count { it.status == MedicationLogStatus.TAKEN }
-    val skipped = medications.count { it.status == MedicationLogStatus.SKIPPED || it.status == MedicationLogStatus.MISSED }
+    val skipped = medications.count {
+        it.status == MedicationLogStatus.SKIPPED ||
+            it.status == MedicationLogStatus.MISSED
+    }
     return when {
         taken == medications.size -> "All medications taken"
         skipped == medications.size -> "Marked skipped"
@@ -704,22 +766,43 @@ fun CalendarCard(
         onMonthChanged(displayDate.year, displayDate.month.number)
     }
     val overviewMap = remember(overview) { overview.associate { it.date to it.status } }
-    val calendarDays = remember(displayDate, overviewMap) { generateCalendarDays(displayDate.year, displayDate.month, overviewMap) }
+    val calendarDays =
+        remember(displayDate, overviewMap) { generateCalendarDays(displayDate.year, displayDate.month, overviewMap) }
 
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), modifier = modifier.fillMaxWidth()) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        modifier = modifier.fillMaxWidth(),
+    ) {
         Column(Modifier.padding(16.dp)) {
-            Row(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 IconButton(onClick = { monthOffset-- }) {
                     Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = "Previous month")
                 }
-                Text(DateFormatter.formatMonthYear(displayDate), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(
+                    DateFormatter.formatMonthYear(displayDate),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
                 IconButton(onClick = { monthOffset++ }) {
-                    Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = "Next month", modifier = Modifier.rotate(180f))
+                    Icon(
+                        Icons.ArrowBackW400Outlinedfill1,
+                        contentDescription = "Next month",
+                        modifier = Modifier.rotate(180f),
+                    )
                 }
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 listOf("S", "M", "T", "W", "T", "F", "S").forEach { day ->
-                    Text(day, modifier = Modifier.weight(1f), textAlign = TextAlign.Center, color = MaterialTheme.colorScheme.secondary)
+                    Text(
+                        day,
+                        modifier = Modifier.weight(1f),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -727,7 +810,9 @@ fun CalendarCard(
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     week.forEach { day ->
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                            DayCell(day = day, isSelected = selectedDate?.date == day.date, onClick = { onDayClick(day) })
+                            DayCell(day = day, isSelected = selectedDate?.date == day.date, onClick = {
+                                onDayClick(day)
+                            })
                         }
                     }
                 }
@@ -805,10 +890,14 @@ private fun ManualMedicationLogForm(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(MedicationLogStatus.TAKEN, MedicationLogStatus.SKIPPED).forEach { status ->
-                    FilterChip(selected = selectedStatus == status, onClick = { selectedStatus = status }, label = { Text(status.displayName) })
+                    FilterChip(selected = selectedStatus == status, onClick = {
+                        selectedStatus = status
+                    }, label = { Text(status.displayName) })
                 }
             }
-            Button(onClick = { onSave(selectedMedId, selectedStatus) }, enabled = selectedMedId.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = {
+                onSave(selectedMedId, selectedStatus)
+            }, enabled = selectedMedId.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
                 Text("Save log")
             }
         }
@@ -839,12 +928,20 @@ private fun ResolveMedicationLogSheet(
         )
         candidates.forEach { candidate ->
             Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(16.dp)) {
-                Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     Text(candidate.routineName, fontWeight = FontWeight.SemiBold)
                     val occurrence = Instant.fromEpochMilliseconds(candidate.occurrenceTimeMs)
                         .toLocalDateTime(TimeZone.currentSystemDefault())
                     Text(
-                        "${DateFormatter.formatDayMonthYear(occurrence.date)} at ${DateFormatter.formatTime(occurrence.hour, occurrence.minute)} • ${candidate.status.displayName}",
+                        "${DateFormatter.formatDayMonthYear(
+                            occurrence.date,
+                        )} at ${DateFormatter.formatTime(
+                            occurrence.hour,
+                            occurrence.minute,
+                        )} • ${candidate.status.displayName}",
                         color = MaterialTheme.colorScheme.secondary,
                     )
                     Button(onClick = { onAttach(candidate) }, modifier = Modifier.fillMaxWidth()) {
@@ -867,9 +964,15 @@ private fun AddEntryMenu(selectedDate: LocalDate, onSelectType: (SheetView) -> U
             DateFormatter.formatDayMonthYear(selectedDate),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        Button(onClick = { onSelectType(SheetView.FORM_MED) }, modifier = Modifier.fillMaxWidth()) { Text("Log medication") }
-        OutlinedButton(onClick = { onSelectType(SheetView.FORM_APPT) }, modifier = Modifier.fillMaxWidth()) { Text("Add appointment") }
-        OutlinedButton(onClick = { onSelectType(SheetView.FORM_MOOD) }, modifier = Modifier.fillMaxWidth()) { Text("Log mood") }
+        Button(onClick = {
+            onSelectType(SheetView.FORM_MED)
+        }, modifier = Modifier.fillMaxWidth()) { Text("Log medication") }
+        OutlinedButton(onClick = {
+            onSelectType(SheetView.FORM_APPT)
+        }, modifier = Modifier.fillMaxWidth()) { Text("Add appointment") }
+        OutlinedButton(onClick = {
+            onSelectType(SheetView.FORM_MOOD)
+        }, modifier = Modifier.fillMaxWidth()) { Text("Log mood") }
     }
 }
 
@@ -893,7 +996,10 @@ private fun WrapperFormLayout(
             Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         }
         DateValueField(label = "Date", value = entryDate, onClick = { activeDatePicker = true })
-        TimeValueField(label = "Time", value = ((entryTime.first * 60L) + entryTime.second) * 60_000L, onClick = { activeTimePicker = true })
+        TimeValueField(label = "Time", value = ((entryTime.first * 60L) + entryTime.second) * 60_000L, onClick = {
+            activeTimePicker =
+                true
+        })
         content()
     }
     if (activeDatePicker) {
@@ -924,14 +1030,18 @@ private fun AppointmentForm(onSave: (String, String) -> Unit) {
     var doctorName by remember { mutableStateOf("") }
     var appointmentType by remember { mutableStateOf("Consultation") }
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        OutlinedTextField(value = doctorName, onValueChange = { doctorName = it }, modifier = Modifier.fillMaxWidth(), label = { Text("Doctor / clinic") })
+        OutlinedTextField(value = doctorName, onValueChange = {
+            doctorName = it
+        }, modifier = Modifier.fillMaxWidth(), label = { Text("Doctor / clinic") })
         SimpleDropdown(
             label = "Appointment type",
             options = listOf("Consultation", "Lab work", "Follow-up").associateBy { it }.map { it.key to it.value },
             selectedKey = appointmentType,
             onSelect = { appointmentType = it },
         )
-        Button(onClick = { onSave(doctorName, appointmentType) }, enabled = doctorName.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = {
+            onSave(doctorName, appointmentType)
+        }, enabled = doctorName.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
             Text("Save appointment")
         }
     }
@@ -1006,10 +1116,16 @@ private fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> U
 
 @Composable
 private fun AppointmentDetailSheetContent(appointment: Appointment, onDelete: () -> Unit) {
-    val dateTime = Instant.fromEpochMilliseconds(appointment.appointmentTime).toLocalDateTime(TimeZone.currentSystemDefault())
+    val dateTime = Instant.fromEpochMilliseconds(
+        appointment.appointmentTime,
+    ).toLocalDateTime(TimeZone.currentSystemDefault())
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(appointment.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-        Text("${DateFormatter.formatDayMonthYear(dateTime.date)} at ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}")
+        Text(
+            "${DateFormatter.formatDayMonthYear(
+                dateTime.date,
+            )} at ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}",
+        )
         Text(appointment.appointmentType, color = MaterialTheme.colorScheme.secondary)
         appointment.notes?.takeIf(String::isNotBlank)?.let { Text(it) }
         TextButton(onClick = onDelete, modifier = Modifier.fillMaxWidth()) { Text("Close") }
@@ -1018,15 +1134,23 @@ private fun AppointmentDetailSheetContent(appointment: Appointment, onDelete: ()
 
 @Composable
 fun AppointmentCard(appointment: Appointment, onClick: () -> Unit = {}) {
-    val dateTime = Instant.fromEpochMilliseconds(appointment.appointmentTime).toLocalDateTime(TimeZone.currentSystemDefault())
+    val dateTime = Instant.fromEpochMilliseconds(
+        appointment.appointmentTime,
+    ).toLocalDateTime(TimeZone.currentSystemDefault())
     Surface(
         onClick = onClick,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(16.dp),
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
             Text(appointment.title, fontWeight = FontWeight.SemiBold)
-            Text(DateFormatter.formatTime(dateTime.hour, dateTime.minute), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                DateFormatter.formatTime(dateTime.hour, dateTime.minute),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

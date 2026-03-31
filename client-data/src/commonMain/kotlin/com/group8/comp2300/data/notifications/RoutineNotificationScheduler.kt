@@ -7,16 +7,7 @@ import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
 import com.group8.comp2300.domain.model.medical.RoutineRepeatType
 import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.russhwolf.settings.Settings
-import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.DayOfWeek
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atTime
-import kotlinx.datetime.plus
-import kotlinx.datetime.toInstant
-import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
@@ -75,7 +66,7 @@ class RoutineNotificationSchedulerImpl(
             routine = routine,
             overrides = routineOccurrenceOverrideLocal.getAll(),
         )
-        notifications.forEach(platform::schedule)
+        notifications.forEach { platform.schedule(it) }
         registry.replace(routine.id, notifications.map(ScheduledRoutineNotification::id))
     }
 
@@ -103,7 +94,7 @@ class RoutineNotificationSchedulerImpl(
         routines.forEach { routine ->
             cancelStoredNotifications(routine.id)
             val notifications = planner.planForRoutine(routine = routine, overrides = overrides)
-            notifications.forEach(platform::schedule)
+            notifications.forEach { platform.schedule(it) }
             registry.replace(routine.id, notifications.map(ScheduledRoutineNotification::id))
         }
     }
@@ -176,7 +167,7 @@ private class RoutineNotificationPlanner(
         routine: Routine,
         overrides: List<RoutineOccurrenceOverride>,
     ): List<ScheduledRoutineNotification> {
-        if (!routine.shouldScheduleNotifications()) return emptyList()
+        if (!routine.shouldScheduleNotifications(nowMs = nowMs, timeZone = timeZone)) return emptyList()
 
         val maxOffsetMins = routine.reminderOffsetsMins.maxOrNull() ?: 0
         val planningStart = Instant.fromEpochMilliseconds(nowMs - (maxOffsetMins * 60_000L))
@@ -187,7 +178,9 @@ private class RoutineNotificationPlanner(
             .date
             .plus(horizonDays, DateTimeUnit.DAY)
         val routineOverrides = overrides.filter { it.routineId == routine.id }
-        val overridesByOriginalOccurrence = routineOverrides.associateBy(RoutineOccurrenceOverride::originalOccurrenceTimeMs)
+        val overridesByOriginalOccurrence = routineOverrides.associateBy(
+            RoutineOccurrenceOverride::originalOccurrenceTimeMs,
+        )
 
         val baseNotifications = datesInRange(
             start = maxOf(planningStart, LocalDate.parse(routine.startDate)),
@@ -242,11 +235,9 @@ private class RoutineNotificationPlanner(
 }
 
 @Serializable
-private data class RoutineNotificationRegistryState(
-    val routineNotificationIds: Map<String, List<String>> = emptyMap(),
-)
+private data class RoutineNotificationRegistryState(val routineNotificationIds: Map<String, List<String>> = emptyMap())
 
-private fun Routine.shouldScheduleNotifications(): Boolean =
+private fun Routine.shouldScheduleNotifications(nowMs: Long, timeZone: TimeZone): Boolean =
     status == RoutineStatus.ACTIVE &&
         hasReminder &&
         reminderOffsetsMins.isNotEmpty() &&
@@ -256,7 +247,7 @@ private fun Routine.shouldScheduleNotifications(): Boolean =
             endDate
                 ?.takeIf(String::isNotBlank)
                 ?.let(LocalDate::parse)
-                ?.let { end -> end >= Instant.fromEpochMilliseconds(System.currentTimeMillis()).toLocalDateTime(TimeZone.currentSystemDefault()).date }
+                ?.let { end -> end >= Instant.fromEpochMilliseconds(nowMs).toLocalDateTime(timeZone).date }
                 ?: true
             )
 
@@ -266,6 +257,7 @@ private fun Routine.isDueOn(date: LocalDate): Boolean {
     if (date < start || (end != null && date > end)) return false
     return when (repeatType) {
         RoutineRepeatType.DAILY -> true
+
         RoutineRepeatType.WEEKLY -> {
             val selected = daysOfWeek.toSet()
             selected.isNotEmpty() && date.dayOfWeek.toStorageDayOfWeek() in selected

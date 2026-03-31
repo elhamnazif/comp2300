@@ -1,29 +1,29 @@
 package com.group8.comp2300.data.notifications
 
+import android.R.drawable.ic_dialog_info
 import android.app.NotificationManager
 import android.content.Context
+import androidx.compose.ui.graphics.Color
 import androidx.core.app.NotificationManagerCompat
-import io.github.tweener.alarmee.Alarmee
-import io.github.tweener.alarmee.AlarmeeAndroidPlatformConfiguration
-import io.github.tweener.alarmee.AlarmeeNotificationChannel
-import io.github.tweener.alarmee.AndroidNotificationConfiguration
-import io.github.tweener.alarmee.AndroidNotificationPriority
-import io.github.tweener.alarmee.IosNotificationConfiguration
-import io.github.tweener.alarmee.createAlarmeeService
+import com.tweener.alarmee.channel.AlarmeeNotificationChannel
+import com.tweener.alarmee.configuration.AlarmeeAndroidPlatformConfiguration
+import com.tweener.alarmee.createAlarmeeService
+import com.tweener.alarmee.model.Alarmee
+import com.tweener.alarmee.model.AndroidNotificationConfiguration
+import com.tweener.alarmee.model.AndroidNotificationPriority
+import com.tweener.alarmee.model.IosNotificationConfiguration
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Instant
 
 private const val RoutineNotificationChannelId = "routine_reminders"
 
-class AndroidRoutineNotificationPlatform(
-    private val context: Context,
-) : RoutineNotificationPlatform {
+class AndroidRoutineNotificationPlatform(private val context: Context) : RoutineNotificationPlatform {
     private val alarmeeService = createAlarmeeService().apply {
         initialize(
             platformConfiguration = AlarmeeAndroidPlatformConfiguration(
-                notificationIconResId = android.R.drawable.ic_dialog_info,
-                useExactScheduling = false,
+                notificationIconResId = ic_dialog_info,
+                notificationIconColor = Color.Transparent,
                 notificationChannels = listOf(
                     AlarmeeNotificationChannel(
                         id = RoutineNotificationChannelId,
@@ -31,6 +31,7 @@ class AndroidRoutineNotificationPlatform(
                         importance = NotificationManager.IMPORTANCE_DEFAULT,
                     ),
                 ),
+                useExactScheduling = false,
             ),
         )
     }
@@ -56,5 +57,6 @@ class AndroidRoutineNotificationPlatform(
         alarmeeService.local.cancel(uuid = notificationId)
     }
 
-    override suspend fun notificationsEnabled(): Boolean = NotificationManagerCompat.from(context).areNotificationsEnabled()
+    override suspend fun notificationsEnabled(): Boolean =
+        NotificationManagerCompat.from(context).areNotificationsEnabled()
 }

@@ -24,6 +24,7 @@ import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.data.repository.medical.TestSyncCoordinator
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
+import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationFrequency
@@ -191,32 +192,59 @@ internal open class FakeApiService(
     override suspend fun getProduct(id: String) = error("unused")
     override suspend fun register(request: RegisterRequest): AuthResponse =
         AuthResponse(profileUser, "access", "refresh")
+
     override suspend fun login(request: LoginRequest): AuthResponse = AuthResponse(profileUser, "access", "refresh")
+
     override suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse = error("unused")
+
     override suspend fun logout() = Unit
+
     override suspend fun getProfile(): User = profileUser
+
     override suspend fun activateAccount(token: String): AuthResponse = AuthResponse(profileUser, "access", "refresh")
+
     override suspend fun forgotPassword(email: String): MessageResponse = MessageResponse("ok")
+
     override suspend fun resetPassword(token: String, newPassword: String): MessageResponse = MessageResponse("ok")
+
     override suspend fun preregister(request: PreregisterRequest): PreregisterResponse =
         PreregisterResponse(request.email, "ok")
+
     override suspend fun completeProfile(request: CompleteProfileRequest): User = profileUser
+
     override suspend fun resendVerificationEmail(email: String): MessageResponse = MessageResponse("ok")
+
+    override suspend fun getCalendarOverview(year: Int, month: Int): List<CalendarOverviewResponse> = emptyList()
+
     override suspend fun getAppointments(): List<Appointment> = appointments.toList()
+
     override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment = error("unused")
+
     override suspend fun logMedication(request: MedicationLogRequest): MedicationLog = error("unused")
+
     override suspend fun getMedicationLogHistory(): List<MedicationLog> = medicationLogs.toList()
+
     override suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda> = error("unused")
+
     override suspend fun logMood(request: MoodEntryRequest): Mood = error("unused")
+
     override suspend fun getMoodHistory(): List<Mood> = moods.toList()
+
     override suspend fun getUserMedications(): List<Medication> = medications.toList()
+
     override suspend fun upsertMedication(id: String, request: MedicationCreateRequest): Medication = error("unused")
+
     override suspend fun deleteMedication(id: String) = Unit
+
     override suspend fun getUserRoutines(): List<Routine> = routines.toList()
+
     override suspend fun upsertRoutine(id: String, request: RoutineCreateRequest): Routine = error("unused")
+
     override suspend fun deleteRoutine(id: String) = Unit
+
     override suspend fun getRoutineOccurrenceOverrides(): List<RoutineOccurrenceOverride> =
         routineOccurrenceOverrides.toList()
+
     override suspend fun upsertRoutineOccurrenceOverride(
         request: RoutineOccurrenceOverrideRequest,
     ): RoutineOccurrenceOverride = error("unused")

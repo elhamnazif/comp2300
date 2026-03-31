@@ -1,7 +1,6 @@
 import io.github.kingsword09.symbolcraft.model.SymbolVariant
 import io.github.kingsword09.symbolcraft.model.SymbolWeight
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import java.net.URI
@@ -27,8 +26,6 @@ kotlin {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
     }
 
-    jvm()
-
     iosArm64()
     iosSimulatorArm64()
 
@@ -46,27 +43,6 @@ kotlin {
             "-Xannotation-default-target=param-property",
             "-Xexplicit-backing-fields",
         )
-    }
-
-    // https://maplibre.org/maplibre-compose/getting-started/#set-up-desktop-jvm
-    fun detectTarget(): String {
-        val hostOs =
-            when (val os = System.getProperty("os.name").lowercase()) {
-                "mac os x" -> "macos"
-                else -> os.split(" ").first()
-            }
-        val hostArch =
-            when (val arch = System.getProperty("os.arch").lowercase()) {
-                "x86_64" -> "amd64"
-                "arm64" -> "aarch64"
-                else -> arch
-            }
-        val renderer =
-            when (hostOs) {
-                "macos" -> "metal"
-                else -> "opengl"
-            }
-        return "$hostOs-$hostArch-$renderer"
     }
 
     targets
@@ -91,8 +67,8 @@ kotlin {
             kotlin.srcDir(tasks.named("generateSymbolCraftIcons"))
             dependencies {
                 api(project(":shared"))
-                implementation(project(":client-data"))
                 api(project(":i18n"))
+                implementation(project(":client-data"))
 
                 // Compose
                 api(libs.compose.runtime)
@@ -134,7 +110,11 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.coroutines.core)
+
+                // Moko
                 implementation(libs.moko.permissions.compose)
+                implementation(libs.moko.permissions)
+                implementation(libs.moko.permissions.notifications)
             }
         }
 
@@ -145,21 +125,6 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.kotlinx.coroutines.android)
-        }
-
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutines.swing)
-            val target = detectTarget()
-            runtimeOnly(
-                libs.maplibre.nativeBindingsJni
-                    .get()
-                    .toString(),
-            ) {
-                capabilities {
-                    requireCapability("org.maplibre.compose:maplibre-native-bindings-jni-$target")
-                }
-            }
         }
 
         iosMain.dependencies {
@@ -281,18 +246,6 @@ swiftPackageConfig {
                 packageName = "maplibre-gl-native-distribution",
                 version = "6.17.1",
             )
-        }
-    }
-}
-
-compose.desktop {
-    application {
-        mainClass = "com.group8.comp2300.MainKt"
-
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.group8.comp2300"
-            packageVersion = "1.0.0"
         }
     }
 }

@@ -97,7 +97,6 @@ compose-nav3 = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", v
 # Kotlinx
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
-kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
@@ -145,7 +144,6 @@ materialKolor = { module = "com.materialkolor:material-kolor", version.ref = "ma
 
 # MapLibre
 maplibre-compose = { module = "org.maplibre.compose:maplibre-compose", version.ref = "maplibre" }
-maplibre-nativeBindingsJni = { module = "org.maplibre.compose:maplibre-native-bindings-jni", version.ref = "maplibre" }
 maplibre-composeMaterial3 = { module = "org.maplibre.compose:maplibre-compose-material3", version.ref = "maplibre" }
 
 # Storage
@@ -176,7 +174,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestExt" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxEspresso" }
 androidx-runner = { module = "androidx.test:runner", version.ref = "runner" }
-androidx-core = { module = "androidx.test:core", version.ref = "core" }
+androidx-core = { module = "androidx.core:core", version.ref = "core" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 
 # Server

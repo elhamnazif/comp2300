@@ -76,10 +76,10 @@ import com.group8.comp2300.domain.usecase.auth.ResendVerificationEmailUseCase
 import com.group8.comp2300.domain.usecase.auth.ResetPasswordUseCase
 import com.group8.comp2300.domain.usecase.medical.GetRecentLabResultsUseCase
 import com.group8.comp2300.domain.usecase.shop.GetProductsUseCase
+import com.russhwolf.settings.Settings
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
-import com.russhwolf.settings.Settings
 
 val coreModule = module {
     single {

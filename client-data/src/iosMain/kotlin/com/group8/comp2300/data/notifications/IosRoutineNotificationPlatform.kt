@@ -1,10 +1,10 @@
 package com.group8.comp2300.data.notifications
 
-import io.github.tweener.alarmee.Alarmee
-import io.github.tweener.alarmee.AlarmeeIosPlatformConfiguration
-import io.github.tweener.alarmee.AndroidNotificationConfiguration
-import io.github.tweener.alarmee.IosNotificationConfiguration
-import io.github.tweener.alarmee.createAlarmeeService
+import com.tweener.alarmee.configuration.AlarmeeIosPlatformConfiguration
+import com.tweener.alarmee.createAlarmeeService
+import com.tweener.alarmee.model.Alarmee
+import com.tweener.alarmee.model.AndroidNotificationConfiguration
+import com.tweener.alarmee.model.IosNotificationConfiguration
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -28,9 +28,7 @@ class IosRoutineNotificationPlatform : RoutineNotificationPlatform {
                 notificationBody = notification.body,
                 scheduledDateTime = Instant.fromEpochMilliseconds(notification.fireAtMs)
                     .toLocalDateTime(TimeZone.currentSystemDefault()),
-                androidNotificationConfiguration = AndroidNotificationConfiguration(
-                    channelId = "routine_reminders",
-                ),
+                androidNotificationConfiguration = AndroidNotificationConfiguration(),
                 iosNotificationConfiguration = IosNotificationConfiguration(),
             ),
         )

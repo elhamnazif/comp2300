@@ -68,7 +68,7 @@ class RoutineDataRepositoryImpl(
         val existingRoutine = routineLocal.getById(id)
         queuedWriteDispatcher.deletePending(MedicalOfflineMutations.routineUpsert, id)
         routineLocal.deleteById(id)
-        existingRoutine?.let(routineNotificationScheduler::removeRoutine)
+        existingRoutine?.let { routineNotificationScheduler.removeRoutine(it) }
         if (authRepository.session.value.userOrNull != null) {
             queuedWriteDispatcher.replacePending(MedicalOfflineMutations.routineDelete, id, Unit)
         }
