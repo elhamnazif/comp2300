@@ -8,10 +8,8 @@ import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
 import com.group8.comp2300.domain.repository.ShopRepository
 
-class ShopRepositoryImpl(
-    private val apiService: ApiService,
-    private val productLocal: ProductLocalDataSource,
-) : ShopRepository {
+class ShopRepositoryImpl(private val apiService: ApiService, private val productLocal: ProductLocalDataSource) :
+    ShopRepository {
 
     override suspend fun getAllProducts(): List<Product> = cacheFirstRead(
         cached = { productLocal.getAll() },

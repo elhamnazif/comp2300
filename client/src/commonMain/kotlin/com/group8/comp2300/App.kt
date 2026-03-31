@@ -7,6 +7,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
@@ -32,6 +33,8 @@ import com.group8.comp2300.di.*
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.presentation.navigation.*
 import com.group8.comp2300.presentation.screens.auth.AuthViewModel
+import com.group8.comp2300.presentation.screens.auth.PinLockViewModel
+import com.group8.comp2300.presentation.screens.auth.PinScreen
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.materialkolor.DynamicMaterialExpressiveTheme
@@ -61,8 +64,10 @@ fun MainApp(
     modifier: Modifier = Modifier,
     authViewModel: AuthViewModel = koinViewModel(),
     navigator: Navigator = koinViewModel(),
+    pinLockViewModel: PinLockViewModel = koinViewModel(),
 ) {
     val session by authViewModel.session.collectAsState()
+    val isPinLocked by pinLockViewModel.isLocked.collectAsState()
 
     if (session is AuthSession.Restoring) {
         Box(
@@ -112,41 +117,56 @@ fun MainApp(
             directive = directive,
         )
 
-    CompositionLocalProvider(LocalNavigator provides navigator) {
-        NavigationSuiteScaffold(
-            modifier = modifier,
-            navigationSuiteItems = {
-                if (showNavBar) {
-                    mainTabs.forEach { (screen, icon, label) ->
-                        item(
-                            icon = { Icon(icon, label) },
-                            label = { Text(label) },
-                            selected = currentScreen == screen,
-                            onClick = { navigator.clearAndGoTo(screen) },
-                        )
+    Box(modifier = modifier.fillMaxSize()) {
+        CompositionLocalProvider(LocalNavigator provides navigator) {
+            NavigationSuiteScaffold(
+                navigationSuiteItems = {
+                    if (showNavBar) {
+                        mainTabs.forEach { (screen, icon, label) ->
+                            item(
+                                icon = { Icon(icon, label) },
+                                label = { Text(label) },
+                                selected = currentScreen == screen,
+                                onClick = { navigator.clearAndGoTo(screen) },
+                            )
+                        }
                     }
+                },
+                layoutType = layoutType,
+                state = navigationSuiteScaffoldState,
+            ) {
+                Scaffold(
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                ) { _ ->
+                    NavDisplay(
+                        backStack = navigator.backStack,
+                        sceneStrategy = supportingPaneStrategy,
+                        onBack = navigator::goBack,
+                        transitionSpec = { pushAnimation },
+                        popTransitionSpec = { popAnimation },
+                        predictivePopTransitionSpec = { popAnimation },
+                        entryDecorators =
+                        listOf(
+                            rememberSaveableStateHolderNavEntryDecorator(),
+                            rememberViewModelStoreNavEntryDecorator(),
+                        ),
+                        entryProvider = koinEntryProvider(),
+                    )
                 }
-            },
-            layoutType = layoutType,
-            state = navigationSuiteScaffoldState,
-        ) {
-            Scaffold(
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onBackground,
-            ) { _ ->
-                NavDisplay(
-                    backStack = navigator.backStack,
-                    sceneStrategy = supportingPaneStrategy,
-                    onBack = navigator::goBack,
-                    transitionSpec = { pushAnimation },
-                    popTransitionSpec = { popAnimation },
-                    predictivePopTransitionSpec = { popAnimation },
-                    entryDecorators =
-                    listOf(
-                        rememberSaveableStateHolderNavEntryDecorator(),
-                        rememberViewModelStoreNavEntryDecorator(),
-                    ),
-                    entryProvider = koinEntryProvider(),
+            }
+        }
+
+        if (isPinLocked) {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.surface,
+            ) {
+                PinScreen(
+                    onComplete = { pinLockViewModel.onPinEntered(it) },
+                    isSetup = false,
+                    errorMessage = pinLockViewModel.error.collectAsState().value,
+                    onErrorMessageCleared = { pinLockViewModel.clearError() },
                 )
             }
         }

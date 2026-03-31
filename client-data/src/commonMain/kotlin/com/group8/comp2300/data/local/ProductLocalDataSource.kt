@@ -6,22 +6,21 @@ import com.group8.comp2300.domain.model.shop.ProductCategory
 
 class ProductLocalDataSource(private val database: AppDatabase) {
 
-    fun getAll(): List<Product> =
-        database.appDatabaseQueries.selectAllProducts().executeAsList().map { entity ->
-            Product(
-                id = entity.id,
-                name = entity.name,
-                description = entity.description,
-                price = entity.price,
-                category = try {
-                    ProductCategory.valueOf(entity.category)
-                } catch (_: Exception) {
-                    ProductCategory.ALL
-                },
-                insuranceCovered = entity.insuranceCovered != 0L,
-                imageUrl = entity.imageUrl,
-            )
-        }
+    fun getAll(): List<Product> = database.appDatabaseQueries.selectAllProducts().executeAsList().map { entity ->
+        Product(
+            id = entity.id,
+            name = entity.name,
+            description = entity.description,
+            price = entity.price,
+            category = try {
+                ProductCategory.valueOf(entity.category)
+            } catch (_: Exception) {
+                ProductCategory.ALL
+            },
+            insuranceCovered = entity.insuranceCovered != 0L,
+            imageUrl = entity.imageUrl,
+        )
+    }
 
     fun getById(id: String): Product? =
         database.appDatabaseQueries.selectProductById(id).executeAsOneOrNull()?.let { entity ->

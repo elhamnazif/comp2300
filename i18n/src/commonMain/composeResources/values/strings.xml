@@ -502,6 +502,7 @@
     <string name="privacy_security_anonymous_reporting_desc">Share anonymous health trends to help public health research</string>
     <string name="privacy_security_share_data_title">Share Data for Research</string>
     <string name="privacy_security_share_data_desc">Allow anonymized data to be used in medical studies</string>
+    <string name="privacy_security_change_pin_title">Change Privacy PIN</string>
     <string name="privacy_security_info_title">Your Privacy Matters</string>
     <string name="privacy_security_info_body">All your health data is encrypted and stored securely. We will never share your personal information without your explicit consent.</string>
 

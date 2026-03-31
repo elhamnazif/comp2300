@@ -4,17 +4,16 @@ import com.group8.comp2300.data.database.AppDatabase
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
 
 class RoutineOccurrenceOverrideLocalDataSource(private val database: AppDatabase) {
-    fun getAll(): List<RoutineOccurrenceOverride> =
-        database.appDatabaseQueries.selectAllRoutineOccurrenceOverrides()
-            .executeAsList()
-            .map { entity ->
-                RoutineOccurrenceOverride(
-                    id = entity.id,
-                    routineId = entity.routineId,
-                    originalOccurrenceTimeMs = entity.originalOccurrenceTimeMs,
-                    rescheduledOccurrenceTimeMs = entity.rescheduledOccurrenceTimeMs,
-                )
-            }
+    fun getAll(): List<RoutineOccurrenceOverride> = database.appDatabaseQueries.selectAllRoutineOccurrenceOverrides()
+        .executeAsList()
+        .map { entity ->
+            RoutineOccurrenceOverride(
+                id = entity.id,
+                routineId = entity.routineId,
+                originalOccurrenceTimeMs = entity.originalOccurrenceTimeMs,
+                rescheduledOccurrenceTimeMs = entity.rescheduledOccurrenceTimeMs,
+            )
+        }
 
     fun insert(override: RoutineOccurrenceOverride) {
         database.appDatabaseQueries.insertRoutineOccurrenceOverride(

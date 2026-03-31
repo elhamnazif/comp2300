@@ -7,6 +7,7 @@ import com.group8.comp2300.presentation.screens.auth.AuthViewModel
 import com.group8.comp2300.presentation.screens.auth.CompleteProfileViewModel
 import com.group8.comp2300.presentation.screens.auth.EmailVerificationViewModel
 import com.group8.comp2300.presentation.screens.auth.ForgotPasswordViewModel
+import com.group8.comp2300.presentation.screens.auth.PinLockViewModel
 import com.group8.comp2300.presentation.screens.auth.RealAuthViewModel
 import com.group8.comp2300.presentation.screens.auth.RealCompleteProfileViewModel
 import com.group8.comp2300.presentation.screens.auth.RealEmailVerificationViewModel
@@ -59,4 +60,5 @@ val appModule = module {
     viewModelOf(::CalendarViewModel)
     viewModelOf(::MedicationViewModel)
     viewModelOf(::RoutineViewModel)
+    viewModelOf(::PinLockViewModel)
 }

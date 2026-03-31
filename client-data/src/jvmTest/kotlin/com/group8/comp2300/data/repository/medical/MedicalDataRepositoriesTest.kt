@@ -7,14 +7,15 @@ import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.OutboxState
-import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
+import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
 import com.group8.comp2300.data.offline.SyncCoordinatorImpl
 import com.group8.comp2300.data.repository.FakeApiService
 import com.group8.comp2300.data.repository.newDatabase
 import com.group8.comp2300.data.repository.sampleMedication
+import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
@@ -22,12 +23,11 @@ import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
 import com.group8.comp2300.domain.model.medical.Mood
 import com.group8.comp2300.domain.model.medical.MoodType
-import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.model.medical.RoutineRepeatType
 import com.group8.comp2300.domain.model.medical.RoutineStatus
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.medical.SyncCoordinator
@@ -35,8 +35,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.Month
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toInstant
 import kotlin.test.Test
@@ -51,7 +51,11 @@ class MedicalDataRepositoriesTest {
         val repository = MedicationDataRepositoryImpl(
             authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             medicationLocal = MedicationLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(TokenManagerImpl(SessionDataSource(db)), outbox, TestSyncCoordinator()),
+            queuedWriteDispatcher = QueuedWriteDispatcher(
+                TokenManagerImpl(SessionDataSource(db)),
+                outbox,
+                TestSyncCoordinator(),
+            ),
         )
 
         repository.saveMedication(
@@ -76,7 +80,11 @@ class MedicalDataRepositoriesTest {
         val repository = RoutineDataRepositoryImpl(
             authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             routineLocal = RoutineLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(TokenManagerImpl(SessionDataSource(db)), outbox, TestSyncCoordinator()),
+            queuedWriteDispatcher = QueuedWriteDispatcher(
+                TokenManagerImpl(SessionDataSource(db)),
+                outbox,
+                TestSyncCoordinator(),
+            ),
         )
 
         repository.saveRoutine(
@@ -101,7 +109,11 @@ class MedicalDataRepositoriesTest {
         val repository = AppointmentDataRepositoryImpl(
             authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             appointmentLocal = AppointmentLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(TokenManagerImpl(SessionDataSource(db)), outbox, TestSyncCoordinator()),
+            queuedWriteDispatcher = QueuedWriteDispatcher(
+                TokenManagerImpl(SessionDataSource(db)),
+                outbox,
+                TestSyncCoordinator(),
+            ),
         )
 
         repository.scheduleAppointment(
@@ -143,7 +155,11 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(TokenManagerImpl(SessionDataSource(db)), outbox, TestSyncCoordinator()),
+            queuedWriteDispatcher = QueuedWriteDispatcher(
+                TokenManagerImpl(SessionDataSource(db)),
+                outbox,
+                TestSyncCoordinator(),
+            ),
         )
 
         repository.logMedication(
@@ -183,7 +199,11 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(TokenManagerImpl(SessionDataSource(db)), OutboxDataSource(db), TestSyncCoordinator()),
+            queuedWriteDispatcher = QueuedWriteDispatcher(
+                TokenManagerImpl(SessionDataSource(db)),
+                OutboxDataSource(db),
+                TestSyncCoordinator(),
+            ),
         )
         val agenda = repository.getRoutineAgenda("2026-03-17")
         val timestampMs = LocalDateTime(2026, Month.MARCH, 17, 10, 0, 0, 0)
@@ -221,7 +241,11 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = QueuedWriteDispatcher(TokenManagerImpl(SessionDataSource(db)), outbox, TestSyncCoordinator()),
+            queuedWriteDispatcher = QueuedWriteDispatcher(
+                TokenManagerImpl(SessionDataSource(db)),
+                outbox,
+                TestSyncCoordinator(),
+            ),
         )
         val originalTimestamp = LocalDateTime(2026, Month.MARCH, 17, 9, 0, 0, 0)
             .toInstant(TimeZone.currentSystemDefault())

@@ -14,9 +14,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlin.time.Clock
 
-class ReminderRepositoryImpl(
-    private val database: AppDatabase,
-) : ReminderRepository {
+class ReminderRepositoryImpl(private val database: AppDatabase) : ReminderRepository {
     override fun getReminders(): Flow<List<Reminder>> = database.appDatabaseQueries.selectAllReminders()
         .asFlow()
         .mapToList(Dispatchers.Default)

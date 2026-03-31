@@ -3,8 +3,8 @@ package com.group8.comp2300.data.repository.medical
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
-import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
+import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.buildCalendarOverviewStatus
 import com.group8.comp2300.domain.repository.medical.CalendarDataRepository
@@ -38,7 +38,8 @@ class CalendarDataRepositoryImpl(
 
         while (cursor.month.number == month) {
             val date = cursor.toString()
-            val medicationStatus = buildCalendarOverviewStatus(routines, medications, logs, overrides, cursor, nowMs, timeZone)
+            val medicationStatus =
+                buildCalendarOverviewStatus(routines, medications, logs, overrides, cursor, nowMs, timeZone)
             val status = when {
                 medicationStatus != "NONE" -> medicationStatus
                 !appointmentsByDate[date].isNullOrEmpty() -> "APPOINTMENT"
@@ -52,8 +53,7 @@ class CalendarDataRepositoryImpl(
     }
 }
 
-private fun Long.toLocalDateString(): String =
-    Instant.fromEpochMilliseconds(this)
-        .toLocalDateTime(TimeZone.currentSystemDefault())
-        .date
-        .toString()
+private fun Long.toLocalDateString(): String = Instant.fromEpochMilliseconds(this)
+    .toLocalDateTime(TimeZone.currentSystemDefault())
+    .date
+    .toString()

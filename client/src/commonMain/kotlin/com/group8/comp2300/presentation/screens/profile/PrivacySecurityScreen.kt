@@ -10,15 +10,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.presentation.components.AppTopBar
+import com.group8.comp2300.presentation.screens.auth.PinScreen
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ChevronRightW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun PrivacySecurityScreen(
+    onBack: () -> Unit,
+    onChangePin: (String) -> Unit = {},
+    modifier: Modifier = Modifier,
+) {
     var biometricsEnabled by remember { mutableStateOf(true) }
     var dataEncryptionEnabled by remember { mutableStateOf(true) }
     var anonymousReporting by remember { mutableStateOf(false) }
     var shareDataForResearch by remember { mutableStateOf(false) }
+    var showPinChange by remember { mutableStateOf(false) }
+
+    if (showPinChange) {
+        PinScreen(
+            onComplete = { pin ->
+                onChangePin(pin)
+                showPinChange = false
+            },
+            isSetup = true,
+        )
+        return
+    }
 
     Scaffold(
         modifier = modifier,
@@ -81,6 +100,32 @@ fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 checked = shareDataForResearch,
                 onCheckedChange = { shareDataForResearch = it },
             )
+
+            Spacer(Modifier.height(24.dp))
+
+            Card(
+                onClick = { showPinChange = true },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            stringResource(Res.string.privacy_security_change_pin_title),
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                    Icon(
+                        Icons.ChevronRightW400Outlinedfill1,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.outline,
+                    )
+                }
+            }
 
             Spacer(Modifier.height(24.dp))
 

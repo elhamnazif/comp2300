@@ -17,8 +17,6 @@ import com.group8.comp2300.mock.sampleResults
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.util.DateFormatter
 import comp2300.i18n.generated.resources.*
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

@@ -5,8 +5,8 @@ import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.local.OutboxItem
-import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
+import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
@@ -63,9 +63,8 @@ class MedicationUpsertMutationHandler(
     }
 }
 
-class MedicationDeleteMutationHandler(
-    private val apiService: ApiService,
-) : ItemOnlyOfflineMutationHandler(MedicalOfflineMutations.medicationDelete.type) {
+class MedicationDeleteMutationHandler(private val apiService: ApiService) :
+    ItemOnlyOfflineMutationHandler(MedicalOfflineMutations.medicationDelete.type) {
     override suspend fun apply(item: OutboxItem) {
         apiService.deleteMedication(item.localId)
     }
@@ -82,9 +81,8 @@ class RoutineUpsertMutationHandler(
     }
 }
 
-class RoutineDeleteMutationHandler(
-    private val apiService: ApiService,
-) : ItemOnlyOfflineMutationHandler(MedicalOfflineMutations.routineDelete.type) {
+class RoutineDeleteMutationHandler(private val apiService: ApiService) :
+    ItemOnlyOfflineMutationHandler(MedicalOfflineMutations.routineDelete.type) {
     override suspend fun apply(item: OutboxItem) {
         apiService.deleteRoutine(item.localId)
     }
@@ -116,10 +114,8 @@ class MedicationLogMutationHandler(
     }
 }
 
-class MoodMutationHandler(
-    private val apiService: ApiService,
-    private val moodLocal: MoodLocalDataSource,
-) : DecodingOfflineMutationHandler<MoodEntryRequest>(MedicalOfflineMutations.mood) {
+class MoodMutationHandler(private val apiService: ApiService, private val moodLocal: MoodLocalDataSource) :
+    DecodingOfflineMutationHandler<MoodEntryRequest>(MedicalOfflineMutations.mood) {
     override suspend fun handle(item: OutboxItem, payload: MoodEntryRequest) {
         val serverResult = apiService.logMood(payload)
         moodLocal.deleteById(item.localId)

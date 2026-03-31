@@ -7,16 +7,14 @@ import com.group8.comp2300.domain.model.medical.RoutineRepeatType
 import com.group8.comp2300.domain.model.medical.RoutineStatus
 
 class RoutineLocalDataSource(private val database: AppDatabase) {
-    fun getAll(): List<Routine> =
-        database.appDatabaseQueries.selectAllRoutines()
-            .executeAsList()
-            .map(::toDomain)
-            .sortedByRoutineTime()
+    fun getAll(): List<Routine> = database.appDatabaseQueries.selectAllRoutines()
+        .executeAsList()
+        .map(::toDomain)
+        .sortedByRoutineTime()
 
-    fun getById(id: String): Routine? =
-        database.appDatabaseQueries.selectRoutineById(id)
-            .executeAsOneOrNull()
-            ?.let(::toDomain)
+    fun getById(id: String): Routine? = database.appDatabaseQueries.selectRoutineById(id)
+        .executeAsOneOrNull()
+        ?.let(::toDomain)
 
     fun insert(routine: Routine) {
         database.appDatabaseQueries.transaction {

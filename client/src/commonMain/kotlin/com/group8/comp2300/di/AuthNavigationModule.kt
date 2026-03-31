@@ -2,6 +2,9 @@ package com.group8.comp2300.di
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.presentation.navigation.LocalNavigator
@@ -20,11 +23,14 @@ val authNavigationModule = module {
     navigation<Screen.Onboarding> {
         val navigator = LocalNavigator.current
         val authRepository = koinInject<AuthRepository>()
+        val pinDataSource = koinInject<PinDataSource>()
         val session by authRepository.session.collectAsState()
+        val scope = rememberCoroutineScope()
         OnboardingScreen(
             onFinish = { navigator.clearAndGoTo(Screen.Home) },
             isGuest = session !is AuthSession.SignedIn,
             onRequireAuth = { navigator.requireAuth(Screen.Home) },
+            onPinCreated = { pin -> scope.launch { pinDataSource.savePin(pin) } },
         )
     }
 

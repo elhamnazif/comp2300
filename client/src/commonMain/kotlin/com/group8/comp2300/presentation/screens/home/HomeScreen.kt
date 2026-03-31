@@ -35,10 +35,10 @@ fun HomeScreen(
     onNavigateToSymptomChecker: () -> Unit = {},
     onNavigateToClinicMap: () -> Unit = {},
 ) {
-    // STATE: Privacy Mode (Blur sensitive text)
+    // Privacy Mode (Blur sensitive text)
     var isPrivacyMode by remember { mutableStateOf(false) }
 
-    // STATE: Mock "Daily Insight" Data
+    // Mock "Daily Insight" Data
     val dailyFact = stringResource(Res.string.home_daily_insight_content)
 
     // Scroll state for smaller screens

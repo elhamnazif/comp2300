@@ -2,8 +2,8 @@ package com.group8.comp2300.data.repository.medical
 
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
-import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
+import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.offline.MedicalOfflineMutations
 import com.group8.comp2300.data.offline.QueuedOfflineStore
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
@@ -84,19 +84,20 @@ class MedicationLogDataRepositoryImpl(
     override suspend fun getMedicationOccurrenceCandidates(
         medicationId: String,
         timestampMs: Long,
-    ): List<MedicationOccurrenceCandidate> =
-        buildMedicationOccurrenceCandidates(
-            routines = routineLocal.getAll(),
-            medications = medicationLocal.getAll(),
-            logs = medicationLogLocal.getAll(),
-            overrides = routineOccurrenceOverrideLocal.getAll(),
-            medicationId = medicationId,
-            timestampMs = timestampMs,
-            nowMs = Clock.System.now().toEpochMilliseconds(),
-            timeZone = TimeZone.currentSystemDefault(),
-        )
+    ): List<MedicationOccurrenceCandidate> = buildMedicationOccurrenceCandidates(
+        routines = routineLocal.getAll(),
+        medications = medicationLocal.getAll(),
+        logs = medicationLogLocal.getAll(),
+        overrides = routineOccurrenceOverrideLocal.getAll(),
+        medicationId = medicationId,
+        timestampMs = timestampMs,
+        nowMs = Clock.System.now().toEpochMilliseconds(),
+        timeZone = TimeZone.currentSystemDefault(),
+    )
 
-    override suspend fun rescheduleRoutineOccurrence(request: RoutineOccurrenceOverrideRequest): RoutineOccurrenceOverride {
+    override suspend fun rescheduleRoutineOccurrence(
+        request: RoutineOccurrenceOverrideRequest,
+    ): RoutineOccurrenceOverride {
         val routine = routineLocal.getById(request.routineId)
         val optimisticOverride = occurrenceOverrideWrites.write(
             request = request,
@@ -113,7 +114,9 @@ class MedicationLogDataRepositoryImpl(
             MedicationLogLinkMode.EXTRA_DOSE
         }
         val logId =
-            if (linkMode == MedicationLogLinkMode.ATTACH_TO_OCCURRENCE && request.routineId != null && request.occurrenceTimeMs != null) {
+            if (linkMode == MedicationLogLinkMode.ATTACH_TO_OCCURRENCE && request.routineId != null &&
+                request.occurrenceTimeMs != null
+            ) {
                 "${request.routineId}:${request.medicationId}:${request.occurrenceTimeMs}"
             } else {
                 null

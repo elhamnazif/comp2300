@@ -13,8 +13,8 @@ import com.group8.comp2300.data.repository.MoodRepositoryImpl
 import com.group8.comp2300.data.repository.PasswordResetTokenRepositoryImpl
 import com.group8.comp2300.data.repository.ProductRepositoryImpl
 import com.group8.comp2300.data.repository.RefreshTokenRepositoryImpl
-import com.group8.comp2300.data.repository.RoutineRepositoryImpl
 import com.group8.comp2300.data.repository.RoutineOccurrenceOverrideRepositoryImpl
+import com.group8.comp2300.data.repository.RoutineRepositoryImpl
 import com.group8.comp2300.data.repository.UserRepositoryImpl
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.repository.AppointmentRepository
@@ -27,8 +27,8 @@ import com.group8.comp2300.domain.repository.MoodRepository
 import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
 import com.group8.comp2300.domain.repository.ProductRepository
 import com.group8.comp2300.domain.repository.RefreshTokenRepository
-import com.group8.comp2300.domain.repository.RoutineRepository
 import com.group8.comp2300.domain.repository.RoutineOccurrenceOverrideRepository
+import com.group8.comp2300.domain.repository.RoutineRepository
 import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.security.JwtService

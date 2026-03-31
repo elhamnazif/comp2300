@@ -4,9 +4,7 @@ interface OfflineDataRefresher {
     suspend fun refreshAuthenticatedData()
 }
 
-class CompositeOfflineDataRefresher(
-    private val refreshers: List<OfflineDataRefresher>,
-) : OfflineDataRefresher {
+class CompositeOfflineDataRefresher(private val refreshers: List<OfflineDataRefresher>) : OfflineDataRefresher {
     override suspend fun refreshAuthenticatedData() {
         refreshers.forEach { it.refreshAuthenticatedData() }
     }

@@ -15,11 +15,7 @@ fun Throwable.isRetryable(): Boolean = when (this) {
  * Read: return cached data, attempt network refresh, fall back to stale cache on transient errors.
  * Non-retryable errors (e.g. 400, 401, 404) are propagated to the caller.
  */
-suspend fun <T> cacheFirstRead(
-    cached: () -> T,
-    fetch: suspend () -> T,
-    save: (T) -> Unit,
-): T {
+suspend fun <T> cacheFirstRead(cached: () -> T, fetch: suspend () -> T, save: (T) -> Unit): T {
     val local = cached()
     return try {
         val remote = fetch()

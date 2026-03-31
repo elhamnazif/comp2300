@@ -9,9 +9,7 @@ interface OfflineMutationHandler {
     suspend fun apply(item: OutboxItem)
 }
 
-class MutationHandlerRegistry(
-    handlers: List<OfflineMutationHandler>,
-) {
+class MutationHandlerRegistry(handlers: List<OfflineMutationHandler>) {
     private val handlersByType = handlers.associateBy(OfflineMutationHandler::type)
 
     init {
@@ -36,6 +34,4 @@ abstract class DecodingOfflineMutationHandler<T>(
     protected abstract suspend fun handle(item: OutboxItem, payload: T)
 }
 
-abstract class ItemOnlyOfflineMutationHandler(
-    final override val type: String,
-) : OfflineMutationHandler
+abstract class ItemOnlyOfflineMutationHandler(final override val type: String) : OfflineMutationHandler

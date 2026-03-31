@@ -6,17 +6,16 @@ import com.group8.comp2300.domain.model.medical.MoodType
 
 class MoodLocalDataSource(private val database: AppDatabase) {
 
-    fun getAll(): List<Mood> =
-        database.appDatabaseQueries.selectAllMoods().executeAsList().map { entity ->
-            Mood(
-                id = entity.id,
-                userId = entity.userId,
-                timestamp = entity.timestamp,
-                moodType = MoodType.valueOf(entity.moodType),
-                feeling = entity.feeling,
-                journal = entity.journal,
-            )
-        }
+    fun getAll(): List<Mood> = database.appDatabaseQueries.selectAllMoods().executeAsList().map { entity ->
+        Mood(
+            id = entity.id,
+            userId = entity.userId,
+            timestamp = entity.timestamp,
+            moodType = MoodType.valueOf(entity.moodType),
+            feeling = entity.feeling,
+            journal = entity.journal,
+        )
+    }
 
     fun insert(mood: Mood) {
         database.appDatabaseQueries.insertMood(

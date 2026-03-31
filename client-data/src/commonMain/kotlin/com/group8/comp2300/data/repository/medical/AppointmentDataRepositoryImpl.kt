@@ -39,5 +39,6 @@ class AppointmentDataRepositoryImpl(
 
     override suspend fun getAppointments(): List<Appointment> = appointmentLocal.getAll()
 
-    override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment = appointmentWrites.write(request)
+    override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment =
+        appointmentWrites.write(request)
 }

@@ -31,9 +31,9 @@ fun OnboardingScreen(
     modifier: Modifier = Modifier,
     isGuest: Boolean = true,
     onRequireAuth: () -> Unit = {},
+    onPinCreated: (String) -> Unit = {},
 ) {
     var step by remember { mutableIntStateOf(0) } // 0: Welcome, 1: Auth, 2: PIN, 3+: Questions, Last: Result
-    var pin by remember { mutableStateOf("") }
     var riskScore by remember { mutableIntStateOf(0) }
 
     val questionStartIndex = 3
@@ -67,12 +67,7 @@ fun OnboardingScreen(
             Box(Modifier.size(48.dp)) {
                 if (step in 1..<questionEndIndex) {
                     IconButton(
-                        onClick = {
-                            if (step == 2) {
-                                pin = ""
-                            }
-                            step--
-                        },
+                        onClick = { step-- },
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         Icon(
@@ -146,7 +141,7 @@ fun OnboardingScreen(
 
                     2 -> PinScreen(
                         onComplete = { finalPin ->
-                            pin = finalPin
+                            onPinCreated(finalPin)
                             step++ // Moves to questionStartIndex (3)
                         },
                     )

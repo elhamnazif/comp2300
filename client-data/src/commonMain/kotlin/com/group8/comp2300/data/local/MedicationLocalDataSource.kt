@@ -7,15 +7,13 @@ import com.group8.comp2300.domain.model.medical.MedicationFrequency
 import com.group8.comp2300.domain.model.medical.MedicationStatus
 
 class MedicationLocalDataSource(private val database: AppDatabase) {
-    fun getAll(): List<Medication> =
-        database.appDatabaseQueries.selectAllMedications()
-            .executeAsList()
-            .map(::toDomain)
+    fun getAll(): List<Medication> = database.appDatabaseQueries.selectAllMedications()
+        .executeAsList()
+        .map(::toDomain)
 
-    fun getById(id: String): Medication? =
-        database.appDatabaseQueries.selectMedicationById(id)
-            .executeAsOneOrNull()
-            ?.let(::toDomain)
+    fun getById(id: String): Medication? = database.appDatabaseQueries.selectMedicationById(id)
+        .executeAsOneOrNull()
+        ?.let(::toDomain)
 
     fun insert(medication: Medication) {
         database.appDatabaseQueries.insertMedication(

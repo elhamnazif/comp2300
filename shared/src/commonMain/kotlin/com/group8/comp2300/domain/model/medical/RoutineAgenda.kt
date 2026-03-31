@@ -49,7 +49,8 @@ fun buildMedicationOccurrenceCandidates(
     timeZone: TimeZone = TimeZone.currentSystemDefault(),
     windowHours: Int = 24,
 ): List<MedicationOccurrenceCandidate> {
-    val activeMedication = medications.firstOrNull { it.id == medicationId && it.status == MedicationStatus.ACTIVE } ?: return emptyList()
+    val activeMedication =
+        medications.firstOrNull { it.id == medicationId && it.status == MedicationStatus.ACTIVE } ?: return emptyList()
     val windowMs = windowHours * 60L * 60L * 1000L
     val startDate = Instant.fromEpochMilliseconds(timestampMs - windowMs).toLocalDateTime(timeZone).date
     val endDate = Instant.fromEpochMilliseconds(timestampMs + windowMs).toLocalDateTime(timeZone).date
@@ -70,7 +71,10 @@ fun buildMedicationOccurrenceCandidates(
             agenda.medications
                 .filter { medication ->
                     medication.medicationId == activeMedication.id &&
-                        (medication.status == MedicationLogStatus.PENDING || medication.status == MedicationLogStatus.MISSED)
+                        (
+                            medication.status == MedicationLogStatus.PENDING ||
+                                medication.status == MedicationLogStatus.MISSED
+                            )
                 }
                 .map {
                     MedicationOccurrenceCandidate(
@@ -133,8 +137,12 @@ fun buildRoutineDayAgenda(
             if (routine.status != RoutineStatus.ACTIVE) {
                 return@mapNotNull null
             }
-            val originalDate = Instant.fromEpochMilliseconds(override.originalOccurrenceTimeMs).toLocalDateTime(timeZone).date
-            val rescheduledDate = Instant.fromEpochMilliseconds(override.rescheduledOccurrenceTimeMs).toLocalDateTime(timeZone).date
+            val originalDate = Instant.fromEpochMilliseconds(
+                override.originalOccurrenceTimeMs,
+            ).toLocalDateTime(timeZone).date
+            val rescheduledDate = Instant.fromEpochMilliseconds(
+                override.rescheduledOccurrenceTimeMs,
+            ).toLocalDateTime(timeZone).date
             if (rescheduledDate != date || !routine.isDueOn(originalDate)) {
                 return@mapNotNull null
             }
@@ -212,21 +220,18 @@ fun buildCalendarOverviewStatus(
         }
     return when {
         routineStatuses.any { it.status == MedicationLogStatus.TAKEN } || hasManualTaken -> "TAKEN"
-        routineStatuses.any { it.status == MedicationLogStatus.SKIPPED || it.status == MedicationLogStatus.MISSED } -> "MISSED"
+
+        routineStatuses.any {
+            it.status == MedicationLogStatus.SKIPPED || it.status == MedicationLogStatus.MISSED
+        } -> "MISSED"
+
         else -> "NONE"
     }
 }
 
-private data class AgendaLogKey(
-    val routineId: String,
-    val medicationId: String,
-    val occurrenceTimeMs: Long,
-)
+private data class AgendaLogKey(val routineId: String, val medicationId: String, val occurrenceTimeMs: Long)
 
-private data class OverrideKey(
-    val routineId: String,
-    val originalOccurrenceTimeMs: Long,
-)
+private data class OverrideKey(val routineId: String, val originalOccurrenceTimeMs: Long)
 
 private fun Routine.isDueOn(date: LocalDate): Boolean {
     val start = LocalDate.parse(startDate)
@@ -234,6 +239,7 @@ private fun Routine.isDueOn(date: LocalDate): Boolean {
     if (date < start || (end != null && date > end)) return false
     return when (repeatType) {
         RoutineRepeatType.DAILY -> true
+
         RoutineRepeatType.WEEKLY -> {
             val selected = daysOfWeek.toSet()
             selected.isNotEmpty() && date.dayOfWeek.toStorageDayOfWeek() in selected
@@ -251,8 +257,7 @@ private fun LocalDate.atOccurrenceTime(offsetMs: Long, timeZone: TimeZone): Long
     return LocalDateTime(this, LocalTime(hour, minute)).toInstant(timeZone).toEpochMilliseconds()
 }
 
-private fun LocalDate.plusDays(days: Int): LocalDate =
-    plus(days, DateTimeUnit.DAY)
+private fun LocalDate.plusDays(days: Int): LocalDate = plus(days, DateTimeUnit.DAY)
 
 private fun datesInRange(startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
     val dates = mutableListOf<LocalDate>()

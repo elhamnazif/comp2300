@@ -387,3 +387,19 @@ WHERE id = ?;
 
 deleteAllOutbox:
 DELETE FROM OutboxEntity;
+
+CREATE TABLE PinEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    pinHash TEXT NOT NULL,
+    createdAt INTEGER NOT NULL
+);
+
+selectPin:
+SELECT * FROM PinEntity LIMIT 1;
+
+upsertPin:
+INSERT OR REPLACE INTO PinEntity (id, pinHash, createdAt)
+VALUES (?, ?, ?);
+
+deletePin:
+DELETE FROM PinEntity;

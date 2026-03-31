@@ -54,7 +54,7 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
         get() = backStack.lastOrNull()
 
     override var postLoginTarget: Screen? by savedStateHandle.saveable {
-        mutableStateOf<Screen?>(null)
+        mutableStateOf(null)
     }
 
     override fun navigate(screen: Screen) {

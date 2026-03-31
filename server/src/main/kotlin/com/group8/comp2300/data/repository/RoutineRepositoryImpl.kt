@@ -8,16 +8,14 @@ import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.domain.repository.RoutineRepository
 
 class RoutineRepositoryImpl(private val database: ServerDatabase) : RoutineRepository {
-    override fun getAllByUserId(userId: String): List<Routine> =
-        database.routineQueries.selectRoutinesByUserId(userId)
-            .executeAsList()
-            .map(::toDomain)
-            .sortedByRoutineTime()
+    override fun getAllByUserId(userId: String): List<Routine> = database.routineQueries.selectRoutinesByUserId(userId)
+        .executeAsList()
+        .map(::toDomain)
+        .sortedByRoutineTime()
 
-    override fun getById(id: String): Routine? =
-        database.routineQueries.selectRoutineById(id)
-            .executeAsOneOrNull()
-            ?.let(::toDomain)
+    override fun getById(id: String): Routine? = database.routineQueries.selectRoutineById(id)
+        .executeAsOneOrNull()
+        ?.let(::toDomain)
 
     override fun insert(routine: Routine) {
         database.routineQueries.transaction {

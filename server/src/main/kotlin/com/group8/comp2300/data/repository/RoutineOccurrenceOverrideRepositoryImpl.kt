@@ -5,17 +5,20 @@ import com.group8.comp2300.database.data.RoutineOccurrenceOverrideEnt
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
 import com.group8.comp2300.domain.repository.RoutineOccurrenceOverrideRepository
 
-class RoutineOccurrenceOverrideRepositoryImpl(private val database: ServerDatabase) : RoutineOccurrenceOverrideRepository {
+class RoutineOccurrenceOverrideRepositoryImpl(private val database: ServerDatabase) :
+    RoutineOccurrenceOverrideRepository {
     override fun getAllByUserId(userId: String): List<RoutineOccurrenceOverride> =
         database.routineOccurrenceOverrideQueries.selectRoutineOccurrenceOverridesByUserId(userId)
             .executeAsList()
             .map(RoutineOccurrenceOverrideEnt::toDomain)
 
-    override fun getByRoutineAndOriginal(routineId: String, originalOccurrenceTimeMs: Long): RoutineOccurrenceOverride? =
-        database.routineOccurrenceOverrideQueries
-            .selectRoutineOccurrenceOverrideByRoutineAndOriginal(routineId, originalOccurrenceTimeMs)
-            .executeAsOneOrNull()
-            ?.toDomain()
+    override fun getByRoutineAndOriginal(
+        routineId: String,
+        originalOccurrenceTimeMs: Long,
+    ): RoutineOccurrenceOverride? = database.routineOccurrenceOverrideQueries
+        .selectRoutineOccurrenceOverrideByRoutineAndOriginal(routineId, originalOccurrenceTimeMs)
+        .executeAsOneOrNull()
+        ?.toDomain()
 
     override fun insert(override: RoutineOccurrenceOverride) {
         database.routineOccurrenceOverrideQueries.insertRoutineOccurrenceOverride(

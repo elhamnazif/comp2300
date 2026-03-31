@@ -7,10 +7,9 @@ import com.group8.comp2300.domain.model.reminder.ReminderFrequency
 import com.group8.comp2300.domain.model.reminder.ReminderType
 
 class ReminderLocalDataSource(private val database: AppDatabase) {
-    fun getAll(): List<Reminder> =
-        database.appDatabaseQueries.selectAllReminders()
-            .executeAsList()
-            .map { it.toDomain() }
+    fun getAll(): List<Reminder> = database.appDatabaseQueries.selectAllReminders()
+        .executeAsList()
+        .map { it.toDomain() }
 }
 
 private fun ReminderEntity.toDomain() = Reminder(

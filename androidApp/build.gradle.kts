@@ -30,7 +30,9 @@ android {
                     if (result.exitValue == 0) {
                         logger.lifecycle("✓ ADB port reverse configured: tcp:8080 → tcp:8080")
                     } else {
-                        logger.lifecycle("⚠ ADB port reverse failed (exit code ${result.exitValue}). Ensure an emulator or device is connected.")
+                        logger.lifecycle(
+                            "⚠ ADB port reverse failed (exit code ${result.exitValue}). Ensure an emulator or device is connected.",
+                        )
                     }
                 } catch (_: Exception) {
                     logger.lifecycle(
@@ -46,7 +48,7 @@ android {
                         |  4. Or install standalone platform-tools: https://developer.android.com/tools/releases/platform-tools
                         |
                         |Docs: https://developer.android.com/tools/adb
-                        """.trimMargin()
+                        """.trimMargin(),
                     )
                 }
             }

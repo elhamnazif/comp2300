@@ -3,8 +3,8 @@ package com.group8.comp2300.routes
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationFrequency
-import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
 import com.group8.comp2300.domain.model.medical.MedicationLog
+import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
 import com.group8.comp2300.domain.model.medical.MedicationStatus
@@ -112,10 +112,14 @@ fun Route.medicationRoutes() {
                     MedicationLogLinkMode.EXTRA_DOSE
                 }
 
-                if (linkMode == MedicationLogLinkMode.ATTACH_TO_OCCURRENCE && (request.routineId == null || request.occurrenceTimeMs == null)) {
+                if (linkMode == MedicationLogLinkMode.ATTACH_TO_OCCURRENCE &&
+                    (request.routineId == null || request.occurrenceTimeMs == null)
+                ) {
                     call.respond(
                         HttpStatusCode.BadRequest,
-                        mapOf("error" to "routineId and occurrenceTimeMs are required when attaching to a scheduled dose"),
+                        mapOf(
+                            "error" to "routineId and occurrenceTimeMs are required when attaching to a scheduled dose",
+                        ),
                     )
                     return@withUserId
                 }
@@ -124,7 +128,10 @@ fun Route.medicationRoutes() {
                 if (linkMode == MedicationLogLinkMode.ATTACH_TO_OCCURRENCE && routineId != null) {
                     val routine = routineRepository.getById(routineId)
                     if (routine == null || routine.userId != userId || request.medicationId !in routine.medicationIds) {
-                        call.respond(HttpStatusCode.BadRequest, mapOf("error" to "Medication is not linked to the routine"))
+                        call.respond(
+                            HttpStatusCode.BadRequest,
+                            mapOf("error" to "Medication is not linked to the routine"),
+                        )
                         return@withUserId
                     }
                 }
@@ -132,7 +139,9 @@ fun Route.medicationRoutes() {
                 val timestamp = request.timestampMs ?: System.currentTimeMillis()
                 val log = MedicationLog(
                     id =
-                    if (linkMode == MedicationLogLinkMode.ATTACH_TO_OCCURRENCE && request.routineId != null && request.occurrenceTimeMs != null) {
+                    if (linkMode == MedicationLogLinkMode.ATTACH_TO_OCCURRENCE && request.routineId != null &&
+                        request.occurrenceTimeMs != null
+                    ) {
                         "${request.routineId}:${request.medicationId}:${request.occurrenceTimeMs}"
                     } else {
                         UUID.randomUUID().toString()
@@ -185,8 +194,14 @@ fun Route.medicationRoutes() {
                     return@withUserId
                 }
                 val request = call.receive<RoutineCreateRequest>()
-                val routine = call.toRoutine(userId = userId, id = id, request = request, medicationRepository = medicationRepository)
-                    ?: return@withUserId
+                val routine =
+                    call.toRoutine(
+                        userId = userId,
+                        id = id,
+                        request = request,
+                        medicationRepository = medicationRepository,
+                    )
+                        ?: return@withUserId
                 val existing = routineRepository.getById(id)
                 if (existing != null && existing.userId != userId) {
                     call.respond(HttpStatusCode.NotFound, mapOf("error" to "Routine not found"))
@@ -398,6 +413,7 @@ private fun Routine.isDueOn(date: LocalDate): Boolean {
     if (date < start || (end != null && date > end)) return false
     return when (repeatType) {
         RoutineRepeatType.DAILY -> true
+
         RoutineRepeatType.WEEKLY -> {
             val selected = daysOfWeek.toSet()
             selected.isNotEmpty() && date.dayOfWeek.toStorageDayOfWeek() in selected

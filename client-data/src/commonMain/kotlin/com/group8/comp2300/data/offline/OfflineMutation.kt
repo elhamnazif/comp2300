@@ -9,10 +9,7 @@ import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
 
-data class OfflineMutationSpec<T>(
-    val type: String,
-    val serializer: KSerializer<T>,
-)
+data class OfflineMutationSpec<T>(val type: String, val serializer: KSerializer<T>)
 
 object MedicalOfflineMutations {
     val appointment = OfflineMutationSpec("APPOINTMENT", AppointmentRequest.serializer())

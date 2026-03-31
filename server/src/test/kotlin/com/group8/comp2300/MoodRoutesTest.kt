@@ -12,7 +12,6 @@ import com.group8.comp2300.routes.moodRoutes
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -35,6 +34,7 @@ import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class MoodRoutesTest {
     @Test
@@ -146,7 +146,12 @@ private fun ApplicationTestBuilder.configureMoodTestModuleWithUser(): String {
 
 private fun ApplicationTestBuilder.jsonClient() = createClient {
     install(ClientContentNegotiation) {
-        json(Json { ignoreUnknownKeys = true; isLenient = true })
+        json(
+            Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+            },
+        )
     }
 }
 

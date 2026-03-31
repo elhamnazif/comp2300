@@ -20,12 +20,7 @@ data class OutboxItem(
 )
 
 class OutboxDataSource(private val database: AppDatabase) {
-    fun enqueue(
-        entityType: String,
-        payload: String,
-        localId: String,
-        state: OutboxState,
-    ) {
+    fun enqueue(entityType: String, payload: String, localId: String, state: OutboxState) {
         database.appDatabaseQueries.insertOutbox(
             id = Uuid.random().toString(),
             entityType = entityType,
@@ -36,19 +31,18 @@ class OutboxDataSource(private val database: AppDatabase) {
         )
     }
 
-    fun getAll(): List<OutboxItem> =
-        database.appDatabaseQueries.selectAllOutbox().executeAsList().map { entity ->
-            OutboxItem(
-                id = entity.id,
-                entityType = entity.entityType,
-                payload = entity.payload,
-                localId = entity.localId,
-                state = OutboxState.valueOf(entity.state),
-                createdAt = entity.createdAt,
-                retryCount = entity.retryCount,
-                lastError = entity.lastError,
-            )
-        }
+    fun getAll(): List<OutboxItem> = database.appDatabaseQueries.selectAllOutbox().executeAsList().map { entity ->
+        OutboxItem(
+            id = entity.id,
+            entityType = entity.entityType,
+            payload = entity.payload,
+            localId = entity.localId,
+            state = OutboxState.valueOf(entity.state),
+            createdAt = entity.createdAt,
+            retryCount = entity.retryCount,
+            lastError = entity.lastError,
+        )
+    }
 
     fun getPending(): List<OutboxItem> = getAll().filter { it.state == OutboxState.PENDING }
 

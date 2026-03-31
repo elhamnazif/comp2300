@@ -19,8 +19,4 @@ data class Routine(
 )
 
 @Serializable
-data class RoutineMedicationLink(
-    val id: String,
-    val routineId: String,
-    val medicationId: String,
-)
+data class RoutineMedicationLink(val id: String, val routineId: String, val medicationId: String)

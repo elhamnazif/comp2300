@@ -189,7 +189,8 @@ internal open class FakeApiService(
     override suspend fun getHealth(): Map<String, String> = emptyMap()
     override suspend fun getProducts() = emptyList<com.group8.comp2300.data.remote.dto.ProductDto>()
     override suspend fun getProduct(id: String) = error("unused")
-    override suspend fun register(request: RegisterRequest): AuthResponse = AuthResponse(profileUser, "access", "refresh")
+    override suspend fun register(request: RegisterRequest): AuthResponse =
+        AuthResponse(profileUser, "access", "refresh")
     override suspend fun login(request: LoginRequest): AuthResponse = AuthResponse(profileUser, "access", "refresh")
     override suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse = error("unused")
     override suspend fun logout() = Unit
@@ -197,7 +198,8 @@ internal open class FakeApiService(
     override suspend fun activateAccount(token: String): AuthResponse = AuthResponse(profileUser, "access", "refresh")
     override suspend fun forgotPassword(email: String): MessageResponse = MessageResponse("ok")
     override suspend fun resetPassword(token: String, newPassword: String): MessageResponse = MessageResponse("ok")
-    override suspend fun preregister(request: PreregisterRequest): PreregisterResponse = PreregisterResponse(request.email, "ok")
+    override suspend fun preregister(request: PreregisterRequest): PreregisterResponse =
+        PreregisterResponse(request.email, "ok")
     override suspend fun completeProfile(request: CompleteProfileRequest): User = profileUser
     override suspend fun resendVerificationEmail(email: String): MessageResponse = MessageResponse("ok")
     override suspend fun getAppointments(): List<Appointment> = appointments.toList()
@@ -213,6 +215,9 @@ internal open class FakeApiService(
     override suspend fun getUserRoutines(): List<Routine> = routines.toList()
     override suspend fun upsertRoutine(id: String, request: RoutineCreateRequest): Routine = error("unused")
     override suspend fun deleteRoutine(id: String) = Unit
-    override suspend fun getRoutineOccurrenceOverrides(): List<RoutineOccurrenceOverride> = routineOccurrenceOverrides.toList()
-    override suspend fun upsertRoutineOccurrenceOverride(request: RoutineOccurrenceOverrideRequest): RoutineOccurrenceOverride = error("unused")
+    override suspend fun getRoutineOccurrenceOverrides(): List<RoutineOccurrenceOverride> =
+        routineOccurrenceOverrides.toList()
+    override suspend fun upsertRoutineOccurrenceOverride(
+        request: RoutineOccurrenceOverrideRequest,
+    ): RoutineOccurrenceOverride = error("unused")
 }
