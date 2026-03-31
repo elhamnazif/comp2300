@@ -12,12 +12,18 @@ class PinLockViewModel(private val pinDataSource: PinDataSource) : ViewModel() {
     val isLocked: StateFlow<Boolean>
         field = MutableStateFlow(true)
 
+    /** null = not yet checked, true = PIN exists, false = no PIN set */
+    val isPinSet: StateFlow<Boolean?>
+        field = MutableStateFlow(null)
+
     val error: StateFlow<String?>
         field = MutableStateFlow(null)
 
     init {
         viewModelScope.launch {
-            if (!pinDataSource.isPinSet()) {
+            val hasPin = pinDataSource.isPinSet()
+            isPinSet.value = hasPin
+            if (!hasPin) {
                 isLocked.value = false
             }
         }

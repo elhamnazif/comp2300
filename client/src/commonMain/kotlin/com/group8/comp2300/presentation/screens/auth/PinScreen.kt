@@ -56,7 +56,7 @@ fun PinScreen(
             stringResource(Res.string.onboarding_create_pin_title)
         }
     } else {
-        stringResource(Res.string.onboarding_create_pin_title)
+        stringResource(Res.string.pin_unlock_title)
     }
 
     val displayDescription = description ?: if (isSetup) {
@@ -66,7 +66,7 @@ fun PinScreen(
             stringResource(Res.string.onboarding_create_pin_desc)
         }
     } else {
-        ""
+        stringResource(Res.string.pin_unlock_desc)
     }
 
     // Shake on external error

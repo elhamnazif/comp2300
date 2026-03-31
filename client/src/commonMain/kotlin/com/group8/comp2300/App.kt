@@ -1,5 +1,9 @@
 package com.group8.comp2300
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -68,8 +72,16 @@ fun MainApp(
 ) {
     val session by authViewModel.session.collectAsState()
     val isPinLocked by pinLockViewModel.isLocked.collectAsState()
+    val isPinSet by pinLockViewModel.isPinSet.collectAsState()
 
-    if (session is AuthSession.Restoring) {
+    // Route to the correct start screen once PIN check completes
+    LaunchedEffect(isPinSet) {
+        if (isPinSet != null) {
+            navigator.setStartDestination(if (isPinSet == true) Screen.Home else Screen.Onboarding)
+        }
+    }
+
+    if (session is AuthSession.Restoring || isPinSet == null) {
         Box(
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
@@ -157,7 +169,13 @@ fun MainApp(
             }
         }
 
-        if (isPinLocked) {
+        AnimatedVisibility(
+            visible = isPinLocked,
+            exit = fadeOut(animationSpec = tween(300)) + slideOutVertically(
+                animationSpec = tween(300),
+                targetOffsetY = { -it / 4 },
+            ),
+        ) {
             Surface(
                 modifier = Modifier.fillMaxSize(),
                 color = MaterialTheme.colorScheme.surface,

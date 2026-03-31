@@ -25,6 +25,8 @@ abstract class Navigator : ViewModel() {
     abstract fun requireAuth(targetScreen: Screen? = null)
 
     abstract fun onAuthSuccess()
+
+    abstract fun setStartDestination(screen: Screen)
 }
 
 @OptIn(SavedStateHandleSaveableApi::class)
@@ -96,6 +98,13 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
             clearAndGoTo(Screen.Home)
         }
     }
+
+    override fun setStartDestination(screen: Screen) {
+        if (backStack.size == 1 && backStack.first() == Screen.Onboarding) {
+            backStack.clear()
+            backStack.add(screen)
+        }
+    }
 }
 
 class FakeNavigator(startDestination: Screen = Screen.Onboarding) : Navigator() {
@@ -129,5 +138,12 @@ class FakeNavigator(startDestination: Screen = Screen.Onboarding) : Navigator() 
     override fun onAuthSuccess() {
         postLoginTarget = null
         clearAndGoTo(Screen.Home)
+    }
+
+    override fun setStartDestination(screen: Screen) {
+        if (backStack.size == 1 && backStack.first() == Screen.Onboarding) {
+            backStack.clear()
+            backStack.add(screen)
+        }
     }
 }
