@@ -5,8 +5,7 @@ import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 
 class CalendarOverviewLocalDataSource(private val database: AppDatabase) {
 
-    private fun yearMonthKey(year: Int, month: Int): String =
-        "$year-${month.toString().padStart(2, '0')}"
+    private fun yearMonthKey(year: Int, month: Int): String = "$year-${month.toString().padStart(2, '0')}"
 
     fun getByYearMonth(year: Int, month: Int): List<CalendarOverviewResponse> {
         val key = yearMonthKey(year, month)

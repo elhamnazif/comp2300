@@ -16,7 +16,7 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
         fileName: String,
         storagePath: String,
         fileSize: Long,
-        createdAt: Long
+        createdAt: Long,
     ) {
         database.medicalRecordQueries.insertRecord(
             id = id,
@@ -24,7 +24,7 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
             fileName = fileName,
             storagePath = storagePath,
             fileSize = fileSize,
-            createdAt = createdAt
+            createdAt = createdAt,
         )
     }
 
@@ -36,12 +36,11 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
             MedicalRecordSortOrder.NAME_DESC -> queries.getRecordsByUserIdNameDesc(userId)
         }
 
-        return sqlQuery.executeAsList().map {it.toDomain()}
+        return sqlQuery.executeAsList().map { it.toDomain() }
     }
 
-    override fun getFilePath(id: String, userId: String): String? {
-        return database.medicalRecordQueries.getFilePathById(id, userId).executeAsOneOrNull()
-    }
+    override fun getFilePath(id: String, userId: String): String? =
+        database.medicalRecordQueries.getFilePathById(id, userId).executeAsOneOrNull()
 
     override fun updateFileName(id: String, userId: String, newName: String): Boolean {
         database.medicalRecordQueries.updateFileName(newName, id, userId)
@@ -60,7 +59,7 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
         newName: String,
         newPath: String,
         newSize: Long,
-        newTimestamp: Long
+        newTimestamp: Long,
     ): Boolean {
         queries.updateRecordMetadata(
             fileName = newName,
@@ -68,13 +67,12 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
             fileSize = newSize,
             createdAt = newTimestamp,
             id = id,
-            userId = userId
+            userId = userId,
         )
         // Check if a row was actually changed
         return queries.changes().executeAsOne() > 0
     }
 }
-
 
 /**
  * Extension function to map the SQLDelight Entity to our clean Domain Model.
@@ -84,5 +82,5 @@ private fun MedicalRecordEnt.toDomain(): MedicalRecord = MedicalRecord(
     id = id,
     fileName = fileName,
     fileSize = fileSize,
-    createdAt = createdAt
+    createdAt = createdAt,
 )

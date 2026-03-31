@@ -72,77 +72,71 @@ class MedicalRepositoryImpl(
 
     // ---------- WRITES: save locally + queue for sync on failure ----------
 
-    override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment {
-        return try {
-            val remote = apiService.scheduleAppointment(request)
-            appointmentLocal.insert(remote)
-            remote
-        } catch (_: Exception) {
-            syncQueue.enqueue("APPOINTMENT", Json.encodeToString(request))
-            // Return an optimistic local placeholder
-            val placeholder = Appointment(
-                id = "local-${kotlin.uuid.Uuid.random()}",
-                userId = "",
-                title = request.title,
-                appointmentTime = request.appointmentTime,
-                appointmentType = request.appointmentType,
-                clinicId = null,
-                bookingId = null,
-                status = "PENDING_SYNC",
-                notes = request.notes,
-                hasReminder = true,
-                paymentStatus = "PENDING",
-            )
-            appointmentLocal.insert(placeholder)
-            placeholder
-        }
+    override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment = try {
+        val remote = apiService.scheduleAppointment(request)
+        appointmentLocal.insert(remote)
+        remote
+    } catch (_: Exception) {
+        syncQueue.enqueue("APPOINTMENT", Json.encodeToString(request))
+        // Return an optimistic local placeholder
+        val placeholder = Appointment(
+            id = "local-${kotlin.uuid.Uuid.random()}",
+            userId = "",
+            title = request.title,
+            appointmentTime = request.appointmentTime,
+            appointmentType = request.appointmentType,
+            clinicId = null,
+            bookingId = null,
+            status = "PENDING_SYNC",
+            notes = request.notes,
+            hasReminder = true,
+            paymentStatus = "PENDING",
+        )
+        appointmentLocal.insert(placeholder)
+        placeholder
     }
 
-    override suspend fun logMedication(request: MedicationLogRequest): MedicationLog {
-        return try {
-            val remote = apiService.logMedication(request)
-            medicationLogLocal.insert(remote)
-            remote
-        } catch (_: Exception) {
-            syncQueue.enqueue("MEDICATION_LOG", Json.encodeToString(request))
-            // Return optimistic local placeholder
-            val placeholder = MedicationLog(
-                id = "local-${kotlin.uuid.Uuid.random()}",
-                medicationId = request.medicationId,
-                medicationTime = request.timestampMs ?: kotlin.time.Clock.System.now().toEpochMilliseconds(),
-                status = com.group8.comp2300.domain.model.medical.MedicationLogStatus.valueOf(request.status),
-                medicationName = null,
-            )
-            medicationLogLocal.insert(placeholder)
-            placeholder
-        }
+    override suspend fun logMedication(request: MedicationLogRequest): MedicationLog = try {
+        val remote = apiService.logMedication(request)
+        medicationLogLocal.insert(remote)
+        remote
+    } catch (_: Exception) {
+        syncQueue.enqueue("MEDICATION_LOG", Json.encodeToString(request))
+        // Return optimistic local placeholder
+        val placeholder = MedicationLog(
+            id = "local-${kotlin.uuid.Uuid.random()}",
+            medicationId = request.medicationId,
+            medicationTime = request.timestampMs ?: kotlin.time.Clock.System.now().toEpochMilliseconds(),
+            status = com.group8.comp2300.domain.model.medical.MedicationLogStatus.valueOf(request.status),
+            medicationName = null,
+        )
+        medicationLogLocal.insert(placeholder)
+        placeholder
     }
 
-    override suspend fun logMood(request: MoodEntryRequest): Mood {
-        return try {
-            val remote = apiService.logMood(request)
-            moodLocal.insert(remote)
-            remote
-        } catch (_: Exception) {
-            syncQueue.enqueue("MOOD", Json.encodeToString(request))
-            // Return optimistic local placeholder
-            val moodType = when {
-                request.moodScore >= 5 -> com.group8.comp2300.domain.model.medical.MoodType.GREAT
-                request.moodScore >= 4 -> com.group8.comp2300.domain.model.medical.MoodType.GOOD
-                request.moodScore >= 3 -> com.group8.comp2300.domain.model.medical.MoodType.NEUTRAL
-                request.moodScore >= 2 -> com.group8.comp2300.domain.model.medical.MoodType.SAD
-                else -> com.group8.comp2300.domain.model.medical.MoodType.VERY_SAD
-            }
-            val placeholder = Mood(
-                id = "local-${kotlin.uuid.Uuid.random()}",
-                userId = "",
-                timestamp = kotlin.time.Clock.System.now().toEpochMilliseconds(),
-                moodType = moodType,
-                feeling = request.tags.joinToString(", "),
-                journal = request.notes,
-            )
-            moodLocal.insert(placeholder)
-            placeholder
+    override suspend fun logMood(request: MoodEntryRequest): Mood = try {
+        val remote = apiService.logMood(request)
+        moodLocal.insert(remote)
+        remote
+    } catch (_: Exception) {
+        syncQueue.enqueue("MOOD", Json.encodeToString(request))
+        // Return optimistic local placeholder
+        val moodType = when {
+            request.moodScore >= 5 -> com.group8.comp2300.domain.model.medical.MoodType.GREAT
+            request.moodScore >= 4 -> com.group8.comp2300.domain.model.medical.MoodType.GOOD
+            request.moodScore >= 3 -> com.group8.comp2300.domain.model.medical.MoodType.NEUTRAL
+            request.moodScore >= 2 -> com.group8.comp2300.domain.model.medical.MoodType.SAD
+            else -> com.group8.comp2300.domain.model.medical.MoodType.VERY_SAD
         }
+        val placeholder = Mood(
+            id = "local-${kotlin.uuid.Uuid.random()}",
+            userId = "",
+            timestamp = kotlin.time.Clock.System.now().toEpochMilliseconds(),
+            moodType = moodType,
+            feeling = request.tags.joinToString(", "),
+            journal = request.notes,
+        )
+        moodLocal.insert(placeholder)
+        placeholder
     }
 }

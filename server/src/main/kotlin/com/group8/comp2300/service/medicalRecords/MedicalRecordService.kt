@@ -5,17 +5,14 @@ import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
 import com.group8.comp2300.dto.MedicalRecordResponse
 import io.ktor.http.content.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import io.ktor.util.cio.writeChannel
 import io.ktor.utils.io.copyTo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.*
 
-class MedicalRecordService(
-    private val repository: MedicalRecordRepository,
-    private val uploadDir: String = "uploads"
-) {
+class MedicalRecordService(private val repository: MedicalRecordRepository, private val uploadDir: String = "uploads") {
 
     // Define safe file types for the app (Documents + Images)
     private val allowedExtensions = setOf("pdf", "jpg", "jpeg", "png", "docx", "doc")
@@ -25,51 +22,52 @@ class MedicalRecordService(
         if (!dir.exists()) dir.mkdirs()
     }
 
-    suspend fun uploadMedicalRecord(userId: String, part: PartData.FileItem): MedicalRecord? = withContext(Dispatchers.IO) {
-        val fileId = UUID.randomUUID().toString()
-        val originalName = part.originalFileName ?: "upload_${System.currentTimeMillis()}"
+    suspend fun uploadMedicalRecord(userId: String, part: PartData.FileItem): MedicalRecord? =
+        withContext(Dispatchers.IO) {
+            val fileId = UUID.randomUUID().toString()
+            val originalName = part.originalFileName ?: "upload_${System.currentTimeMillis()}"
 
-        // Safely extract the extension
-        val extension = originalName.substringAfterLast(".", "").lowercase()
+            // Safely extract the extension
+            val extension = originalName.substringAfterLast(".", "").lowercase()
 
-        // Security check: reject unsupported or potentially dangerous files
-        if (extension.isNotEmpty() && extension !in allowedExtensions) {
-            return@withContext null
-        }
-
-        // Construct the physical file name preserving the real extension
-        val storageFileName = if (extension.isNotEmpty()) "$fileId.$extension" else fileId
-        val physicalFile = File(uploadDir, storageFileName)
-
-        try {
-            val readChannel = part.provider()
-            readChannel.copyTo(physicalFile.writeChannel())
-
-            val actualSize = physicalFile.length()
-            val maxFileSize = 10 * 1024 * 1024L // 10 MB
-
-            if (actualSize > maxFileSize) {
-                physicalFile.delete()
+            // Security check: reject unsupported or potentially dangerous files
+            if (extension.isNotEmpty() && extension !in allowedExtensions) {
                 return@withContext null
             }
 
-            val now = System.currentTimeMillis()
+            // Construct the physical file name preserving the real extension
+            val storageFileName = if (extension.isNotEmpty()) "$fileId.$extension" else fileId
+            val physicalFile = File(uploadDir, storageFileName)
 
-            repository.insert(
-                id = fileId,
-                userId = userId,
-                fileName = originalName,
-                storagePath = physicalFile.path,
-                fileSize = actualSize,
-                createdAt = now
-            )
+            try {
+                val readChannel = part.provider()
+                readChannel.copyTo(physicalFile.writeChannel())
 
-            MedicalRecord(fileId, originalName, actualSize, now)
-        } catch (e: Exception) {
-            if (physicalFile.exists()) physicalFile.delete()
-            null
+                val actualSize = physicalFile.length()
+                val maxFileSize = 10 * 1024 * 1024L // 10 MB
+
+                if (actualSize > maxFileSize) {
+                    physicalFile.delete()
+                    return@withContext null
+                }
+
+                val now = System.currentTimeMillis()
+
+                repository.insert(
+                    id = fileId,
+                    userId = userId,
+                    fileName = originalName,
+                    storagePath = physicalFile.path,
+                    fileSize = actualSize,
+                    createdAt = now,
+                )
+
+                MedicalRecord(fileId, originalName, actualSize, now)
+            } catch (e: Exception) {
+                if (physicalFile.exists()) physicalFile.delete()
+                null
+            }
         }
-    }
 
     fun getRecordsForUser(userId: String, sortQuery: String?): List<MedicalRecord> {
         val sortOrder = when (sortQuery?.uppercase()) {
@@ -141,16 +139,14 @@ class MedicalRecordService(
             newName = safeName,
             newPath = newPath,
             newSize = fileBytes.size.toLong(),
-            newTimestamp = newTimestamp
+            newTimestamp = newTimestamp,
         )
     }
 }
 
-fun MedicalRecord.toDto(): MedicalRecordResponse {
-    return MedicalRecordResponse(
-        id = this.id,
-        fileName = this.fileName,
-        fileSize = this.fileSize,
-        createdAt = this.createdAt
-    )
-}
+fun MedicalRecord.toDto(): MedicalRecordResponse = MedicalRecordResponse(
+    id = this.id,
+    fileName = this.fileName,
+    fileSize = this.fileSize,
+    createdAt = this.createdAt,
+)

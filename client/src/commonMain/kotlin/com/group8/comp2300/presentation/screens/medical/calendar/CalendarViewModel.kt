@@ -47,7 +47,7 @@ class CalendarViewModel(private val medicalRepository: MedicalRepository) : View
                 val month = now.month.number
                 val dateString = "${now.year}-${
                     now.month.number.toString().padStart(
-                    2,
+                        2,
                         '0',
                     )
                 }-${now.day.toString().padStart(2, '0')}"

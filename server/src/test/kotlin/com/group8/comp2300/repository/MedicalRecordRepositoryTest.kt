@@ -32,7 +32,7 @@ class MedicalRecordRepositoryTest {
             fileName = "Blood_Test.pdf",
             storagePath = "uploads/file_abc123.pdf",
             fileSize = 1024L,
-            createdAt = 1700000000L
+            createdAt = 1700000000L,
         )
 
         // Assert: run SQL SELECT query

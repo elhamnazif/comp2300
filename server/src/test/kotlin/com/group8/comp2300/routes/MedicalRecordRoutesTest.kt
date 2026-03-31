@@ -2,11 +2,11 @@ package com.group8.comp2300.routes
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.group8.comp2300.data.repository.MedicalRecordRepositoryImpl
+import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import com.group8.comp2300.dto.RenameRequest
 import com.group8.comp2300.infrastructure.database.createServerDatabase
-import com.group8.comp2300.data.repository.MedicalRecordRepositoryImpl
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
-import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -46,7 +46,7 @@ class MedicalRecordRoutesTest {
     private fun Application.configureTestEnv(
         database: com.group8.comp2300.database.ServerDatabase,
         repository: MedicalRecordRepositoryImpl,
-        service: MedicalRecordService
+        service: MedicalRecordService,
     ) {
         install(ContentNegotiation) { json() }
 
@@ -58,11 +58,13 @@ class MedicalRecordRoutesTest {
         }
 
         install(Koin) {
-            modules(module {
-                single { database }
-                single { repository }
-                single { service }
-            })
+            modules(
+                module {
+                    single { database }
+                    single { repository }
+                    single { service }
+                },
+            )
         }
 
         routing { medicalRecordRoutes() }
@@ -84,7 +86,7 @@ class MedicalRecordRoutesTest {
             id = "user-1", email = "test@vita.com", passwordHash = "hash",
             firstName = "Test", lastName = "User", phone = null, dateOfBirth = null,
             gender = null, sexualOrientation = null, profileImageUrl = null,
-            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L
+            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L,
         )
 
         repository.insert("file-1", "user-1", "Old.pdf", "path", 100, 100)
@@ -118,7 +120,7 @@ class MedicalRecordRoutesTest {
             id = "user-1", email = "delete@vita.com", passwordHash = "hash",
             firstName = "Del", lastName = "User", phone = null, dateOfBirth = null,
             gender = null, sexualOrientation = null, profileImageUrl = null,
-            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L
+            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L,
         )
 
         repository.insert("del-1", "user-1", "Bye.pdf", "path", 100, 100)
@@ -134,6 +136,7 @@ class MedicalRecordRoutesTest {
         val records = repository.getRecordsByUserId("user-1", MedicalRecordSortOrder.DATE_DESC)
         assertTrue(records.isEmpty(), "Record should be deleted from DB")
     }
+
     @Test
     fun `download - returns correct content types for pdf and images`() = testApplication {
         val database = createServerDatabase("jdbc:sqlite::memory:")
@@ -147,14 +150,14 @@ class MedicalRecordRoutesTest {
             id = "user-1", email = "down@vita.com", passwordHash = "hash",
             firstName = "Test", lastName = "User", phone = null, dateOfBirth = null,
             gender = null, sexualOrientation = null, profileImageUrl = null,
-            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L
+            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L,
         )
 
         // 2. Prepare physical dummy files and DB entries
         val filesToTest = listOf(
             Triple("pdf-1", "report.pdf", ContentType.Application.Pdf),
             Triple("img-1", "rash.png", ContentType.Image.PNG),
-            Triple("img-2", "scan.jpg", ContentType.Image.JPEG)
+            Triple("img-2", "scan.jpg", ContentType.Image.JPEG),
         )
 
         filesToTest.forEach { (id, fileName, _) ->
@@ -167,7 +170,7 @@ class MedicalRecordRoutesTest {
                 fileName = fileName,
                 storagePath = physicalFile.path,
                 fileSize = physicalFile.length(),
-                createdAt = System.currentTimeMillis()
+                createdAt = System.currentTimeMillis(),
             )
         }
 
@@ -187,8 +190,10 @@ class MedicalRecordRoutesTest {
 
             // FIX: Removed the escaped quotes \" to make the check more resilient
             val expectedFileOnDisk = "$id.${fileName.substringAfterLast(".")}"
-            assertTrue(disposition.contains(expectedFileOnDisk),
-                "Header '$disposition' should contain filename '$expectedFileOnDisk'")
+            assertTrue(
+                disposition.contains(expectedFileOnDisk),
+                "Header '$disposition' should contain filename '$expectedFileOnDisk'",
+            )
         }
     }
 }

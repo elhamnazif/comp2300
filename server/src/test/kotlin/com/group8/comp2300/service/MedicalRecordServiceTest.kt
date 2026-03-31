@@ -64,7 +64,7 @@ class MedicalRecordServiceTest {
                 any(),
                 any(),
                 any(),
-                any()
+                any(),
             )
         } returns true
 
@@ -79,7 +79,7 @@ class MedicalRecordServiceTest {
                 newName = "updated_report.pdf",
                 newPath = match { it.contains(id) && it.endsWith(".pdf") },
                 newSize = newContent.size.toLong(),
-                newTimestamp = any()
+                newTimestamp = any(),
             )
         }
     }

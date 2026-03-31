@@ -10,9 +10,9 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.koin.ktor.ext.inject
-import kotlinx.io.readByteArray
 import io.ktor.utils.io.readRemaining
+import kotlinx.io.readByteArray
+import org.koin.ktor.ext.inject
 
 fun Route.medicalRecordRoutes() {
     // Use inject() so it lazily resolves from the Koin context we set up in the test
@@ -22,7 +22,6 @@ fun Route.medicalRecordRoutes() {
         // Removed the extra "/api/medical-records" nesting here
         // because it's usually handled in the main Application.kt or the Test setup
         route("/api/medical-records") {
-
             post("/upload") {
                 withUserId { userId ->
                     val multipart = call.receiveMultipart()
@@ -34,8 +33,11 @@ fun Route.medicalRecordRoutes() {
                         }
                         part.dispose()
                     }
-                    if (success) call.respond(HttpStatusCode.Created, ApiResponse(true, "Success"))
-                    else call.respond(HttpStatusCode.BadRequest, ApiResponse(false, "Failed"))
+                    if (success) {
+                        call.respond(HttpStatusCode.Created, ApiResponse(true, "Success"))
+                    } else {
+                        call.respond(HttpStatusCode.BadRequest, ApiResponse(false, "Failed"))
+                    }
                 }
             }
 
@@ -78,8 +80,13 @@ fun Route.medicalRecordRoutes() {
                 withUserId { userId ->
                     val file = service.getPhysicalFile(id, userId)
                     if (file?.exists() == true) {
-                        call.response.header(HttpHeaders.ContentDisposition,
-                            ContentDisposition.Inline.withParameter(ContentDisposition.Parameters.FileName, file.name).toString())
+                        call.response.header(
+                            HttpHeaders.ContentDisposition,
+                            ContentDisposition.Inline.withParameter(
+                                ContentDisposition.Parameters.FileName,
+                                file.name,
+                            ).toString(),
+                        )
                         call.respondFile(file)
                     } else {
                         call.respond(HttpStatusCode.NotFound, ApiResponse(false, "File not found"))
