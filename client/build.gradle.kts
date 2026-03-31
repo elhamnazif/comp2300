@@ -205,6 +205,7 @@ symbolCraft {
         "description",
         "shield",
         "call",
+        "whatshot",
     ) {
         bothFills(weight = SymbolWeight.W400, variant = SymbolVariant.OUTLINED)
     }
