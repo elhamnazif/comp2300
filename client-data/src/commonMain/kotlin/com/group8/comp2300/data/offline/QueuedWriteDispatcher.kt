@@ -4,36 +4,38 @@ import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.OutboxState
 import com.group8.comp2300.domain.repository.medical.SyncCoordinator
+import kotlinx.serialization.json.Json
 
 class QueuedWriteDispatcher(
     private val tokenManager: TokenManager,
     private val outbox: OutboxDataSource,
     private val syncCoordinator: SyncCoordinator,
+    private val json: Json = Json,
 ) {
-    suspend fun replacePending(entityType: String, localId: String, payload: String) {
-        deletePending(entityType, localId)
+    suspend fun <T> replacePending(mutation: OfflineMutationSpec<T>, localId: String, payload: T) {
+        deletePending(mutation, localId)
         outbox.enqueue(
-            entityType = entityType,
-            payload = payload,
+            entityType = mutation.type,
+            payload = json.encodeToString(mutation.serializer, payload),
             localId = localId,
             state = OutboxState.PENDING,
         )
         flushIfAuthenticated()
     }
 
-    suspend fun enqueue(entityType: String, localId: String, payload: String = "") {
+    suspend fun <T> enqueue(mutation: OfflineMutationSpec<T>, localId: String, payload: T) {
         outbox.enqueue(
-            entityType = entityType,
-            payload = payload,
+            entityType = mutation.type,
+            payload = json.encodeToString(mutation.serializer, payload),
             localId = localId,
             state = OutboxState.PENDING,
         )
         flushIfAuthenticated()
     }
 
-    fun deletePending(entityType: String, localId: String) {
+    fun deletePending(mutation: OfflineMutationSpec<*>, localId: String) {
         outbox.getAll()
-            .filter { it.entityType == entityType && it.localId == localId }
+            .filter { it.entityType == mutation.type && it.localId == localId }
             .forEach { outbox.delete(it.id) }
     }
 

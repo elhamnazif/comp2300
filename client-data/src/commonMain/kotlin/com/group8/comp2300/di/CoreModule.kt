@@ -1,6 +1,5 @@
 package com.group8.comp2300.di
 
-import co.touchlab.kermit.Logger
 import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.auth.TokenManagerImpl
 import com.group8.comp2300.data.database.DatabaseDriverFactory
@@ -16,7 +15,20 @@ import com.group8.comp2300.data.local.ReminderLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
+import com.group8.comp2300.data.offline.AppointmentMutationHandler
+import com.group8.comp2300.data.offline.CompositeOfflineDataRefresher
+import com.group8.comp2300.data.offline.MedicalOfflineDataRefresher
+import com.group8.comp2300.data.offline.MedicationDeleteMutationHandler
+import com.group8.comp2300.data.offline.MedicationLogMutationHandler
+import com.group8.comp2300.data.offline.MedicationUpsertMutationHandler
+import com.group8.comp2300.data.offline.MoodMutationHandler
+import com.group8.comp2300.data.offline.MutationHandlerRegistry
+import com.group8.comp2300.data.offline.OfflineDataRefresher
+import com.group8.comp2300.data.offline.OfflineMutationHandler
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
+import com.group8.comp2300.data.offline.RoutineDeleteMutationHandler
+import com.group8.comp2300.data.offline.RoutineOccurrenceOverrideMutationHandler
+import com.group8.comp2300.data.offline.RoutineUpsertMutationHandler
 import com.group8.comp2300.data.offline.SyncCoordinatorImpl
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.ApiServiceImpl
@@ -106,7 +118,19 @@ val coreModule = module {
     single { OutboxDataSource(get()) }
     single { ProductLocalDataSource(get()) }
     single { PersonalDataCleaner(get()) }
-    single<SyncCoordinator> { SyncCoordinatorImpl(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    singleOf(::AppointmentMutationHandler) { bind<OfflineMutationHandler>() }
+    singleOf(::MedicationUpsertMutationHandler) { bind<OfflineMutationHandler>() }
+    singleOf(::MedicationDeleteMutationHandler) { bind<OfflineMutationHandler>() }
+    singleOf(::RoutineUpsertMutationHandler) { bind<OfflineMutationHandler>() }
+    singleOf(::RoutineDeleteMutationHandler) { bind<OfflineMutationHandler>() }
+    singleOf(::RoutineOccurrenceOverrideMutationHandler) { bind<OfflineMutationHandler>() }
+    singleOf(::MedicationLogMutationHandler) { bind<OfflineMutationHandler>() }
+    singleOf(::MoodMutationHandler) { bind<OfflineMutationHandler>() }
+    single { MutationHandlerRegistry(getAll()) }
+
+    singleOf(::MedicalOfflineDataRefresher)
+    single<OfflineDataRefresher> { CompositeOfflineDataRefresher(listOf(get<MedicalOfflineDataRefresher>())) }
+    single<SyncCoordinator> { SyncCoordinatorImpl(get(), get(), get(), get()) }
     single { QueuedWriteDispatcher(get(), get(), get()) }
 
     single<ShopRepository> { ShopRepositoryImpl(get(), get()) }

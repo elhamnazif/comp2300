@@ -22,6 +22,8 @@ class AppointmentLocalDataSource(private val database: AppDatabase) {
             )
         }
 
+    fun getById(id: String): Appointment? = getAll().firstOrNull { it.id == id }
+
     fun insert(appointment: Appointment) {
         database.appDatabaseQueries.insertAppointment(
             id = appointment.id,
