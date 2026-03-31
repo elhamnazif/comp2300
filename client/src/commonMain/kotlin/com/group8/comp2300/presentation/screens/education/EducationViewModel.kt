@@ -3,7 +3,7 @@ package com.group8.comp2300.presentation.screens.education
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.group8.comp2300.domain.model.education.ContentCategory
+import com.group8.comp2300.domain.model.content.ContentTopic
 import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.Quiz
 import com.group8.comp2300.domain.repository.EducationRepository
@@ -12,8 +12,10 @@ import kotlinx.coroutines.launch
 
 class EducationViewModel(private val repository: EducationRepository) : ViewModel() {
 
-    val selectedCategory: StateFlow<ContentCategory?>
-        field = MutableStateFlow<ContentCategory?>(null)
+    val selectedCategory: StateFlow<ContentTopic?>
+        field = MutableStateFlow<ContentTopic?>(null)
+
+    private val searchQuery: MutableStateFlow<String> = MutableStateFlow("")
 
     private val refreshTrigger: MutableSharedFlow<Unit> = MutableSharedFlow(replay = 1)
 
@@ -42,6 +44,24 @@ class EducationViewModel(private val repository: EducationRepository) : ViewMode
                 )
             }
         }
+        .combine(searchQuery) { currentState, query ->
+            if (currentState.isLoading || currentState.isError) {
+                currentState
+            } else if (query.isBlank()) {
+                currentState
+            } else {
+                val searchResults = repository.searchContent(query)
+                val filtered = if (currentState.selectedCategory == null) {
+                    searchResults
+                } else {
+                    searchResults.filter { it.category == currentState.selectedCategory }
+                }
+                currentState.copy(
+                    filteredContent = filtered,
+                    searchQuery = query,
+                )
+            }
+        }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
@@ -63,9 +83,13 @@ class EducationViewModel(private val repository: EducationRepository) : ViewMode
 
     // ACTIONS
 
-    fun selectCategory(category: ContentCategory?) {
+    fun selectCategory(category: ContentTopic?) {
         // Direct access to the backing field
         selectedCategory.value = category
+    }
+
+    fun searchContent(query: String) {
+        searchQuery.value = query
     }
 
     fun refresh() {
@@ -83,7 +107,8 @@ class EducationViewModel(private val repository: EducationRepository) : ViewMode
         val isError: Boolean = false,
         val allContent: List<ContentItem> = emptyList(),
         val filteredContent: List<ContentItem> = emptyList(),
-        val selectedCategory: ContentCategory? = null,
+        val selectedCategory: ContentTopic? = null,
         val featuredItem: ContentItem? = null,
+        val searchQuery: String = "",
     )
 }

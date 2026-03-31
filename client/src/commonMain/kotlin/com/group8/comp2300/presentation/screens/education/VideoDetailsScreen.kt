@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.domain.model.education.ContentCategory
+import com.group8.comp2300.domain.model.content.ContentTopic
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.components.AppTopBarStyle
 import com.group8.comp2300.presentation.screens.auth.components.color
@@ -79,11 +79,13 @@ fun VideoDetailScreen(
                         Badge(containerColor = item.category.color, contentColor = Color.White) {
                             val labelRes =
                                 when (item.category) {
-                                    ContentCategory.PUBERTY -> Res.string.education_category_puberty
-                                    ContentCategory.RELATIONSHIPS -> Res.string.education_category_relationships
-                                    ContentCategory.STI -> Res.string.education_category_sti
-                                    ContentCategory.IDENTITY -> Res.string.education_category_identity
-                                    ContentCategory.SEXUAL_HEALTH -> Res.string.education_category_sexual_health
+                                    ContentTopic.CONTRACEPTION -> Res.string.education_topic_contraception
+                                    ContentTopic.STI_PREVENTION -> Res.string.education_topic_sti_prevention
+                                    ContentTopic.PREGNANCY -> Res.string.education_topic_pregnancy
+                                    ContentTopic.MENSTRUAL_HEALTH -> Res.string.education_topic_menstrual_health
+                                    ContentTopic.CONSENT -> Res.string.education_topic_consent
+                                    ContentTopic.RELATIONSHIPS -> Res.string.education_topic_relationships
+                                    ContentTopic.GENERAL_HEALTH -> Res.string.education_topic_general_health
                                 }
                             Text(stringResource(labelRes), modifier = Modifier.padding(4.dp))
                         }

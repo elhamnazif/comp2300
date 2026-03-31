@@ -25,6 +25,7 @@ val educationNavigationModule = module {
             filteredContent = uiState.filteredContent,
             featuredItem = uiState.featuredItem,
             selectedCategory = uiState.selectedCategory,
+            searchQuery = uiState.searchQuery,
             onContentClick = { id ->
                 val content = viewModel.getContentById(id)
                 if (content?.type == ContentType.QUIZ) {
@@ -34,6 +35,7 @@ val educationNavigationModule = module {
                 }
             },
             onCategorySelect = viewModel::selectCategory,
+            onSearchQueryChange = viewModel::searchContent,
         )
     }
 

@@ -12,4 +12,7 @@ interface EducationRepository {
 
     /** Return a quiz by its ID, or null if not found. */
     fun getQuizById(id: String): Quiz?
+
+    /** Search education content by query string. */
+    fun searchContent(query: String): List<ContentItem>
 }

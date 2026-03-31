@@ -350,6 +350,14 @@
     <!-- Education Module -->
     <string name="education_search_placeholder">Search topics, e.g., 'PrEP'</string>
     <string name="education_category_all">All</string>
+    <string name="education_topic_contraception">Contraception</string>
+    <string name="education_topic_sti_prevention">STI Prevention</string>
+    <string name="education_topic_pregnancy">Pregnancy</string>
+    <string name="education_topic_menstrual_health">Menstrual Health</string>
+    <string name="education_topic_consent">Consent</string>
+    <string name="education_topic_relationships">Relationships</string>
+    <string name="education_topic_general_health">General Health</string>
+    <string name="education_search_results">Search Results</string>
     <string name="education_featured_title">Featured Insight</string>
     <string name="education_latest_updates">Latest Updates</string>
     <string name="education_library_format">%1$s Library</string>

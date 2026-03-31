@@ -1,6 +1,6 @@
 package com.group8.comp2300.mock
 
-import com.group8.comp2300.domain.model.education.ContentCategory
+import com.group8.comp2300.domain.model.content.ContentTopic
 import com.group8.comp2300.domain.model.education.Quiz
 import com.group8.comp2300.domain.model.education.QuizQuestion
 
@@ -10,7 +10,7 @@ val allQuizzes =
             id = "conception-basics",
             title = "Conception Basics",
             description = "Test your knowledge about fertility and conception",
-            category = ContentCategory.SEXUAL_HEALTH,
+            category = ContentTopic.CONTRACEPTION,
             questions =
             listOf(
                 QuizQuestion(

@@ -46,6 +46,7 @@ import com.group8.comp2300.data.repository.ClinicRepositoryImpl
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
 import com.group8.comp2300.data.repository.LabResultsRepositoryImpl
 import com.group8.comp2300.data.repository.ReminderRepositoryImpl
+import com.group8.comp2300.data.repository.SRHContentRepositoryImpl
 import com.group8.comp2300.data.repository.ShopRepositoryImpl
 import com.group8.comp2300.data.repository.medical.AppointmentDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.CalendarDataRepositoryImpl
@@ -58,6 +59,7 @@ import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
 import com.group8.comp2300.domain.repository.LabResultsRepository
 import com.group8.comp2300.domain.repository.ReminderRepository
+import com.group8.comp2300.domain.repository.SRHContentRepository
 import com.group8.comp2300.domain.repository.ShopRepository
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 import com.group8.comp2300.domain.repository.medical.CalendarDataRepository
@@ -162,7 +164,8 @@ val coreModule = module {
     single<LabResultsRepository> { LabResultsRepositoryImpl() }
     single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get()) }
     single<ClinicRepository> { ClinicRepositoryImpl() }
-    single<EducationRepository> { EducationRepositoryImpl() }
+    single<SRHContentRepository> { SRHContentRepositoryImpl() }
+    single<EducationRepository> { EducationRepositoryImpl(get()) }
     single<ReminderRepository> { ReminderRepositoryImpl(get()) }
 
     singleOf(::GetProductsUseCase)

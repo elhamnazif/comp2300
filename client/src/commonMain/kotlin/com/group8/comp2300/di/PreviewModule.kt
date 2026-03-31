@@ -42,6 +42,10 @@ class FakeEducationRepository : EducationRepository {
     override fun getAllContent(): List<ContentItem> = educationContent
     override fun getContentById(id: String): ContentItem? = educationContent.find { it.id == id }
     override fun getQuizById(id: String): Quiz? = allQuizzes.find { it.id == id }
+    override fun searchContent(query: String): List<ContentItem> = educationContent.filter {
+        it.title.contains(query, ignoreCase = true) ||
+            it.description.contains(query, ignoreCase = true)
+    }
 }
 
 class FakeShopRepository : ShopRepository {
