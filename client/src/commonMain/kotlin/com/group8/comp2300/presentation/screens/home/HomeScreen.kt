@@ -79,8 +79,8 @@ fun HomeScreen(
                 IconButton(
                     onClick = { isPrivacyMode = !isPrivacyMode },
                     colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    ),
                 ) {
                     Icon(
                         imageVector =
@@ -127,7 +127,7 @@ fun HomeScreen(
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Center,
                 ) {
                     Icon(
                         imageVector = Icons.ShieldW400Outlinedfill1,
@@ -160,32 +160,32 @@ fun HomeScreen(
                         brush = Brush.horizontalGradient(
                             colors = listOf(
                                 MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
-                            )
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                            ),
                         ),
-                        shape = CircleShape
+                        shape = CircleShape,
                     )
                     .border(
                         width = 1.dp,
                         brush = Brush.horizontalGradient(
                             colors = listOf(
                                 MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                            )
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            ),
                         ),
-                        shape = CircleShape
-                    )
+                        shape = CircleShape,
+                    ),
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     Icon(
                         imageVector = Icons.FavoriteW400Outlined,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(18.dp)
+                        modifier = Modifier.size(18.dp),
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
@@ -204,7 +204,9 @@ fun HomeScreen(
         // Refined Daily Insight Card
         Card(
             onClick = onNavigateToEducation,
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f)),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.3f),
+            ),
             shape = RoundedCornerShape(20.dp),
             modifier = Modifier.fillMaxWidth(),
         ) {
@@ -245,7 +247,7 @@ fun HomeScreen(
         // Quick Actions Section Header
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = "Quick Actions",
@@ -347,7 +349,7 @@ fun SmartActionButton(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
-                tint = contentColor
+                tint = contentColor,
             )
             Spacer(Modifier.height(12.dp))
             Text(
@@ -361,4 +363,3 @@ fun SmartActionButton(
         }
     }
 }
-

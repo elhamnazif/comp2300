@@ -211,7 +211,10 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
 
             Column(modifier = Modifier.align(Alignment.BottomStart).padding(20.dp)) {
                 Badge(containerColor = Color.White, contentColor = Color.Black) {
-                    Text(stringResource(item.category.labelRes), modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp))
+                    Text(
+                        stringResource(item.category.labelRes),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(

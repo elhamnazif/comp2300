@@ -7,8 +7,8 @@ import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.presentation.screens.home.HomeScreen
-import com.group8.comp2300.presentation.screens.medical.medication.MedicationScreen
 import com.group8.comp2300.presentation.screens.medical.calendar.CalendarScreen
+import com.group8.comp2300.presentation.screens.medical.medication.MedicationScreen
 import com.group8.comp2300.presentation.screens.profile.ProfileScreen
 import org.koin.compose.koinInject
 import org.koin.dsl.module

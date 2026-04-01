@@ -480,15 +480,15 @@ private fun CalendarDayHeader(
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
         )
-                Text(
-                    summary,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = if (allDoses.isEmpty()) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                )
+        Text(
+            summary,
+            style = MaterialTheme.typography.titleMedium,
+            color = if (allDoses.isEmpty()) {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+        )
         if (meta.isNotBlank()) {
             Text(
                 meta,
@@ -1069,9 +1069,9 @@ private fun WrapperFormLayout(
             label = stringResource(Res.string.form_time_label),
             value = ((entryTime.first * 60L) + entryTime.second) * 60_000L,
             onClick = {
-            activeTimePicker =
-                true
-        },
+                activeTimePicker =
+                    true
+            },
         )
         content()
     }
@@ -1211,11 +1211,7 @@ private fun AppointmentDetailSheetContent(appointment: Appointment, onClose: () 
 }
 
 @Composable
-fun AppointmentCard(
-    appointment: Appointment,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {},
-) {
+fun AppointmentCard(appointment: Appointment, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     val dateTime = Instant.fromEpochMilliseconds(
         appointment.appointmentTime,
     ).toLocalDateTime(TimeZone.currentSystemDefault())

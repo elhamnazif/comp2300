@@ -10,12 +10,6 @@ import dev.icerock.moko.permissions.compose.BindEffect
 import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
 import dev.icerock.moko.permissions.notifications.REMOTE_NOTIFICATION
 
-enum class NotificationPermissionResult {
-    GRANTED,
-    DENIED,
-    DENIED_ALWAYS,
-}
-
 @Composable
 fun rememberNotificationPermissionRequester(): suspend () -> NotificationPermissionResult {
     val factory = rememberPermissionsControllerFactory()

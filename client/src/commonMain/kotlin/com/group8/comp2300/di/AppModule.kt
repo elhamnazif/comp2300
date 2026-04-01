@@ -16,9 +16,9 @@ import com.group8.comp2300.presentation.screens.auth.RealResetPasswordViewModel
 import com.group8.comp2300.presentation.screens.auth.ResetPasswordViewModel
 import com.group8.comp2300.presentation.screens.education.EducationViewModel
 import com.group8.comp2300.presentation.screens.medical.booking.BookingViewModel
+import com.group8.comp2300.presentation.screens.medical.calendar.CalendarViewModel
 import com.group8.comp2300.presentation.screens.medical.medication.MedicationViewModel
 import com.group8.comp2300.presentation.screens.medical.routine.RoutineViewModel
-import com.group8.comp2300.presentation.screens.medical.calendar.CalendarViewModel
 import com.group8.comp2300.presentation.screens.profile.ProfileViewModel
 import com.group8.comp2300.presentation.screens.shop.ShopViewModel
 import org.koin.core.module.dsl.bind
@@ -36,7 +36,7 @@ val appModule = module {
         RealAuthViewModel(
             loginUseCase = get(),
             preregisterUseCase = get(),
-            authRepository = get()
+            authRepository = get(),
         )
     } bind AuthViewModel::class
     viewModel { params ->
