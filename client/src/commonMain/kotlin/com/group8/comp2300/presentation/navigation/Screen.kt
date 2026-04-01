@@ -80,4 +80,7 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data object PrivacyLegalese : Screen
+
+    @Serializable
+    data object GuestSignIn : Screen
 }

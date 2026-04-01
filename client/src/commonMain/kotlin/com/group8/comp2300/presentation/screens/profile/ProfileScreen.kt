@@ -31,14 +31,14 @@ import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
-    isGuest: Boolean = false,
-    onRequireAuth: () -> Unit = {},
+    onNavigateToGuestSignIn: () -> Unit = {},
     onNavigateToLabResults: () -> Unit = {},
     onNavigateToPrivacySecurity: () -> Unit = {},
     onNavigateToPrivacyLegalese: () -> Unit = {},
@@ -46,180 +46,153 @@ fun ProfileScreen(
     onNavigateToHelpSupport: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    if (isGuest) {
-        NotLoggedInContent(onRequireAuth = onRequireAuth)
-    } else {
-        val uiState by viewModel.state.collectAsState()
-        val pullToRefreshState = rememberPullToRefreshState()
+    val uiState by viewModel.state.collectAsState()
+    val pullToRefreshState = rememberPullToRefreshState()
 
-        val scaleFraction = {
-            if (uiState.isLoading) {
-                1f
-            } else {
-                LinearOutSlowInEasing.transform(pullToRefreshState.distanceFraction).coerceIn(0f, 1f)
+    val scaleFraction = {
+        if (uiState.isLoading) {
+            1f
+        } else {
+            LinearOutSlowInEasing.transform(pullToRefreshState.distanceFraction).coerceIn(0f, 1f)
+        }
+    }
+
+    Box(
+        modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+            .pullToRefresh(
+                state = pullToRefreshState,
+                isRefreshing = uiState.isLoading,
+                onRefresh = viewModel::refresh,
+            ),
+    ) {
+        Column(
+            Modifier.fillMaxSize()
+                .verticalScroll(rememberScrollState()),
+        ) {
+            ScreenHeader(horizontalPadding = 0.dp) {
+                InsetContent(uiState, onNavigateToLabResults, onNavigateToGuestSignIn)
             }
+            EdgeToEdgeSettings(
+                onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
+                onNavigateToPrivacyLegalese = onNavigateToPrivacyLegalese,
+                onNavigateToNotifications = onNavigateToNotifications,
+                onNavigateToHelpSupport = onNavigateToHelpSupport,
+            )
         }
 
         Box(
-            modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .pullToRefresh(
-                    state = pullToRefreshState,
-                    isRefreshing = uiState.isLoading,
-                    onRefresh = viewModel::refresh,
-                ),
+            Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .graphicsLayer {
+                    scaleX = scaleFraction()
+                    scaleY = scaleFraction()
+                },
         ) {
-            Column(
-                Modifier.fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
-            ) {
-                ScreenHeader(horizontalPadding = 0.dp) {
-                    InsetContent(uiState, onNavigateToLabResults)
-                }
-                EdgeToEdgeSettings(
-                    onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
-                    onNavigateToPrivacyLegalese = onNavigateToPrivacyLegalese,
-                    onNavigateToNotifications = onNavigateToNotifications,
-                    onNavigateToHelpSupport = onNavigateToHelpSupport,
-                )
-            }
-
-            Box(
-                Modifier
-                    .align(Alignment.TopCenter)
-                    .statusBarsPadding()
-                    .graphicsLayer {
-                        scaleX = scaleFraction()
-                        scaleY = scaleFraction()
-                    },
-            ) {
-                PullToRefreshDefaults.LoadingIndicator(state = pullToRefreshState, isRefreshing = uiState.isLoading)
-            }
+            PullToRefreshDefaults.LoadingIndicator(state = pullToRefreshState, isRefreshing = uiState.isLoading)
         }
     }
 }
 
-/* ------------------  NOT LOGGED IN CONTENT  ------------------ */
 @Composable
-private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = Modifier) {
+fun GuestSignInScreen(onRequireAuth: () -> Unit, modifier: Modifier = Modifier) {
     Column(
-        modifier =
         modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(rememberScrollState())
+            .statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         ScreenHeader(horizontalPadding = 24.dp) {
             Spacer(Modifier.height(16.dp))
-
-            // Hero Section
-            HeroSection()
-
-            Spacer(Modifier.height(32.dp))
-
-            // Feature Preview Cards
-            Text(
-                stringResource(Res.string.profile_why_account_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.align(Alignment.Start),
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            FeatureCard(
-                icon = Icons.CheckCircleW400Outlinedfill1,
-                title = stringResource(Res.string.profile_track_results_title),
-                description = stringResource(Res.string.profile_track_results_desc),
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            FeatureCard(
-                icon = Icons.DateRangeW400Outlinedfill1,
-                title = stringResource(Res.string.profile_schedule_screenings_title),
-                description = stringResource(Res.string.profile_schedule_screenings_desc),
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            FeatureCard(
-                icon = Icons.LockW400Outlinedfill1,
-                title = stringResource(Res.string.profile_private_secure_title),
-                description = stringResource(Res.string.profile_private_secure_desc),
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            FeatureCard(
-                icon = Icons.SendW400Outlinedfill1,
-                title = stringResource(Res.string.profile_anonymous_partner_title),
-                description = stringResource(Res.string.profile_anonymous_partner_desc),
-            )
-
-            Spacer(Modifier.height(32.dp))
-
-            // Call to Action Section
-            Button(
-                onClick = onRequireAuth,
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-            ) {
-                Text(
-                    stringResource(Res.string.profile_sign_in_label),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-            }
-
-            Spacer(Modifier.height(24.dp))
-
-            Text(
-                stringResource(Res.string.profile_guest_limited_access),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondary,
-            )
-
+            NotLoggedInContent(onRequireAuth = onRequireAuth)
             Spacer(Modifier.height(32.dp))
         }
     }
 }
 
+/* ------------------  INSET CONTENT  ------------------ */
 @Composable
-private fun HeroSection(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        Surface(
-            shape = CircleShape,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            modifier = Modifier.size(120.dp),
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    Icons.HealthAndSafetyW400Outlined,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(64.dp),
-                )
-            }
+private fun InsetContent(
+    state: ProfileViewModel.State,
+    onNavigateToLabResults: () -> Unit,
+    onNavigateToGuestSignIn: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier.padding(horizontal = 16.dp)) {
+        Header(state, onNavigateToGuestSignIn = onNavigateToGuestSignIn)
+        if (state.userName.isNotEmpty()) {
+            Spacer(Modifier.height(24.dp))
+            RecentResultsCard(state.recentResults, state.isLoading, onNavigateToLabResults)
         }
-
         Spacer(Modifier.height(24.dp))
-
         Text(
-            text = stringResource(Res.string.profile_hero_title),
-            style = MaterialTheme.typography.headlineMedium,
+            stringResource(Res.string.profile_settings_title),
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(bottom = 8.dp),
+        )
+    }
+}
+
+/* ------------------  SIGN IN CONTENT  ------------------ */
+@Composable
+private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = Modifier) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            stringResource(Res.string.profile_why_account_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.Start),
         )
 
         Spacer(Modifier.height(12.dp))
 
-        Text(
-            text = stringResource(Res.string.profile_hero_desc),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.secondary,
+        FeatureCard(
+            icon = Icons.CheckCircleW400Outlinedfill1,
+            title = stringResource(Res.string.profile_track_results_title),
+            description = stringResource(Res.string.profile_track_results_desc),
         )
+
+        Spacer(Modifier.height(12.dp))
+
+        FeatureCard(
+            icon = Icons.DateRangeW400Outlinedfill1,
+            title = stringResource(Res.string.profile_schedule_screenings_title),
+            description = stringResource(Res.string.profile_schedule_screenings_desc),
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        FeatureCard(
+            icon = Icons.LockW400Outlinedfill1,
+            title = stringResource(Res.string.profile_private_secure_title),
+            description = stringResource(Res.string.profile_private_secure_desc),
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        FeatureCard(
+            icon = Icons.SendW400Outlinedfill1,
+            title = stringResource(Res.string.profile_anonymous_partner_title),
+            description = stringResource(Res.string.profile_anonymous_partner_desc),
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        Button(
+            onClick = onRequireAuth,
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+        ) {
+            Text(
+                stringResource(Res.string.profile_sign_in_label),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+        }
     }
 }
 
@@ -265,41 +238,52 @@ private fun FeatureCard(icon: ImageVector, title: String, description: String, m
     }
 }
 
-/* ------------------  INSET CONTENT  ------------------ */
-@Composable
-private fun InsetContent(
-    state: ProfileViewModel.State,
-    onNavigateToLabResults: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier.padding(horizontal = 16.dp)) {
-        Header(state)
-        Spacer(Modifier.height(24.dp))
-        RecentResultsCard(state.recentResults, onNavigateToLabResults)
-        Spacer(Modifier.height(24.dp))
-        CommunityCard()
-        Spacer(Modifier.height(24.dp))
-        Text(
-            stringResource(Res.string.profile_settings_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp),
-        )
-    }
-}
-
 /* ------------------  HEADER  ------------------ */
 @Composable
-private fun Header(state: ProfileViewModel.State) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Avatar(
-            state.userInitials.ifEmpty {
-                stringResource(Res.string.profile_default_user_initials)
-            },
-            isLoading = state.isLoading,
-        )
-        Spacer(Modifier.width(16.dp))
-        UserInfo(state.userName, state.memberSince, isLoading = state.isLoading)
+private fun Header(state: ProfileViewModel.State, onNavigateToGuestSignIn: () -> Unit) {
+    if (!state.isLoading && state.userName.isEmpty()) {
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            onClick = onNavigateToGuestSignIn,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                Modifier.padding(16.dp).fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Avatar(stringResource(Res.string.profile_default_user_initials))
+                Spacer(Modifier.width(16.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        stringResource(Res.string.profile_sign_in_label),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                    Text(
+                        stringResource(Res.string.profile_sign_in_card_desc),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+                Icon(
+                    Icons.ChevronRightW400Outlined,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+            }
+        }
+    } else {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Avatar(
+                state.userInitials.ifEmpty {
+                    stringResource(Res.string.profile_default_user_initials)
+                },
+                isLoading = state.isLoading,
+            )
+            Spacer(Modifier.width(16.dp))
+            UserInfo(state.userName, state.memberSince, isLoading = state.isLoading)
+        }
     }
 }
 
@@ -351,6 +335,7 @@ private fun UserInfo(name: String, memberSince: String, modifier: Modifier = Mod
 @Composable
 private fun RecentResultsCard(
     results: List<LabResult>,
+    isLoading: Boolean,
     onNavigateToLabResults: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -367,10 +352,17 @@ private fun RecentResultsCard(
             )
             Spacer(Modifier.height(12.dp))
             if (results.isEmpty()) {
-                // Simplified loading state for results
-                repeat(2) {
-                    ResultShimmer()
-                    Spacer(Modifier.height(12.dp))
+                if (isLoading) {
+                    repeat(2) {
+                        ResultShimmer()
+                        Spacer(Modifier.height(12.dp))
+                    }
+                } else {
+                    Text(
+                        stringResource(Res.string.profile_no_results),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
                 }
             } else {
                 results.forEachIndexed { index, result ->
@@ -430,17 +422,24 @@ private fun ResultShimmer() {
     }
 }
 
+private data class LabResultStatusColors(val bgColor: Color, val textColor: Color, val statusRes: StringResource)
+
 @Composable
-private fun StatusSurface(result: LabResult) {
+private fun labResultStatusColors(result: LabResult): LabResultStatusColors {
     val bgColor = if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
     val textColor = if (result.isPositive) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
-    val statusRes =
-        when (result.status) {
-            LabStatus.PENDING -> Res.string.lab_status_pending
-            LabStatus.NEGATIVE -> Res.string.lab_status_negative
-            LabStatus.POSITIVE -> Res.string.lab_status_positive
-            LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
-        }
+    val statusRes = when (result.status) {
+        LabStatus.PENDING -> Res.string.lab_status_pending
+        LabStatus.NEGATIVE -> Res.string.lab_status_negative
+        LabStatus.POSITIVE -> Res.string.lab_status_positive
+        LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
+    }
+    return LabResultStatusColors(bgColor, textColor, statusRes)
+}
+
+@Composable
+private fun StatusSurface(result: LabResult) {
+    val (bgColor, textColor, statusRes) = labResultStatusColors(result)
     Surface(color = bgColor, shape = RoundedCornerShape(8.dp)) {
         Text(
             stringResource(statusRes),
@@ -449,34 +448,6 @@ private fun StatusSurface(result: LabResult) {
             color = textColor,
             fontWeight = FontWeight.Bold,
         )
-    }
-}
-
-/* ------------------  COMMUNITY CARD  ------------------ */
-@Composable
-private fun CommunityCard(modifier: Modifier = Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
-        onClick = {},
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.SendW400Outlinedfill1, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
-            Spacer(Modifier.width(16.dp))
-            Column {
-                Text(
-                    stringResource(Res.string.profile_notify_partners_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                )
-                Text(
-                    stringResource(Res.string.profile_notify_partners_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onTertiaryContainer,
-                )
-            }
-        }
     }
 }
 

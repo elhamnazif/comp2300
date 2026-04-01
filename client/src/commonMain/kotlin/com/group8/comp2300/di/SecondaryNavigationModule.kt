@@ -1,12 +1,17 @@
 package com.group8.comp2300.di
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.presentation.screens.medical.labresults.LabResultsScreen
 import com.group8.comp2300.presentation.screens.medical.routine.RoutineScreen
 import com.group8.comp2300.presentation.screens.medical.selfdiagnosis.SelfDiagnosisScreen
+import com.group8.comp2300.presentation.screens.profile.GuestSignInScreen
 import com.group8.comp2300.presentation.screens.profile.HelpSupportScreen
 import com.group8.comp2300.presentation.screens.profile.NotificationsScreen
 import com.group8.comp2300.presentation.screens.profile.PrivacyLegaleseScreen
@@ -37,9 +42,19 @@ val secondaryNavigationModule = module {
         val navigator = LocalNavigator.current
         val pinDataSource = koinInject<PinDataSource>()
         val scope = rememberCoroutineScope()
+        var isPinEnabled by remember { mutableStateOf(pinDataSource.isPinSet()) }
         PrivacySecurityScreen(
             onBack = navigator::goBack,
-            onChangePin = { pin -> scope.launch { pinDataSource.savePin(pin) } },
+            isPinEnabled = isPinEnabled,
+            onVerifyPin = { pin -> pinDataSource.verifyPin(pin) },
+            onSavePin = { pin ->
+                scope.launch { pinDataSource.savePin(pin) }
+                isPinEnabled = true
+            },
+            onClearPin = {
+                scope.launch { pinDataSource.clearPin() }
+                isPinEnabled = false
+            },
         )
     }
 
@@ -68,6 +83,13 @@ val secondaryNavigationModule = module {
         val navigator = LocalNavigator.current
         PrivacyLegaleseScreen(
             onBack = navigator::goBack,
+        )
+    }
+
+    navigation<Screen.GuestSignIn> {
+        val navigator = LocalNavigator.current
+        GuestSignInScreen(
+            onRequireAuth = { navigator.requireAuth() },
         )
     }
 }

@@ -41,8 +41,7 @@ val mainNavigationModule = module {
         val session by authRepository.session.collectAsState()
         val isSignedIn = session is AuthSession.SignedIn
         ProfileScreen(
-            isGuest = !isSignedIn,
-            onRequireAuth = { navigator.requireAuth(Screen.Profile) },
+            onNavigateToGuestSignIn = { navigator.navigate(Screen.GuestSignIn) },
             onNavigateToLabResults = {
                 if (isSignedIn) navigator.navigate(Screen.LabResults) else navigator.requireAuth(Screen.Profile)
             },

@@ -17,6 +17,7 @@ import com.group8.comp2300.mock.sampleResults
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.util.DateFormatter
 import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -214,18 +215,24 @@ private fun LabResultCard(result: LabResult) {
     }
 }
 
+private data class LabResultStatusColors(val bgColor: Color, val textColor: Color, val statusRes: StringResource)
+
 @Composable
-private fun StatusBadge(result: LabResult) {
+private fun labResultStatusColors(result: LabResult): LabResultStatusColors {
     val bgColor = if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
     val textColor = if (result.isPositive) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
+    val statusRes = when (result.status) {
+        LabStatus.PENDING -> Res.string.lab_status_pending
+        LabStatus.NEGATIVE -> Res.string.lab_status_negative
+        LabStatus.POSITIVE -> Res.string.lab_status_positive
+        LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
+    }
+    return LabResultStatusColors(bgColor, textColor, statusRes)
+}
 
-    val statusRes =
-        when (result.status) {
-            LabStatus.PENDING -> Res.string.lab_status_pending
-            LabStatus.NEGATIVE -> Res.string.lab_status_negative
-            LabStatus.POSITIVE -> Res.string.lab_status_positive
-            LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
-        }
+@Composable
+private fun StatusBadge(result: LabResult) {
+    val (bgColor, textColor, statusRes) = labResultStatusColors(result)
     Surface(color = bgColor, shape = RoundedCornerShape(8.dp)) {
         Text(
             stringResource(statusRes),

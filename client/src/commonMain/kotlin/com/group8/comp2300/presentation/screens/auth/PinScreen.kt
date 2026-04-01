@@ -36,6 +36,7 @@ fun PinScreen(
     description: String? = null,
     errorMessage: String? = null,
     onErrorMessageCleared: () -> Unit = {},
+    onDismiss: (() -> Unit)? = null,
 ) {
     var pin by remember { mutableStateOf("") }
     var savedPin by remember { mutableStateOf<CharArray?>(null) }
@@ -147,6 +148,23 @@ fun PinScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        if (onDismiss != null) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            ) {
+                FilledTonalButton(onClick = onDismiss) {
+                    Icon(
+                        Icons.ArrowBackW400Outlinedfill1,
+                        contentDescription = stringResource(Res.string.auth_back_desc),
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(Res.string.auth_back_desc))
+                }
+            }
+            Spacer(Modifier.height(16.dp))
+        }
+
         Icon(
             Icons.LockW400Outlinedfill1,
             contentDescription = null,
