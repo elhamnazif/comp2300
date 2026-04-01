@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.screens.medical
+package com.group8.comp2300.presentation.screens.medical.components
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement

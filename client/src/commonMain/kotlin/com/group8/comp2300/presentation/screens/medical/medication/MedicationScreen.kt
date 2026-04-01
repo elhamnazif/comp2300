@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.screens.medical
+package com.group8.comp2300.presentation.screens.medical.medication
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -18,6 +18,12 @@ import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.notifications.NotificationPermissionResult
 import com.group8.comp2300.presentation.notifications.rememberNotificationPermissionRequester
+import com.group8.comp2300.presentation.screens.medical.components.EmptyStateMessage
+import com.group8.comp2300.presentation.screens.medical.components.MedicalFormTextField
+import com.group8.comp2300.presentation.screens.medical.components.ScheduleFormSheet
+import com.group8.comp2300.presentation.screens.medical.components.SectionHeader
+import com.group8.comp2300.presentation.screens.medical.components.formatTimeOfDayMs
+import com.group8.comp2300.presentation.screens.medical.components.scheduleLinkSummary
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DeleteW400Outlined
@@ -264,22 +270,6 @@ fun MedicationScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun SectionHeader(title: String, count: Int, modifier: Modifier = Modifier) {
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.size(8.dp))
-        Badge { Text(count.toString()) }
-    }
-}
-
-@Composable
-fun EmptyStateMessage(msg: String, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
-        Text(msg, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -600,3 +590,19 @@ private fun scheduleWeekdayLabel(day: Int): String = when (day) {
     6 -> "Sat"
     else -> ""
 }
+
+private fun parseColorHex(hex: String?): Color = try {
+    val raw = (hex ?: Medication.PRESET_COLORS.first()).removePrefix("#")
+    Color((raw.toLong(16) or 0xFF000000L).toInt())
+} catch (_: Exception) {
+    Color(0xFF42A5F5)
+}
+
+private fun Color.toHexString(): String {
+    val red = (this.red * 255).toInt().coerceIn(0, 255)
+    val green = (this.green * 255).toInt().coerceIn(0, 255)
+    val blue = (this.blue * 255).toInt().coerceIn(0, 255)
+    return "#${red.hex2()}${green.hex2()}${blue.hex2()}"
+}
+
+private fun Int.hex2(): String = toString(16).uppercase().padStart(2, '0')

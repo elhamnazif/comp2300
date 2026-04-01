@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.screens.medical
+package com.group8.comp2300.presentation.screens.medical.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.CheckCircleW400Outlinedfill1
@@ -152,22 +151,6 @@ fun TimePickerSheet(initialTimeMs: Long, onDismiss: () -> Unit, onConfirm: (Long
         text = { TimePicker(state = state) },
     )
 }
-
-fun parseColorHex(hex: String?): Color = try {
-    val raw = (hex ?: Medication.PRESET_COLORS.first()).removePrefix("#")
-    Color((raw.toLong(16) or 0xFF000000L).toInt())
-} catch (_: Exception) {
-    Color(0xFF42A5F5)
-}
-
-fun Color.toHexString(): String {
-    val red = (this.red * 255).toInt().coerceIn(0, 255)
-    val green = (this.green * 255).toInt().coerceIn(0, 255)
-    val blue = (this.blue * 255).toInt().coerceIn(0, 255)
-    return "#${red.hex2()}${green.hex2()}${blue.hex2()}"
-}
-
-private fun Int.hex2(): String = toString(16).uppercase().padStart(2, '0')
 
 private fun LocalDate.atStartOfDayMillis(): Long =
     LocalDateTime(this, LocalTime(0, 0)).toInstant(TimeZone.UTC).toEpochMilliseconds()

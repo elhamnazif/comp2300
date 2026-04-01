@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.screens.medical
+package com.group8.comp2300.presentation.screens.medical.routine
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

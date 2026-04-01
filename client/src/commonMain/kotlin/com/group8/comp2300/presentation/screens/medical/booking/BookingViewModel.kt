@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.screens.medical
+package com.group8.comp2300.presentation.screens.medical.booking
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel

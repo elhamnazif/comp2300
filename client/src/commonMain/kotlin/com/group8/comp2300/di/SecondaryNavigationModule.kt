@@ -4,9 +4,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
-import com.group8.comp2300.presentation.screens.medical.LabResultsScreen
-import com.group8.comp2300.presentation.screens.medical.RoutineScreen
-import com.group8.comp2300.presentation.screens.medical.SelfDiagnosisScreen
+import com.group8.comp2300.presentation.screens.medical.labresults.LabResultsScreen
+import com.group8.comp2300.presentation.screens.medical.routine.RoutineScreen
+import com.group8.comp2300.presentation.screens.medical.selfdiagnosis.SelfDiagnosisScreen
 import com.group8.comp2300.presentation.screens.profile.HelpSupportScreen
 import com.group8.comp2300.presentation.screens.profile.NotificationsScreen
 import com.group8.comp2300.presentation.screens.profile.PrivacyLegaleseScreen

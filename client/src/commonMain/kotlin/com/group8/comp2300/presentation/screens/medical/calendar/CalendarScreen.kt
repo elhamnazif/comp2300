@@ -26,7 +26,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.presentation.components.AppTopBar
-import com.group8.comp2300.presentation.screens.medical.*
+import com.group8.comp2300.presentation.screens.medical.components.DatePickerSheet
+import com.group8.comp2300.presentation.screens.medical.components.DateValueField
+import com.group8.comp2300.presentation.screens.medical.components.EmptyStateMessage
+import com.group8.comp2300.presentation.screens.medical.components.TimePickerSheet
+import com.group8.comp2300.presentation.screens.medical.components.TimeValueField
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
@@ -230,7 +234,7 @@ fun CalendarScreen(
                 }
                 items(
                     items = state.manualLogs,
-                    key = { if (it.id.isBlank()) "manual:${it.medicationTime}" else it.id },
+                    key = { it.id.ifBlank { "manual:${it.medicationTime}" } },
                 ) { log ->
                     ManualLogCard(log = log)
                 }
@@ -246,7 +250,7 @@ fun CalendarScreen(
                 }
                 items(
                     items = selectedAppointments,
-                    key = { if (it.id.isBlank()) "appt:${it.appointmentTime}" else it.id },
+                    key = { it.id.ifBlank { "appt:${it.appointmentTime}" } },
                 ) { appointment ->
                     AppointmentCard(
                         appointment = appointment,

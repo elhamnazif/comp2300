@@ -52,6 +52,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.koinConfiguration
 import org.koin.dsl.module
+import kotlin.collections.listOf
 
 @Composable
 fun App() {
@@ -160,7 +161,7 @@ fun MainApp(
                 ) { _ ->
                     NavDisplay(
                         backStack = navigator.backStack,
-                        sceneStrategy = supportingPaneStrategy,
+                        sceneStrategies = listOf(supportingPaneStrategy),
                         onBack = navigator::goBack,
                         transitionSpec = { pushAnimation },
                         popTransitionSpec = { popAnimation },

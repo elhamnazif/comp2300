@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.screens.medical
+package com.group8.comp2300.presentation.screens.medical.labresults
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState

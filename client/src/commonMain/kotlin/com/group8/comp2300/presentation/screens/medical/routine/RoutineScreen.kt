@@ -1,4 +1,4 @@
-package com.group8.comp2300.presentation.screens.medical
+package com.group8.comp2300.presentation.screens.medical.routine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,6 +19,9 @@ import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.notifications.NotificationPermissionResult
 import com.group8.comp2300.presentation.notifications.rememberNotificationPermissionRequester
+import com.group8.comp2300.presentation.screens.medical.components.ScheduleFormSheet
+import com.group8.comp2300.presentation.screens.medical.components.SectionHeader
+import com.group8.comp2300.presentation.screens.medical.components.formatTimesSummary
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400Outlinedfill1

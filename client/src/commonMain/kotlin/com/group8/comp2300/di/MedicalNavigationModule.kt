@@ -7,9 +7,9 @@ import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
-import com.group8.comp2300.presentation.screens.medical.BookingDetailsScreen
-import com.group8.comp2300.presentation.screens.medical.BookingScreen
-import com.group8.comp2300.presentation.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.screens.medical.booking.BookingDetailsScreen
+import com.group8.comp2300.presentation.screens.medical.booking.BookingScreen
+import com.group8.comp2300.presentation.screens.medical.booking.BookingViewModel
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.module

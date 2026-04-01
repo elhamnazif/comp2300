@@ -22,7 +22,7 @@ import com.group8.comp2300.mock.sampleClinics
 import com.group8.comp2300.mock.sampleProducts
 import com.group8.comp2300.presentation.screens.auth.AuthViewModel
 import com.group8.comp2300.presentation.screens.education.EducationViewModel
-import com.group8.comp2300.presentation.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.screens.medical.booking.BookingViewModel
 import com.group8.comp2300.presentation.screens.shop.ShopViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
