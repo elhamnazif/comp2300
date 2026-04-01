@@ -18,7 +18,7 @@ import kotlin.time.Instant
 
 private const val RoutineNotificationChannelId = "routine_reminders"
 
-class AndroidRoutineNotificationPlatform(private val context: Context) : RoutineNotificationPlatform {
+class AndroidRoutineNotificationService(private val context: Context) : RoutineNotificationService {
     private val alarmeeService = createAlarmeeService().apply {
         initialize(
             platformConfiguration = AlarmeeAndroidPlatformConfiguration(

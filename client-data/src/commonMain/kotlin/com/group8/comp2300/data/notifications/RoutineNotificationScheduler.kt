@@ -27,7 +27,7 @@ class RoutineNotificationBootstrap(private val scheduler: RoutineNotificationSch
     }
 }
 
-interface RoutineNotificationPlatform {
+interface RoutineNotificationService {
     suspend fun schedule(notification: ScheduledRoutineNotification)
 
     suspend fun cancel(notificationId: String)
@@ -47,7 +47,7 @@ class RoutineNotificationSchedulerImpl(
     private val routineLocal: RoutineLocalDataSource,
     private val routineOccurrenceOverrideLocal: RoutineOccurrenceOverrideLocalDataSource,
     private val registry: RoutineNotificationRegistry,
-    private val platform: RoutineNotificationPlatform,
+    private val platform: RoutineNotificationService,
     private val clock: Clock = Clock.System,
     private val timeZone: TimeZone = TimeZone.currentSystemDefault(),
 ) : RoutineNotificationScheduler {

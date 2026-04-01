@@ -15,7 +15,7 @@ import platform.UserNotifications.UNUserNotificationCenter
 import kotlin.coroutines.resume
 import kotlin.time.Instant
 
-class IosRoutineNotificationPlatform : RoutineNotificationPlatform {
+class IosRoutineNotificationService : RoutineNotificationService {
     private val alarmeeService = createAlarmeeService().apply {
         initialize(platformConfiguration = AlarmeeIosPlatformConfiguration)
     }

@@ -17,7 +17,7 @@ import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
-import com.group8.comp2300.data.notifications.RoutineNotificationPlatform
+import com.group8.comp2300.data.notifications.RoutineNotificationService
 import com.group8.comp2300.data.notifications.RoutineNotificationRegistry
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.notifications.RoutineNotificationSchedulerImpl
@@ -135,7 +135,7 @@ val coreModule = module {
             routineLocal = get(),
             routineOccurrenceOverrideLocal = get(),
             registry = get(),
-            platform = get<RoutineNotificationPlatform>(),
+            platform = get<RoutineNotificationService>(),
         )
     }
     single { RoutineNotificationBootstrap(get()) }

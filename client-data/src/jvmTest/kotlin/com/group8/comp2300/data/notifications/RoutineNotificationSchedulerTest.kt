@@ -127,7 +127,7 @@ class RoutineNotificationSchedulerTest {
 
 private class SchedulerFixture(
     val scheduler: RoutineNotificationScheduler,
-    val platform: RecordingPlatform,
+    val platform: RecordingService,
     val registry: RoutineNotificationRegistry,
     val overrideLocal: RoutineOccurrenceOverrideLocalDataSource,
 ) {
@@ -161,7 +161,7 @@ private fun schedulerFixture(nowMs: Long): SchedulerFixture {
     val routineLocal = RoutineLocalDataSource(db)
     val overrideLocal = RoutineOccurrenceOverrideLocalDataSource(db)
     val registry = RoutineNotificationRegistry(Settings())
-    val platform = RecordingPlatform()
+    val platform = RecordingService()
     return SchedulerFixture(
         scheduler = RoutineNotificationSchedulerImpl(
             routineLocal = routineLocal,
@@ -177,7 +177,7 @@ private fun schedulerFixture(nowMs: Long): SchedulerFixture {
     )
 }
 
-private class RecordingPlatform : RoutineNotificationPlatform {
+private class RecordingService : RoutineNotificationService {
     val scheduled = mutableListOf<ScheduledRoutineNotification>()
     val canceled = mutableListOf<String>()
 
