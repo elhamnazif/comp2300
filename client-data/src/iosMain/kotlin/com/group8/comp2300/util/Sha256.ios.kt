@@ -11,5 +11,5 @@ actual fun sha256(input: String): String {
     val inputBytes = input.toByteArray()
     val digest = UByteArray(32)
     CC_SHA256(inputBytes.refTo(0), inputBytes.size.toUInt(), digest.refTo(0))
-    return digest.joinToString("") { "%02x".format(it) }
+    return digest.joinToString("") { "%02x".format(it.toInt()) }
 }

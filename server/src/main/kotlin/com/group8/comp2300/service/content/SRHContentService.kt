@@ -11,14 +11,22 @@ class SRHContentService(private val repository: SRHContentRepository) {
      */
     fun searchContent(request: SearchRequest): List<SearchResult> {
         // Step 1: Get initial results based on query
-        var results = if (!request.query.isNullOrBlank()) {
-            repository.search(request.query)
-        } else if (request.topics.isNotEmpty()) {
-            repository.findByTopics(request.topics)
-        } else if (request.keywords.isNotEmpty()) {
-            repository.findByKeywords(request.keywords)
-        } else {
-            repository.getAll()
+        var results = when {
+            !request.query.isNullOrBlank() -> {
+                repository.search(request.query)
+            }
+
+            request.topics.isNotEmpty() -> {
+                repository.findByTopics(request.topics)
+            }
+
+            request.keywords.isNotEmpty() -> {
+                repository.findByKeywords(request.keywords)
+            }
+
+            else -> {
+                repository.getAll()
+            }
         }.toMutableList()
 
         // Step 2: Apply additional filters
@@ -60,7 +68,7 @@ class SRHContentService(private val repository: SRHContentRepository) {
     /**
      * Get all available topics (for filter UI)
      */
-    fun getAllTopics(): List<ContentTopic> = ContentTopic.values().toList()
+    fun getAllTopics(): List<ContentTopic> = ContentTopic.entries
 
     /**
      * Get popular keywords (for suggestions)

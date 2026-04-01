@@ -32,7 +32,13 @@ val appModule = module {
     viewModel<Navigator> { RealNavigator(get(), Screen.Onboarding) }
 
     // ViewModels
-    viewModelOf(::RealAuthViewModel) { bind<AuthViewModel>() }
+    viewModel {
+        RealAuthViewModel(
+            loginUseCase = get(),
+            preregisterUseCase = get(),
+            authRepository = get()
+        )
+    } bind AuthViewModel::class
     viewModel { params ->
         RealEmailVerificationViewModel(
             activateAccountUseCase = get(),
