@@ -57,6 +57,11 @@ class PinLockViewModel(private val pinDataSource: PinDataSource, private val rat
         error.value = null
     }
 
+    fun onBiometricUnlock() {
+        rateLimiter.resetAttempts()
+        isLocked.value = false
+    }
+
     private fun updateLockoutError() {
         val remaining = rateLimiter.remainingLockoutMs()
         if (remaining <= 0L) {

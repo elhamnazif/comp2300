@@ -106,4 +106,5 @@ dependencies {
     implementation(project(":client"))
     implementation(libs.androidx.activityCompose)
     implementation(libs.compose.nav3)
+    implementation(libs.androidx.appcompat)
 }

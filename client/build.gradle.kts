@@ -120,6 +120,9 @@ kotlin {
                 implementation(libs.moko.permissions.compose)
                 implementation(libs.moko.permissions)
                 implementation(libs.moko.permissions.notifications)
+
+                // Auth
+                implementation(libs.biometrik)
             }
         }
 
@@ -129,6 +132,7 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation(libs.androidx.biometric)
             implementation(libs.kotlinx.coroutines.android)
         }
 

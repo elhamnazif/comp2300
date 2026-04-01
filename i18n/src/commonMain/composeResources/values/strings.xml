@@ -107,6 +107,10 @@
     <string name="onboarding_pin_mismatch">PINs do not match. Please try again.</string>
     <string name="pin_unlock_title">Enter your PIN</string>
     <string name="pin_unlock_desc">Enter your PIN to unlock the app.</string>
+    <string name="pin_biometric_prompt_title">Unlock Vita</string>
+    <string name="pin_biometric_prompt_reason">Authenticate to access your health data</string>
+    <string name="pin_biometric_failed">Biometric authentication failed</string>
+    <string name="pin_use_biometric_desc">Use biometrics</string>
     <string name="onboarding_back">Back</string>
     <string name="onboarding_skip">Skip</string>
     <string name="onboarding_all_set">You're all set!</string>

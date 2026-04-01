@@ -187,6 +187,7 @@ fun MainApp(
                     isSetup = false,
                     errorMessage = pinLockViewModel.error.collectAsState().value,
                     onErrorMessageCleared = { pinLockViewModel.clearError() },
+                    onBiometricSuccess = { pinLockViewModel.onBiometricUnlock() },
                 )
             }
         }

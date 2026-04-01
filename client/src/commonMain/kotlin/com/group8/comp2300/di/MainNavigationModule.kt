@@ -45,13 +45,9 @@ val mainNavigationModule = module {
             onNavigateToLabResults = {
                 if (isSignedIn) navigator.navigate(Screen.LabResults) else navigator.requireAuth(Screen.Profile)
             },
-            onNavigateToPrivacySecurity = {
-                if (isSignedIn) navigator.navigate(Screen.PrivacySecurity) else navigator.requireAuth(Screen.Profile)
-            },
+            onNavigateToPrivacySecurity = { navigator.navigate(Screen.PrivacySecurity) },
             onNavigateToPrivacyLegalese = { navigator.navigate(Screen.PrivacyLegalese) },
-            onNavigateToNotifications = {
-                if (isSignedIn) navigator.navigate(Screen.Notifications) else navigator.requireAuth(Screen.Profile)
-            },
+            onNavigateToNotifications = { navigator.navigate(Screen.Notifications) },
             onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) },
         )
     }

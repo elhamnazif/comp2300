@@ -15,6 +15,7 @@ androidxActivityCompose = "1.13.0"
 androidxLifecycle = "2.10.0"
 androidxNav3 = "1.1.0-alpha04"
 androidxSavedstate = "1.4.0"
+androidxBiometric = "1.1.0"
 
 # Kotlinx
 kotlinxCoroutines = "1.10.2"
@@ -41,6 +42,9 @@ materialKolor = "5.0.0-alpha07"
 sketch = "4.3.1"
 symbolcraft = "0.3.4"
 maplibre = "0.12.1"
+
+# Auth
+biometrik = "1.0.1"
 
 # Build tools
 buildkonfig = "0.17.1"
@@ -87,6 +91,8 @@ material3-adaptive-navigation-suite = { module = "org.jetbrains.compose.material
 
 # AndroidX
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivityCompose" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
+androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "androidxBiometric" }
 androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidxLifecycle" }
@@ -152,6 +158,9 @@ alarmee = { module = "io.github.tweener:alarmee", version.ref = "alarmee" }
 moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "mokoPermissions" }
 moko-permissions-notifications = { module = "dev.icerock.moko:permissions-notifications", version.ref = "mokoPermissions" }
 moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "mokoPermissions" }
+
+# Auth
+biometrik = { module = "io.github.n7ghtm4r3:biometrik", version.ref = "biometrik" }
 
 # MP Tools
 mp-stools = { module = "net.sergeych:mp_stools", version = "1.6.3" }

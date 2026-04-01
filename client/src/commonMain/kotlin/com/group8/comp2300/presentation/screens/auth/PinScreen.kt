@@ -16,6 +16,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -23,6 +24,8 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.group8.comp2300.util.constantTimeEquals
+import com.tecknobit.biometrik.BiometrikAuthenticator
+import com.tecknobit.biometrik.rememberBiometrikState
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
@@ -37,6 +40,7 @@ fun PinScreen(
     errorMessage: String? = null,
     onErrorMessageCleared: () -> Unit = {},
     onDismiss: (() -> Unit)? = null,
+    onBiometricSuccess: (() -> Unit)? = null,
 ) {
     var pin by remember { mutableStateOf("") }
     var savedPin by remember { mutableStateOf<CharArray?>(null) }
@@ -47,6 +51,11 @@ fun PinScreen(
     val haptic = LocalHapticFeedback.current
     val shakeOffset = remember { Animatable(0f) }
     val mismatchErrorText = stringResource(Res.string.onboarding_pin_mismatch)
+
+    val showBiometricOption = !isSetup && onBiometricSuccess != null
+    val biometricAvailable = showBiometricOption && isBiometricAvailable()
+    var biometricTriggered by remember { mutableStateOf(false) }
+    val biometrikState = rememberBiometrikState(requestOneTimeOnly = false)
 
     val displayError = internalError ?: errorMessage
 
@@ -143,157 +152,252 @@ fun PinScreen(
         }
     }
 
-    Column(
+    Box(
         modifier = modifier.fillMaxSize().systemBarsPadding(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         if (onDismiss != null) {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+                    .padding(horizontal = 8.dp)
+                    .align(Alignment.TopStart),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                FilledTonalButton(onClick = onDismiss) {
-                    Icon(
-                        Icons.ArrowBackW400Outlinedfill1,
-                        contentDescription = stringResource(Res.string.auth_back_desc),
-                        modifier = Modifier.size(18.dp),
-                    )
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(Res.string.auth_back_desc))
-                }
-            }
-            Spacer(Modifier.height(16.dp))
-        }
-
-        Icon(
-            Icons.LockW400Outlinedfill1,
-            contentDescription = null,
-            modifier = Modifier.size(48.dp),
-            tint = if (displayError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        AnimatedContent(
-            targetState = isConfirming,
-            label = "PinTextTransition",
-        ) { _ ->
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = displayTitle,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = if (displayError !=
-                        null
+                Box(Modifier.size(48.dp)) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.fillMaxSize(),
                     ) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    },
-                )
-                Text(
-                    text = displayError ?: displayDescription,
-                    color = if (displayError !=
-                        null
-                    ) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.secondary
-                    },
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 32.dp),
-                )
-            }
-        }
-
-        Spacer(Modifier.height(32.dp))
-
-        /* PIN dots */
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.offset(x = shakeOffset.value.dp),
-        ) {
-            repeat(pinLength) { index ->
-                val isFilled = index < pin.length
-                val scale by animateFloatAsState(
-                    targetValue = if (isFilled) 1.2f else 1f,
-                    animationSpec = spring(
-                        dampingRatio = Spring.DampingRatioMediumBouncy,
-                        stiffness = Spring.StiffnessMedium,
-                    ),
-                    label = "PinDotScaleAnimation",
-                )
-
-                Box(
-                    modifier =
-                    Modifier.size(24.dp)
-                        .scale(scale)
-                        .clip(CircleShape)
-                        .background(
-                            if (isFilled) {
-                                if (displayError !=
-                                    null
-                                ) {
-                                    MaterialTheme.colorScheme.error
-                                } else {
-                                    MaterialTheme.colorScheme.primary
-                                }
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            },
-                        ),
-                )
-            }
-        }
-
-        Spacer(Modifier.height(32.dp))
-
-        /* Keypad */
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            val rows =
-                listOf(
-                    listOf("1", "2", "3"),
-                    listOf("4", "5", "6"),
-                    listOf("7", "8", "9"),
-                    listOf(null, "0", "⌫"),
-                )
-
-            rows.forEach { row ->
-                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    row.forEach inner@{ label ->
-                        if (label == null) {
-                            Spacer(Modifier.size(72.dp))
-                            return@inner
-                        }
-
-                        KeyPadButton(
-                            text = label,
-                            onClick = { handleKey(label) },
+                        Icon(
+                            Icons.ArrowBackW400Outlinedfill1,
+                            contentDescription = stringResource(Res.string.auth_back_desc),
                         )
                     }
                 }
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                Icons.LockW400Outlinedfill1,
+                contentDescription = null,
+                modifier = Modifier.size(48.dp),
+                tint = if (displayError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+            )
+
+            Spacer(Modifier.height(24.dp))
+
+            AnimatedContent(
+                targetState = isConfirming,
+                label = "PinTextTransition",
+            ) { _ ->
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = displayTitle,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = if (displayError != null) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
+                    )
+                    Text(
+                        text = displayError ?: displayDescription,
+                        color = if (displayError != null) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.secondary
+                        },
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 32.dp),
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            /* PIN dots */
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.offset(x = shakeOffset.value.dp),
+            ) {
+                repeat(pinLength) { index ->
+                    val isFilled = index < pin.length
+                    val scale by animateFloatAsState(
+                        targetValue = if (isFilled) 1.2f else 1f,
+                        animationSpec = spring(
+                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                            stiffness = Spring.StiffnessMedium,
+                        ),
+                        label = "PinDotScaleAnimation",
+                    )
+
+                    Box(
+                        modifier =
+                            Modifier.size(24.dp)
+                                .scale(scale)
+                                .clip(CircleShape)
+                                .background(
+                                    if (isFilled) {
+                                        if (displayError !=
+                                            null
+                                        ) {
+                                            MaterialTheme.colorScheme.error
+                                        } else {
+                                            MaterialTheme.colorScheme.primary
+                                        }
+                                    } else {
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    },
+                                ),
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            /* Keypad */
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val rows =
+                    listOf(
+                        listOf("1", "2", "3"),
+                        listOf("4", "5", "6"),
+                        listOf("7", "8", "9"),
+                        listOf(null, "0", "⌫"),
+                    )
+
+                rows.forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        row.forEach inner@{ label ->
+                            if (label == null) {
+                                if (showBiometricOption) {
+                                    val biometricDescription = stringResource(Res.string.pin_use_biometric_desc)
+                                    KeyPadButton(
+                                        text = "",
+                                        onClick = { biometricTriggered = true },
+                                        enabled = biometricAvailable,
+                                        accent = true,
+                                        contentDescription = biometricDescription,
+                                        icon = {
+                                            Icon(
+                                                Icons.FingerprintW400Outlinedfill1,
+                                                contentDescription = biometricDescription,
+                                                modifier = Modifier.size(28.dp),
+                                            )
+                                        },
+                                    )
+                                } else {
+                                    Spacer(Modifier.size(72.dp))
+                                }
+                                return@inner
+                            }
+
+                            KeyPadButton(
+                                text = label,
+                                onClick = { handleKey(label) },
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Biometric authentication prompt
+            if (showBiometricOption && biometricAvailable && biometricTriggered) {
+                val biometricTitle = stringResource(Res.string.pin_biometric_prompt_title)
+                val biometricReason = stringResource(Res.string.pin_biometric_prompt_reason)
+                val biometricFailedText = stringResource(Res.string.pin_biometric_failed)
+                val biometricSuccess = requireNotNull(onBiometricSuccess)
+
+                BiometrikAuthenticator(
+                    state = biometrikState,
+                    appName = "Vita",
+                    title = biometricTitle,
+                    reason = biometricReason,
+                    onSuccess = {
+                        LaunchedEffect(Unit) { biometricSuccess() }
+                    },
+                    onFailure = {
+                        LaunchedEffect(Unit) {
+                            biometricTriggered = false
+                            internalError = biometricFailedText
+                            shakeTrigger++
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        }
+                    },
+                    onHardwareUnavailable = {
+                        LaunchedEffect(Unit) { biometricTriggered = false }
+                    },
+                    onFeatureUnavailable = {
+                        LaunchedEffect(Unit) { biometricTriggered = false }
+                    },
+                    onAuthenticationNotSet = {
+                        LaunchedEffect(Unit) { biometricTriggered = false }
+                    },
+                )
             }
         }
     }
 }
 
 @Composable
-private fun KeyPadButton(text: String, onClick: () -> Unit) {
+fun KeyPadButton(
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    accent: Boolean = false,
+    contentDescription: String? = text.takeIf { it.isNotEmpty() },
+    icon: (@Composable () -> Unit)? = null,
+) {
     val currentOnClick by rememberUpdatedState(onClick)
+    val resolvedContainerColor = if (enabled) {
+        MaterialTheme.colorScheme.surfaceContainerHigh
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+    }
+    val resolvedContentColor = when {
+        !enabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+        accent -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurface
+    }
 
     Box(
         contentAlignment = Alignment.Center,
         modifier =
         Modifier.size(72.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .pointerInput(Unit) { detectTapGestures(onTap = { currentOnClick() }) }
-            .semantics { contentDescription = text },
+            .background(resolvedContainerColor)
+            .then(
+                if (enabled) {
+                    Modifier.pointerInput(Unit) { detectTapGestures(onTap = { currentOnClick() }) }
+                } else {
+                    Modifier
+                },
+            )
+            .semantics {
+                contentDescription?.let { this.contentDescription = it }
+                if (!enabled) disabled()
+            },
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        CompositionLocalProvider(LocalContentColor provides resolvedContentColor) {
+            if (icon != null) {
+                icon()
+            } else {
+                Text(
+                    text = text,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = LocalContentColor.current,
+                )
+            }
+        }
     }
 }
