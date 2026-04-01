@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.util.constantTimeEquals
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
@@ -37,9 +37,9 @@ fun PinScreen(
     errorMessage: String? = null,
     onErrorMessageCleared: () -> Unit = {},
 ) {
-    var pin by rememberSaveable { mutableStateOf("") }
-    var savedPin by rememberSaveable { mutableStateOf("") }
-    var isConfirming by rememberSaveable { mutableStateOf(false) }
+    var pin by remember { mutableStateOf("") }
+    var savedPin by remember { mutableStateOf<CharArray?>(null) }
+    var isConfirming by remember { mutableStateOf(false) }
     var internalError: String? by remember { mutableStateOf(null) }
     var shakeTrigger by remember { mutableIntStateOf(0) }
 
@@ -88,6 +88,11 @@ fun PinScreen(
         }
     }
 
+    fun zeroSavedPin() {
+        savedPin?.fill('\u0000')
+        savedPin = null
+    }
+
     // All state transitions happen synchronously in handleKey — no LaunchedEffect(pin)
     fun handleKey(key: String) {
         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
@@ -98,7 +103,7 @@ fun PinScreen(
             onErrorMessageCleared()
             if (isSetup) {
                 isConfirming = false
-                savedPin = ""
+                zeroSavedPin()
             }
             pin = ""
         }
@@ -114,15 +119,18 @@ fun PinScreen(
         if (pin.length == pinLength) {
             when {
                 isSetup && !isConfirming -> {
-                    savedPin = pin
+                    savedPin = pin.toCharArray()
                     pin = ""
                     isConfirming = true
                 }
 
                 isSetup && isConfirming -> {
-                    if (pin == savedPin) {
+                    val saved = savedPin
+                    if (saved != null && constantTimeEquals(pin, saved.concatToString())) {
+                        zeroSavedPin()
                         onComplete(pin)
                     } else {
+                        zeroSavedPin()
                         internalError = mismatchErrorText
                         shakeTrigger++
                         haptic.performHapticFeedback(HapticFeedbackType.LongPress)

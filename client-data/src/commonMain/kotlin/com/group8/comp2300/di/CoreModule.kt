@@ -11,16 +11,17 @@ import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.local.PinDataSource
+import com.group8.comp2300.data.local.PinRateLimiter
 import com.group8.comp2300.data.local.ProductLocalDataSource
 import com.group8.comp2300.data.local.ReminderLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
-import com.group8.comp2300.data.notifications.RoutineNotificationService
 import com.group8.comp2300.data.notifications.RoutineNotificationRegistry
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.notifications.RoutineNotificationSchedulerImpl
+import com.group8.comp2300.data.notifications.RoutineNotificationService
 import com.group8.comp2300.data.offline.AppointmentMutationHandler
 import com.group8.comp2300.data.offline.CompositeOfflineDataRefresher
 import com.group8.comp2300.data.offline.MedicalOfflineDataRefresher
@@ -96,6 +97,7 @@ val coreModule = module {
     // Token management
     single { SessionDataSource(get()) }
     single { PinDataSource(get()) }
+    single { PinRateLimiter(get()) }
     single<TokenManager> { TokenManagerImpl(get()) }
 
     // Set up token provider delegate for HTTP client auth

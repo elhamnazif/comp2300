@@ -391,15 +391,18 @@ DELETE FROM OutboxEntity;
 CREATE TABLE PinEntity (
     id TEXT NOT NULL PRIMARY KEY,
     pinHash TEXT NOT NULL,
-    createdAt INTEGER NOT NULL
+    createdAt INTEGER NOT NULL,
+    pinSalt TEXT NOT NULL DEFAULT 'legacy',
+    pinIterations INTEGER NOT NULL DEFAULT 0,
+    pinVersion INTEGER NOT NULL DEFAULT 1
 );
 
 selectPin:
 SELECT * FROM PinEntity LIMIT 1;
 
 upsertPin:
-INSERT OR REPLACE INTO PinEntity (id, pinHash, createdAt)
-VALUES (?, ?, ?);
+INSERT OR REPLACE INTO PinEntity (id, pinHash, createdAt, pinSalt, pinIterations, pinVersion)
+VALUES (?, ?, ?, ?, ?, ?);
 
 deletePin:
 DELETE FROM PinEntity;
