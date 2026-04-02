@@ -70,6 +70,9 @@ sealed interface Screen : NavKey {
     data object LabResults : Screen
 
     @Serializable
+    data object MedicalRecords : Screen
+
+    @Serializable
     data object PrivacySecurity : Screen
 
     @Serializable

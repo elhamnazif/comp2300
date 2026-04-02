@@ -4,6 +4,7 @@ import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.auth.TokenManagerImpl
 import com.group8.comp2300.data.database.DatabaseDriverFactory
 import com.group8.comp2300.data.database.createDatabase
+import com.group8.comp2300.data.local.CalendarOverviewLocalDataSource
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
@@ -42,6 +43,7 @@ import com.group8.comp2300.data.remote.ApiServiceImpl
 import com.group8.comp2300.data.remote.TokenProvider
 import com.group8.comp2300.data.remote.createHttpClient
 import com.group8.comp2300.data.remote.tokenProviderDelegate
+import com.group8.comp2300.data.repository.MedicalRepositoryImpl
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicRepositoryImpl
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
@@ -55,6 +57,7 @@ import com.group8.comp2300.data.repository.medical.MedicationDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MedicationLogDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MoodDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.RoutineDataRepositoryImpl
+import com.group8.comp2300.domain.repository.MedicalRepository
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
@@ -121,6 +124,7 @@ val coreModule = module {
 
     // Offline-first local data sources
     single { AppointmentLocalDataSource(get()) }
+    single { CalendarOverviewLocalDataSource(get()) }
     single { MedicationLocalDataSource(get()) }
     single { RoutineLocalDataSource(get()) }
     single { RoutineOccurrenceOverrideLocalDataSource(get()) }
@@ -164,6 +168,7 @@ val coreModule = module {
     single<MoodDataRepository> { MoodDataRepositoryImpl(get(), get(), get()) }
     single<CalendarDataRepository> { CalendarDataRepositoryImpl(get(), get(), get(), get(), get()) }
     single<LabResultsRepository> { LabResultsRepositoryImpl() }
+    single<MedicalRepository> { MedicalRepositoryImpl(get(), get(), get(), get(), get()) }
     single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get()) }
     single<ClinicRepository> { ClinicRepositoryImpl() }
     single<SRHContentRepository> { SRHContentRepositoryImpl() }

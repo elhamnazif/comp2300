@@ -16,6 +16,7 @@ import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
+import com.group8.comp2300.domain.model.medical.MedicalRecordResponse
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLog
@@ -82,6 +83,8 @@ interface ApiService {
 
     suspend fun getMedicationLogHistory(): List<MedicationLog>
 
+    suspend fun getMedicationAgenda(date: String): List<MedicationLog>
+
     suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda>
 
     suspend fun logMood(request: MoodEntryRequest): Mood
@@ -103,6 +106,12 @@ interface ApiService {
     suspend fun getRoutineOccurrenceOverrides(): List<RoutineOccurrenceOverride>
 
     suspend fun upsertRoutineOccurrenceOverride(request: RoutineOccurrenceOverrideRequest): RoutineOccurrenceOverride
+
+    suspend fun getMedicalRecords(sort: String): List<MedicalRecordResponse>
+
+    suspend fun uploadMedicalRecord(fileBytes: ByteArray, fileName: String)
+
+    suspend fun deleteMedicalRecord(id: String)
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -167,6 +176,9 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
 
     override suspend fun getMedicationLogHistory(): List<MedicationLog> = client.get("/api/medications/logs").body()
 
+    override suspend fun getMedicationAgenda(date: String): List<MedicationLog> =
+        client.get("/api/medications/agenda?date=$date").body()
+
     override suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda> =
         client.get("/api/routines/agenda?date=$date").body()
 
@@ -199,6 +211,18 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun upsertRoutineOccurrenceOverride(
         request: RoutineOccurrenceOverrideRequest,
     ): RoutineOccurrenceOverride = client.put("/api/routines/occurrence-overrides") { setBody(request) }.body()
+
+    override suspend fun getMedicalRecords(sort: String): List<MedicalRecordResponse> =
+        client.get("/api/medical-records?sort=$sort").body()
+
+    override suspend fun uploadMedicalRecord(fileBytes: ByteArray, fileName: String) {
+        // TODO: multipart upload when server endpoint is ready
+        client.post("/api/medical-records")
+    }
+
+    override suspend fun deleteMedicalRecord(id: String) {
+        client.post("/api/medical-records/$id/delete")
+    }
 
     /**
      * Catches JsonConvertException when server returns an error response like {"error": "..."}

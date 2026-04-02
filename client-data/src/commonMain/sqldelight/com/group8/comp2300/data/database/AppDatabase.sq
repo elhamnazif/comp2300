@@ -406,3 +406,21 @@ VALUES (?, ?, ?, ?, ?, ?);
 
 deletePin:
 DELETE FROM PinEntity;
+
+CREATE TABLE CalendarOverviewEntity (
+    date TEXT NOT NULL,
+    status TEXT NOT NULL,
+    yearMonth TEXT NOT NULL
+);
+
+selectCalendarOverviewByYearMonth:
+SELECT * FROM CalendarOverviewEntity
+WHERE yearMonth = ?;
+
+deleteCalendarOverviewByYearMonth:
+DELETE FROM CalendarOverviewEntity
+WHERE yearMonth = ?;
+
+insertCalendarOverview:
+INSERT OR REPLACE INTO CalendarOverviewEntity (date, status, yearMonth)
+VALUES (?, ?, ?);

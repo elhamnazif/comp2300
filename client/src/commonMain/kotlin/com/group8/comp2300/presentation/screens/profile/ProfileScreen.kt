@@ -40,6 +40,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
     onNavigateToGuestSignIn: () -> Unit = {},
     onNavigateToLabResults: () -> Unit = {},
+    onNavigateToMedicalRecords: () -> Unit = {},
     onNavigateToPrivacySecurity: () -> Unit = {},
     onNavigateToPrivacyLegalese: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
@@ -75,6 +76,7 @@ fun ProfileScreen(
                 InsetContent(uiState, onNavigateToLabResults, onNavigateToGuestSignIn)
             }
             EdgeToEdgeSettings(
+                onNavigateToMedicalRecords = onNavigateToMedicalRecords,
                 onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
                 onNavigateToPrivacyLegalese = onNavigateToPrivacyLegalese,
                 onNavigateToNotifications = onNavigateToNotifications,
@@ -454,6 +456,7 @@ private fun StatusSurface(result: LabResult) {
 /* ------------------  EDGE-TO-EDGE SETTINGS  ------------------ */
 @Composable
 private fun EdgeToEdgeSettings(
+    onNavigateToMedicalRecords: () -> Unit,
     onNavigateToPrivacySecurity: () -> Unit,
     onNavigateToPrivacyLegalese: () -> Unit,
     onNavigateToNotifications: () -> Unit,
@@ -461,6 +464,12 @@ private fun EdgeToEdgeSettings(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
+        SettingsItem(
+            icon = Icons.ArticleW400Outlined,
+            title = stringResource(Res.string.profile_health_records_title),
+            subtitle = stringResource(Res.string.profile_track_results_desc),
+            onClick = onNavigateToMedicalRecords,
+        )
         SettingsItem(
             icon = Icons.LockW400Outlinedfill1,
             title = stringResource(Res.string.profile_privacy_security_title),

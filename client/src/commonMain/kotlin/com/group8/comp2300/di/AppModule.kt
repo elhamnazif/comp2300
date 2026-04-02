@@ -18,6 +18,7 @@ import com.group8.comp2300.presentation.screens.education.EducationViewModel
 import com.group8.comp2300.presentation.screens.medical.booking.BookingViewModel
 import com.group8.comp2300.presentation.screens.medical.calendar.CalendarViewModel
 import com.group8.comp2300.presentation.screens.medical.medication.MedicationViewModel
+import com.group8.comp2300.presentation.screens.medical.record.MedicalRecordViewModel
 import com.group8.comp2300.presentation.screens.medical.routine.RoutineViewModel
 import com.group8.comp2300.presentation.screens.profile.ProfileViewModel
 import com.group8.comp2300.presentation.screens.shop.ShopViewModel
@@ -66,5 +67,6 @@ val appModule = module {
     viewModelOf(::CalendarViewModel)
     viewModelOf(::MedicationViewModel)
     viewModelOf(::RoutineViewModel)
+    viewModelOf(::MedicalRecordViewModel)
     viewModelOf(::PinLockViewModel)
 }

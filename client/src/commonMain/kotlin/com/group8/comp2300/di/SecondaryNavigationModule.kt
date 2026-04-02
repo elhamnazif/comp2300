@@ -9,6 +9,7 @@ import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.presentation.navigation.LocalNavigator
 import com.group8.comp2300.presentation.navigation.Screen
 import com.group8.comp2300.presentation.screens.medical.labresults.LabResultsScreen
+import com.group8.comp2300.presentation.screens.medical.record.MedicalRecordScreen
 import com.group8.comp2300.presentation.screens.medical.routine.RoutineScreen
 import com.group8.comp2300.presentation.screens.medical.selfdiagnosis.SelfDiagnosisScreen
 import com.group8.comp2300.presentation.screens.profile.GuestSignInScreen
@@ -18,6 +19,7 @@ import com.group8.comp2300.presentation.screens.profile.PrivacyLegaleseScreen
 import com.group8.comp2300.presentation.screens.profile.PrivacySecurityScreen
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
@@ -90,6 +92,14 @@ val secondaryNavigationModule = module {
         val navigator = LocalNavigator.current
         GuestSignInScreen(
             onRequireAuth = { navigator.requireAuth() },
+        )
+    }
+
+    navigation<Screen.MedicalRecords> {
+        val navigator = LocalNavigator.current
+        MedicalRecordScreen(
+            viewModel = koinViewModel(),
+            onNavigateBack = navigator::goBack,
         )
     }
 }

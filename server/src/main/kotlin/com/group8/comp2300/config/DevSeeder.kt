@@ -11,8 +11,8 @@ object DevSeeder {
         if (repo.findById(Environment.DEV_USER_ID) == null) {
             repo.insert(
                 id = Environment.DEV_USER_ID,
-                email = "dev@vita.local",
-                passwordHash = PasswordHasher.hash("devpassword1"),
+                email = "dev@example.com",
+                passwordHash = PasswordHasher.hash("password123"),
                 firstName = "Dev",
                 lastName = "User",
                 phone = null,
