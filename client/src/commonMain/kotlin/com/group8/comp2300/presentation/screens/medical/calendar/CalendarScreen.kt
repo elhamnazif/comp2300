@@ -1,13 +1,15 @@
+@file:Suppress("ktlint:standard:max-line-length")
+
 package com.group8.comp2300.presentation.screens.medical.calendar
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,81 +24,112 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.presentation.components.AppTopBar
+import com.group8.comp2300.presentation.screens.medical.components.DatePickerSheet
+import com.group8.comp2300.presentation.screens.medical.components.DateValueField
+import com.group8.comp2300.presentation.screens.medical.components.EmptyStateMessage
+import com.group8.comp2300.presentation.screens.medical.components.TimePickerSheet
+import com.group8.comp2300.presentation.screens.medical.components.TimeValueField
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
+import comp2300.i18n.generated.resources.Res
 import kotlinx.datetime.*
-import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.time.Clock
 import kotlin.time.Instant
 
+private sealed interface CalendarSheetState {
+    data object Hidden : CalendarSheetState
+
+    data object Menu : CalendarSheetState
+
+    data object FormMedication : CalendarSheetState
+
+    data class FormReschedule(val routine: RoutineDayAgenda) : CalendarSheetState
+
+    data class ResolveMedication(
+        val pendingLog: MedicationLogRequest,
+        val candidates: List<MedicationOccurrenceCandidate>,
+    ) : CalendarSheetState
+
+    data object FormAppointment : CalendarSheetState
+
+    data object FormMood : CalendarSheetState
+
+    data class AppointmentDetails(val appointment: Appointment) : CalendarSheetState
+}
+
 @Composable
-fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel = koinViewModel()) {
+fun CalendarScreen(
+    modifier: Modifier = Modifier,
+    onNavigateToMedication: () -> Unit = {},
+    viewModel: CalendarViewModel = koinViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val timeZone = remember { TimeZone.currentSystemDefault() }
 
-    val today = remember {
-        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-    }
-
-    // UI State
-    var showBottomSheet by remember { mutableStateOf(false) }
-    var currentSheetView by remember { mutableStateOf(SheetView.MENU) }
-
-    // Selection State
+    var sheetUiState by remember { mutableStateOf<CalendarSheetState>(CalendarSheetState.Hidden) }
     var selectedDateForEntry by remember { mutableStateOf<CalendarDay?>(null) }
-    var selectedAppointment by remember { mutableStateOf<Appointment?>(null) }
-
-    // Editable Form State
     var entryDate by remember { mutableStateOf(today) }
     var entryTime by remember { mutableStateOf(9 to 0) }
 
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    val closeSheet = {
-        showBottomSheet = false
-        selectedAppointment = null
+    LaunchedEffect(Unit) {
+        selectedDateForEntry =
+            CalendarDay(today.day, today, AdherenceStatus.NONE, isToday = true, isCurrentMonth = true)
+        viewModel.loadAgendaForDate(today.toString())
     }
+
+    LaunchedEffect(state.error) {
+        state.error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.dismissError()
+        }
+    }
+
+    val selectedDate = selectedDateForEntry?.date ?: today
+    val activeMedications = state.medications.filter { it.status == MedicationStatus.ACTIVE }
+    val selectedAppointments = remember(state.appointments, selectedDate) {
+        state.appointments.filter { appointment ->
+            Instant.fromEpochMilliseconds(appointment.appointmentTime)
+                .toLocalDateTime(timeZone)
+                .date == selectedDate
+        }
+    }
+    var expandedRoutineKeys by remember(
+        selectedDate,
+        state.routineAgenda.map { "${it.routineId}:${it.occurrenceTimeMs}" },
+    ) { mutableStateOf(emptySet<String>()) }
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
-            AppTopBar(
-                title = {
-                    Text(
-                        text = stringResource(Res.string.calendar_title),
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold,
-                    )
-                },
-            )
+            AppTopBar(title = { Text(stringResource(Res.string.calendar_title), fontWeight = FontWeight.Bold) })
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    // Default to today if nothing selected
-                    val defaultDay =
-                        CalendarDay(today.day, today, AdherenceStatus.NONE, isToday = true, isCurrentMonth = true)
-                    val dateToUse = selectedDateForEntry ?: defaultDay
-
-                    selectedDateForEntry = dateToUse
-                    entryDate = dateToUse.date
-                    val now =
-                        Clock.System.now()
-                            .toLocalDateTime(TimeZone.currentSystemDefault())
-                    entryTime = now.hour to now.minute
-
-                    currentSheetView = SheetView.MENU
-                    selectedAppointment = null
-                    showBottomSheet = true
-                },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-            ) {
+            FloatingActionButton(onClick = {
+                selectedDateForEntry =
+                    CalendarDay(
+                        selectedDate.day,
+                        selectedDate,
+                        AdherenceStatus.NONE,
+                        isToday = selectedDate == today,
+                        isCurrentMonth = true,
+                    )
+                entryDate = selectedDate
+                val now = Clock.System.now().toLocalDateTime(timeZone)
+                entryTime = now.hour to now.minute
+                sheetUiState = CalendarSheetState.Menu
+            }) {
                 Icon(
                     Icons.AddW400Outlinedfill1,
                     contentDescription = stringResource(Res.string.calendar_add_entry_desc),
@@ -105,145 +138,537 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
         },
     ) { innerPadding ->
         LazyColumn(
-            modifier =
-            Modifier.fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.surface),
+            modifier = Modifier.fillMaxSize().padding(innerPadding).background(MaterialTheme.colorScheme.surface),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             item {
                 CalendarCard(
                     baseDate = today,
-                    isMedicationTaken = state.isMedicationTakenToday,
+                    overview = state.overview,
                     selectedDate = selectedDateForEntry,
                     onDayClick = { day ->
                         selectedDateForEntry = day
                         entryDate = day.date
-                        val now =
-                            Clock.System.now()
-                                .toLocalDateTime(TimeZone.currentSystemDefault())
-                        entryTime = now.hour to now.minute
-
-                        currentSheetView = SheetView.MENU
-                        selectedAppointment = null
-                        showBottomSheet = true
+                        viewModel.loadAgendaForDate(day.date.toString())
                     },
+                    onMonthChange = viewModel::loadOverviewForMonth,
                 )
             }
 
             item {
-                Column {
-                    Text(
-                        text = stringResource(Res.string.calendar_today_action),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(bottom = 8.dp),
-                    )
-                    DailyActionCard(
-                        isTaken = state.isMedicationTakenToday,
-                        onToggle = {
-                            if (!state.isMedicationTakenToday) {
-                                viewModel.logMedication("Unknown", 1) // Provide defaults or show form
+                CalendarDayHeader(
+                    date = selectedDate,
+                    agenda = state.routineAgenda,
+                    extraLogCount = state.manualLogs.size,
+                    appointmentCount = selectedAppointments.size,
+                )
+            }
+
+            item {
+                Text(
+                    stringResource(Res.string.calendar_scheduled_doses),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+
+            if (state.routineAgenda.isEmpty()) {
+                item {
+                    EmptyStateMessage(stringResource(Res.string.calendar_no_scheduled_doses_day))
+                }
+            } else {
+                items(
+                    items = state.routineAgenda,
+                    key = { "${it.routineId}:${it.occurrenceTimeMs}" },
+                ) { routine ->
+                    val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
+                    RoutineAgendaCard(
+                        routine = routine,
+                        isExpanded = routineKey in expandedRoutineKeys,
+                        onToggleExpansion = {
+                            expandedRoutineKeys = expandedRoutineKeys.toMutableSet().apply {
+                                if (!add(routineKey)) remove(routineKey)
                             }
+                        },
+                        onLogMedication = { medicationId, status ->
+                            viewModel.logMedication(
+                                routineLogRequest(
+                                    routine = routine,
+                                    medicationId = medicationId,
+                                    status = status,
+                                ),
+                            )
+                        },
+                        onLogAll = { status ->
+                            val loggedAt = Clock.System.now().toEpochMilliseconds()
+                            routine.medications.forEach { medication ->
+                                viewModel.logMedication(
+                                    routineLogRequest(
+                                        routine = routine,
+                                        medicationId = medication.medicationId,
+                                        status = status,
+                                        nowMs = loggedAt,
+                                    ),
+                                )
+                            }
+                        },
+                        onMoveDose = {
+                            val occurrence = Instant.fromEpochMilliseconds(routine.occurrenceTimeMs)
+                                .toLocalDateTime(timeZone)
+                            entryDate = occurrence.date
+                            entryTime = occurrence.hour to occurrence.minute
+                            sheetUiState = CalendarSheetState.FormReschedule(routine)
                         },
                     )
                 }
             }
 
-            item {
-                Text(
-                    stringResource(Res.string.calendar_upcoming),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
+            if (state.manualLogs.isNotEmpty()) {
+                item {
+                    Text(
+                        stringResource(Res.string.calendar_extra_logs),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                items(
+                    items = state.manualLogs,
+                    key = { it.id.ifBlank { "manual:${it.medicationTime}" } },
+                ) { log ->
+                    ManualLogCard(log = log)
+                }
             }
 
-            items(state.appointments) { appointment ->
-                AppointmentCard(
-                    appointment = appointment,
-                    onClick = {
-                        selectedAppointment = appointment
-                        currentSheetView = SheetView.DETAILS_APPT
-                        showBottomSheet = true
-                    },
-                )
-                Spacer(modifier = Modifier.height(6.dp))
+            if (selectedAppointments.isNotEmpty()) {
+                item {
+                    Text(
+                        stringResource(Res.string.calendar_appointments),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                items(
+                    items = selectedAppointments,
+                    key = { it.id.ifBlank { "appt:${it.appointmentTime}" } },
+                ) { appointment ->
+                    AppointmentCard(
+                        appointment = appointment,
+                        onClick = { sheetUiState = CalendarSheetState.AppointmentDetails(appointment) },
+                    )
+                }
             }
-
             item { Spacer(Modifier.height(72.dp)) }
         }
+    }
 
-        if (showBottomSheet) {
-            ModalBottomSheet(
-                onDismissRequest = closeSheet,
-                sheetState = sheetState,
-                containerColor = MaterialTheme.colorScheme.surface,
+    if (sheetUiState != CalendarSheetState.Hidden) {
+        ModalBottomSheet(
+            onDismissRequest = { sheetUiState = CalendarSheetState.Hidden },
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+        ) {
+            when (val activeSheet = sheetUiState) {
+                CalendarSheetState.Hidden -> Unit
+
+                CalendarSheetState.Menu -> AddEntryMenu(
+                    selectedDate = selectedDate,
+                    onSelectType = { sheetUiState = it },
+                )
+
+                CalendarSheetState.FormMedication -> WrapperFormLayout(
+                    title = stringResource(Res.string.form_medication_title),
+                    entryDate = entryDate,
+                    entryTime = entryTime,
+                    onDateChange = { entryDate = it },
+                    onTimeChange = { h, m -> entryTime = h to m },
+                    onBack = { sheetUiState = CalendarSheetState.Menu },
+                ) {
+                    ManualMedicationLogForm(
+                        medications = activeMedications,
+                        onSave = { medicationId, status ->
+                            val timestampMs = entryDateTimeToEpochMs(entryDate, entryTime, timeZone)
+                            val baseRequest = MedicationLogRequest(
+                                medicationId = medicationId,
+                                status = status.name,
+                                timestampMs = timestampMs,
+                            )
+                            viewModel.getMedicationOccurrenceCandidates(
+                                medicationId = medicationId,
+                                timestampMs = timestampMs,
+                            ) { candidates ->
+                                if (candidates.isEmpty()) {
+                                    viewModel.logMedication(
+                                        baseRequest.copy(linkMode = MedicationLogLinkMode.EXTRA_DOSE),
+                                    )
+                                    sheetUiState = CalendarSheetState.Hidden
+                                } else {
+                                    sheetUiState = CalendarSheetState.ResolveMedication(
+                                        pendingLog = baseRequest,
+                                        candidates = candidates,
+                                    )
+                                }
+                            }
+                        },
+                        onOpenMedicationCabinet = {
+                            sheetUiState = CalendarSheetState.Hidden
+                            onNavigateToMedication()
+                        },
+                    )
+                }
+
+                is CalendarSheetState.FormReschedule -> WrapperFormLayout(
+                    title = stringResource(Res.string.calendar_move_scheduled_dose_title),
+                    entryDate = entryDate,
+                    entryTime = entryTime,
+                    onDateChange = { entryDate = it },
+                    onTimeChange = { h, m -> entryTime = h to m },
+                    onBack = { sheetUiState = CalendarSheetState.Menu },
+                ) {
+                    val originalOccurrence = Instant.fromEpochMilliseconds(activeSheet.routine.originalOccurrenceTimeMs)
+                        .toLocalDateTime(timeZone)
+                    Text(
+                        stringResource(Res.string.calendar_move_scheduled_dose_desc),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (activeSheet.routine.isRescheduled) {
+                        Text(
+                            stringResource(
+                                Res.string.calendar_move_scheduled_dose_originally_due,
+                                DateFormatter.formatDayMonthYear(originalOccurrence.date),
+                                DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute),
+                            ),
+                            color = MaterialTheme.colorScheme.secondary,
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            val targetDateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
+                            viewModel.rescheduleRoutineOccurrence(
+                                RoutineOccurrenceOverrideRequest(
+                                    routineId = activeSheet.routine.routineId,
+                                    originalOccurrenceTimeMs = activeSheet.routine.originalOccurrenceTimeMs,
+                                    rescheduledOccurrenceTimeMs =
+                                    targetDateTime.toInstant(timeZone).toEpochMilliseconds(),
+                                ),
+                            )
+                            sheetUiState = CalendarSheetState.Hidden
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(Res.string.calendar_save_moved_dose))
+                    }
+                }
+
+                is CalendarSheetState.ResolveMedication -> ResolveMedicationLogSheet(
+                    medicationName = state.medications.firstOrNull {
+                        it.id == activeSheet.pendingLog.medicationId
+                    }?.name.orEmpty(),
+                    candidates = activeSheet.candidates,
+                    onBack = { sheetUiState = CalendarSheetState.FormMedication },
+                    onAttach = { candidate ->
+                        viewModel.logMedication(
+                            activeSheet.pendingLog.copy(
+                                routineId = candidate.routineId,
+                                occurrenceTimeMs = candidate.occurrenceTimeMs,
+                                linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
+                            ),
+                        )
+                        sheetUiState = CalendarSheetState.Hidden
+                    },
+                    onLogExtraDose = {
+                        viewModel.logMedication(
+                            activeSheet.pendingLog.copy(linkMode = MedicationLogLinkMode.EXTRA_DOSE),
+                        )
+                        sheetUiState = CalendarSheetState.Hidden
+                    },
+                )
+
+                CalendarSheetState.FormAppointment -> WrapperFormLayout(
+                    title = stringResource(Res.string.calendar_form_add_appointment_title),
+                    entryDate = entryDate,
+                    entryTime = entryTime,
+                    onDateChange = { entryDate = it },
+                    onTimeChange = { h, m -> entryTime = h to m },
+                    onBack = { sheetUiState = CalendarSheetState.Menu },
+                ) {
+                    AppointmentForm { doctorName, appointmentType ->
+                        val dateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
+                        viewModel.scheduleAppointment(
+                            doctorName,
+                            appointmentType,
+                            dateTime.toInstant(timeZone).toEpochMilliseconds(),
+                        )
+                        sheetUiState = CalendarSheetState.Hidden
+                    }
+                }
+
+                CalendarSheetState.FormMood -> WrapperFormLayout(
+                    title = stringResource(Res.string.form_mood_title),
+                    entryDate = entryDate,
+                    entryTime = entryTime,
+                    onDateChange = { entryDate = it },
+                    onTimeChange = { h, m -> entryTime = h to m },
+                    onBack = { sheetUiState = CalendarSheetState.Menu },
+                ) {
+                    MoodEntryForm { score, notes ->
+                        viewModel.logMood(score, emptyList(), emptyList(), notes)
+                        sheetUiState = CalendarSheetState.Hidden
+                    }
+                }
+
+                is CalendarSheetState.AppointmentDetails ->
+                    AppointmentDetailSheetContent(
+                        activeSheet.appointment,
+                        onClose = { sheetUiState = CalendarSheetState.Hidden },
+                    )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CalendarDayHeader(
+    date: LocalDate,
+    agenda: List<RoutineDayAgenda>,
+    extraLogCount: Int,
+    appointmentCount: Int,
+) {
+    val allDoses = agenda.flatMap(RoutineDayAgenda::medications)
+    val taken = allDoses.count { it.status == MedicationLogStatus.TAKEN }
+    val unresolved = allDoses.count {
+        it.status == MedicationLogStatus.PENDING ||
+            it.status == MedicationLogStatus.MISSED ||
+            it.status == MedicationLogStatus.SNOOZED
+    }
+    val summary =
+        if (allDoses.isEmpty()) {
+            stringResource(Res.string.calendar_no_scheduled_doses)
+        } else {
+            stringResource(Res.string.calendar_taken_summary, taken, allDoses.size)
+        }
+    val metaItems = mutableListOf<String>()
+    if (allDoses.isNotEmpty() && unresolved > 0) {
+        metaItems +=
+            if (unresolved == 1) {
+                stringResource(Res.string.calendar_unresolved_one)
+            } else {
+                stringResource(Res.string.calendar_unresolved_many, unresolved)
+            }
+    }
+    if (extraLogCount > 0) {
+        metaItems +=
+            if (extraLogCount == 1) {
+                stringResource(Res.string.calendar_extra_log_one)
+            } else {
+                stringResource(Res.string.calendar_extra_log_many, extraLogCount)
+            }
+    }
+    if (appointmentCount > 0) {
+        metaItems +=
+            if (appointmentCount == 1) {
+                stringResource(Res.string.calendar_appointment_one)
+            } else {
+                stringResource(Res.string.calendar_appointment_many, appointmentCount)
+            }
+    }
+    val meta = metaItems.joinToString(" • ")
+
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text(
+            DateFormatter.formatDayMonthYear(date),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            summary,
+            style = MaterialTheme.typography.titleMedium,
+            color = if (allDoses.isEmpty()) {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+        )
+        if (meta.isNotBlank()) {
+            Text(
+                meta,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun RoutineAgendaCard(
+    routine: RoutineDayAgenda,
+    isExpanded: Boolean,
+    onToggleExpansion: () -> Unit,
+    onLogMedication: (String, MedicationLogStatus) -> Unit,
+    onLogAll: (MedicationLogStatus) -> Unit,
+    onMoveDose: () -> Unit,
+) {
+    val occurrence = Instant.fromEpochMilliseconds(
+        routine.occurrenceTimeMs,
+    ).toLocalDateTime(TimeZone.currentSystemDefault())
+    val actionableMeds = remember(routine.medications) {
+        routine.medications.filter {
+            it.status == MedicationLogStatus.PENDING ||
+                it.status == MedicationLogStatus.MISSED ||
+                it.status == MedicationLogStatus.SNOOZED
+        }
+    }
+    val routineCompleted = actionableMeds.isEmpty()
+    val showReviewToggle = routine.medications.size > 1 && actionableMeds.isNotEmpty()
+    val reminderMeta = reminderMetaLabel(routine.reminderOffsetsMins)
+    val metaLines = mutableListOf<String>()
+    if (routine.isRescheduled) {
+        val originalOccurrence = Instant.fromEpochMilliseconds(routine.originalOccurrenceTimeMs)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+        metaLines += stringResource(
+            Res.string.calendar_moved_from,
+            DateFormatter.formatDayMonthYear(originalOccurrence.date),
+            DateFormatter.formatTime(originalOccurrence.hour, originalOccurrence.minute),
+        )
+    }
+    if (routineCompleted) {
+        metaLines += routineCompletionSummary(routine.medications)
+    }
+
+    Card(
+        colors =
+        CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top,
             ) {
-                AnimatedContent(targetState = currentSheetView, label = "SheetTransition") { view ->
-                    when (view) {
-                        SheetView.MENU -> AddEntryMenu(onSelectType = { currentSheetView = it })
-
-                        SheetView.FORM_MED ->
-                            WrapperFormLayout(
-                                title = stringResource(Res.string.form_medication_title),
-                                entryDate = entryDate,
-                                entryTime = entryTime,
-                                onDateChange = { entryDate = it },
-                                onTimeChange = { h, m -> entryTime = h to m },
-                                onBack = { currentSheetView = SheetView.MENU },
-                                content = {
-                                    MedicationForm({ name, extras ->
-                                        val dosage = extras["dosage"] as? Int ?: 1
-                                        viewModel.logMedication(name, dosage)
-                                        closeSheet()
-                                    })
-                                },
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        DateFormatter.formatTime(occurrence.hour, occurrence.minute),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        routine.routineName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                if (routine.hasReminder && routine.reminderOffsetsMins.isNotEmpty()) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            Icons.NotificationsW400Outlinedfill1,
+                            contentDescription = stringResource(Res.string.calendar_reminders_enabled_desc),
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        reminderMeta?.let {
+                            Text(
+                                it,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.primary,
                             )
+                        }
+                    }
+                }
+            }
 
-                        SheetView.FORM_APPT ->
-                            WrapperFormLayout(
-                                title = stringResource(Res.string.form_appt_title),
-                                entryDate = entryDate,
-                                entryTime = entryTime,
-                                onDateChange = { entryDate = it },
-                                onTimeChange = { h, m -> entryTime = h to m },
-                                onBack = { currentSheetView = SheetView.MENU },
-                                content = {
-                                    AppointmentForm({ doc, extras ->
-                                        val type = extras["type"] as? String ?: "Checkup"
-                                        val dt = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
-                                        val ms = dt.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
-                                        viewModel.scheduleAppointment(doc, type, ms)
-                                        closeSheet()
-                                    })
-                                },
-                            )
+            Text(
+                routineMedicationSummary(routine.medications),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
 
-                        SheetView.FORM_MOOD ->
-                            WrapperFormLayout(
-                                title = stringResource(Res.string.form_mood_title),
-                                entryDate = entryDate,
-                                entryTime = entryTime,
-                                onDateChange = { entryDate = it },
-                                onTimeChange = { h, m -> entryTime = h to m },
-                                onBack = { currentSheetView = SheetView.MENU },
-                                content = {
-                                    MoodEntryForm({ score, tags, symptoms, notes ->
-                                        viewModel.logMood(score, tags, symptoms, notes)
-                                        closeSheet()
-                                    })
-                                },
-                            )
+            metaLines.forEach { metaLine ->
+                Text(
+                    metaLine,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
 
-                        SheetView.DETAILS_APPT ->
-                            selectedAppointment?.let { appt ->
-                                AppointmentDetailSheetContent(
-                                    appt,
-                                    onEdit = {},
-                                    onDelete = { closeSheet() },
+            if (!routineCompleted) {
+                if (routine.medications.size == 1) {
+                    val medication = routine.medications.single()
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.TAKEN) },
+                            modifier = Modifier.weight(1f),
+                        ) { Text(stringResource(Res.string.calendar_taken_action)) }
+                        OutlinedButton(
+                            onClick = { onLogMedication(medication.medicationId, MedicationLogStatus.SKIPPED) },
+                            modifier = Modifier.weight(1f),
+                        ) { Text(stringResource(Res.string.calendar_skip_action)) }
+                    }
+                } else {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = { onLogAll(MedicationLogStatus.TAKEN) }, modifier = Modifier.weight(1f)) {
+                            Text(stringResource(Res.string.calendar_take_all_action))
+                        }
+                        OutlinedButton(onClick = {
+                            onLogAll(MedicationLogStatus.SKIPPED)
+                        }, modifier = Modifier.weight(1f)) {
+                            Text(stringResource(Res.string.calendar_skip_all_action))
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (showReviewToggle) {
+                            TextButton(onClick = onToggleExpansion) {
+                                Text(
+                                    if (isExpanded) {
+                                        stringResource(Res.string.calendar_hide_medications)
+                                    } else {
+                                        stringResource(Res.string.calendar_review_individually)
+                                    },
                                 )
                             }
+                        } else {
+                            Spacer(Modifier.width(1.dp))
+                        }
+                        TextButton(onClick = onMoveDose) {
+                            Text(
+                                if (routine.isRescheduled) {
+                                    stringResource(Res.string.calendar_move_again_action)
+                                } else {
+                                    stringResource(Res.string.calendar_move_action)
+                                },
+                            )
+                        }
+                    }
+                }
+                if (routine.medications.size == 1) {
+                    TextButton(onClick = onMoveDose, modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            if (routine.isRescheduled) {
+                                stringResource(Res.string.calendar_move_again_action)
+                            } else {
+                                stringResource(Res.string.calendar_move_dose_action)
+                            },
+                        )
+                    }
+                }
+            }
+
+            if (routine.medications.size > 1 && isExpanded) {
+                HorizontalDivider()
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    routine.medications.forEach { medication ->
+                        RoutineMedicationRow(medication = medication, onLogMedication = onLogMedication)
                     }
                 }
             }
@@ -252,26 +677,141 @@ fun CalendarScreen(modifier: Modifier = Modifier, viewModel: CalendarViewModel =
 }
 
 @Composable
+private fun RoutineMedicationRow(
+    medication: RoutineMedicationAgenda,
+    onLogMedication: (String, MedicationLogStatus) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(medication.medicationName, fontWeight = FontWeight.SemiBold)
+                Text(
+                    medication.dosage,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text(
+                medication.status.displayName,
+                style = MaterialTheme.typography.labelMedium,
+                color = medicationStatusColor(medication.status),
+            )
+        }
+        if (
+            medication.status == MedicationLogStatus.PENDING ||
+            medication.status == MedicationLogStatus.MISSED ||
+            medication.status == MedicationLogStatus.SNOOZED
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = {
+                    onLogMedication(medication.medicationId, MedicationLogStatus.TAKEN)
+                }, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(Res.string.calendar_taken_action))
+                }
+                OutlinedButton(onClick = {
+                    onLogMedication(medication.medicationId, MedicationLogStatus.SKIPPED)
+                }, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(Res.string.calendar_skip_action))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun medicationStatusColor(status: MedicationLogStatus): Color = when (status) {
+    MedicationLogStatus.TAKEN -> Color(0xFF2E7D32)
+    MedicationLogStatus.SKIPPED, MedicationLogStatus.MISSED -> MaterialTheme.colorScheme.error
+    MedicationLogStatus.SNOOZED -> MaterialTheme.colorScheme.primary
+    MedicationLogStatus.PENDING -> MaterialTheme.colorScheme.onSurfaceVariant
+}
+
+private fun routineMedicationSummary(medications: List<RoutineMedicationAgenda>): String = when (medications.size) {
+    0 -> ""
+    1 -> "${medications.single().medicationName} • ${medications.single().dosage}"
+    2 -> medications.joinToString(" • ") { it.medicationName }
+    else -> "${medications[0].medicationName}, ${medications[1].medicationName} +${medications.size - 2}"
+}
+
+@Composable
+private fun routineCompletionSummary(medications: List<RoutineMedicationAgenda>): String {
+    val taken = medications.count { it.status == MedicationLogStatus.TAKEN }
+    val skipped = medications.count {
+        it.status == MedicationLogStatus.SKIPPED ||
+            it.status == MedicationLogStatus.MISSED
+    }
+    return when {
+        taken == medications.size -> stringResource(Res.string.calendar_all_medications_taken)
+        skipped == medications.size -> stringResource(Res.string.calendar_marked_skipped)
+        taken > 0 && skipped > 0 -> stringResource(Res.string.calendar_taken_skipped_summary, taken, skipped)
+        else -> stringResource(Res.string.calendar_completed)
+    }
+}
+
+private fun reminderMetaLabel(offsets: List<Int>): String? {
+    val unique = offsets.sorted().distinct()
+    return when {
+        unique.isEmpty() -> null
+        unique == listOf(0) -> null
+        unique.size == 1 -> "${unique.first()}m"
+        else -> "${unique.size}x"
+    }
+}
+
+@Composable
+private fun ManualLogCard(log: MedicationLog) {
+    val dateTime = Instant.fromEpochMilliseconds(log.medicationTime).toLocalDateTime(TimeZone.currentSystemDefault())
+    Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(16.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    log.medicationName ?: stringResource(Res.string.calendar_medication_fallback),
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    stringResource(
+                        Res.string.calendar_log_status_at_time,
+                        log.status.displayName,
+                        DateFormatter.formatTime(dateTime.hour, dateTime.minute),
+                    ),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+            Text(
+                stringResource(Res.string.calendar_extra_label),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
+
+@Composable
 fun CalendarCard(
     baseDate: LocalDate,
-    isMedicationTaken: Boolean,
+    overview: List<CalendarOverviewResponse>,
     selectedDate: CalendarDay?,
     onDayClick: (CalendarDay) -> Unit,
+    onMonthChange: (Int, Int) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier,
 ) {
     var monthOffset by remember { mutableIntStateOf(0) }
-
-    val displayDate =
-        remember(baseDate, monthOffset) { baseDate.plus(monthOffset, DateTimeUnit.MONTH) }
-
+    val displayDate = remember(baseDate, monthOffset) { baseDate.plus(monthOffset, DateTimeUnit.MONTH) }
+    val currentMonthChange by rememberUpdatedState(onMonthChange)
+    LaunchedEffect(displayDate) {
+        currentMonthChange(displayDate.year, displayDate.month.number)
+    }
+    val overviewMap = remember(overview) { overview.associate { it.date to it.status } }
     val calendarDays =
-        remember(displayDate) { generateCalendarDays(displayDate.year, displayDate.month) }
+        remember(displayDate, overviewMap) { generateCalendarDays(displayDate.year, displayDate.month, overviewMap) }
 
     Card(
-        colors =
-        CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
-        ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = modifier.fillMaxWidth(),
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -286,13 +826,11 @@ fun CalendarCard(
                         contentDescription = stringResource(Res.string.calendar_prev_month_desc),
                     )
                 }
-
                 Text(
-                    text = DateFormatter.formatMonthYear(displayDate),
+                    DateFormatter.formatMonthYear(displayDate),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
-
                 IconButton(onClick = { monthOffset++ }) {
                     Icon(
                         Icons.ArrowBackW400Outlinedfill1,
@@ -301,12 +839,7 @@ fun CalendarCard(
                     )
                 }
             }
-
-            // Days of Week Header
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 listOf(
                     stringResource(Res.string.day_initial_sun),
                     stringResource(Res.string.day_initial_mon),
@@ -318,33 +851,21 @@ fun CalendarCard(
                 ).forEach { day ->
                     Text(
                         day,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.secondary,
                     )
                 }
             }
             Spacer(Modifier.height(8.dp))
-
-            val weeks = calendarDays.chunked(7)
-            weeks.forEach { week ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
+            calendarDays.chunked(7).forEach { week ->
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     week.forEach { day ->
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                            DayCell(
-                                day = day,
-                                todayTaken = isMedicationTaken,
-                                isSelected = selectedDate?.date == day.date,
-                                onClick = { onDayClick(day) },
-                            )
+                            DayCell(day = day, isSelected = selectedDate?.date == day.date, onClick = {
+                                onDayClick(day)
+                            })
                         }
-                    }
-                    if (week.size < 7) {
-                        repeat(7 - week.size) { Spacer(modifier = Modifier.weight(1f)) }
                     }
                 }
             }
@@ -353,97 +874,53 @@ fun CalendarCard(
 }
 
 @Composable
-fun DayCell(
-    day: CalendarDay,
-    todayTaken: Boolean,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val actualStatus = if (day.isToday && todayTaken) AdherenceStatus.TAKEN else day.status
-
+fun DayCell(day: CalendarDay, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val alpha = if (day.isCurrentMonth) 1f else 0.3f
-
-    val borderColor =
-        when {
-            isSelected -> MaterialTheme.colorScheme.primary
-            day.isToday -> MaterialTheme.colorScheme.primary.copy(0.5f)
-            else -> Color.Transparent
+    val borderColor = when {
+        isSelected -> Color.Transparent
+        day.isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+        else -> Color.Transparent
+    }
+    val backgroundColor = when {
+        isSelected -> MaterialTheme.colorScheme.primaryContainer
+        day.isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+        else -> Color.Transparent
+    }
+    val contentColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
         }
-
-    val backgroundColor =
-        if (day.isToday) MaterialTheme.colorScheme.primary.copy(0.1f) else Color.Transparent
-
-    val statusDotColor =
-        when (actualStatus) {
-            AdherenceStatus.TAKEN -> Color(0xFF4CAF50)
-            AdherenceStatus.MISSED -> MaterialTheme.colorScheme.error
-            AdherenceStatus.APPOINTMENT -> Color(0xFFD4AF37)
-            else -> Color.Transparent
-        }
-
+    val statusDotColor = when (day.status) {
+        AdherenceStatus.TAKEN -> Color(0xFF4CAF50)
+        AdherenceStatus.MISSED -> MaterialTheme.colorScheme.error
+        AdherenceStatus.APPOINTMENT -> Color(0xFFD4AF37)
+        else -> Color.Transparent
+    }
     Box(
-        modifier =
-        modifier
+        modifier = modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(8.dp))
             .background(backgroundColor)
-            .border(
-                if (isSelected) 2.dp else 1.dp,
-                borderColor,
-                RoundedCornerShape(8.dp),
-            )
-            .clickable { onClick() }
+            .border(if (isSelected) 2.dp else 1.dp, borderColor, RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
             .alpha(alpha),
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 day.day.toString(),
-                style = MaterialTheme.typography.bodySmall,
-                fontWeight =
-                if (day.isToday || isSelected) FontWeight.Bold else FontWeight.Normal,
+                fontWeight = if (day.isToday || isSelected) FontWeight.Bold else FontWeight.Normal,
+                color = contentColor,
             )
-            if (actualStatus != AdherenceStatus.NONE && day.isCurrentMonth) {
+            if (day.status != AdherenceStatus.NONE && day.isCurrentMonth) {
                 Spacer(Modifier.height(4.dp))
-                Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(statusDotColor))
-            }
-        }
-    }
-}
-
-@Composable
-private fun FormDropdown(
-    label: String,
-    options: List<String>,
-    selectedOption: String,
-    onSelectOption: (String) -> Unit,
-) {
-    var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-        OutlinedTextField(
-            value = selectedOption,
-            onValueChange = {},
-            label = { Text(label) },
-            readOnly = true,
-            modifier =
-            Modifier.fillMaxWidth()
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true),
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            colors =
-            OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-            ),
-        )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onSelectOption(option)
-                        expanded = false
-                    },
+                Box(
+                    modifier = Modifier
+                        .size(width = 16.dp, height = 4.dp)
+                        .clip(RoundedCornerShape(999.dp))
+                        .background(statusDotColor),
                 )
             }
         }
@@ -451,141 +928,209 @@ private fun FormDropdown(
 }
 
 @Composable
-private fun FormChipGroup(
+private fun ManualMedicationLogForm(
+    medications: List<Medication>,
+    onSave: (String, MedicationLogStatus) -> Unit,
+    onOpenMedicationCabinet: () -> Unit,
+) {
+    var selectedMedId by remember(medications) { mutableStateOf(medications.firstOrNull()?.id.orEmpty()) }
+    var selectedStatus by remember { mutableStateOf(MedicationLogStatus.TAKEN) }
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        if (medications.isEmpty()) {
+            EmptyStateMessage(stringResource(Res.string.calendar_no_medications_yet))
+        } else {
+            SimpleDropdown(
+                label = stringResource(Res.string.form_medication_label),
+                options = medications.map { it.id to "${it.name} • ${it.dosage}" },
+                selectedKey = selectedMedId,
+                onSelect = { selectedMedId = it },
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(MedicationLogStatus.TAKEN, MedicationLogStatus.SKIPPED).forEach { status ->
+                    FilterChip(selected = selectedStatus == status, onClick = {
+                        selectedStatus = status
+                    }, label = { Text(status.displayName) })
+                }
+            }
+            Button(onClick = {
+                onSave(selectedMedId, selectedStatus)
+            }, enabled = selectedMedId.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(Res.string.calendar_save_log))
+            }
+        }
+        TextButton(onClick = onOpenMedicationCabinet, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(Res.string.calendar_manage_medications))
+        }
+    }
+}
+
+@Composable
+private fun ResolveMedicationLogSheet(
+    medicationName: String,
+    candidates: List<MedicationOccurrenceCandidate>,
+    onBack: () -> Unit,
+    onAttach: (MedicationOccurrenceCandidate) -> Unit,
+    onLogExtraDose: () -> Unit,
+) {
+    Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = stringResource(Res.string.common_back_desc))
+            }
+            Text(
+                stringResource(Res.string.calendar_match_scheduled_dose_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+        }
+        Text(
+            stringResource(Res.string.calendar_match_scheduled_dose_desc, medicationName),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        candidates.forEach { candidate ->
+            Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(16.dp)) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(candidate.routineName, fontWeight = FontWeight.SemiBold)
+                    val occurrence = Instant.fromEpochMilliseconds(candidate.occurrenceTimeMs)
+                        .toLocalDateTime(TimeZone.currentSystemDefault())
+                    Text(
+                        stringResource(
+                            Res.string.calendar_occurrence_status,
+                            DateFormatter.formatDayMonthYear(occurrence.date),
+                            DateFormatter.formatTime(occurrence.hour, occurrence.minute),
+                            candidate.status.displayName,
+                        ),
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                    Button(onClick = { onAttach(candidate) }, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(Res.string.calendar_count_toward_schedule))
+                    }
+                }
+            }
+        }
+        OutlinedButton(onClick = onLogExtraDose, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(Res.string.calendar_save_as_extra_log))
+        }
+    }
+}
+
+@Composable
+private fun AddEntryMenu(selectedDate: LocalDate, onSelectType: (CalendarSheetState) -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            stringResource(Res.string.calendar_add_entry_title),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            DateFormatter.formatDayMonthYear(selectedDate),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Button(onClick = {
+            onSelectType(CalendarSheetState.FormMedication)
+        }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.calendar_menu_log_med)) }
+        OutlinedButton(onClick = {
+            onSelectType(CalendarSheetState.FormAppointment)
+        }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.calendar_menu_track_appt)) }
+        OutlinedButton(onClick = {
+            onSelectType(CalendarSheetState.FormMood)
+        }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.calendar_menu_track_mood)) }
+    }
+}
+
+@Composable
+private fun WrapperFormLayout(
     title: String,
-    options: List<String>,
-    selectedOptions: List<String>,
-    onOptionToggle: (String) -> Unit,
+    entryDate: LocalDate,
+    entryTime: Pair<Int, Int>,
+    onDateChange: (LocalDate) -> Unit,
+    onTimeChange: (Int, Int) -> Unit,
+    onBack: () -> Unit,
+    content: @Composable () -> Unit,
 ) {
-    Column {
-        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            options.forEach { option ->
-                val isSelected = selectedOptions.contains(option)
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { onOptionToggle(option) },
-                    label = { Text(option) },
-                    leadingIcon =
-                    if (isSelected) {
-                        { Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp)) }
-                    } else {
-                        null
-                    },
-                    colors = FilterChipDefaults.filterChipColors(),
-                )
+    var activeDatePicker by remember { mutableStateOf(false) }
+    var activeTimePicker by remember { mutableStateOf(false) }
+    Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = stringResource(Res.string.common_back_desc))
             }
+            Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         }
-    }
-}
-
-@Composable
-fun MedicationForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifier = Modifier) {
-    val meds = FormConstants.commonMeds()
-    var name by remember(meds) { mutableStateOf(meds.firstOrNull() ?: "") }
-    var dosage by remember { mutableIntStateOf(1) }
-
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        FormDropdown(
-            label = stringResource(Res.string.form_medication_label),
-            options = FormConstants.commonMeds(),
-            selectedOption = name,
-            onSelectOption = { name = it },
+        DateValueField(
+            label = stringResource(Res.string.form_date_label),
+            value = entryDate,
+            onClick = { activeDatePicker = true },
         )
-
-        Column {
-            Text(stringResource(Res.string.form_dosage_label), style = MaterialTheme.typography.labelMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FormConstants.Dosages.forEach { count ->
-                    FilterChip(
-                        selected = dosage == count,
-                        onClick = { dosage = count },
-                        label = {
-                            Text(
-                                pluralStringResource(
-                                    Res.plurals.form_dosage_pill,
-                                    count,
-                                    count,
-                                ),
-                            )
-                        },
-                        leadingIcon = {
-                            if (dosage == count) {
-                                Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp))
-                            }
-                        },
-                    )
-                }
-            }
-        }
-
-        Button(
-            onClick = { onSave(name, mapOf("dosage" to dosage)) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = name.isNotEmpty(),
-        ) { Text(stringResource(Res.string.form_medication_title)) }
+        TimeValueField(
+            label = stringResource(Res.string.form_time_label),
+            value = ((entryTime.first * 60L) + entryTime.second) * 60_000L,
+            onClick = {
+                activeTimePicker =
+                    true
+            },
+        )
+        content()
+    }
+    if (activeDatePicker) {
+        DatePickerSheet(
+            initialDate = entryDate,
+            onDismiss = { activeDatePicker = false },
+            onConfirm = {
+                onDateChange(it)
+                activeDatePicker = false
+            },
+        )
+    }
+    if (activeTimePicker) {
+        TimePickerSheet(
+            initialTimeMs = ((entryTime.first * 60L) + entryTime.second) * 60_000L,
+            onDismiss = { activeTimePicker = false },
+            onConfirm = {
+                val totalMinutes = (it / 60_000L).toInt()
+                onTimeChange(totalMinutes / 60, totalMinutes % 60)
+                activeTimePicker = false
+            },
+        )
     }
 }
 
 @Composable
-fun AppointmentForm(onSave: (String, Map<String, Any>) -> Unit, modifier: Modifier = Modifier) {
+private fun AppointmentForm(onSave: (String, String) -> Unit) {
     var doctorName by remember { mutableStateOf("") }
-    val apptTypes = FormConstants.apptTypes()
-    var type by remember(apptTypes) { mutableStateOf(apptTypes.firstOrNull() ?: "") }
-
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        FormDropdown(
-            label = stringResource(Res.string.form_appt_doctor_label),
-            options = sampleDoctors.map { it.name },
-            selectedOption = doctorName,
-            onSelectOption = { doctorName = it },
+    var appointmentType by remember { mutableStateOf("CONSULTATION") }
+    val appointmentOptions = listOf(
+        "CONSULTATION" to stringResource(Res.string.appt_type_consultation),
+        "LAB_TEST" to stringResource(Res.string.appt_type_labwork),
+        "FOLLOW_UP" to stringResource(Res.string.appt_type_followup),
+    )
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        OutlinedTextField(value = doctorName, onValueChange = {
+            doctorName = it
+        }, modifier = Modifier.fillMaxWidth(), label = { Text(stringResource(Res.string.form_appt_doctor_label)) })
+        SimpleDropdown(
+            label = stringResource(Res.string.form_appt_type_label),
+            options = appointmentOptions,
+            selectedKey = appointmentType,
+            onSelect = { appointmentType = it },
         )
-
-        Column {
-            Text(stringResource(Res.string.form_appt_type_label), style = MaterialTheme.typography.labelMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FormConstants.apptTypes().forEach { t ->
-                    FilterChip(
-                        selected = type == t,
-                        onClick = { type = t },
-                        label = { Text(t) },
-                        leadingIcon = {
-                            if (type == t) Icon(Icons.CheckW400Outlinedfill1, null, Modifier.size(16.dp))
-                        },
-                    )
-                }
-            }
+        Button(onClick = {
+            onSave(doctorName, appointmentType)
+        }, enabled = doctorName.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(Res.string.calendar_save_appointment))
         }
-
-        Button(
-            onClick = { onSave(doctorName, mapOf("type" to type)) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = doctorName.isNotEmpty(),
-        ) { Text(stringResource(Res.string.form_appt_schedule_button)) }
     }
 }
 
 @Composable
-fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, modifier: Modifier = Modifier) {
+private fun MoodEntryForm(onSave: (Int, String) -> Unit) {
     var moodScore by remember { mutableIntStateOf(3) }
-    val selectedTags = remember { mutableStateListOf<String>() }
-    val selectedSymptoms = remember { mutableStateListOf<String>() }
     var notes by remember { mutableStateOf("") }
 
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-    ) {
+    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.fillMaxWidth(),
@@ -604,17 +1149,15 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
                 FormConstants.MoodEmojis.forEachIndexed { index, emoji ->
                     val score = index + 1
                     val isSelected = moodScore == score
-                    val scale by
-                        animateFloatAsState(if (isSelected) 1.5f else 1.0f, label = "scale")
+                    val scale by animateFloatAsState(if (isSelected) 1.5f else 1.0f, label = "scale")
 
                     Text(
                         text = emoji,
                         style = MaterialTheme.typography.headlineLarge,
-                        modifier =
-                        Modifier.graphicsLayer(scaleX = scale, scaleY = scale)
+                        modifier = Modifier
+                            .graphicsLayer(scaleX = scale, scaleY = scale)
                             .clickable(
-                                interactionSource =
-                                remember { MutableInteractionSource() },
+                                interactionSource = remember { MutableInteractionSource() },
                                 indication = null,
                             ) { moodScore = score },
                     )
@@ -630,15 +1173,6 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
 
         HorizontalDivider()
 
-        FormChipGroup(
-            title = stringResource(Res.string.form_mood_question),
-            options = FormConstants.moodTags(),
-            selectedOptions = selectedTags,
-            onOptionToggle = {
-                if (selectedTags.contains(it)) selectedTags.remove(it) else selectedTags.add(it)
-            },
-        )
-
         OutlinedTextField(
             value = notes,
             onValueChange = { notes = it },
@@ -648,436 +1182,106 @@ fun MoodEntryForm(onSave: (Int, List<String>, List<String>, String) -> Unit, mod
         )
 
         Button(
-            onClick = { onSave(moodScore, selectedTags, selectedSymptoms, notes) },
+            onClick = { onSave(moodScore, notes) },
             modifier = Modifier.fillMaxWidth(),
-        ) { Text(stringResource(Res.string.form_mood_log_button)) }
+        ) {
+            Text(stringResource(Res.string.form_mood_log_button))
+        }
     }
 }
 
 @Composable
-private fun AddEntryMenu(onSelectType: (SheetView) -> Unit) {
-    Column(
-        modifier =
-        Modifier.fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(bottom = 32.dp, top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
+private fun AppointmentDetailSheetContent(appointment: Appointment, onClose: () -> Unit) {
+    val dateTime = Instant.fromEpochMilliseconds(
+        appointment.appointmentTime,
+    ).toLocalDateTime(TimeZone.currentSystemDefault())
+    Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(appointment.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text(
-            stringResource(Res.string.calendar_menu_title),
-            style = MaterialTheme.typography.headlineSmall,
-            fontWeight = FontWeight.Bold,
+            "${DateFormatter.formatDayMonthYear(
+                dateTime.date,
+            )} at ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}",
         )
-        MenuSelectionCard(
-            title = stringResource(Res.string.calendar_menu_log_med),
-            subtitle = stringResource(Res.string.calendar_menu_log_med_desc),
-            icon = Icons.EditW400Outlinedfill1,
-            color = MaterialTheme.colorScheme.primaryContainer,
-            onClick = { onSelectType(SheetView.FORM_MED) },
-        )
-        MenuSelectionCard(
-            title = stringResource(Res.string.calendar_menu_track_appt),
-            subtitle = stringResource(Res.string.calendar_menu_track_appt_desc),
-            icon = Icons.DateRangeW400Outlinedfill1,
-            color = MaterialTheme.colorScheme.secondaryContainer,
-            onClick = { onSelectType(SheetView.FORM_APPT) },
-        )
-        MenuSelectionCard(
-            title = stringResource(Res.string.calendar_menu_track_mood),
-            subtitle = stringResource(Res.string.calendar_menu_track_mood_desc),
-            icon = Icons.FaceW400Outlined,
-            color = MaterialTheme.colorScheme.tertiaryContainer,
-            onClick = { onSelectType(SheetView.FORM_MOOD) },
-        )
-    }
-}
-
-@Composable
-fun MenuSelectionCard(
-    title: String,
-    subtitle: String,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    color: Color,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = color),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier =
-                Modifier.size(48.dp)
-                    .background(Color.White.copy(alpha = 0.5f), CircleShape),
-                contentAlignment = Alignment.Center,
-            ) { Icon(icon, null, tint = MaterialTheme.colorScheme.onSurface) }
-            Spacer(Modifier.width(16.dp))
-            Column {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+        Text(appointment.appointmentType, color = MaterialTheme.colorScheme.secondary)
+        appointment.notes?.takeIf(String::isNotBlank)?.let { Text(it) }
+        TextButton(onClick = onClose, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(Res.string.calendar_close_action))
         }
     }
 }
 
 @Composable
-fun WrapperFormLayout(
-    title: String,
-    entryDate: LocalDate,
-    entryTime: Pair<Int, Int>,
-    onDateChange: (LocalDate) -> Unit,
-    onTimeChange: (Int, Int) -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showTimePicker by remember { mutableStateOf(false) }
-
-    val datePickerState =
-        rememberDatePickerState(
-            initialSelectedDateMillis =
-            entryDate.atStartOfDayIn(TimeZone.UTC).toEpochMilliseconds(),
-        )
-    val timePickerState =
-        rememberTimePickerState(initialHour = entryTime.first, initialMinute = entryTime.second)
-
-    Column(
-        modifier =
-        modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(bottom = 32.dp)
-            .verticalScroll(rememberScrollState()),
-    ) {
-        AppTopBar(
-            title = {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                )
-            },
-            onBackClick = onBack,
-            backContentDescription = stringResource(Res.string.common_back_desc),
-            containerColor = Color.Transparent,
-        )
-
-        Spacer(Modifier.height(24.dp))
-
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(bottom = 24.dp),
-        ) {
-            OutlinedTextField(
-                value = DateFormatter.formatDayMonthYear(entryDate),
-                onValueChange = {},
-                label = { Text(stringResource(Res.string.form_date_label)) },
-                modifier = Modifier.weight(1f).clickable { showDatePicker = true },
-                enabled = false,
-                colors =
-                OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                ),
-                trailingIcon = { Icon(Icons.DateRangeW400Outlinedfill1, null) },
-            )
-            OutlinedTextField(
-                value = DateFormatter.formatTime(entryTime.first, entryTime.second),
-                onValueChange = {},
-                label = { Text(stringResource(Res.string.form_time_label)) },
-                modifier = Modifier.weight(1f).clickable { showTimePicker = true },
-                enabled = false,
-                colors =
-                OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                ),
-                trailingIcon = { Icon(Icons.CheckCircleW400Outlinedfill1, null) },
-            )
-        }
-
-        content()
-
-        if (showDatePicker) {
-            DatePickerDialog(
-                onDismissRequest = { showDatePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            datePickerState.selectedDateMillis?.let {
-                                onDateChange(
-                                    Instant.fromEpochMilliseconds(it)
-                                        .toLocalDateTime(TimeZone.UTC)
-                                        .date,
-                                )
-                            }
-                            showDatePicker = false
-                        },
-                    ) { Text(stringResource(Res.string.common_ok)) }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showDatePicker = false }) { Text(stringResource(Res.string.common_cancel)) }
-                },
-            ) { DatePicker(state = datePickerState) }
-        }
-
-        if (showTimePicker) {
-            AlertDialog(
-                onDismissRequest = { showTimePicker = false },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            onTimeChange(timePickerState.hour, timePickerState.minute)
-                            showTimePicker = false
-                        },
-                    ) { Text(stringResource(Res.string.common_ok)) }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showTimePicker = false }) { Text(stringResource(Res.string.common_cancel)) }
-                },
-                text = { TimePicker(state = timePickerState) },
-            )
-        }
-    }
-}
-
-@Composable
-fun AppointmentDetailSheetContent(
-    appointment: Appointment,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier =
-        modifier
-            .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 16.dp)
-            .fillMaxWidth(),
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                stringResource(Res.string.calendar_appt_details_title),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-            )
-            IconButton(onClick = onEdit) {
-                Icon(
-                    Icons.EditW400Outlinedfill1,
-                    stringResource(Res.string.calendar_appt_edit_desc),
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-            }
-        }
-        Spacer(Modifier.height(24.dp))
-        Card(
-            colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-            ),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(Modifier.padding(16.dp)) {
-                Text(
-                    appointment.title,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(appointment.appointmentType, style = MaterialTheme.typography.bodyMedium)
-            }
-        }
-        Spacer(Modifier.height(24.dp))
-
-        val dt = Instant.fromEpochMilliseconds(appointment.appointmentTime)
-            .toLocalDateTime(TimeZone.currentSystemDefault())
-
-        DetailRow(
-            Icons.DateRangeW400Outlinedfill1,
-            stringResource(Res.string.form_date_label),
-            DateFormatter.formatDayMonthYear(dt.date),
-        )
-        Spacer(Modifier.height(16.dp))
-        DetailRow(
-            Icons.CheckCircleW400Outlinedfill1,
-            stringResource(Res.string.form_time_label),
-            DateFormatter.formatTime(dt.hour, dt.minute),
-        )
-        Spacer(Modifier.height(16.dp))
-        DetailRow(
-            Icons.LocationOnW400Outlined,
-            stringResource(Res.string.calendar_appt_location_label),
-            stringResource(Res.string.calendar_appt_location_value),
-        )
-        Spacer(Modifier.height(32.dp))
-        Button(onClick = {
-        }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(Res.string.calendar_appt_directions_button)) }
-        TextButton(
-            onClick = onDelete,
-            modifier = Modifier.fillMaxWidth(),
-            colors =
-            ButtonDefaults.textButtonColors(
-                contentColor = MaterialTheme.colorScheme.error,
-            ),
-        ) {
-            Icon(Icons.DeleteW400Outlined, null, Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(Res.string.calendar_appt_cancel_button))
-        }
-        Spacer(Modifier.height(16.dp))
-    }
-}
-
-@Composable
-fun DetailRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-) {
-    Row(
+fun AppointmentCard(appointment: Appointment, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+    val dateTime = Instant.fromEpochMilliseconds(
+        appointment.appointmentTime,
+    ).toLocalDateTime(TimeZone.currentSystemDefault())
+    Surface(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(
-            modifier =
-            Modifier.size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Spacer(Modifier.width(16.dp))
-        Column {
-            Text(
-                label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.secondary,
-            )
-            Text(value, style = MaterialTheme.typography.bodyLarge)
-        }
-    }
-}
-
-@Composable
-fun DailyActionCard(isTaken: Boolean, onToggle: () -> Unit, modifier: Modifier = Modifier) {
-    Card(
-        onClick = onToggle,
-        modifier = modifier.fillMaxWidth(),
-        colors =
-        CardDefaults.cardColors(
-            containerColor =
-            if (isTaken) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surfaceContainerHigh
-            },
-        ),
-    ) {
-        Row(
-            modifier = Modifier.padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    if (isTaken) {
-                        stringResource(
-                            Res.string.calendar_action_all_done,
-                        )
-                    } else {
-                        stringResource(Res.string.calendar_action_take_prep)
-                    },
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.SemiBold,
-                )
-                Text(
-                    if (isTaken) {
-                        stringResource(Res.string.calendar_action_streak_format, 12)
-                    } else {
-                        stringResource(Res.string.calendar_action_scheduled_format, "9:00 AM")
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            Icon(
-                if (isTaken) Icons.CheckCircleW400Outlinedfill1 else Icons.CheckCircleW400Outlined,
-                null,
-                tint =
-                if (isTaken) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier.size(40.dp),
-            )
-        }
-    }
-}
-
-@Composable
-fun AppointmentCard(appointment: Appointment, onClick: () -> Unit = {}, modifier: Modifier = Modifier) {
-    val dt = Instant.fromEpochMilliseconds(appointment.appointmentTime)
-        .toLocalDateTime(TimeZone.currentSystemDefault())
-
-    val day = dt.day.toString()
-    val month = dt.month.name.take(3)
-
-    Row(
-        modifier =
-        modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .clickable { onClick() }
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        onClick = onClick,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(16.dp),
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier =
-            Modifier.background(
-                MaterialTheme.colorScheme.surface,
-                RoundedCornerShape(8.dp),
-            )
-                .padding(vertical = 8.dp, horizontal = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
         ) {
+            Text(appointment.title, fontWeight = FontWeight.SemiBold)
             Text(
-                month,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.error,
-                fontWeight = FontWeight.Bold,
+                DateFormatter.formatTime(dateTime.hour, dateTime.minute),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Text(day, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
-        Spacer(Modifier.width(16.dp))
-        Column {
-            Text(
-                appointment.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
-            Text(
-                "${appointment.appointmentType} • ${DateFormatter.formatTime(dt.hour, dt.minute)}",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.secondary,
-            )
+    }
+}
+
+private fun entryDateTimeToEpochMs(entryDate: LocalDate, entryTime: Pair<Int, Int>, timeZone: TimeZone): Long {
+    val logDateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
+    return logDateTime.toInstant(timeZone).toEpochMilliseconds()
+}
+
+private fun routineLogRequest(
+    routine: RoutineDayAgenda,
+    medicationId: String,
+    status: MedicationLogStatus,
+    nowMs: Long = Clock.System.now().toEpochMilliseconds(),
+): MedicationLogRequest = MedicationLogRequest(
+    medicationId = medicationId,
+    status = status.name,
+    timestampMs = if (status == MedicationLogStatus.TAKEN) nowMs else routine.occurrenceTimeMs,
+    routineId = routine.routineId,
+    occurrenceTimeMs = routine.occurrenceTimeMs,
+    linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
+)
+
+@Composable
+private fun SimpleDropdown(
+    label: String,
+    options: List<Pair<String, String>>,
+    selectedKey: String,
+    onSelect: (String) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selectedValue = options.firstOrNull { it.first == selectedKey }?.second.orEmpty()
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+        OutlinedTextField(
+            value = selectedValue,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            modifier = Modifier.fillMaxWidth().menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true),
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            colors = OutlinedTextFieldDefaults.colors(),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { (key, value) ->
+                DropdownMenuItem(
+                    text = { Text(value) },
+                    onClick = {
+                        onSelect(key)
+                        expanded = false
+                    },
+                )
+            }
         }
     }
 }

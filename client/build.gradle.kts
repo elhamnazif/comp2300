@@ -1,9 +1,8 @@
+import io.github.frankois944.spmForKmp.swiftPackageConfig
 import io.github.kingsword09.symbolcraft.model.SymbolVariant
 import io.github.kingsword09.symbolcraft.model.SymbolWeight
 import org.gradle.kotlin.dsl.withType
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 import java.net.URI
 
 plugins {
@@ -27,8 +26,6 @@ kotlin {
         compilerOptions { jvmTarget.set(JvmTarget.JVM_21) }
     }
 
-    jvm()
-
     iosArm64()
     iosSimulatorArm64()
 
@@ -48,51 +45,35 @@ kotlin {
         )
     }
 
-    // https://maplibre.org/maplibre-compose/getting-started/#set-up-desktop-jvm
-    fun detectTarget(): String {
-        val hostOs =
-            when (val os = System.getProperty("os.name").lowercase()) {
-                "mac os x" -> "macos"
-                else -> os.split(" ").first()
-            }
-        val hostArch =
-            when (val arch = System.getProperty("os.arch").lowercase()) {
-                "x86_64" -> "amd64"
-                "arm64" -> "aarch64"
-                else -> arch
-            }
-        val renderer =
-            when (hostOs) {
-                "macos" -> "metal"
-                else -> "opengl"
-            }
-        return "$hostOs-$hostArch-$renderer"
-    }
-
-    targets
-        .withType<KotlinNativeTarget>()
-        .matching { it.konanTarget.family.isAppleFamily }
-        .configureEach {
-            compilations {
-                getByName("main") {
-                    cinterops.create("spmMaplibre")
-                }
-            }
-            binaries {
-                framework {
-                    baseName = "clientKit"
-                    isStatic = true
-                }
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach { target ->
+        target.swiftPackageConfig(cinteropName = "spmMaplibre") {
+            dependency {
+                remotePackageVersion(
+                    url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
+                    products = { add("MapLibre", exportToKotlin = true) },
+                    packageName = "maplibre-gl-native-distribution",
+                    version = "6.17.1",
+                )
             }
         }
+        target.binaries {
+            framework {
+                baseName = "clientKit"
+                isStatic = true
+            }
+        }
+    }
 
     sourceSets {
         commonMain {
             kotlin.srcDir(tasks.named("generateSymbolCraftIcons"))
             dependencies {
                 api(project(":shared"))
-                implementation(project(":client-data"))
                 api(project(":i18n"))
+                implementation(project(":client-data"))
 
                 // Compose
                 api(libs.compose.runtime)
@@ -134,6 +115,14 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.coroutines.core)
+
+                // Moko
+                implementation(libs.moko.permissions.compose)
+                implementation(libs.moko.permissions)
+                implementation(libs.moko.permissions.notifications)
+
+                // Auth
+                implementation(libs.biometrik)
             }
         }
 
@@ -143,22 +132,8 @@ kotlin {
         }
 
         androidMain.dependencies {
+            implementation(libs.androidx.biometric)
             implementation(libs.kotlinx.coroutines.android)
-        }
-
-        jvmMain.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutines.swing)
-            val target = detectTarget()
-            runtimeOnly(
-                libs.maplibre.nativeBindingsJni
-                    .get()
-                    .toString(),
-            ) {
-                capabilities {
-                    requireCapability("org.maplibre.compose:maplibre-native-bindings-jni-$target")
-                }
-            }
         }
 
         iosMain.dependencies {
@@ -171,59 +146,20 @@ dependencies {
 }
 
 symbolCraft {
-    // Basic configuration
     packageName.set("com.group8.comp2300.symbols")
     outputDirectory.set(layout.buildDirectory.dir("generated/symbolcraft").map { it.asFile.absolutePath })
     cacheEnabled.set(true)
-
-    // Preview generation configuration (optional)
     generatePreview.set(false)
 
-    // Convenient batch configuration methods
-    materialSymbols("chevron_right", "chevron_left") {
-        standardWeights()
-    }
-
-    // expand_more and expand_less (replacing keyboard_arrow_down/up)
-    materialSymbols("expand_more", "expand_less") {
-        standardWeights()
-    }
-
-    // phone icon
-    materialSymbols("call") {
-        weights(SymbolWeight.W400, SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
-        bothFills(weight = SymbolWeight.W400, variant = SymbolVariant.OUTLINED)
-        bothFills(weight = SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
-    }
-
-    // Batch configure multiple icons
-    materialSymbols(
-        "star",
-        "bookmark",
-        "fingerprint",
-        "health_and_safety",
-        "stethoscope",
-        "play_circle",
-        "article",
-        "quiz",
-        "lightbulb",
-        "shield",
-        "visibility",
-        "visibility_off",
-        "calendar_month",
-        "local_pharmacy",
-        "mark_email_read",
-        "password",
-    ) {
-        weights(SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
-    }
-
-    // Icons replacing material-icons-core
     materialSymbols(
         // Navigation
         "arrow_back",
         "arrow_forward",
         "arrow_drop_down",
+        "chevron_right",
+        "chevron_left",
+        "expand_more",
+        "expand_less",
         "home",
         "person",
         // Actions
@@ -255,14 +191,32 @@ symbolCraft {
         "lock",
         "account_box",
         "face",
+        "password",
+        "visibility",
+        "visibility_off",
+        "fingerprint",
+        // Medical
+        "health_and_safety",
+        "stethoscope",
+        "local_pharmacy",
+        // Education
+        "star",
+        "bookmark",
+        "play_circle",
+        "article",
+        "quiz",
+        "lightbulb",
+        // Calendar & Reminders
+        "calendar_month",
+        "mark_email_read",
         // Misc
         "favorite",
         "description",
-        "shield"
+        "shield",
+        "call",
+        "whatshot",
     ) {
-        weights(SymbolWeight.W400, SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
         bothFills(weight = SymbolWeight.W400, variant = SymbolVariant.OUTLINED)
-        bothFills(weight = SymbolWeight.W500, variant = SymbolVariant.OUTLINED)
     }
 }
 
@@ -291,29 +245,4 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask<*>>().con
 // Workaround for prepareAndroidMainArtProfile which doesn't seem to respect srcDir dependencies
 tasks.matching { it.name.contains("prepareAndroidMainArtProfile", ignoreCase = true) }.configureEach {
     dependsOn("generateSymbolCraftIcons")
-}
-
-swiftPackageConfig {
-    create("spmMaplibre") {
-        dependency {
-            remotePackageVersion(
-                url = URI("https://github.com/maplibre/maplibre-gl-native-distribution.git"),
-                products = { add("MapLibre", exportToKotlin = true) },
-                packageName = "maplibre-gl-native-distribution",
-                version = "6.17.1",
-            )
-        }
-    }
-}
-
-compose.desktop {
-    application {
-        mainClass = "com.group8.comp2300.MainKt"
-
-        nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.group8.comp2300"
-            packageVersion = "1.0.0"
-        }
-    }
 }

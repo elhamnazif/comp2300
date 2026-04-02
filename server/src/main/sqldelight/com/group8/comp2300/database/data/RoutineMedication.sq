@@ -1,0 +1,16 @@
+CREATE TABLE RoutineMedicationEnt (
+    id TEXT PRIMARY KEY,
+    routine_id TEXT NOT NULL REFERENCES RoutineEnt(id) ON DELETE CASCADE,
+    medication_id TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE,
+    UNIQUE(routine_id, medication_id)
+);
+
+insertRoutineMedication:
+INSERT OR REPLACE INTO RoutineMedicationEnt (id, routine_id, medication_id)
+VALUES (?, ?, ?);
+
+selectRoutineMedications:
+SELECT * FROM RoutineMedicationEnt WHERE routine_id = ? ORDER BY medication_id ASC;
+
+deleteRoutineMedicationsByRoutineId:
+DELETE FROM RoutineMedicationEnt WHERE routine_id = ?;

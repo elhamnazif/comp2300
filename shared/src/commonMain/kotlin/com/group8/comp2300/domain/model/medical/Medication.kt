@@ -16,9 +16,6 @@ data class Medication(
     val frequency: MedicationFrequency,
     val instruction: String? = null,
     val colorHex: String? = null,
-    val startDate: String, // YYYY-MM-DD
-    val endDate: String, // YYYY-MM-DD
-    val hasReminder: Boolean = true,
     val status: MedicationStatus = MedicationStatus.ACTIVE,
 ) {
     companion object {
@@ -34,11 +31,3 @@ data class Medication(
             )
     }
 }
-
-// --- Composite "Grouped" Class ---
-
-/**
- * Represents a Medication along with its full weekly schedule.
- * Use this for the "Medication Details" screen.
- */
-data class MedicationWithSchedules(val medication: Medication, val schedules: List<MedicationSchedule>)

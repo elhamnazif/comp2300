@@ -10,16 +10,122 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.presentation.components.AppTopBar
+import com.group8.comp2300.presentation.screens.auth.PinScreen
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ChevronRightW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
+private enum class PinFlow { None, SetupNew, VerifyThenClear, VerifyThenSetup }
+private enum class PinStep { VerifyOld, SetNew }
+
 @Composable
-fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun PrivacySecurityScreen(
+    onBack: () -> Unit,
+    isPinEnabled: Boolean,
+    onVerifyPin: suspend (String) -> Boolean,
+    onSavePin: (String) -> Unit,
+    onClearPin: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     var biometricsEnabled by remember { mutableStateOf(true) }
     var dataEncryptionEnabled by remember { mutableStateOf(true) }
     var anonymousReporting by remember { mutableStateOf(false) }
     var shareDataForResearch by remember { mutableStateOf(false) }
 
+    var pinFlow by remember { mutableStateOf(PinFlow.None) }
+    var pinStep by remember { mutableStateOf(PinStep.VerifyOld) }
+    var pinErrorMessage by remember { mutableStateOf<String?>(null) }
+    var pinTogglePending by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    val incorrectPinText = stringResource(Res.string.privacy_security_incorrect_pin)
+
+    // --- PIN sub-flows ---
+    when (pinFlow) {
+        PinFlow.SetupNew -> {
+            PinScreen(
+                onComplete = { pin ->
+                    onSavePin(pin)
+                    pinTogglePending = false
+                    pinFlow = PinFlow.None
+                },
+                isSetup = true,
+                onDismiss = {
+                    pinTogglePending = false
+                    pinFlow = PinFlow.None
+                },
+            )
+            return
+        }
+
+        PinFlow.VerifyThenClear -> {
+            PinScreen(
+                onComplete = { pin ->
+                    scope.launch {
+                        if (onVerifyPin(pin)) {
+                            onClearPin()
+                            pinFlow = PinFlow.None
+                        } else {
+                            pinErrorMessage = incorrectPinText
+                        }
+                    }
+                },
+                isSetup = false,
+                title = stringResource(Res.string.privacy_security_verify_disable_title),
+                description = stringResource(Res.string.privacy_security_verify_disable_desc),
+                errorMessage = pinErrorMessage,
+                onErrorMessageCleared = { pinErrorMessage = null },
+                onDismiss = { pinFlow = PinFlow.None },
+            )
+            return
+        }
+
+        PinFlow.VerifyThenSetup -> {
+            when (pinStep) {
+                PinStep.VerifyOld -> {
+                    PinScreen(
+                        onComplete = { pin ->
+                            scope.launch {
+                                if (onVerifyPin(pin)) {
+                                    pinStep = PinStep.SetNew
+                                    pinErrorMessage = null
+                                } else {
+                                    pinErrorMessage = incorrectPinText
+                                }
+                            }
+                        },
+                        isSetup = false,
+                        title = stringResource(Res.string.privacy_security_verify_pin_title),
+                        description = stringResource(Res.string.privacy_security_verify_pin_desc),
+                        errorMessage = pinErrorMessage,
+                        onErrorMessageCleared = { pinErrorMessage = null },
+                        onDismiss = { pinFlow = PinFlow.None },
+                    )
+                    return
+                }
+
+                PinStep.SetNew -> {
+                    PinScreen(
+                        onComplete = { pin ->
+                            onSavePin(pin)
+                            pinFlow = PinFlow.None
+                        },
+                        isSetup = true,
+                        onDismiss = {
+                            pinStep = PinStep.VerifyOld
+                        },
+                    )
+                    return
+                }
+            }
+        }
+
+        PinFlow.None -> { /* fall through to normal settings */ }
+    }
+
+    // --- Normal settings view ---
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -40,6 +146,59 @@ fun PrivacySecurityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 16.dp),
             )
+
+            val effectivePinEnabled = isPinEnabled || pinTogglePending
+            SettingToggleItem(
+                title = stringResource(Res.string.privacy_security_pin_toggle_title),
+                description = if (effectivePinEnabled) {
+                    stringResource(Res.string.privacy_security_pin_toggle_desc_enabled)
+                } else {
+                    stringResource(Res.string.privacy_security_pin_toggle_desc_disabled)
+                },
+                checked = effectivePinEnabled,
+                onCheckedChange = { enable ->
+                    if (enable && !isPinEnabled) {
+                        pinTogglePending = true
+                        pinFlow = PinFlow.SetupNew
+                    } else if (!enable && isPinEnabled) {
+                        pinFlow = PinFlow.VerifyThenClear
+                    }
+                },
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            if (isPinEnabled) {
+                Card(
+                    onClick = {
+                        pinFlow = PinFlow.VerifyThenSetup
+                        pinStep = PinStep.VerifyOld
+                        pinErrorMessage = null
+                    },
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(Res.string.privacy_security_change_pin_title),
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                        Icon(
+                            Icons.ChevronRightW400Outlinedfill1,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.outline,
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+            }
 
             SettingToggleItem(
                 title = stringResource(Res.string.privacy_security_biometrics_title),

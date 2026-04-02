@@ -23,7 +23,7 @@ import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.screens.auth.components.AuthTextField
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.MailOutlineW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.MarkEmailReadW500Outlined
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.MarkEmailReadW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -106,7 +106,7 @@ private fun SuccessContent(
             modifier = Modifier.size(80.dp),
         ) {
             Icon(
-                Icons.MarkEmailReadW500Outlined,
+                Icons.MarkEmailReadW400Outlinedfill1,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier

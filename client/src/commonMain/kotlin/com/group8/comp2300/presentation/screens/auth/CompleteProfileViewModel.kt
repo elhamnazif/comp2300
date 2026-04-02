@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
-import com.group8.comp2300.domain.model.user.User
-import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.usecase.auth.CompleteProfileUseCase
 import comp2300.i18n.generated.resources.Res
 import comp2300.i18n.generated.resources.auth_error_network
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
@@ -20,7 +20,6 @@ import kotlin.time.Instant
 
 abstract class CompleteProfileViewModel : ViewModel() {
     abstract val state: StateFlow<State>
-    abstract val currentUser: StateFlow<User?>
     abstract fun onEvent(event: Event)
 
     @Immutable
@@ -59,16 +58,10 @@ abstract class CompleteProfileViewModel : ViewModel() {
     }
 }
 
-class RealCompleteProfileViewModel(
-    private val completeProfileUseCase: CompleteProfileUseCase,
-    authRepository: AuthRepository,
-    initialEmail: String,
-) : CompleteProfileViewModel() {
+class RealCompleteProfileViewModel(private val completeProfileUseCase: CompleteProfileUseCase, initialEmail: String) :
+    CompleteProfileViewModel() {
 
     override val state: MutableStateFlow<State> = MutableStateFlow(State(email = initialEmail))
-
-    override val currentUser: StateFlow<User?> =
-        authRepository.currentUser.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     override fun onEvent(event: Event) {
         when (event) {

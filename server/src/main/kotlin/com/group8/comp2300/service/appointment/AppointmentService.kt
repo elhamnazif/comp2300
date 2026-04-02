@@ -243,7 +243,7 @@ class AppointmentService(
             return Result.failure(Exception("Unauthorized to modify this appointment"))
         }
 
-        if (!paymentService.validatePaymentMethod(appointment.appointmentType ?: "", newPaymentMethod)) {
+        if (!paymentService.validatePaymentMethod(appointment.appointmentType, newPaymentMethod)) {
             return Result.failure(Exception("Invalid payment method for this appointment type"))
         }
 

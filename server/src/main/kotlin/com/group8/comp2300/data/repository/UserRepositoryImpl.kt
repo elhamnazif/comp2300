@@ -102,8 +102,26 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
         verificationRequestCache[email] = Clock.System.now().toEpochMilliseconds()
     }
 
+    override fun clearVerificationRequest(email: String) {
+        verificationRequestCache.remove(email)
+    }
+
     override fun deleteUnactivatedAccounts(cutoffMillis: Long) {
         database.userQueries.deleteUnactivatedAccounts(cutoffMillis)
+    }
+
+    override fun existsByEmailAndActivated(email: String): Boolean {
+        val user = database.userQueries.selectUserByEmail(email).executeAsOneOrNull()
+        return user != null && user.isActivated != 0L
+    }
+
+    override fun findByEmailAndNotActivated(email: String): User? {
+        val user = database.userQueries.selectUserByEmail(email).executeAsOneOrNull()
+        return if (user != null && user.isActivated == 0L) user.toDomain() else null
+    }
+
+    override fun deleteById(userId: String) {
+        database.userQueries.deleteUserById(userId)
     }
 }
 

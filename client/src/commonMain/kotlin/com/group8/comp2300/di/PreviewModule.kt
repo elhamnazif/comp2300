@@ -1,8 +1,12 @@
 package com.group8.comp2300.di
 
+import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
+import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.domain.model.education.ContentItem
 import com.group8.comp2300.domain.model.education.Quiz
 import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.medical.Routine
+import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
 import com.group8.comp2300.domain.model.user.Gender
@@ -18,7 +22,7 @@ import com.group8.comp2300.mock.sampleClinics
 import com.group8.comp2300.mock.sampleProducts
 import com.group8.comp2300.presentation.screens.auth.AuthViewModel
 import com.group8.comp2300.presentation.screens.education.EducationViewModel
-import com.group8.comp2300.presentation.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.screens.medical.booking.BookingViewModel
 import com.group8.comp2300.presentation.screens.shop.ShopViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -38,6 +42,10 @@ class FakeEducationRepository : EducationRepository {
     override fun getAllContent(): List<ContentItem> = educationContent
     override fun getContentById(id: String): ContentItem? = educationContent.find { it.id == id }
     override fun getQuizById(id: String): Quiz? = allQuizzes.find { it.id == id }
+    override fun searchContent(query: String): List<ContentItem> = educationContent.filter {
+        it.title.contains(query, ignoreCase = true) ||
+            it.description.contains(query, ignoreCase = true)
+    }
 }
 
 class FakeShopRepository : ShopRepository {
@@ -53,8 +61,8 @@ class FakeShopRepository : ShopRepository {
 }
 
 class FakeAuthRepository : AuthRepository {
-    private val _currentUser = MutableStateFlow<User?>(null)
-    override val currentUser: StateFlow<User?> = _currentUser
+    private val _session = MutableStateFlow<AuthSession>(AuthSession.SignedOut)
+    override val session: StateFlow<AuthSession> = _session
 
     override suspend fun login(email: String, password: String): Result<User> {
         val user =
@@ -67,7 +75,7 @@ class FakeAuthRepository : AuthRepository {
                 sexualOrientation = SexualOrientation.PREFER_NOT_TO_SAY,
                 dateOfBirth = null,
             )
-        _currentUser.value = user
+        _session.value = AuthSession.SignedIn(user)
         return Result.success(user)
     }
 
@@ -90,7 +98,7 @@ class FakeAuthRepository : AuthRepository {
                 sexualOrientation = sexualOrientation,
                 dateOfBirth = dateOfBirth,
             )
-        _currentUser.value = user
+        _session.value = AuthSession.SignedIn(user)
         return Result.success(user)
     }
 
@@ -117,10 +125,8 @@ class FakeAuthRepository : AuthRepository {
     override suspend fun resetPassword(token: String, newPassword: String): Result<Unit> = Result.success(Unit)
 
     override suspend fun logout() {
-        _currentUser.value = null
+        _session.value = AuthSession.SignedOut
     }
-
-    override fun isGuest(): Boolean = _currentUser.value == null
 }
 
 /** Fake AuthViewModel for Compose Preview. */
@@ -128,8 +134,8 @@ class FakeAuthViewModel : AuthViewModel() {
     final override val state: StateFlow<State>
         field = MutableStateFlow(State())
 
-    private val _currentUser = MutableStateFlow<User?>(null)
-    override val currentUser: StateFlow<User?> = _currentUser
+    private val _session = MutableStateFlow<AuthSession>(AuthSession.SignedOut)
+    override val session: StateFlow<AuthSession> = _session
 
     override fun onEvent(event: AuthUiEvent) {
         /* no-op for preview */
@@ -138,8 +144,6 @@ class FakeAuthViewModel : AuthViewModel() {
     override fun logout() {
         /* no-op */
     }
-
-    override fun isGuest() = true
 }
 
 val previewModule = module {
@@ -148,6 +152,16 @@ val previewModule = module {
     singleOf(::FakeEducationRepository) { bind<EducationRepository>() }
     singleOf(::FakeShopRepository) { bind<ShopRepository>() }
     singleOf(::FakeAuthRepository) { bind<AuthRepository>() }
+    single<RoutineNotificationScheduler> {
+        object : RoutineNotificationScheduler {
+            override suspend fun syncRoutine(routine: Routine, previousRoutine: Routine?) = Unit
+
+            override suspend fun removeRoutine(routine: Routine) = Unit
+
+            override suspend fun syncAllRoutines() = Unit
+        }
+    }
+    single { RoutineNotificationBootstrap(get()) }
 
     viewModelOf(::FakeAuthViewModel) { bind<AuthViewModel>() }
     viewModelOf(::ShopViewModel)

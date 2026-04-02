@@ -26,9 +26,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.LockW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.PasswordW500Outlined
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.VisibilityOffW500Outlined
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.VisibilityW500Outlined
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.PasswordW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.VisibilityOffW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.VisibilityW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -77,7 +77,7 @@ fun ResetPasswordScreen(
                 modifier = Modifier.size(80.dp),
             ) {
                 Icon(
-                    Icons.PasswordW500Outlined,
+                    Icons.PasswordW400Outlinedfill1,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                     modifier = Modifier
@@ -163,9 +163,9 @@ fun ResetPasswordScreen(
                         viewModel.onEvent(ResetPasswordViewModel.Event.TogglePasswordVisibility)
                     }) {
                         val icon = if (state.isPasswordVisible) {
-                            Icons.VisibilityW500Outlined
+                            Icons.VisibilityW400Outlinedfill1
                         } else {
-                            Icons.VisibilityOffW500Outlined
+                            Icons.VisibilityOffW400Outlinedfill1
                         }
                         Icon(icon, contentDescription = stringResource(Res.string.auth_toggle_password_desc))
                     }
@@ -208,9 +208,9 @@ fun ResetPasswordScreen(
                         viewModel.onEvent(ResetPasswordViewModel.Event.TogglePasswordVisibility)
                     }) {
                         val icon = if (state.isPasswordVisible) {
-                            Icons.VisibilityW500Outlined
+                            Icons.VisibilityW400Outlinedfill1
                         } else {
-                            Icons.VisibilityOffW500Outlined
+                            Icons.VisibilityOffW400Outlinedfill1
                         }
                         Icon(icon, contentDescription = stringResource(Res.string.auth_toggle_password_desc))
                     }

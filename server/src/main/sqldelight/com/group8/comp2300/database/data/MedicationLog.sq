@@ -2,16 +2,25 @@ CREATE TABLE MedicationLogEnt (
     id TEXT PRIMARY KEY,
     medication_id TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE,
     medication_time INTEGER NOT NULL,
-    status TEXT NOT NULL CHECK (status IN ('TAKEN', 'SKIPPED', 'SNOOZED', 'PENDING')),
-    UNIQUE(medication_id, medication_time)
+    routine_id TEXT REFERENCES RoutineEnt(id) ON DELETE CASCADE,
+    occurrence_time_ms INTEGER,
+    status TEXT NOT NULL CHECK (status IN ('TAKEN', 'SKIPPED', 'MISSED', 'SNOOZED', 'PENDING')),
+    UNIQUE(routine_id, medication_id, occurrence_time_ms)
 );
 
 insertMedLog:
-INSERT OR REPLACE INTO MedicationLogEnt (id, medication_id, medication_time, status)
-VALUES (?, ?, ?, ?);
+INSERT OR REPLACE INTO MedicationLogEnt (id, medication_id, medication_time, routine_id, occurrence_time_ms, status)
+VALUES (?, ?, ?, ?, ?, ?);
 
 selectLogsByMedication:
 SELECT * FROM MedicationLogEnt WHERE medication_id = ?;
+
+selectLogsByUser:
+SELECT l.*
+FROM MedicationLogEnt l
+JOIN MedicationEntity m ON l.medication_id = m.id
+WHERE m.user_id = ?
+ORDER BY l.medication_time DESC;
 
 selectLogDetails:
 SELECT * FROM MedicationLogEnt WHERE id = ?;

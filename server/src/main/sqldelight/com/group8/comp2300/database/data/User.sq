@@ -37,3 +37,6 @@ WHERE id = ?;
 
 deleteUnactivatedAccounts:
 DELETE FROM UserEntity WHERE isActivated = 0 AND createdAt < ?;
+
+deleteUserById:
+DELETE FROM UserEntity WHERE id = ?;

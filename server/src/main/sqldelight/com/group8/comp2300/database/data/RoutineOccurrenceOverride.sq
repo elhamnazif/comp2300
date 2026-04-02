@@ -1,0 +1,31 @@
+CREATE TABLE RoutineOccurrenceOverrideEnt (
+    id TEXT PRIMARY KEY,
+    routine_id TEXT NOT NULL REFERENCES RoutineEnt(id) ON DELETE CASCADE,
+    original_occurrence_time_ms INTEGER NOT NULL,
+    rescheduled_occurrence_time_ms INTEGER NOT NULL,
+    UNIQUE(routine_id, original_occurrence_time_ms)
+);
+
+insertRoutineOccurrenceOverride:
+INSERT OR REPLACE INTO RoutineOccurrenceOverrideEnt (
+    id,
+    routine_id,
+    original_occurrence_time_ms,
+    rescheduled_occurrence_time_ms
+)
+VALUES (?, ?, ?, ?);
+
+selectRoutineOccurrenceOverridesByUserId:
+SELECT o.*
+FROM RoutineOccurrenceOverrideEnt o
+JOIN RoutineEnt r ON o.routine_id = r.id
+WHERE r.user_id = ?
+ORDER BY o.rescheduled_occurrence_time_ms ASC;
+
+selectRoutineOccurrenceOverrideByRoutineAndOriginal:
+SELECT * FROM RoutineOccurrenceOverrideEnt
+WHERE routine_id = ? AND original_occurrence_time_ms = ?;
+
+deleteRoutineOccurrenceOverrideById:
+DELETE FROM RoutineOccurrenceOverrideEnt
+WHERE id = ?;

@@ -1,0 +1,16 @@
+CREATE TABLE RoutineTimeEnt (
+    id TEXT PRIMARY KEY,
+    routine_id TEXT NOT NULL REFERENCES RoutineEnt(id) ON DELETE CASCADE,
+    time_of_day_ms INTEGER NOT NULL,
+    UNIQUE(routine_id, time_of_day_ms)
+);
+
+insertRoutineTime:
+INSERT OR REPLACE INTO RoutineTimeEnt (id, routine_id, time_of_day_ms)
+VALUES (?, ?, ?);
+
+selectRoutineTimes:
+SELECT * FROM RoutineTimeEnt WHERE routine_id = ? ORDER BY time_of_day_ms ASC;
+
+deleteRoutineTimesByRoutineId:
+DELETE FROM RoutineTimeEnt WHERE routine_id = ?;

@@ -8,5 +8,8 @@ data class MedicationLog(
     val medicationId: String,
     val medicationTime: Long,
     val status: MedicationLogStatus,
+    val routineId: String? = null,
+    val occurrenceTimeMs: Long? = null,
     val medicationName: String? = null,
+    val routineName: String? = null,
 )

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.domain.model.medical.LabResult
+import com.group8.comp2300.domain.model.session.userOrNull
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.usecase.medical.GetRecentLabResultsUseCase
 import com.group8.comp2300.presentation.util.DateFormatter
@@ -26,10 +27,10 @@ class ProfileViewModel(
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
 
     val state: StateFlow<State> = combine(
-        authRepository.currentUser,
+        authRepository.session,
         refreshTrigger.onStart { emit(Unit) }, // Ensure it runs at least once on start
-    ) { user, _ ->
-        user
+    ) { session, _ ->
+        session.userOrNull
     }.flatMapLatest { user ->
         if (user == null) {
             flowOf(State(isLoading = false))

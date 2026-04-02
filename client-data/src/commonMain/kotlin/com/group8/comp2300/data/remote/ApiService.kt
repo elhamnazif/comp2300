@@ -16,16 +16,25 @@ import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
+import com.group8.comp2300.domain.model.medical.Medication
+import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.Mood
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
+import com.group8.comp2300.domain.model.medical.Routine
+import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
+import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
@@ -63,26 +72,37 @@ interface ApiService {
     suspend fun resendVerificationEmail(email: String): MessageResponse
 
     // Medical API methods
-    suspend fun getCalendarOverview(
-        year: Int,
-        month: Int,
-    ): List<CalendarOverviewResponse>
+    suspend fun getCalendarOverview(year: Int, month: Int): List<CalendarOverviewResponse>
 
     suspend fun getAppointments(): List<Appointment>
 
-    suspend fun scheduleAppointment(
-        request: AppointmentRequest,
-    ): Appointment
+    suspend fun scheduleAppointment(request: AppointmentRequest): Appointment
 
-    suspend fun logMedication(
-        request: MedicationLogRequest,
-    ): MedicationLog
+    suspend fun logMedication(request: MedicationLogRequest): MedicationLog
 
-    suspend fun getMedicationAgenda(date: String): List<MedicationLog>
+    suspend fun getMedicationLogHistory(): List<MedicationLog>
 
-    suspend fun logMood(
-        request: MoodEntryRequest,
-    ): Mood
+    suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda>
+
+    suspend fun logMood(request: MoodEntryRequest): Mood
+
+    suspend fun getMoodHistory(): List<Mood>
+
+    suspend fun getUserMedications(): List<Medication>
+
+    suspend fun upsertMedication(id: String, request: MedicationCreateRequest): Medication
+
+    suspend fun deleteMedication(id: String)
+
+    suspend fun getUserRoutines(): List<Routine>
+
+    suspend fun upsertRoutine(id: String, request: RoutineCreateRequest): Routine
+
+    suspend fun deleteRoutine(id: String)
+
+    suspend fun getRoutineOccurrenceOverrides(): List<RoutineOccurrenceOverride>
+
+    suspend fun upsertRoutineOccurrenceOverride(request: RoutineOccurrenceOverrideRequest): RoutineOccurrenceOverride
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -134,33 +154,51 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
         }.body()
 
     // --- Medical API ---
-    override suspend fun getCalendarOverview(
-        year: Int,
-        month: Int,
-    ): List<CalendarOverviewResponse> =
+    override suspend fun getCalendarOverview(year: Int, month: Int): List<CalendarOverviewResponse> =
         client.get("/api/calendar/overview?year=$year&month=$month").body()
 
-    override suspend fun getAppointments(): List<Appointment> =
-        client.get("/api/appointments").body()
+    override suspend fun getAppointments(): List<Appointment> = client.get("/api/appointments").body()
 
-    override suspend fun scheduleAppointment(
-        request: AppointmentRequest,
-    ): Appointment =
+    override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment =
         client.post("/api/appointments") { setBody(request) }.body()
 
-    override suspend fun logMedication(
-        request: MedicationLogRequest,
-    ): MedicationLog =
+    override suspend fun logMedication(request: MedicationLogRequest): MedicationLog =
         client.post("/api/medications/logs") { setBody(request) }.body()
 
-    override suspend fun getMedicationAgenda(
-        date: String,
-    ): List<MedicationLog> =
-        client.get("/api/medications/agenda?date=$date").body()
+    override suspend fun getMedicationLogHistory(): List<MedicationLog> = client.get("/api/medications/logs").body()
 
-    override suspend fun logMood(
-        request: MoodEntryRequest,
-    ): Mood = client.post("/api/moods") { setBody(request) }.body()
+    override suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda> =
+        client.get("/api/routines/agenda?date=$date").body()
+
+    override suspend fun logMood(request: MoodEntryRequest): Mood =
+        client.post("/api/moods") { setBody(request) }.body()
+
+    override suspend fun getMoodHistory(): List<Mood> = client.get("/api/moods").body()
+
+    override suspend fun getUserMedications(): List<Medication> = client.get("/api/medications").body()
+
+    override suspend fun upsertMedication(id: String, request: MedicationCreateRequest): Medication =
+        client.put("/api/medications/$id") { setBody(request) }.body()
+
+    override suspend fun deleteMedication(id: String) {
+        client.delete("/api/medications/$id")
+    }
+
+    override suspend fun getUserRoutines(): List<Routine> = client.get("/api/routines").body()
+
+    override suspend fun upsertRoutine(id: String, request: RoutineCreateRequest): Routine =
+        client.put("/api/routines/$id") { setBody(request) }.body()
+
+    override suspend fun deleteRoutine(id: String) {
+        client.delete("/api/routines/$id")
+    }
+
+    override suspend fun getRoutineOccurrenceOverrides(): List<RoutineOccurrenceOverride> =
+        client.get("/api/routines/occurrence-overrides").body()
+
+    override suspend fun upsertRoutineOccurrenceOverride(
+        request: RoutineOccurrenceOverrideRequest,
+    ): RoutineOccurrenceOverride = client.put("/api/routines/occurrence-overrides") { setBody(request) }.body()
 
     /**
      * Catches JsonConvertException when server returns an error response like {"error": "..."}

@@ -1,0 +1,57 @@
+CREATE TABLE MedicalRecordEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    userId TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    fileName TEXT NOT NULL,
+    storagePath TEXT NOT NULL, -- Actual path: "uploads/uuid-123.pdf"
+    fileSize INTEGER NOT NULL, -- Size in bytes
+    createdAt INTEGER NOT NULL -- Unix timestamp
+);
+
+insertRecord:
+INSERT INTO MedicalRecordEnt(id, userId, fileName, storagePath, fileSize, createdAt)
+VALUES (?, ?, ?, ?, ?, ?);
+
+getRecordsByUserId:
+SELECT id, fileName, fileSize, createdAt
+FROM MedicalRecordEnt
+WHERE userId = ?
+ORDER BY createdAt DESC;
+
+getFilePathById:
+SELECT storagePath
+FROM MedicalRecordEnt
+WHERE id = ? AND userId = ?;
+
+updateFileName:
+UPDATE MedicalRecordEnt
+SET fileName = ?
+WHERE id = ? AND userId = ?;
+
+deleteRecordById:
+DELETE FROM MedicalRecordEnt
+WHERE id = ? AND userId = ?;
+
+getRecordById:
+SELECT *
+FROM MedicalRecordEnt
+WHERE id = ? AND userId = ?;
+
+getRecordsByUserIdDateDesc:
+SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY createdAt DESC;
+
+getRecordsByUserIdDateAsc:
+SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY createdAt ASC;
+
+getRecordsByUserIdNameAsc:
+SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY fileName COLLATE NOCASE ASC;
+
+getRecordsByUserIdNameDesc:
+SELECT * FROM MedicalRecordEnt WHERE userId = ? ORDER BY fileName COLLATE NOCASE DESC;
+
+updateRecordMetadata:
+UPDATE MedicalRecordEnt
+SET fileName = ?, storagePath = ?, fileSize = ?, createdAt = ?
+WHERE id = ? AND userId = ?;
+
+changes:
+SELECT changes();

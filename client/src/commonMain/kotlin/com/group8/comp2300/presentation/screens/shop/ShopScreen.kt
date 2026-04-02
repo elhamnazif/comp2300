@@ -43,8 +43,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.components.shimmerEffect
 import com.group8.comp2300.presentation.navigation.LocalNavigator
@@ -53,12 +55,15 @@ import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ShopScreen(viewModel: ShopViewModel = koinViewModel()) {
     val navigator = LocalNavigator.current
+    val authRepository = koinInject<AuthRepository>()
     val uiState by viewModel.state.collectAsState()
+    val session by authRepository.session.collectAsState()
 
     ShopContent(
         products = uiState.products,
@@ -71,8 +76,8 @@ fun ShopScreen(viewModel: ShopViewModel = koinViewModel()) {
         onAddToCart = viewModel::addToCart,
         onRefresh = viewModel::refreshProducts,
         onBack = navigator::goBack,
-        isGuest = navigator.isGuest,
-        onRequireAuth = navigator::requireAuth,
+        isGuest = session !is AuthSession.SignedIn,
+        onRequireAuth = { navigator.requireAuth(Screen.Shop) },
     )
 }
 

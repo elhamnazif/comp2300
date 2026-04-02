@@ -1,5 +1,6 @@
 package com.group8.comp2300.domain.repository
 
+import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
@@ -7,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.LocalDate
 
 interface AuthRepository {
-    val currentUser: StateFlow<User?>
+    val session: StateFlow<AuthSession>
 
     suspend fun login(email: String, password: String): Result<User>
     suspend fun register(
@@ -36,5 +37,4 @@ interface AuthRepository {
     suspend fun resetPassword(token: String, newPassword: String): Result<Unit>
 
     suspend fun logout()
-    fun isGuest(): Boolean
 }

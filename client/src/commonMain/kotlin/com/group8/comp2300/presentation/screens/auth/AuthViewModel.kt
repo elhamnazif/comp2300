@@ -2,7 +2,7 @@ package com.group8.comp2300.presentation.screens.auth
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
-import com.group8.comp2300.domain.model.user.User
+import com.group8.comp2300.domain.model.session.AuthSession
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
 
@@ -12,13 +12,11 @@ import org.jetbrains.compose.resources.StringResource
  */
 abstract class AuthViewModel : ViewModel() {
     abstract val state: StateFlow<State>
-    abstract val currentUser: StateFlow<User?>
+    abstract val session: StateFlow<AuthSession>
 
     abstract fun onEvent(event: AuthUiEvent)
 
     abstract fun logout()
-
-    abstract fun isGuest(): Boolean
 
     @Immutable
     data class State(

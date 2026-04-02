@@ -2,7 +2,7 @@ package com.group8.comp2300.presentation.screens.auth
 
 import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.core.Validation
-import com.group8.comp2300.domain.model.user.User
+import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.usecase.auth.LoginUseCase
 import com.group8.comp2300.domain.usecase.auth.PreregisterUseCase
@@ -28,8 +28,8 @@ class RealAuthViewModel(
     final override val state: StateFlow<State>
         field = MutableStateFlow(State())
 
-    override val currentUser: StateFlow<User?> =
-        authRepository.currentUser.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    override val session: StateFlow<AuthSession> =
+        authRepository.session.stateIn(viewModelScope, SharingStarted.Eagerly, authRepository.session.value)
 
     override fun onEvent(event: AuthUiEvent) {
         when (event) {
@@ -118,7 +118,7 @@ class RealAuthViewModel(
         }
     }
 
-    private fun handleResult(result: Result<User>, onSuccess: () -> Unit) {
+    private fun handleResult(result: Result<com.group8.comp2300.domain.model.user.User>, onSuccess: () -> Unit) {
         if (result.isSuccess) {
             state.update { it.copy(isLoading = false) }
             onSuccess()
@@ -162,6 +162,4 @@ class RealAuthViewModel(
     override fun logout() {
         viewModelScope.launch { authRepository.logout() }
     }
-
-    override fun isGuest() = authRepository.isGuest()
 }

@@ -9,6 +9,7 @@ import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.minus
+import kotlinx.datetime.number
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
@@ -33,7 +34,7 @@ data class Doctor(val name: String)
 
 val sampleDoctors = com.group8.comp2300.mock.sampleCalendarDoctors.map { Doctor(it.name) }
 
-fun generateCalendarDays(year: Int, month: Month): List<CalendarDay> {
+fun generateCalendarDays(year: Int, month: Month, overviewMap: Map<String, String> = emptyMap()): List<CalendarDay> {
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val firstOfMonth = LocalDate(year, month, 1)
     val startOffset = firstOfMonth.dayOfWeek.isoDayNumber % 7
@@ -43,14 +44,20 @@ fun generateCalendarDays(year: Int, month: Month): List<CalendarDay> {
         val date = firstDayOfGrid.plus(offset, DateTimeUnit.DAY)
         val isToday = date == today
         val isCurrentMonth = date.month == month
-        val status =
-            when {
-                date == today -> AdherenceStatus.NONE
-                !isCurrentMonth -> AdherenceStatus.NONE
-                date.day % 5 == 0 -> AdherenceStatus.TAKEN
-                date.day % 7 == 0 -> AdherenceStatus.MISSED
-                else -> AdherenceStatus.NONE
-            }
+
+        // Use real data from the calendar overview API
+        val dateKey = "${date.year}-${
+            date.month.number.toString().padStart(2, '0')
+        }-${date.day.toString().padStart(2, '0')}"
+        val overviewStatus = overviewMap[dateKey]
+
+        val status = when {
+            !isCurrentMonth -> AdherenceStatus.NONE
+            overviewStatus == "TAKEN" -> AdherenceStatus.TAKEN
+            overviewStatus == "MISSED" -> AdherenceStatus.MISSED
+            overviewStatus == "APPOINTMENT" -> AdherenceStatus.APPOINTMENT
+            else -> AdherenceStatus.NONE
+        }
 
         CalendarDay(
             day = date.day,
@@ -60,14 +67,6 @@ fun generateCalendarDays(year: Int, month: Month): List<CalendarDay> {
             isCurrentMonth = isCurrentMonth,
         )
     }
-}
-
-enum class SheetView {
-    MENU,
-    FORM_MED,
-    FORM_APPT,
-    FORM_MOOD,
-    DETAILS_APPT,
 }
 
 object FormConstants {

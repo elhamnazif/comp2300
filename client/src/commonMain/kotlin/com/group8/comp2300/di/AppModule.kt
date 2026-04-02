@@ -7,6 +7,7 @@ import com.group8.comp2300.presentation.screens.auth.AuthViewModel
 import com.group8.comp2300.presentation.screens.auth.CompleteProfileViewModel
 import com.group8.comp2300.presentation.screens.auth.EmailVerificationViewModel
 import com.group8.comp2300.presentation.screens.auth.ForgotPasswordViewModel
+import com.group8.comp2300.presentation.screens.auth.PinLockViewModel
 import com.group8.comp2300.presentation.screens.auth.RealAuthViewModel
 import com.group8.comp2300.presentation.screens.auth.RealCompleteProfileViewModel
 import com.group8.comp2300.presentation.screens.auth.RealEmailVerificationViewModel
@@ -14,8 +15,10 @@ import com.group8.comp2300.presentation.screens.auth.RealForgotPasswordViewModel
 import com.group8.comp2300.presentation.screens.auth.RealResetPasswordViewModel
 import com.group8.comp2300.presentation.screens.auth.ResetPasswordViewModel
 import com.group8.comp2300.presentation.screens.education.EducationViewModel
-import com.group8.comp2300.presentation.screens.medical.BookingViewModel
+import com.group8.comp2300.presentation.screens.medical.booking.BookingViewModel
 import com.group8.comp2300.presentation.screens.medical.calendar.CalendarViewModel
+import com.group8.comp2300.presentation.screens.medical.medication.MedicationViewModel
+import com.group8.comp2300.presentation.screens.medical.routine.RoutineViewModel
 import com.group8.comp2300.presentation.screens.profile.ProfileViewModel
 import com.group8.comp2300.presentation.screens.shop.ShopViewModel
 import org.koin.core.module.dsl.bind
@@ -29,7 +32,13 @@ val appModule = module {
     viewModel<Navigator> { RealNavigator(get(), Screen.Onboarding) }
 
     // ViewModels
-    viewModelOf(::RealAuthViewModel) { bind<AuthViewModel>() }
+    viewModel {
+        RealAuthViewModel(
+            loginUseCase = get(),
+            preregisterUseCase = get(),
+            authRepository = get(),
+        )
+    } bind AuthViewModel::class
     viewModel { params ->
         RealEmailVerificationViewModel(
             activateAccountUseCase = get(),
@@ -40,7 +49,6 @@ val appModule = module {
     viewModel { params ->
         RealCompleteProfileViewModel(
             completeProfileUseCase = get(),
-            authRepository = get(),
             initialEmail = params.get(),
         )
     } bind CompleteProfileViewModel::class
@@ -56,4 +64,7 @@ val appModule = module {
     viewModelOf(::EducationViewModel)
     viewModelOf(::ProfileViewModel)
     viewModelOf(::CalendarViewModel)
+    viewModelOf(::MedicationViewModel)
+    viewModelOf(::RoutineViewModel)
+    viewModelOf(::PinLockViewModel)
 }

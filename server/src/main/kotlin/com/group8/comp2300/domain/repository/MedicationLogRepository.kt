@@ -15,16 +15,13 @@ interface MedicationLogRepository {
      */
     fun getLogsByMedication(medicationId: String): List<MedicationLog>
 
+    fun getHistory(userId: String): List<MedicationLog>
+
     /**
      * Retrieves a single log entry by its unique ID.
      */
     fun getById(id: String): MedicationLog?
 
-    /**
-     * Returns the medication schedule/agenda for a specific day.
-     * @param userId
-     * @param dateString Expected format: "YYYY-MM-DD".
-     */
     fun getDailyAgenda(userId: String, dateString: String): List<MedicationLog>
 
     /**

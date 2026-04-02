@@ -27,27 +27,30 @@ CREATE TABLE ReminderEntity (
     updatedAt INTEGER NOT NULL
 );
 
-selectAll:
-SELECT * FROM ReminderEntity ORDER BY reminderTime ASC;
+selectAllReminders:
+SELECT * FROM ReminderEntity
+ORDER BY reminderTime ASC;
 
-selectById:
-SELECT * FROM ReminderEntity WHERE id = ?;
+selectReminderById:
+SELECT * FROM ReminderEntity
+WHERE id = ?;
 
-insert:
+insertReminder:
 INSERT INTO ReminderEntity (id, title, description, reminderTime, type, frequency, isEnabled, createdAt, updatedAt)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
-update:
+updateReminder:
 UPDATE ReminderEntity
 SET title = ?, description = ?, reminderTime = ?, type = ?, frequency = ?, isEnabled = ?, updatedAt = ?
 WHERE id = ?;
 
-delete:
-DELETE FROM ReminderEntity WHERE id = ?;
+deleteReminder:
+DELETE FROM ReminderEntity
+WHERE id = ?;
 
--- ==========================================
--- Appointment cache
--- ==========================================
+deleteAllReminders:
+DELETE FROM ReminderEntity;
+
 CREATE TABLE AppointmentEntity (
     id TEXT NOT NULL PRIMARY KEY,
     userId TEXT NOT NULL,
@@ -63,21 +66,32 @@ CREATE TABLE AppointmentEntity (
 );
 
 selectAllAppointments:
-SELECT * FROM AppointmentEntity ORDER BY appointmentTime ASC;
+SELECT * FROM AppointmentEntity
+ORDER BY appointmentTime ASC;
 
 insertAppointment:
-INSERT OR REPLACE INTO AppointmentEntity (id, userId, title, appointmentTime, appointmentType, clinicId, bookingId, status, notes, hasReminder, paymentStatus)
+INSERT OR REPLACE INTO AppointmentEntity (
+    id,
+    userId,
+    title,
+    appointmentTime,
+    appointmentType,
+    clinicId,
+    bookingId,
+    status,
+    notes,
+    hasReminder,
+    paymentStatus
+)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteAllAppointments:
 DELETE FROM AppointmentEntity;
 
-deleteAppointment:
-DELETE FROM AppointmentEntity WHERE id = ?;
+deleteAppointmentById:
+DELETE FROM AppointmentEntity
+WHERE id = ?;
 
--- ==========================================
--- Mood cache
--- ==========================================
 CREATE TABLE MoodEntity (
     id TEXT NOT NULL PRIMARY KEY,
     userId TEXT NOT NULL,
@@ -88,7 +102,8 @@ CREATE TABLE MoodEntity (
 );
 
 selectAllMoods:
-SELECT * FROM MoodEntity ORDER BY timestamp DESC;
+SELECT * FROM MoodEntity
+ORDER BY timestamp DESC;
 
 insertMood:
 INSERT OR REPLACE INTO MoodEntity (id, userId, timestamp, moodType, feeling, journal)
@@ -97,72 +112,297 @@ VALUES (?, ?, ?, ?, ?, ?);
 deleteAllMoods:
 DELETE FROM MoodEntity;
 
--- ==========================================
--- Medication log cache
--- ==========================================
+deleteMoodById:
+DELETE FROM MoodEntity
+WHERE id = ?;
+
+CREATE TABLE MedicationEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    userId TEXT NOT NULL,
+    med_name TEXT NOT NULL,
+    dosage TEXT NOT NULL,
+    quantity TEXT NOT NULL,
+    frequency TEXT NOT NULL,
+    instruction TEXT,
+    color_hex TEXT,
+    start_date TEXT NOT NULL,
+    end_date TEXT,
+    has_reminder INTEGER NOT NULL DEFAULT 1,
+    status TEXT NOT NULL
+);
+
+selectAllMedications:
+SELECT * FROM MedicationEntity
+ORDER BY med_name ASC;
+
+selectMedicationById:
+SELECT * FROM MedicationEntity
+WHERE id = ?;
+
+insertMedication:
+INSERT OR REPLACE INTO MedicationEntity (
+    id,
+    userId,
+    med_name,
+    dosage,
+    quantity,
+    frequency,
+    instruction,
+    color_hex,
+    start_date,
+    end_date,
+    has_reminder,
+    status
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteAllMedications:
+DELETE FROM MedicationEntity;
+
+deleteMedicationById:
+DELETE FROM MedicationEntity
+WHERE id = ?;
+
 CREATE TABLE MedicationLogEntity (
     id TEXT NOT NULL PRIMARY KEY,
     medicationId TEXT NOT NULL,
     medicationTime INTEGER NOT NULL,
     status TEXT NOT NULL,
+    routineId TEXT,
+    occurrenceTimeMs INTEGER,
     medicationName TEXT
 );
 
 selectAllMedicationLogs:
-SELECT * FROM MedicationLogEntity ORDER BY medicationTime DESC;
+SELECT * FROM MedicationLogEntity
+ORDER BY medicationTime DESC;
 
 selectMedicationLogsByDate:
 SELECT * FROM MedicationLogEntity
-WHERE medicationTime >= ? AND medicationTime < ?
+WHERE medicationTime >= ?
+  AND medicationTime < ?
 ORDER BY medicationTime ASC;
 
 insertMedicationLog:
-INSERT OR REPLACE INTO MedicationLogEntity (id, medicationId, medicationTime, status, medicationName)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO MedicationLogEntity (id, medicationId, medicationTime, status, routineId, occurrenceTimeMs, medicationName)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 deleteAllMedicationLogs:
 DELETE FROM MedicationLogEntity;
 
--- ==========================================
--- Calendar overview cache
--- ==========================================
-CREATE TABLE CalendarOverviewEntity (
-    date TEXT NOT NULL,
-    status TEXT NOT NULL,
-    yearMonth TEXT NOT NULL,
-    PRIMARY KEY (date, yearMonth)
+deleteMedicationLogById:
+DELETE FROM MedicationLogEntity
+WHERE id = ?;
+
+CREATE TABLE RoutineEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    userId TEXT NOT NULL,
+    routineName TEXT NOT NULL,
+    repeatType TEXT NOT NULL,
+    daysOfWeek TEXT NOT NULL DEFAULT '',
+    startDate TEXT NOT NULL,
+    endDate TEXT,
+    hasReminder INTEGER NOT NULL DEFAULT 1,
+    status TEXT NOT NULL
 );
 
-selectCalendarOverviewByYearMonth:
-SELECT * FROM CalendarOverviewEntity WHERE yearMonth = ? ORDER BY date ASC;
+selectAllRoutines:
+SELECT * FROM RoutineEntity
+ORDER BY routineName ASC;
 
-insertCalendarOverview:
-INSERT OR REPLACE INTO CalendarOverviewEntity (date, status, yearMonth)
+selectRoutineById:
+SELECT * FROM RoutineEntity
+WHERE id = ?;
+
+insertRoutine:
+INSERT OR REPLACE INTO RoutineEntity (
+    id,
+    userId,
+    routineName,
+    repeatType,
+    daysOfWeek,
+    startDate,
+    endDate,
+    hasReminder,
+    status
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteRoutineById:
+DELETE FROM RoutineEntity
+WHERE id = ?;
+
+deleteAllRoutines:
+DELETE FROM RoutineEntity;
+
+CREATE TABLE RoutineMedicationEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    routineId TEXT NOT NULL REFERENCES RoutineEntity(id) ON DELETE CASCADE,
+    medicationId TEXT NOT NULL REFERENCES MedicationEntity(id) ON DELETE CASCADE
+);
+
+selectRoutineMedicationLinksByRoutineId:
+SELECT * FROM RoutineMedicationEntity
+WHERE routineId = ?
+ORDER BY medicationId ASC;
+
+insertRoutineMedicationLink:
+INSERT OR REPLACE INTO RoutineMedicationEntity (id, routineId, medicationId)
 VALUES (?, ?, ?);
 
-deleteCalendarOverviewByYearMonth:
-DELETE FROM CalendarOverviewEntity WHERE yearMonth = ?;
+deleteRoutineMedicationLinksByRoutineId:
+DELETE FROM RoutineMedicationEntity
+WHERE routineId = ?;
 
--- ==========================================
--- Sync queue for offline writes
--- ==========================================
-CREATE TABLE SyncQueueEntity (
+deleteAllRoutineMedicationLinks:
+DELETE FROM RoutineMedicationEntity;
+
+CREATE TABLE RoutineTimeEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    routineId TEXT NOT NULL REFERENCES RoutineEntity(id) ON DELETE CASCADE,
+    timeOfDayMs INTEGER NOT NULL
+);
+
+selectRoutineTimesByRoutineId:
+SELECT * FROM RoutineTimeEntity
+WHERE routineId = ?
+ORDER BY timeOfDayMs ASC;
+
+insertRoutineTime:
+INSERT OR REPLACE INTO RoutineTimeEntity (id, routineId, timeOfDayMs)
+VALUES (?, ?, ?);
+
+deleteRoutineTimesByRoutineId:
+DELETE FROM RoutineTimeEntity
+WHERE routineId = ?;
+
+deleteAllRoutineTimes:
+DELETE FROM RoutineTimeEntity;
+
+CREATE TABLE RoutineOccurrenceOverrideEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    routineId TEXT NOT NULL REFERENCES RoutineEntity(id) ON DELETE CASCADE,
+    originalOccurrenceTimeMs INTEGER NOT NULL,
+    rescheduledOccurrenceTimeMs INTEGER NOT NULL,
+    UNIQUE(routineId, originalOccurrenceTimeMs)
+);
+
+selectAllRoutineOccurrenceOverrides:
+SELECT * FROM RoutineOccurrenceOverrideEntity
+ORDER BY rescheduledOccurrenceTimeMs ASC;
+
+insertRoutineOccurrenceOverride:
+INSERT OR REPLACE INTO RoutineOccurrenceOverrideEntity (
+    id,
+    routineId,
+    originalOccurrenceTimeMs,
+    rescheduledOccurrenceTimeMs
+)
+VALUES (?, ?, ?, ?);
+
+deleteRoutineOccurrenceOverrideById:
+DELETE FROM RoutineOccurrenceOverrideEntity
+WHERE id = ?;
+
+deleteAllRoutineOccurrenceOverrides:
+DELETE FROM RoutineOccurrenceOverrideEntity;
+
+CREATE TABLE RoutineReminderEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    routineId TEXT NOT NULL REFERENCES RoutineEntity(id) ON DELETE CASCADE,
+    offsetMins INTEGER NOT NULL
+);
+
+selectRoutineReminderOffsetsByRoutineId:
+SELECT * FROM RoutineReminderEntity
+WHERE routineId = ?
+ORDER BY offsetMins ASC;
+
+insertRoutineReminderOffset:
+INSERT OR REPLACE INTO RoutineReminderEntity (id, routineId, offsetMins)
+VALUES (?, ?, ?);
+
+deleteRoutineReminderOffsetsByRoutineId:
+DELETE FROM RoutineReminderEntity
+WHERE routineId = ?;
+
+deleteAllRoutineReminderOffsets:
+DELETE FROM RoutineReminderEntity;
+
+CREATE TABLE ProductEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    price REAL NOT NULL,
+    category TEXT NOT NULL,
+    insuranceCovered INTEGER NOT NULL DEFAULT 0,
+    imageUrl TEXT
+);
+
+selectAllProducts:
+SELECT * FROM ProductEntity ORDER BY name ASC;
+
+selectProductById:
+SELECT * FROM ProductEntity WHERE id = ?;
+
+insertProduct:
+INSERT OR REPLACE INTO ProductEntity (id, name, description, price, category, insuranceCovered, imageUrl)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deleteAllProducts:
+DELETE FROM ProductEntity;
+
+CREATE TABLE OutboxEntity (
     id TEXT NOT NULL PRIMARY KEY,
     entityType TEXT NOT NULL,
     payload TEXT NOT NULL,
+    localId TEXT NOT NULL,
+    state TEXT NOT NULL,
     createdAt INTEGER NOT NULL,
-    retryCount INTEGER NOT NULL DEFAULT 0
+    retryCount INTEGER NOT NULL DEFAULT 0,
+    lastError TEXT
 );
 
-selectAllSyncQueue:
-SELECT * FROM SyncQueueEntity ORDER BY createdAt ASC;
+selectAllOutbox:
+SELECT * FROM OutboxEntity
+ORDER BY createdAt ASC;
 
-insertSyncQueue:
-INSERT INTO SyncQueueEntity (id, entityType, payload, createdAt, retryCount)
-VALUES (?, ?, ?, ?, 0);
+insertOutbox:
+INSERT INTO OutboxEntity (id, entityType, payload, localId, state, createdAt, retryCount, lastError)
+VALUES (?, ?, ?, ?, ?, ?, 0, NULL);
 
-deleteSyncQueue:
-DELETE FROM SyncQueueEntity WHERE id = ?;
+deleteOutbox:
+DELETE FROM OutboxEntity
+WHERE id = ?;
 
-incrementSyncRetry:
-UPDATE SyncQueueEntity SET retryCount = retryCount + 1 WHERE id = ?;
+incrementOutboxRetry:
+UPDATE OutboxEntity
+SET retryCount = retryCount + 1
+WHERE id = ?;
+
+updateOutboxState:
+UPDATE OutboxEntity
+SET state = ?, lastError = ?
+WHERE id = ?;
+
+deleteAllOutbox:
+DELETE FROM OutboxEntity;
+
+CREATE TABLE PinEntity (
+    id TEXT NOT NULL PRIMARY KEY,
+    pinHash TEXT NOT NULL,
+    createdAt INTEGER NOT NULL,
+    pinSalt TEXT NOT NULL DEFAULT 'legacy',
+    pinIterations INTEGER NOT NULL DEFAULT 0,
+    pinVersion INTEGER NOT NULL DEFAULT 1
+);
+
+selectPin:
+SELECT * FROM PinEntity LIMIT 1;
+
+upsertPin:
+INSERT OR REPLACE INTO PinEntity (id, pinHash, createdAt, pinSalt, pinIterations, pinVersion)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deletePin:
+DELETE FROM PinEntity;

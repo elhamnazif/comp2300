@@ -33,7 +33,6 @@ dependencyResolutionManagement {
 includeBuild("build-logic")
 
 include(":androidApp")
-include(":desktopApp")
 include(":i18n")
 include(":server")
 include(":shared")

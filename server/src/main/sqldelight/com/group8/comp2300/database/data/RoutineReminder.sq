@@ -1,0 +1,16 @@
+CREATE TABLE RoutineReminderEnt (
+    id TEXT PRIMARY KEY,
+    routine_id TEXT NOT NULL REFERENCES RoutineEnt(id) ON DELETE CASCADE,
+    offset_mins INTEGER NOT NULL CHECK (offset_mins IN (0, 5, 10, 15, 30, 60)),
+    UNIQUE(routine_id, offset_mins)
+);
+
+insertRoutineReminder:
+INSERT OR REPLACE INTO RoutineReminderEnt (id, routine_id, offset_mins)
+VALUES (?, ?, ?);
+
+selectRoutineReminders:
+SELECT * FROM RoutineReminderEnt WHERE routine_id = ? ORDER BY offset_mins ASC;
+
+deleteRoutineRemindersByRoutineId:
+DELETE FROM RoutineReminderEnt WHERE routine_id = ?;

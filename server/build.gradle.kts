@@ -53,6 +53,9 @@ dependencies {
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.content.negotiation)
     testImplementation(libs.kotlin.test.junit)
+
+    // Test mockk
+    testImplementation(libs.mockk)
 }
 
 tasks.withType<Test>().configureEach {

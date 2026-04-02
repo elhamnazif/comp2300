@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
-import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ShopRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +18,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class ShopViewModel(private val repository: ShopRepository, private val authRepository: AuthRepository) : ViewModel() {
+class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
 
     val selectedCategory: StateFlow<ProductCategory>
         field: MutableStateFlow<ProductCategory> = MutableStateFlow(ProductCategory.ALL)

@@ -1,10 +1,13 @@
 package com.group8.comp2300
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
@@ -14,6 +17,7 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSuiteScaffoldState
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,15 +28,20 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
+import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
 import com.group8.comp2300.di.*
+import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.presentation.navigation.*
 import com.group8.comp2300.presentation.screens.auth.AuthViewModel
+import com.group8.comp2300.presentation.screens.auth.PinLockViewModel
+import com.group8.comp2300.presentation.screens.auth.PinScreen
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.materialkolor.DynamicMaterialExpressiveTheme
 import com.materialkolor.PaletteStyle
 import org.koin.compose.KoinApplication
 import org.koin.compose.KoinApplicationPreview
+import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.module.dsl.viewModel
@@ -56,11 +65,33 @@ fun MainApp(
     modifier: Modifier = Modifier,
     authViewModel: AuthViewModel = koinViewModel(),
     navigator: Navigator = koinViewModel(),
+    pinLockViewModel: PinLockViewModel = koinViewModel(),
 ) {
-    val currentUser by authViewModel.currentUser.collectAsState()
+    val notificationBootstrap: RoutineNotificationBootstrap = koinInject()
+    val session by authViewModel.session.collectAsState()
+    val isPinLocked by pinLockViewModel.isLocked.collectAsState()
+    val isPinSet by pinLockViewModel.isPinSet.collectAsState()
 
-    // Sync guest state (optional, or handle inside VMs)
-    LaunchedEffect(currentUser) { navigator.isGuest = (currentUser == null) }
+    // Route to the correct start screen once PIN check completes
+    LaunchedEffect(isPinSet) {
+        if (isPinSet != null) {
+            navigator.setStartDestination(if (isPinSet == true) Screen.Home else Screen.Onboarding)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        notificationBootstrap.synchronize()
+    }
+
+    if (session is AuthSession.Restoring || isPinSet == null) {
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            CircularProgressIndicator()
+        }
+        return
+    }
 
     val currentScreen = navigator.currentScreen
     val navigationSuiteScaffoldState = rememberNavigationSuiteScaffoldState()
@@ -100,41 +131,63 @@ fun MainApp(
             directive = directive,
         )
 
-    CompositionLocalProvider(LocalNavigator provides navigator) {
-        NavigationSuiteScaffold(
-            modifier = modifier,
-            navigationSuiteItems = {
-                if (showNavBar) {
-                    mainTabs.forEach { (screen, icon, label) ->
-                        item(
-                            icon = { Icon(icon, label) },
-                            label = { Text(label) },
-                            selected = currentScreen == screen,
-                            onClick = { navigator.clearAndGoTo(screen) },
-                        )
+    Box(modifier = modifier.fillMaxSize()) {
+        CompositionLocalProvider(LocalNavigator provides navigator) {
+            NavigationSuiteScaffold(
+                navigationSuiteItems = {
+                    if (showNavBar) {
+                        mainTabs.forEach { (screen, icon, label) ->
+                            item(
+                                icon = { Icon(icon, label) },
+                                label = { Text(label) },
+                                selected = currentScreen == screen,
+                                onClick = { navigator.clearAndGoTo(screen) },
+                            )
+                        }
                     }
+                },
+                layoutType = layoutType,
+                state = navigationSuiteScaffoldState,
+            ) {
+                Scaffold(
+                    containerColor = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.onBackground,
+                ) { _ ->
+                    NavDisplay(
+                        backStack = navigator.backStack,
+                        sceneStrategies = listOf(supportingPaneStrategy),
+                        onBack = navigator::goBack,
+                        transitionSpec = { pushAnimation },
+                        popTransitionSpec = { popAnimation },
+                        predictivePopTransitionSpec = { popAnimation },
+                        entryDecorators =
+                        listOf(
+                            rememberSaveableStateHolderNavEntryDecorator(),
+                            rememberViewModelStoreNavEntryDecorator(),
+                        ),
+                        entryProvider = koinEntryProvider(),
+                    )
                 }
-            },
-            layoutType = layoutType,
-            state = navigationSuiteScaffoldState,
+            }
+        }
+
+        AnimatedVisibility(
+            visible = isPinLocked,
+            exit = fadeOut(animationSpec = tween(300)) + slideOutVertically(
+                animationSpec = tween(300),
+                targetOffsetY = { -it / 4 },
+            ),
         ) {
-            Scaffold(
-                containerColor = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onBackground,
-            ) { _ ->
-                NavDisplay(
-                    backStack = navigator.backStack,
-                    sceneStrategy = supportingPaneStrategy,
-                    onBack = navigator::goBack,
-                    transitionSpec = { pushAnimation },
-                    popTransitionSpec = { popAnimation },
-                    predictivePopTransitionSpec = { popAnimation },
-                    entryDecorators =
-                    listOf(
-                        rememberSaveableStateHolderNavEntryDecorator(),
-                        rememberViewModelStoreNavEntryDecorator(),
-                    ),
-                    entryProvider = koinEntryProvider(),
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.surface,
+            ) {
+                PinScreen(
+                    onComplete = { pinLockViewModel.onPinEntered(it) },
+                    isSetup = false,
+                    errorMessage = pinLockViewModel.error.collectAsState().value,
+                    onErrorMessageCleared = { pinLockViewModel.clearError() },
+                    onBiometricSuccess = { pinLockViewModel.onBiometricUnlock() },
                 )
             }
         }

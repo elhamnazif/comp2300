@@ -13,12 +13,19 @@ class MedicationLogRepositoryImpl(private val database: ServerDatabase) : Medica
             id = log.id,
             medication_id = log.medicationId,
             medication_time = log.medicationTime,
+            routine_id = log.routineId,
+            occurrence_time_ms = log.occurrenceTimeMs,
             status = log.status.name,
         )
     }
 
     override fun getLogsByMedication(medicationId: String): List<MedicationLog> =
         database.medicationLogQueries.selectLogsByMedication(medicationId)
+            .executeAsList()
+            .map { it.toDomain() }
+
+    override fun getHistory(userId: String): List<MedicationLog> =
+        database.medicationLogQueries.selectLogsByUser(userId)
             .executeAsList()
             .map { it.toDomain() }
 
@@ -34,6 +41,8 @@ class MedicationLogRepositoryImpl(private val database: ServerDatabase) : Medica
                     medicationId = row.medication_id,
                     medicationTime = row.medication_time,
                     status = MedicationLogStatus.valueOf(row.status),
+                    routineId = row.routine_id,
+                    occurrenceTimeMs = row.occurrence_time_ms,
                     medicationName = row.med_name, // From the JOIN
                 )
             }
@@ -55,4 +64,6 @@ private fun MedicationLogEnt.toDomain() = MedicationLog(
     medicationId = medication_id,
     medicationTime = medication_time,
     status = MedicationLogStatus.valueOf(status),
+    routineId = routine_id,
+    occurrenceTimeMs = occurrence_time_ms,
 )

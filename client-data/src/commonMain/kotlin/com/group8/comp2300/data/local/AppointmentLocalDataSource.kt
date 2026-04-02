@@ -22,6 +22,8 @@ class AppointmentLocalDataSource(private val database: AppDatabase) {
             )
         }
 
+    fun getById(id: String): Appointment? = getAll().firstOrNull { it.id == id }
+
     fun insert(appointment: Appointment) {
         database.appDatabaseQueries.insertAppointment(
             id = appointment.id,
@@ -38,10 +40,14 @@ class AppointmentLocalDataSource(private val database: AppDatabase) {
         )
     }
 
+    fun deleteById(id: String) {
+        database.appDatabaseQueries.deleteAppointmentById(id)
+    }
+
     fun replaceAll(appointments: List<Appointment>) {
         database.appDatabaseQueries.transaction {
             database.appDatabaseQueries.deleteAllAppointments()
-            appointments.forEach { insert(it) }
+            appointments.forEach(::insert)
         }
     }
 

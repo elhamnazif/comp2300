@@ -44,8 +44,16 @@ class AuthService(
             return Result.failure(IllegalArgumentException(validationResult.message))
         }
 
-        if (userRepository.existsByEmail(request.email)) {
+        // Check if verified account exists
+        if (userRepository.existsByEmailAndActivated(request.email)) {
             return Result.failure(IllegalArgumentException("An account with this email already exists"))
+        }
+
+        // Delete any existing unverified account with this email
+        userRepository.findByEmailAndNotActivated(request.email)?.let { unverifiedUser ->
+            passwordResetTokenRepository.deleteByUserId(unverifiedUser.id)
+            userRepository.deleteById(unverifiedUser.id)
+            userRepository.clearVerificationRequest(request.email)
         }
 
         return try {
@@ -302,9 +310,16 @@ class AuthService(
             return Result.failure(IllegalArgumentException(passwordError))
         }
 
-        // Check for existing email before rate limiting (to maintain existing error behavior)
-        if (userRepository.existsByEmail(request.email)) {
+        // Check if verified account exists
+        if (userRepository.existsByEmailAndActivated(request.email)) {
             return Result.failure(IllegalArgumentException("An account with this email already exists"))
+        }
+
+        // Delete any existing unverified account with this email
+        userRepository.findByEmailAndNotActivated(request.email)?.let { unverifiedUser ->
+            passwordResetTokenRepository.deleteByUserId(unverifiedUser.id)
+            userRepository.deleteById(unverifiedUser.id)
+            userRepository.clearVerificationRequest(request.email)
         }
 
         // Rate limiting check
