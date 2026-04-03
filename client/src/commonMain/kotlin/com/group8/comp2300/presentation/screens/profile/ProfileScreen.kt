@@ -15,6 +15,9 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -49,6 +52,28 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.state.collectAsState()
     val pullToRefreshState = rememberPullToRefreshState()
+    var showLogoutConfirm by remember { mutableStateOf(false) }
+
+    if (showLogoutConfirm) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirm = false },
+            title = { Text(stringResource(Res.string.profile_logout_confirm_title)) },
+            text = { Text(stringResource(Res.string.profile_logout_confirm_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutConfirm = false
+                    viewModel.logout()
+                }) {
+                    Text(stringResource(Res.string.profile_logout_label))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutConfirm = false }) {
+                    Text(stringResource(Res.string.common_cancel))
+                }
+            },
+        )
+    }
 
     val scaleFraction = {
         if (uiState.isLoading) {
@@ -72,15 +97,17 @@ fun ProfileScreen(
             Modifier.fillMaxSize()
                 .verticalScroll(rememberScrollState()),
         ) {
-            ScreenHeader(horizontalPadding = 0.dp) {
+            ScreenHeader(horizontalPadding = 0.dp, topPadding = 16.dp) {
                 InsetContent(uiState, onNavigateToLabResults, onNavigateToGuestSignIn)
             }
             EdgeToEdgeSettings(
+                isSignedIn = uiState.userName.isNotEmpty(),
                 onNavigateToMedicalRecords = onNavigateToMedicalRecords,
                 onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
                 onNavigateToPrivacyLegalese = onNavigateToPrivacyLegalese,
                 onNavigateToNotifications = onNavigateToNotifications,
                 onNavigateToHelpSupport = onNavigateToHelpSupport,
+                onLogout = { showLogoutConfirm = true },
             )
         }
 
@@ -456,11 +483,13 @@ private fun StatusSurface(result: LabResult) {
 /* ------------------  EDGE-TO-EDGE SETTINGS  ------------------ */
 @Composable
 private fun EdgeToEdgeSettings(
+    isSignedIn: Boolean,
     onNavigateToMedicalRecords: () -> Unit,
     onNavigateToPrivacySecurity: () -> Unit,
     onNavigateToPrivacyLegalese: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToHelpSupport: () -> Unit,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
@@ -494,6 +523,15 @@ private fun EdgeToEdgeSettings(
             subtitle = stringResource(Res.string.profile_faqs_desc),
             onClick = onNavigateToHelpSupport,
         )
+        if (isSignedIn) {
+            HorizontalDivider(Modifier.padding(vertical = 8.dp, horizontal = 16.dp))
+            SettingsItem(
+                icon = Icons.LogoutW400Outlined,
+                title = stringResource(Res.string.profile_logout_label),
+                subtitle = "",
+                onClick = onLogout,
+            )
+        }
     }
 }
 
@@ -505,7 +543,9 @@ private fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onC
             Spacer(Modifier.width(16.dp))
             Column(Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.bodyLarge)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                if (subtitle.isNotEmpty()) {
+                    Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                }
             }
             Icon(
                 Icons.ChevronRightW400Outlined,

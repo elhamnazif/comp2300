@@ -505,6 +505,8 @@
     <string name="profile_faqs_desc">FAQs</string>
     <string name="profile_language_label">Language</string>
     <string name="profile_logout_label">Logout</string>
+    <string name="profile_logout_confirm_title">Are you sure you want to logout?</string>
+    <string name="profile_logout_confirm_message">You will need to sign in again to access your account.</string>
 
     <!-- Months -->
     <string name="month_jan">Jan</string>

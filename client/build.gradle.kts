@@ -218,6 +218,8 @@ symbolCraft {
         "shield",
         "call",
         "whatshot",
+        // Account
+        "logout",
     ) {
         bothFills(weight = SymbolWeight.W400, variant = SymbolVariant.OUTLINED)
     }

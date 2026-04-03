@@ -5,11 +5,11 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,7 +42,7 @@ fun AuthScreen(
     onNavigateToForgotPassword: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val scrollState = rememberScrollState()
+    val listState = rememberLazyListState()
 
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
 
@@ -56,69 +56,80 @@ fun AuthScreen(
             )
         },
     ) { innerPadding ->
-        Column(
-            Modifier.fillMaxSize().padding(innerPadding).verticalScroll(scrollState).padding(24.dp).imePadding(),
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(24.dp).imePadding(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            HeaderSection(
-                isRegistering = state.isRegistering,
-            )
+            item {
+                HeaderSection(
+                    isRegistering = state.isRegistering,
+                )
+            }
 
-            Spacer(Modifier.height(24.dp))
+            item { Spacer(Modifier.height(24.dp)) }
 
             // Error banner
-            AnimatedVisibility(
-                visible = authError != null,
-                enter = fadeIn(),
-                exit = fadeOut(),
-            ) {
-                if (authError != null) {
-                    Surface(
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
-                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                    ) {
-                        Text(
-                            text = authError,
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                        )
+            item {
+                AnimatedVisibility(
+                    visible = authError != null,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+                    if (authError != null) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f)),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                        ) {
+                            Text(
+                                text = authError,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            item { Spacer(Modifier.height(8.dp)) }
 
             // Credentials form
-            CredentialsForm(
-                state = state,
-                onEvent = viewModel::onEvent,
-                onNavigateToForgotPassword = onNavigateToForgotPassword,
-            )
+            item {
+                CredentialsForm(
+                    state = state,
+                    onEvent = viewModel::onEvent,
+                    onNavigateToForgotPassword = onNavigateToForgotPassword,
+                )
+            }
 
-            Spacer(Modifier.height(16.dp))
+            item { Spacer(Modifier.height(16.dp)) }
 
             // Action Buttons
-            ActionButtons(
-                state = state,
-                onEvent = viewModel::onEvent,
-                onLoginSuccess = onLoginSuccess,
-                onRegisterSuccess = { email ->
-                    onNavigateToEmailVerification(email)
-                },
-            )
+            item {
+                ActionButtons(
+                    state = state,
+                    onEvent = viewModel::onEvent,
+                    onLoginSuccess = onLoginSuccess,
+                    onRegisterSuccess = { email ->
+                        onNavigateToEmailVerification(email)
+                    },
+                )
+            }
 
-            Spacer(Modifier.height(16.dp))
+            item { Spacer(Modifier.height(16.dp)) }
 
             // Footer (Switch Mode / Guest)
-            FooterSection(
-                isRegistering = state.isRegistering,
-                onToggleMode = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ToggleAuthMode) },
-                onGuestParams = onDismiss,
-            )
+            item {
+                FooterSection(
+                    isRegistering = state.isRegistering,
+                    onToggleMode = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ToggleAuthMode) },
+                    onGuestParams = onDismiss,
+                )
+            }
         }
     }
 }
@@ -180,8 +191,9 @@ private fun CredentialsForm(
     state: AuthViewModel.State,
     onEvent: (AuthViewModel.AuthUiEvent) -> Unit,
     onNavigateToForgotPassword: () -> Unit = {},
+    modifier: Modifier = Modifier,
 ) {
-    Column {
+    Column(modifier) {
         val focusManager = LocalFocusManager.current
 
         AuthTextField(

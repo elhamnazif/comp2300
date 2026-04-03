@@ -20,7 +20,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
-    authRepository: AuthRepository,
+    private val authRepository: AuthRepository,
     private val getRecentLabResultsUseCase: GetRecentLabResultsUseCase,
 ) : ViewModel() {
 
@@ -66,6 +66,12 @@ class ProfileViewModel(
     fun refresh() {
         viewModelScope.launch {
             refreshTrigger.emit(Unit)
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
         }
     }
 
