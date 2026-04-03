@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.disabled
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
@@ -178,136 +179,193 @@ fun PinScreen(
             }
         }
 
-        Column(
+        BoxWithConstraints(
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Icon(
-                Icons.LockW400Outlinedfill1,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = if (displayError != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            AnimatedContent(
-                targetState = isConfirming,
-                label = "PinTextTransition",
-            ) { _ ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = displayTitle,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = if (displayError != null) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        },
-                    )
-                    Text(
-                        text = displayError ?: displayDescription,
-                        color = if (displayError != null) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.secondary
-                        },
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 32.dp),
-                    )
-                }
+            val buttonSize = if (maxHeight < 560.dp) {
+                val scale = (maxHeight / 560.dp).coerceIn(0.5f, 1f)
+                72.dp * scale
+            } else {
+                72.dp
+            }
+            val buttonSpacing = if (maxHeight < 560.dp) {
+                val scale = (maxHeight / 560.dp).coerceIn(0.5f, 1f)
+                24.dp * scale
+            } else {
+                24.dp
+            }
+            val rowSpacing = if (maxHeight < 560.dp) {
+                val scale = (maxHeight / 560.dp).coerceIn(0.5f, 1f)
+                12.dp * scale
+            } else {
+                12.dp
+            }
+            val iconSize = if (maxHeight < 560.dp) {
+                val scale = (maxHeight / 560.dp).coerceIn(0.5f, 1f)
+                28.dp * scale
+            } else {
+                28.dp
             }
 
-            Spacer(Modifier.height(32.dp))
+            val isLandscape = maxWidth > maxHeight
 
-            /* PIN dots */
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.offset(x = shakeOffset.value.dp),
-            ) {
-                repeat(pinLength) { index ->
-                    val isFilled = index < pin.length
-                    val scale by animateFloatAsState(
-                        targetValue = if (isFilled) 1.2f else 1f,
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioMediumBouncy,
-                            stiffness = Spring.StiffnessMedium,
-                        ),
-                        label = "PinDotScaleAnimation",
+            @Composable
+            fun PinInfoColumn() {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    Icon(
+                        Icons.LockW400Outlinedfill1,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = if (displayError != null) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
                     )
 
-                    Box(
-                        modifier =
-                        Modifier.size(24.dp)
-                            .scale(scale)
-                            .clip(CircleShape)
-                            .background(
-                                if (isFilled) {
-                                    if (displayError !=
-                                        null
-                                    ) {
-                                        MaterialTheme.colorScheme.error
-                                    } else {
-                                        MaterialTheme.colorScheme.primary
-                                    }
+                    Spacer(Modifier.height(24.dp))
+
+                    AnimatedContent(
+                        targetState = isConfirming,
+                        label = "PinTextTransition",
+                    ) { _ ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(
+                                text = displayTitle,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = if (displayError != null) {
+                                    MaterialTheme.colorScheme.error
                                 } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
+                                    MaterialTheme.colorScheme.onSurface
                                 },
-                            ),
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
-
-            /* Keypad */
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                val rows =
-                    listOf(
-                        listOf("1", "2", "3"),
-                        listOf("4", "5", "6"),
-                        listOf("7", "8", "9"),
-                        listOf(null, "0", "⌫"),
-                    )
-
-                rows.forEach { row ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                        row.forEach inner@{ label ->
-                            if (label == null) {
-                                if (showBiometricOption) {
-                                    val biometricDescription = stringResource(Res.string.pin_use_biometric_desc)
-                                    KeyPadButton(
-                                        text = "",
-                                        onClick = { biometricTriggered = true },
-                                        enabled = biometricAvailable,
-                                        accent = true,
-                                        contentDescription = biometricDescription,
-                                        icon = {
-                                            Icon(
-                                                Icons.FingerprintW400Outlinedfill1,
-                                                contentDescription = biometricDescription,
-                                                modifier = Modifier.size(28.dp),
-                                            )
-                                        },
-                                    )
+                            )
+                            Text(
+                                text = displayError ?: displayDescription,
+                                color = if (displayError != null) {
+                                    MaterialTheme.colorScheme.error
                                 } else {
-                                    Spacer(Modifier.size(72.dp))
-                                }
-                                return@inner
-                            }
-
-                            KeyPadButton(
-                                text = label,
-                                onClick = { handleKey(label) },
+                                    MaterialTheme.colorScheme.secondary
+                                },
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(horizontal = 32.dp),
                             )
                         }
                     }
+
+                    Spacer(Modifier.height(32.dp))
+
+                    /* PIN dots */
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                        modifier = Modifier.offset(x = shakeOffset.value.dp),
+                    ) {
+                        repeat(pinLength) { index ->
+                            val isFilled = index < pin.length
+                            val scale by animateFloatAsState(
+                                targetValue = if (isFilled) 1.2f else 1f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessMedium,
+                                ),
+                                label = "PinDotScaleAnimation",
+                            )
+
+                            Box(
+                                modifier =
+                                Modifier.size(24.dp)
+                                    .scale(scale)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (isFilled) {
+                                            if (displayError != null) {
+                                                MaterialTheme.colorScheme.error
+                                            } else {
+                                                MaterialTheme.colorScheme.primary
+                                            }
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                        },
+                                    ),
+                            )
+                        }
+                    }
+                }
+            }
+
+            @Composable
+            fun KeypadColumn() {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(rowSpacing),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    val rows =
+                        listOf(
+                            listOf("1", "2", "3"),
+                            listOf("4", "5", "6"),
+                            listOf("7", "8", "9"),
+                            listOf(null, "0", "⌫"),
+                        )
+
+                    rows.forEach { row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(buttonSpacing)) {
+                            row.forEach inner@{ label ->
+                                if (label == null) {
+                                    if (showBiometricOption) {
+                                        val biometricDescription = stringResource(Res.string.pin_use_biometric_desc)
+                                        KeyPadButton(
+                                            text = "",
+                                            onClick = { biometricTriggered = true },
+                                            enabled = biometricAvailable,
+                                            accent = true,
+                                            contentDescription = biometricDescription,
+                                            icon = {
+                                                Icon(
+                                                    Icons.FingerprintW400Outlinedfill1,
+                                                    contentDescription = biometricDescription,
+                                                    modifier = Modifier.size(iconSize),
+                                                )
+                                            },
+                                            size = buttonSize,
+                                        )
+                                    } else {
+                                        Spacer(Modifier.size(buttonSize))
+                                    }
+                                    return@inner
+                                }
+
+                                KeyPadButton(
+                                    text = label,
+                                    onClick = { handleKey(label) },
+                                    size = buttonSize,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (isLandscape) {
+                // Two-column layout: info on left, keypad on right
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    PinInfoColumn()
+                    KeypadColumn()
+                }
+            } else {
+                // Portrait: stacked single column
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    PinInfoColumn()
+                    Spacer(Modifier.height(32.dp))
+                    KeypadColumn()
                 }
             }
 
@@ -357,6 +415,7 @@ fun KeyPadButton(
     accent: Boolean = false,
     contentDescription: String? = text.takeIf { it.isNotEmpty() },
     icon: (@Composable () -> Unit)? = null,
+    size: Dp = 72.dp,
 ) {
     val currentOnClick by rememberUpdatedState(onClick)
     val resolvedContainerColor = if (enabled) {
@@ -373,7 +432,7 @@ fun KeyPadButton(
     Box(
         contentAlignment = Alignment.Center,
         modifier =
-        Modifier.size(72.dp)
+        Modifier.size(size)
             .clip(CircleShape)
             .background(resolvedContainerColor)
             .then(
