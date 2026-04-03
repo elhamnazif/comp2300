@@ -1,10 +1,14 @@
 package com.group8.comp2300.domain.model.content
 
-enum class ContentType {
+import kotlinx.serialization.Serializable
+
+@Serializable
+enum class SRHContentType {
     ARTICLE,
     VIDEO,
 }
 
+@Serializable
 enum class ContentTopic {
     CONTRACEPTION,
     STI_PREVENTION,
@@ -15,26 +19,28 @@ enum class ContentTopic {
     GENERAL_HEALTH,
 }
 
+@Serializable
 data class SRHContent(
     val id: String,
     val title: String,
     val description: String,
-    val contentType: ContentType,
+    val contentType: SRHContentType,
     val topics: List<ContentTopic>,
     val keywords: List<String>,
-    val contentUrl: String, // URL to full article or video
-    val thumbnailUrl: String?,
-    val author: String?,
+    val contentUrl: String,
+    val thumbnailUrl: String? = null,
+    val author: String? = null,
     val publishedDate: String,
-    // Minutes, null for videos
-    val estimatedReadTime: Int?,
+    val estimatedReadTime: Int? = null,
 )
 
+@Serializable
 data class SearchRequest(
     val query: String? = null,
     val topics: List<ContentTopic> = emptyList(),
     val keywords: List<String> = emptyList(),
-    val contentType: ContentType? = null,
+    val contentType: SRHContentType? = null,
 )
 
+@Serializable
 data class SearchResult(val content: SRHContent, val relevanceScore: Double)
