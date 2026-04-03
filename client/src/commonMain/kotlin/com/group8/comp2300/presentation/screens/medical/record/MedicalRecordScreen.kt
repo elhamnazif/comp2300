@@ -17,8 +17,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -26,12 +31,38 @@ import com.group8.comp2300.domain.model.medical.RecordSortOrder
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.readBytes
+import kotlinx.coroutines.launch
 
 @Composable
 fun MedicalRecordScreen(viewModel: MedicalRecordViewModel, onNavigateBack: () -> Unit) {
     val state = viewModel.uiState
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.dismissError()
+        }
+    }
+
+    val filePickerLauncher = rememberFilePickerLauncher(
+        type = FileKitType.File(extensions = listOf("pdf", "jpg", "jpeg", "png", "docx", "doc")),
+    ) { file ->
+        if (file != null) {
+            coroutineScope.launch {
+                val bytes = file.readBytes()
+                viewModel.uploadFile(bytes, file.name)
+            }
+        }
+    }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
                 title = { Text("My Medical Records") },
@@ -40,7 +71,7 @@ fun MedicalRecordScreen(viewModel: MedicalRecordViewModel, onNavigateBack: () ->
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: file picker — platform-specific */ },
+                onClick = { filePickerLauncher.launch() },
             ) {
                 Icon(Icons.AddW400Outlinedfill1, contentDescription = "Upload record")
             }

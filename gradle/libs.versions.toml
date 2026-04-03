@@ -43,6 +43,9 @@ sketch = "4.3.1"
 symbolcraft = "0.3.4"
 maplibre = "0.12.1"
 
+# File picker
+filekit = "0.13.0"
+
 # Auth
 biometrik = "1.0.1"
 
@@ -158,6 +161,9 @@ alarmee = { module = "io.github.tweener:alarmee", version.ref = "alarmee" }
 moko-permissions = { module = "dev.icerock.moko:permissions", version.ref = "mokoPermissions" }
 moko-permissions-notifications = { module = "dev.icerock.moko:permissions-notifications", version.ref = "mokoPermissions" }
 moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "mokoPermissions" }
+
+# File picker
+filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose", version.ref = "filekit" }
 
 # Auth
 biometrik = { module = "io.github.n7ghtm4r3:biometrik", version.ref = "biometrik" }

@@ -121,6 +121,9 @@ kotlin {
                 implementation(libs.moko.permissions)
                 implementation(libs.moko.permissions.notifications)
 
+                // File picker
+                implementation(libs.filekit.dialogs.compose)
+
                 // Auth
                 implementation(libs.biometrik)
             }

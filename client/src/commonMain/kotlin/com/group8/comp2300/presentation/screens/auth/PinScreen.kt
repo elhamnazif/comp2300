@@ -241,22 +241,22 @@ fun PinScreen(
 
                     Box(
                         modifier =
-                            Modifier.size(24.dp)
-                                .scale(scale)
-                                .clip(CircleShape)
-                                .background(
-                                    if (isFilled) {
-                                        if (displayError !=
-                                            null
-                                        ) {
-                                            MaterialTheme.colorScheme.error
-                                        } else {
-                                            MaterialTheme.colorScheme.primary
-                                        }
+                        Modifier.size(24.dp)
+                            .scale(scale)
+                            .clip(CircleShape)
+                            .background(
+                                if (isFilled) {
+                                    if (displayError !=
+                                        null
+                                    ) {
+                                        MaterialTheme.colorScheme.error
                                     } else {
-                                        MaterialTheme.colorScheme.surfaceVariant
-                                    },
-                                ),
+                                        MaterialTheme.colorScheme.primary
+                                    }
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant
+                                },
+                            ),
                     )
                 }
             }
@@ -266,7 +266,7 @@ fun PinScreen(
             /* Keypad */
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 val rows =
                     listOf(

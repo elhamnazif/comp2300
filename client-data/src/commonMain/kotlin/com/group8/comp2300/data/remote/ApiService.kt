@@ -32,11 +32,15 @@ import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.JsonConvertException
 import kotlinx.serialization.json.Json
@@ -216,8 +220,14 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
         client.get("/api/medical-records/user?sort=$sort").body()
 
     override suspend fun uploadMedicalRecord(fileBytes: ByteArray, fileName: String) {
-        // TODO: add ktor-client-multipart dependency for proper multipart upload
-        client.post("/api/medical-records/upload")
+        client.submitFormWithBinaryData(
+            url = "/api/medical-records/upload",
+            formData = formData {
+                append("file", fileBytes, Headers.build {
+                    append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                })
+            },
+        )
     }
 
     override suspend fun deleteMedicalRecord(id: String) {

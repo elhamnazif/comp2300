@@ -16,6 +16,10 @@ class MedicalRecordViewModel(private val repository: MedicalRepository) : ViewMo
     var uiState by mutableStateOf(MedicalRecordsUiState())
         private set
 
+    init {
+        loadRecords()
+    }
+
     fun loadRecords(sort: RecordSortOrder = uiState.selectedSort) {
         viewModelScope.launch {
             uiState = uiState.copy(isLoading = true)
@@ -51,6 +55,10 @@ class MedicalRecordViewModel(private val repository: MedicalRepository) : ViewMo
             repository.deleteMedicalRecord(id)
             loadRecords()
         }
+    }
+
+    fun dismissError() {
+        uiState = uiState.copy(errorMessage = null)
     }
 }
 
