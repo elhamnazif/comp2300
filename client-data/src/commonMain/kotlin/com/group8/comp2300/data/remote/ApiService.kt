@@ -213,15 +213,15 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     ): RoutineOccurrenceOverride = client.put("/api/routines/occurrence-overrides") { setBody(request) }.body()
 
     override suspend fun getMedicalRecords(sort: String): List<MedicalRecordResponse> =
-        client.get("/api/medical-records?sort=$sort").body()
+        client.get("/api/medical-records/user?sort=$sort").body()
 
     override suspend fun uploadMedicalRecord(fileBytes: ByteArray, fileName: String) {
-        // TODO: multipart upload when server endpoint is ready
-        client.post("/api/medical-records")
+        // TODO: add ktor-client-multipart dependency for proper multipart upload
+        client.post("/api/medical-records/upload")
     }
 
     override suspend fun deleteMedicalRecord(id: String) {
-        client.post("/api/medical-records/$id/delete")
+        client.delete("/api/medical-records/$id")
     }
 
     /**

@@ -10,9 +10,9 @@ enum class MedicalRecordSortOrder {
     NAME_DESC, // Z to A
 }
 
-enum class RecordSortOrder(val apiValue: String) {
-    RECENT("DATE_DESC"),
-    OLDEST("DATE_ASC"),
-    NAME_AZ("NAME_ASC"),
-    NAME_ZA("NAME_DESC"),
+enum class RecordSortOrder(val apiValue: String, val displayName: String) {
+    RECENT("DATE_DESC", "Recent"),
+    OLDEST("DATE_ASC", "Oldest"),
+    NAME_AZ("NAME_ASC", "Name A–Z"),
+    NAME_ZA("NAME_DESC", "Name Z–A"),
 }

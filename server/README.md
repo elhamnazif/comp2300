@@ -64,14 +64,14 @@ server/
 
 ## Technology Stack
 
-| Technology | Purpose | Version |
-|------------|---------|---------|
-| **Ktor** | Web framework | 3.4.0 |
-| **Netty** | Server engine | (via Ktor) |
-| **SQLDelight** | Database ORM | 2.2.1 |
-| **SQLite** | Embedded database | JDBC driver |
-| **Koin** | Dependency injection | 4.x |
-| **Kotlinx Serialization** | JSON handling | (via Ktor) |
+| Technology                | Purpose              | Version     |
+|---------------------------|----------------------|-------------|
+| **Ktor**                  | Web framework        | 3.4.0       |
+| **Netty**                 | Server engine        | (via Ktor)  |
+| **SQLDelight**            | Database ORM         | 2.2.1       |
+| **SQLite**                | Embedded database    | JDBC driver |
+| **Koin**                  | Dependency injection | 4.x         |
+| **Kotlinx Serialization** | JSON handling        | (via Ktor)  |
 
 ## Development Mode
 
@@ -79,27 +79,27 @@ The server supports a development mode with authentication bypass for easier tes
 
 ### Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ENV` | (unset) | Set to `development` to enable dev mode |
-| `DEV_AUTH_BYPASS` | `true` (in dev) | Set to `false` to disable auth bypass |
-| `JWT_SECRET` | `dev-secret-key-change-in-production` | JWT signing secret |
-| `JWT_REALM` | `comp2300` | JWT realm |
-| `JWT_ISSUER` | `http://0.0.0.0:8080` | JWT issuer |
-| `JWT_AUDIENCE` | `http://0.0.0.0:8080` | JWT audience |
-| `RESEND_API_KEY` | (empty) | Resend API key for sending emails |
-| `RESEND_FROM_EMAIL` | `Vita <noreply@vita.local>` | Sender email address |
-| `APP_BASE_URL` | `http://localhost:8080` | Base URL used in email links |
+| Variable            | Default                               | Description                             |
+|---------------------|---------------------------------------|-----------------------------------------|
+| `ENV`               | (unset)                               | Set to `development` to enable dev mode |
+| `DEV_AUTH_BYPASS`   | `true` (in dev)                       | Set to `false` to disable auth bypass   |
+| `JWT_SECRET`        | `dev-secret-key-change-in-production` | JWT signing secret                      |
+| `JWT_REALM`         | `comp2300`                            | JWT realm                               |
+| `JWT_ISSUER`        | `http://0.0.0.0:8080`                 | JWT issuer                              |
+| `JWT_AUDIENCE`      | `http://0.0.0.0:8080`                 | JWT audience                            |
+| `RESEND_API_KEY`    | (empty)                               | Resend API key for sending emails       |
+| `RESEND_FROM_EMAIL` | `Vita <noreply@vita.local>`           | Sender email address                    |
+| `APP_BASE_URL`      | `http://localhost:8080`               | Base URL used in email links            |
 
 ### Development User
 
 When running in development mode with auth bypass enabled (`ENV=development`), a test user is automatically seeded:
 
-| Field | Value |
-|-------|-------|
-| **Email** | `dev@vita.local` |
-| **Password** | `devpassword1` |
-| **User ID** | `dev-user-001` |
+| Field        | Value             |
+|--------------|-------------------|
+| **Email**    | `dev@example.com` |
+| **Password** | `password123`     |
+| **User ID**  | `dev-user-001`    |
 
 This allows you to test authenticated endpoints without creating an account.
 
