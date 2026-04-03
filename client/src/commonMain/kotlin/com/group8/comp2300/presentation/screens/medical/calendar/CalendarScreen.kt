@@ -3,6 +3,7 @@
 package com.group8.comp2300.presentation.screens.medical.calendar
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,6 +19,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
@@ -162,7 +165,20 @@ fun CalendarScreen(
                     agenda = state.routineAgenda,
                     extraLogCount = state.manualLogs.size,
                     appointmentCount = selectedAppointments.size,
+                    moodCount = state.dayMoodEntries.size,
                 )
+            }
+
+            if (state.dayMoodEntries.isNotEmpty()) {
+                item {
+                    DailyMoodSummaryCard(moods = state.dayMoodEntries)
+                }
+            }
+
+            if (state.monthMoodSummary.isNotEmpty()) {
+                item {
+                    MonthlyMoodChart(moodCounts = state.monthMoodSummary)
+                }
             }
 
             item {
@@ -412,7 +428,8 @@ fun CalendarScreen(
                     onBack = { sheetUiState = CalendarSheetState.Menu },
                 ) {
                     MoodEntryForm { score, notes ->
-                        viewModel.logMood(score, emptyList(), emptyList(), notes)
+                        val timestampMs = entryDateTimeToEpochMs(entryDate, entryTime, timeZone)
+                        viewModel.logMood(score, emptyList(), emptyList(), notes, timestampMs)
                         sheetUiState = CalendarSheetState.Hidden
                     }
                 }
@@ -433,6 +450,7 @@ private fun CalendarDayHeader(
     agenda: List<RoutineDayAgenda>,
     extraLogCount: Int,
     appointmentCount: Int,
+    moodCount: Int = 0,
 ) {
     val allDoses = agenda.flatMap(RoutineDayAgenda::medications)
     val taken = allDoses.count { it.status == MedicationLogStatus.TAKEN }
@@ -470,6 +488,14 @@ private fun CalendarDayHeader(
                 stringResource(Res.string.calendar_appointment_one)
             } else {
                 stringResource(Res.string.calendar_appointment_many, appointmentCount)
+            }
+    }
+    if (moodCount > 0) {
+        metaItems +=
+            if (moodCount == 1) {
+                stringResource(Res.string.calendar_mood_one)
+            } else {
+                stringResource(Res.string.calendar_mood_many, moodCount)
             }
     }
     val meta = metaItems.joinToString(" • ")
@@ -1284,4 +1310,194 @@ private fun SimpleDropdown(
             }
         }
     }
+}
+
+@Composable
+private fun DailyMoodSummaryCard(moods: List<Mood>) {
+    val averageEmoji = moods.averageMoodEmoji()
+    val summaryText = if (moods.size == 1) {
+        stringResource(Res.string.calendar_mood_one_entry)
+    } else {
+        stringResource(Res.string.calendar_mood_entry_count, moods.size)
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(averageEmoji, style = MaterialTheme.typography.headlineMedium)
+                    Column {
+                        Text(
+                            stringResource(Res.string.calendar_mood_section_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            summaryText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+            moods.sortedByDescending { it.timestamp }.forEach { mood ->
+                MoodEntryRow(mood = mood)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MoodEntryRow(mood: Mood) {
+    val timeZone = remember { TimeZone.currentSystemDefault() }
+    val dateTime = remember(mood.timestamp) {
+        Instant.fromEpochMilliseconds(mood.timestamp).toLocalDateTime(timeZone)
+    }
+    val emoji = mood.moodType.toEmoji()
+
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = RoundedCornerShape(12.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f),
+            ) {
+                Text(emoji, style = MaterialTheme.typography.titleLarge)
+                Column {
+                    Text(
+                        mood.moodType.displayName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    mood.journal?.takeIf(String::isNotBlank)?.let { journal ->
+                        Text(
+                            journal.take(80) + if (journal.length > 80) "…" else "",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+            Text(
+                DateFormatter.formatTime(dateTime.hour, dateTime.minute),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MonthlyMoodChart(moodCounts: Map<MoodType, Int>) {
+    if (moodCounts.isEmpty()) return
+
+    val total = moodCounts.values.sum().toFloat()
+    val moodTypes = MoodType.entries
+    val moodColors = listOf(
+        Color(0xFFE57373),
+        Color(0xFFFFB74D),
+        Color(0xFFFFF176),
+        Color(0xFFAED581),
+        Color(0xFF66BB6A),
+    )
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            stringResource(Res.string.calendar_mood_monthly_trends),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Canvas(
+            modifier = Modifier.fillMaxWidth().height(24.dp).clip(RoundedCornerShape(12.dp)),
+        ) {
+            var currentX = 0f
+            moodTypes.forEachIndexed { index, type ->
+                val count = moodCounts[type] ?: 0
+                if (count > 0) {
+                    val width = (count / total) * size.width
+                    drawRect(
+                        color = moodColors[index],
+                        topLeft = Offset(currentX, 0f),
+                        size = Size(width, size.height),
+                    )
+                    currentX += width
+                }
+            }
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            moodTypes.forEachIndexed { index, type ->
+                val count = moodCounts[type] ?: 0
+                if (count > 0) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(
+                            modifier = Modifier.size(8.dp)
+                                .clip(RoundedCornerShape(2.dp))
+                                .background(moodColors[index]),
+                        )
+                        Text(
+                            "${type.displayName}: $count",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun MoodType.toEmoji(): String = when (this) {
+    MoodType.VERY_SAD -> "😢"
+    MoodType.SAD -> "😕"
+    MoodType.NEUTRAL -> "😐"
+    MoodType.GOOD -> "🙂"
+    MoodType.GREAT -> "🤩"
+}
+
+private fun List<Mood>.averageMoodEmoji(): String {
+    if (isEmpty()) return "😐"
+    val avg = map { it.moodType.toScore() }.average()
+    return when {
+        avg >= 4.5 -> "🤩"
+        avg >= 3.5 -> "🙂"
+        avg >= 2.5 -> "😐"
+        avg >= 1.5 -> "😕"
+        else -> "😢"
+    }
+}
+
+private fun MoodType.toScore(): Int = when (this) {
+    MoodType.VERY_SAD -> 1
+    MoodType.SAD -> 2
+    MoodType.NEUTRAL -> 3
+    MoodType.GOOD -> 4
+    MoodType.GREAT -> 5
 }

@@ -341,7 +341,16 @@
     <string name="form_mood_tag_tired">Tired</string>
     <string name="form_mood_tag_stressed">Stressed</string>
     <string name="form_mood_tag_focused">Focused</string>
-    
+
+    <!-- Mood Display -->
+    <string name="calendar_mood_section_title">Mood</string>
+    <string name="calendar_mood_one_entry">1 entry today</string>
+    <string name="calendar_mood_entry_count">%1$d entries today</string>
+    <string name="calendar_mood_one">1 mood</string>
+    <string name="calendar_mood_many">%1$d moods</string>
+    <string name="calendar_mood_monthly_trends">Mood Trends</string>
+    <string name="calendar_mood_no_entries">No mood entries for this day.</string>
+
     <!-- Form Common -->
     <string name="form_date_label">Date</string>
     <string name="form_time_label">Time</string>

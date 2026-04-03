@@ -4,8 +4,8 @@ import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.auth.TokenManagerImpl
 import com.group8.comp2300.data.database.DatabaseDriverFactory
 import com.group8.comp2300.data.database.createDatabase
-import com.group8.comp2300.data.local.CalendarOverviewLocalDataSource
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
+import com.group8.comp2300.data.local.CalendarOverviewLocalDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.MoodLocalDataSource
@@ -43,11 +43,11 @@ import com.group8.comp2300.data.remote.ApiServiceImpl
 import com.group8.comp2300.data.remote.TokenProvider
 import com.group8.comp2300.data.remote.createHttpClient
 import com.group8.comp2300.data.remote.tokenProviderDelegate
-import com.group8.comp2300.data.repository.MedicalRepositoryImpl
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicRepositoryImpl
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
 import com.group8.comp2300.data.repository.LabResultsRepositoryImpl
+import com.group8.comp2300.data.repository.MedicalRepositoryImpl
 import com.group8.comp2300.data.repository.ReminderRepositoryImpl
 import com.group8.comp2300.data.repository.SRHContentRepositoryImpl
 import com.group8.comp2300.data.repository.ShopRepositoryImpl
@@ -57,11 +57,11 @@ import com.group8.comp2300.data.repository.medical.MedicationDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MedicationLogDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MoodDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.RoutineDataRepositoryImpl
-import com.group8.comp2300.domain.repository.MedicalRepository
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
 import com.group8.comp2300.domain.repository.LabResultsRepository
+import com.group8.comp2300.domain.repository.MedicalRepository
 import com.group8.comp2300.domain.repository.ReminderRepository
 import com.group8.comp2300.domain.repository.SRHContentRepository
 import com.group8.comp2300.domain.repository.ShopRepository

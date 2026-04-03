@@ -10,7 +10,9 @@ import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
+import com.group8.comp2300.domain.model.medical.Mood
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
+import com.group8.comp2300.domain.model.medical.MoodType
 import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
@@ -38,6 +40,8 @@ data class CalendarUiState(
     val selectedDate: String = "",
     val routineAgenda: List<RoutineDayAgenda> = emptyList(),
     val manualLogs: List<MedicationLog> = emptyList(),
+    val dayMoodEntries: List<Mood> = emptyList(),
+    val monthMoodSummary: Map<MoodType, Int> = emptyMap(),
 )
 
 class CalendarViewModel(
@@ -90,11 +94,13 @@ class CalendarViewModel(
     fun loadAgendaForDate(dateString: String) {
         viewModelScope.launch {
             try {
+                val moods = moodRepository.getMoodsForDate(dateString)
                 _state.update {
                     it.copy(
                         selectedDate = dateString,
                         routineAgenda = medicationLogRepository.getRoutineAgenda(dateString),
                         manualLogs = medicationLogRepository.getManualMedicationLogs(dateString),
+                        dayMoodEntries = moods,
                     )
                 }
             } catch (e: Exception) {
@@ -106,7 +112,12 @@ class CalendarViewModel(
     fun loadOverviewForMonth(year: Int, month: Int) {
         viewModelScope.launch {
             runCatching { calendarRepository.getCalendarOverview(year, month) }
-                .onSuccess { _state.update { state -> state.copy(overview = it) } }
+                .onSuccess { overview ->
+                    val moodCounts = moodRepository.getMoodsForMonth(year, month)
+                        .groupingBy { it.moodType }
+                        .eachCount()
+                    _state.update { state -> state.copy(overview = overview, monthMoodSummary = moodCounts) }
+                }
                 .onFailure { error -> _state.update { state -> state.copy(error = error.message) } }
         }
     }
@@ -176,7 +187,7 @@ class CalendarViewModel(
         }
     }
 
-    fun logMood(score: Int, tags: List<String>, symptoms: List<String>, notes: String) {
+    fun logMood(score: Int, tags: List<String>, symptoms: List<String>, notes: String, timestampMs: Long? = null) {
         viewModelScope.launch {
             runCatching {
                 moodRepository.logMood(
@@ -185,12 +196,19 @@ class CalendarViewModel(
                         tags = tags,
                         symptoms = symptoms,
                         notes = notes,
+                        timestampMs = timestampMs,
                     ),
                 )
-            }.onSuccess { loadInitialData() }
-                .onFailure { error ->
-                    _state.update { state -> state.copy(error = error.errorMessage("Failed to log mood")) }
+            }.onSuccess {
+                val currentDate = _state.value.selectedDate
+                if (currentDate.isNotBlank()) {
+                    loadAgendaForDate(currentDate)
+                } else {
+                    loadInitialData()
                 }
+            }.onFailure { error ->
+                _state.update { state -> state.copy(error = error.errorMessage("Failed to log mood")) }
+            }
         }
     }
 

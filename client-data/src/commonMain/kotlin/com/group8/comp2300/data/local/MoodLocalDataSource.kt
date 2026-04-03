@@ -28,6 +28,18 @@ class MoodLocalDataSource(private val database: AppDatabase) {
         )
     }
 
+    fun getByDateRange(startMs: Long, endMs: Long): List<Mood> =
+        database.appDatabaseQueries.selectMoodsByDateRange(startMs, endMs).executeAsList().map { entity ->
+            Mood(
+                id = entity.id,
+                userId = entity.userId,
+                timestamp = entity.timestamp,
+                moodType = MoodType.valueOf(entity.moodType),
+                feeling = entity.feeling,
+                journal = entity.journal,
+            )
+        }
+
     fun deleteById(id: String) {
         database.appDatabaseQueries.deleteMoodById(id)
     }

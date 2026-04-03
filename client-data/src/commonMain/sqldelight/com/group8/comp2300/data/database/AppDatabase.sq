@@ -116,6 +116,11 @@ deleteMoodById:
 DELETE FROM MoodEntity
 WHERE id = ?;
 
+selectMoodsByDateRange:
+SELECT * FROM MoodEntity
+WHERE timestamp >= ? AND timestamp < ?
+ORDER BY timestamp ASC;
+
 CREATE TABLE MedicationEntity (
     id TEXT NOT NULL PRIMARY KEY,
     userId TEXT NOT NULL,

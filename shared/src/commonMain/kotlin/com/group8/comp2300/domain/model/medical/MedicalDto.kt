@@ -76,4 +76,5 @@ data class MoodEntryRequest(
     val tags: List<String>,
     val symptoms: List<String>,
     val notes: String? = null,
+    val timestampMs: Long? = null,
 )
