@@ -4,6 +4,8 @@ import com.group8.comp2300.domain.model.medical.MedicalRecord
 import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
+import com.group8.comp2300.security.MedicalRecordCipher
+import io.ktor.http.ContentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -14,11 +16,12 @@ sealed class UploadResult {
     data class Failed(val reason: String) : UploadResult()
 }
 
-data class DownloadableMedicalRecord(val record: MedicalRecord, val file: File)
+data class DownloadableMedicalRecord(val record: MedicalRecord, val fileBytes: ByteArray, val contentType: ContentType)
 
 class MedicalRecordService(
     private val repository: MedicalRecordRepository,
     private val uploadDir: String = "uploads",
+    private val medicalRecordCipher: MedicalRecordCipher,
 ) {
 
     companion object {
@@ -47,27 +50,25 @@ class MedicalRecordService(
                 return@withContext UploadResult.Failed("File type '.$extension' is not allowed")
             }
 
-            val storageFileName = if (extension.isNotEmpty()) "$fileId.$extension" else fileId
+            if (fileBytes.size > MAX_FILE_SIZE) {
+                return@withContext UploadResult.Failed("File size exceeds the 10 MB limit")
+            }
+
+            val storageFileName = if (extension.isNotEmpty()) "$fileId.$extension.enc" else "$fileId.enc"
             val physicalFile = File(uploadDir, storageFileName)
 
             try {
-                physicalFile.writeBytes(fileBytes)
-
-                val actualSize = physicalFile.length()
-
-                if (actualSize > MAX_FILE_SIZE) {
-                    physicalFile.delete()
-                    return@withContext UploadResult.Failed("File size exceeds the 10 MB limit")
-                }
+                physicalFile.writeBytes(medicalRecordCipher.encrypt(fileBytes))
 
                 val now = System.currentTimeMillis()
+                val originalSize = fileBytes.size.toLong()
 
                 repository.insert(
                     id = fileId,
                     userId = userId,
                     fileName = originalName,
                     storagePath = physicalFile.path,
-                    fileSize = actualSize,
+                    fileSize = originalSize,
                     createdAt = now,
                     category = category,
                 )
@@ -76,7 +77,7 @@ class MedicalRecordService(
                     MedicalRecord(
                         id = fileId,
                         fileName = originalName,
-                        fileSize = actualSize,
+                        fileSize = originalSize,
                         createdAt = now,
                         category = category,
                     ),
@@ -145,7 +146,17 @@ class MedicalRecordService(
         val record = repository.getRecordById(id, userId) ?: return null
         val path = repository.getFilePath(id, userId) ?: return null
         val file = File(path)
-        return if (file.exists()) DownloadableMedicalRecord(record, file) else null
+        if (!file.exists()) return null
+
+        val fileBytes = runCatching {
+            medicalRecordCipher.decrypt(file.readBytes())
+        }.getOrNull() ?: return null
+
+        return DownloadableMedicalRecord(
+            record = record,
+            fileBytes = fileBytes,
+            contentType = record.fileName.toDownloadContentType(),
+        )
     }
 
     fun reuploadRecord(id: String, userId: String, newFileName: String, fileBytes: ByteArray): UploadResult {
@@ -169,13 +180,17 @@ class MedicalRecordService(
         }
 
         val newTimestamp = System.currentTimeMillis()
-        val storageFileName = if (extension.isNotEmpty()) "$id-$newTimestamp.$extension" else "$id-$newTimestamp"
-        val newPath = "$uploadDir/$storageFileName"
+        val storageFileName = if (extension.isNotEmpty()) {
+            "$id-$newTimestamp.$extension.enc"
+        } else {
+            "$id-$newTimestamp.enc"
+        }
+        val newPath = File(uploadDir, storageFileName).path
 
         // Write to a temp file first — only promote to final path after DB update succeeds
         val tempFile = File("$newPath.tmp")
         return try {
-            tempFile.writeBytes(fileBytes)
+            tempFile.writeBytes(medicalRecordCipher.encrypt(fileBytes))
 
             val updated = repository.updateRecordMetadata(
                 id = id,
@@ -187,7 +202,11 @@ class MedicalRecordService(
             )
 
             if (updated) {
-                tempFile.renameTo(File(newPath))
+                val newFile = File(newPath)
+                if (!tempFile.renameTo(newFile)) {
+                    tempFile.copyTo(newFile, overwrite = true)
+                    tempFile.delete()
+                }
                 // Clean up the old physical file after successful DB update
                 val oldFile = File(oldPath)
                 if (oldFile.exists()) oldFile.delete()
@@ -206,5 +225,19 @@ class MedicalRecordService(
             tempFile.delete()
             UploadResult.Failed("Reupload failed: ${e.message}")
         }
+    }
+}
+
+private fun String.toDownloadContentType(): ContentType {
+    val extension = substringAfterLast(".", "").lowercase()
+    return when (extension) {
+        "pdf" -> ContentType.Application.Pdf
+        "jpg", "jpeg" -> ContentType.Image.JPEG
+        "png" -> ContentType.Image.PNG
+        "doc" -> ContentType.parse("application/msword")
+        "docx" -> ContentType.parse(
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+        else -> ContentType.Application.OctetStream
     }
 }

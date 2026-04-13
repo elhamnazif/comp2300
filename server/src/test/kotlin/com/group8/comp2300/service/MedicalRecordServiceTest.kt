@@ -3,10 +3,13 @@ package com.group8.comp2300.service
 import com.group8.comp2300.domain.model.medical.MedicalRecord
 import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
+import com.group8.comp2300.security.AesGcmMedicalRecordCipher
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import com.group8.comp2300.service.medicalRecords.UploadResult
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -15,7 +18,8 @@ import kotlin.test.*
 class MedicalRecordServiceTest {
     private val repository = mockk<MedicalRecordRepository>()
     private val testUploadDir = "test_uploads"
-    private val service = MedicalRecordService(repository, uploadDir = testUploadDir)
+    private val cipher = AesGcmMedicalRecordCipher(ByteArray(32) { (it + 1).toByte() })
+    private val service = MedicalRecordService(repository, uploadDir = testUploadDir, medicalRecordCipher = cipher)
 
     @BeforeTest
     fun setup() {
@@ -81,7 +85,7 @@ class MedicalRecordServiceTest {
                 id = id,
                 userId = userId,
                 newName = "updated_report.pdf",
-                newPath = match { it.contains(id) && it.endsWith(".pdf") },
+                newPath = match { it.contains(id) && it.endsWith(".pdf.enc") },
                 newSize = newContent.size.toLong(),
                 newTimestamp = any(),
             )
@@ -191,6 +195,62 @@ class MedicalRecordServiceTest {
 
         assertTrue(result is UploadResult.Failed)
         assertTrue(result.reason.contains("not allowed", ignoreCase = true))
+    }
+
+    @Test
+    fun `uploadMedicalRecord encrypts file contents at rest`() = runBlocking {
+        val plainBytes = "Highly sensitive lab data".toByteArray()
+        every {
+            repository.insert(
+                id = any(),
+                userId = "user-1",
+                fileName = "lab-report.pdf",
+                storagePath = any(),
+                fileSize = plainBytes.size.toLong(),
+                createdAt = any(),
+                category = MedicalRecordCategory.LAB_RESULT,
+            )
+        } just runs
+
+        val result = service.uploadMedicalRecord(
+            userId = "user-1",
+            fileName = "lab-report.pdf",
+            fileBytes = plainBytes,
+            category = MedicalRecordCategory.LAB_RESULT,
+        )
+
+        assertTrue(result is UploadResult.Success)
+
+        val encryptedFile = File(testUploadDir).listFiles()?.singleOrNull()
+        assertNotNull(encryptedFile, "Encrypted upload should be written to disk")
+
+        val encryptedBytes = encryptedFile.readBytes()
+        assertFalse(encryptedBytes.contentEquals(plainBytes), "Stored bytes must not remain plaintext")
+        assertContentEquals(plainBytes, cipher.decrypt(encryptedBytes))
+    }
+
+    @Test
+    fun `getDownloadableRecord decrypts stored file bytes`() {
+        val id = "file-1"
+        val userId = "user-1"
+        val plainBytes = "MRI scan".toByteArray()
+        val encryptedFile = File(testUploadDir, "file-1.png.enc")
+        encryptedFile.writeBytes(cipher.encrypt(plainBytes))
+
+        every { repository.getRecordById(id, userId) } returns MedicalRecord(
+            id = id,
+            fileName = "scan.png",
+            fileSize = plainBytes.size.toLong(),
+            createdAt = 123L,
+            category = MedicalRecordCategory.IMAGING,
+        )
+        every { repository.getFilePath(id, userId) } returns encryptedFile.path
+
+        val result = service.getDownloadableRecord(id, userId)
+
+        assertNotNull(result)
+        assertContentEquals(plainBytes, result.fileBytes)
+        assertEquals(io.ktor.http.ContentType.Image.PNG, result.contentType)
     }
 
     @Test

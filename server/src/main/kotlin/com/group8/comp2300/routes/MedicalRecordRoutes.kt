@@ -134,7 +134,7 @@ fun Route.medicalRecordRoutes() {
                                 recordFile.record.fileName,
                             ).toString(),
                         )
-                        call.respondFile(recordFile.file)
+                        call.respondBytes(recordFile.fileBytes, recordFile.contentType)
                     } else {
                         call.respond(HttpStatusCode.NotFound, ErrorResponse("File not found"))
                     }
