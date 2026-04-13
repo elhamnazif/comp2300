@@ -2,6 +2,7 @@ package com.group8.comp2300.repository
 
 import com.group8.comp2300.data.repository.MedicalRecordRepositoryImpl
 import com.group8.comp2300.database.ServerDatabase
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.infrastructure.database.createServerDatabase
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -33,6 +34,7 @@ class MedicalRecordRepositoryTest {
             storagePath = "uploads/file_abc123.pdf",
             fileSize = 1024L,
             createdAt = 1700000000L,
+            category = MedicalRecordCategory.LAB_RESULT,
         )
 
         // Assert: run SQL SELECT query
@@ -44,6 +46,7 @@ class MedicalRecordRepositoryTest {
         assertEquals(fileId, savedRecord.id)
         assertEquals("Blood_Test.pdf", savedRecord.fileName)
         assertEquals(1024L, savedRecord.fileSize)
+        assertEquals(MedicalRecordCategory.LAB_RESULT, savedRecord.category)
     }
 
     @Test
@@ -51,7 +54,7 @@ class MedicalRecordRepositoryTest {
         // Insert a baseline record
         val userId = "user_99"
         val fileId = "file_abc123"
-        repository.insert(fileId, userId, "Old_Name.pdf", "path", 100L, 100L)
+        repository.insert(fileId, userId, "Old_Name.pdf", "path", 100L, 100L, MedicalRecordCategory.GENERAL)
 
         // Update it
         val wasUpdated = repository.updateFileName(fileId, userId, "New_Name.pdf")
@@ -67,7 +70,7 @@ class MedicalRecordRepositoryTest {
     fun `delete removes the record completely`() {
         val userId = "user_99"
         val fileId = "file_abc123"
-        repository.insert(fileId, userId, "To_Delete.pdf", "path", 100L, 100L)
+        repository.insert(fileId, userId, "To_Delete.pdf", "path", 100L, 100L, MedicalRecordCategory.GENERAL)
 
         val wasDeleted = repository.delete(fileId, userId)
 

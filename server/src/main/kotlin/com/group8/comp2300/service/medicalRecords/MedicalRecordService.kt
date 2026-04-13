@@ -1,11 +1,9 @@
 package com.group8.comp2300.service.medicalRecords
 
 import com.group8.comp2300.domain.model.medical.MedicalRecord
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
-import io.ktor.http.content.*
-import io.ktor.util.cio.writeChannel
-import io.ktor.utils.io.copyTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -15,6 +13,8 @@ sealed class UploadResult {
     data class Success(val record: MedicalRecord) : UploadResult()
     data class Failed(val reason: String) : UploadResult()
 }
+
+data class DownloadableMedicalRecord(val record: MedicalRecord, val file: File)
 
 class MedicalRecordService(
     private val repository: MedicalRecordRepository,
@@ -31,10 +31,15 @@ class MedicalRecordService(
         if (!dir.exists()) dir.mkdirs()
     }
 
-    suspend fun uploadMedicalRecord(userId: String, part: PartData.FileItem): UploadResult =
+    suspend fun uploadMedicalRecord(
+        userId: String,
+        fileName: String,
+        fileBytes: ByteArray,
+        category: MedicalRecordCategory,
+    ): UploadResult =
         withContext(Dispatchers.IO) {
             val fileId = UUID.randomUUID().toString()
-            val originalName = part.originalFileName ?: "upload_${System.currentTimeMillis()}"
+            val originalName = fileName.ifBlank { "upload_${System.currentTimeMillis()}" }
 
             val extension = originalName.substringAfterLast(".", "").lowercase()
 
@@ -46,8 +51,7 @@ class MedicalRecordService(
             val physicalFile = File(uploadDir, storageFileName)
 
             try {
-                val readChannel = part.provider()
-                readChannel.copyTo(physicalFile.writeChannel())
+                physicalFile.writeBytes(fileBytes)
 
                 val actualSize = physicalFile.length()
 
@@ -65,9 +69,18 @@ class MedicalRecordService(
                     storagePath = physicalFile.path,
                     fileSize = actualSize,
                     createdAt = now,
+                    category = category,
                 )
 
-                UploadResult.Success(MedicalRecord(fileId, originalName, actualSize, now))
+                UploadResult.Success(
+                    MedicalRecord(
+                        id = fileId,
+                        fileName = originalName,
+                        fileSize = actualSize,
+                        createdAt = now,
+                        category = category,
+                    ),
+                )
             } catch (e: Exception) {
                 if (physicalFile.exists()) physicalFile.delete()
                 UploadResult.Failed("Upload failed: ${e.message}")
@@ -128,10 +141,11 @@ class MedicalRecordService(
         return repository.updateFileName(id, userId, finalName)
     }
 
-    fun getPhysicalFile(id: String, userId: String): File? {
+    fun getDownloadableRecord(id: String, userId: String): DownloadableMedicalRecord? {
+        val record = repository.getRecordById(id, userId) ?: return null
         val path = repository.getFilePath(id, userId) ?: return null
         val file = File(path)
-        return if (file.exists()) file else null
+        return if (file.exists()) DownloadableMedicalRecord(record, file) else null
     }
 
     fun reuploadRecord(id: String, userId: String, newFileName: String, fileBytes: ByteArray): UploadResult {
@@ -145,6 +159,7 @@ class MedicalRecordService(
             return UploadResult.Failed("File size exceeds the 10 MB limit")
         }
 
+        val currentRecord = repository.getRecordById(id, userId) ?: return UploadResult.Failed("Record not found")
         val oldPath = repository.getFilePath(id, userId) ?: return UploadResult.Failed("Record not found")
 
         val safeName = if (extension.isNotEmpty() && !newFileName.lowercase().endsWith(".$extension")) {
@@ -176,7 +191,13 @@ class MedicalRecordService(
                 // Clean up the old physical file after successful DB update
                 val oldFile = File(oldPath)
                 if (oldFile.exists()) oldFile.delete()
-                UploadResult.Success(MedicalRecord(id, safeName, fileBytes.size.toLong(), newTimestamp))
+                UploadResult.Success(
+                    currentRecord.copy(
+                        fileName = safeName,
+                        fileSize = fileBytes.size.toLong(),
+                        createdAt = newTimestamp,
+                    ),
+                )
             } else {
                 tempFile.delete()
                 UploadResult.Failed("Failed to update record metadata")

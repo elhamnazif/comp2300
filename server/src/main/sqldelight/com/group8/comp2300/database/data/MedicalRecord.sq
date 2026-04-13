@@ -4,15 +4,16 @@ CREATE TABLE MedicalRecordEnt (
     fileName TEXT NOT NULL,
     storagePath TEXT NOT NULL, -- Actual path: "uploads/uuid-123.pdf"
     fileSize INTEGER NOT NULL, -- Size in bytes
-    createdAt INTEGER NOT NULL -- Unix timestamp
+    createdAt INTEGER NOT NULL, -- Unix timestamp
+    category TEXT NOT NULL DEFAULT 'GENERAL'
 );
 
 insertRecord:
-INSERT INTO MedicalRecordEnt(id, userId, fileName, storagePath, fileSize, createdAt)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT INTO MedicalRecordEnt(id, userId, fileName, storagePath, fileSize, createdAt, category)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 getRecordsByUserId:
-SELECT id, fileName, fileSize, createdAt
+SELECT id, fileName, fileSize, createdAt, category
 FROM MedicalRecordEnt
 WHERE userId = ?
 ORDER BY createdAt DESC;

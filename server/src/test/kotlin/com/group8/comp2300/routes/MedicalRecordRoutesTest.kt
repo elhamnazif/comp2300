@@ -3,6 +3,7 @@ package com.group8.comp2300.routes
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.group8.comp2300.data.repository.MedicalRecordRepositoryImpl
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import com.group8.comp2300.dto.RenameRequest
 import com.group8.comp2300.infrastructure.database.createServerDatabase
@@ -85,7 +86,7 @@ class MedicalRecordRoutesTest {
             createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L,
         )
 
-        repository.insert("file-1", "user-1", "Old.pdf", "path", 100, 100)
+        repository.insert("file-1", "user-1", "Old.pdf", "path", 100, 100, MedicalRecordCategory.GENERAL)
 
         application { configureTestEnv(database, repository, service) }
 
@@ -116,7 +117,7 @@ class MedicalRecordRoutesTest {
             createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L,
         )
 
-        repository.insert("del-1", "user-1", "Bye.pdf", "path", 100, 100)
+        repository.insert("del-1", "user-1", "Bye.pdf", "path", 100, 100, MedicalRecordCategory.GENERAL)
 
         application { configureTestEnv(database, repository, service) }
 
@@ -162,6 +163,7 @@ class MedicalRecordRoutesTest {
                 storagePath = physicalFile.path,
                 fileSize = physicalFile.length(),
                 createdAt = System.currentTimeMillis(),
+                category = MedicalRecordCategory.IMAGING,
             )
         }
 
@@ -178,10 +180,9 @@ class MedicalRecordRoutesTest {
             val disposition = response.headers[HttpHeaders.ContentDisposition]
             assertNotNull(disposition, "Content-Disposition header is missing")
 
-            val expectedFileOnDisk = "$id.${fileName.substringAfterLast(".")}"
             assertTrue(
-                disposition.contains(expectedFileOnDisk),
-                "Header '$disposition' should contain filename '$expectedFileOnDisk'",
+                disposition.contains(fileName),
+                "Header '$disposition' should contain filename '$fileName'",
             )
         }
     }

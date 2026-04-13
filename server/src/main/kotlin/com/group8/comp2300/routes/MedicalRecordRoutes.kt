@@ -4,6 +4,7 @@ import com.group8.comp2300.dto.ErrorResponse
 import com.group8.comp2300.dto.MessageResponse
 import com.group8.comp2300.dto.RenameRequest
 import com.group8.comp2300.dto.toDto
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import com.group8.comp2300.service.medicalRecords.UploadResult
 import io.ktor.http.*
@@ -24,14 +25,47 @@ fun Route.medicalRecordRoutes() {
             post("/upload") {
                 withUserId { userId ->
                     val multipart = call.receiveMultipart()
-                    var result: UploadResult? = null
+                    var fileName: String? = null
+                    var fileBytes: ByteArray? = null
+                    var category: MedicalRecordCategory? = null
                     multipart.forEachPart { part ->
-                        if (part is PartData.FileItem && result == null) {
-                            result = service.uploadMedicalRecord(userId, part)
+                        when (part) {
+                            is PartData.FormItem -> {
+                                if (part.name == "category") {
+                                    category = part.value.toMedicalRecordCategoryOrNull()
+                                }
+                            }
+
+                            is PartData.FileItem -> {
+                                if (fileBytes == null) {
+                                    fileName = part.originalFileName ?: "upload_${System.currentTimeMillis()}"
+                                    fileBytes = part.provider().readRemaining().readByteArray()
+                                }
+                            }
+
+                            else -> Unit
                         }
                         part.dispose()
                     }
-                    when (val r = result) {
+
+                    val uploadBytes = fileBytes ?: return@withUserId call.respond(
+                        HttpStatusCode.BadRequest,
+                        ErrorResponse("No file provided"),
+                    )
+
+                    val resolvedCategory = category ?: return@withUserId call.respond(
+                        HttpStatusCode.BadRequest,
+                        ErrorResponse("Invalid or missing category"),
+                    )
+
+                    val result = service.uploadMedicalRecord(
+                        userId = userId,
+                        fileName = fileName.orEmpty(),
+                        fileBytes = uploadBytes,
+                        category = resolvedCategory,
+                    )
+
+                    when (result) {
                         is UploadResult.Success -> call.respond(
                             HttpStatusCode.Created,
                             MessageResponse("File uploaded successfully"),
@@ -39,12 +73,7 @@ fun Route.medicalRecordRoutes() {
 
                         is UploadResult.Failed -> call.respond(
                             HttpStatusCode.BadRequest,
-                            ErrorResponse(r.reason),
-                        )
-
-                        null -> call.respond(
-                            HttpStatusCode.BadRequest,
-                            ErrorResponse("No file provided"),
+                            ErrorResponse(result.reason),
                         )
                     }
                 }
@@ -96,16 +125,16 @@ fun Route.medicalRecordRoutes() {
             get("/download/{id}") {
                 val id = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
                 withUserId { userId ->
-                    val file = service.getPhysicalFile(id, userId)
-                    if (file?.exists() == true) {
+                    val recordFile = service.getDownloadableRecord(id, userId)
+                    if (recordFile != null) {
                         call.response.header(
                             HttpHeaders.ContentDisposition,
                             ContentDisposition.Inline.withParameter(
                                 ContentDisposition.Parameters.FileName,
-                                file.name,
+                                recordFile.record.fileName,
                             ).toString(),
                         )
-                        call.respondFile(file)
+                        call.respondFile(recordFile.file)
                     } else {
                         call.respond(HttpStatusCode.NotFound, ErrorResponse("File not found"))
                     }
@@ -139,3 +168,8 @@ fun Route.medicalRecordRoutes() {
         }
     }
 }
+
+private fun String.toMedicalRecordCategoryOrNull(): MedicalRecordCategory? =
+    MedicalRecordCategory.entries.firstOrNull { entry ->
+        entry.name.equals(this.trim(), ignoreCase = true)
+    }

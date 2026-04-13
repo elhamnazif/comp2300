@@ -3,6 +3,7 @@ package com.group8.comp2300.data.repository
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.database.data.MedicalRecordEnt
 import com.group8.comp2300.domain.model.medical.MedicalRecord
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
 
@@ -16,6 +17,7 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
         storagePath: String,
         fileSize: Long,
         createdAt: Long,
+        category: MedicalRecordCategory,
     ) {
         database.medicalRecordQueries.insertRecord(
             id = id,
@@ -24,6 +26,7 @@ class MedicalRecordRepositoryImpl(private val database: ServerDatabase) : Medica
             storagePath = storagePath,
             fileSize = fileSize,
             createdAt = createdAt,
+            category = category.name,
         )
     }
 
@@ -81,4 +84,5 @@ private fun MedicalRecordEnt.toDomain(): MedicalRecord = MedicalRecord(
     fileName = fileName,
     fileSize = fileSize,
     createdAt = createdAt,
+    category = MedicalRecordCategory.valueOf(category),
 )

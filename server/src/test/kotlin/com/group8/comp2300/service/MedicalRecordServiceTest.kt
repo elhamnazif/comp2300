@@ -1,10 +1,10 @@
 package com.group8.comp2300.service
 
 import com.group8.comp2300.domain.model.medical.MedicalRecord
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import com.group8.comp2300.service.medicalRecords.UploadResult
-import io.ktor.http.content.*
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -53,6 +53,13 @@ class MedicalRecordServiceTest {
         oldFile.writeText("Old content")
         assertTrue(oldFile.exists())
 
+        every { repository.getRecordById(id, userId) } returns MedicalRecord(
+            id = id,
+            fileName = "old_file.pdf",
+            fileSize = oldFile.length(),
+            createdAt = 123L,
+            category = MedicalRecordCategory.GENERAL,
+        )
         every { repository.getFilePath(id, userId) } returns oldPath
         every {
             repository.updateRecordMetadata(
@@ -158,7 +165,7 @@ class MedicalRecordServiceTest {
         val id = "ghost-id"
         val userId = "user-1"
 
-        every { repository.getFilePath(id, userId) } returns null
+        every { repository.getRecordById(id, userId) } returns null
 
         val result = service.reuploadRecord(id, userId, "report.pdf", "content".toByteArray())
 
@@ -175,10 +182,12 @@ class MedicalRecordServiceTest {
 
     @Test
     fun `uploadMedicalRecord rejects unsupported file types`() = runBlocking {
-        val part = mockk<PartData.FileItem>(relaxed = true)
-        every { part.originalFileName } returns "malicious.exe"
-
-        val result = service.uploadMedicalRecord("user-1", part)
+        val result = service.uploadMedicalRecord(
+            userId = "user-1",
+            fileName = "malicious.exe",
+            fileBytes = "bad".toByteArray(),
+            category = MedicalRecordCategory.OTHER,
+        )
 
         assertTrue(result is UploadResult.Failed)
         assertTrue(result.reason.contains("not allowed", ignoreCase = true))
@@ -191,6 +200,13 @@ class MedicalRecordServiceTest {
         val oldPath = "$testUploadDir/old_file.pdf"
         File(oldPath).writeText("Old content")
 
+        every { repository.getRecordById(id, userId) } returns MedicalRecord(
+            id = id,
+            fileName = "old_file.pdf",
+            fileSize = File(oldPath).length(),
+            createdAt = 123L,
+            category = MedicalRecordCategory.GENERAL,
+        )
         every { repository.getFilePath(id, userId) } returns oldPath
         every {
             repository.updateRecordMetadata(any(), any(), any(), any(), any(), any())

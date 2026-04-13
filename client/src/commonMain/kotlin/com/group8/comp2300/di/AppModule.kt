@@ -18,6 +18,7 @@ import com.group8.comp2300.presentation.screens.education.EducationViewModel
 import com.group8.comp2300.presentation.screens.medical.booking.BookingViewModel
 import com.group8.comp2300.presentation.screens.medical.calendar.CalendarViewModel
 import com.group8.comp2300.presentation.screens.medical.medication.MedicationViewModel
+import com.group8.comp2300.presentation.screens.medical.record.MedicalRecordFileOpener
 import com.group8.comp2300.presentation.screens.medical.record.MedicalRecordViewModel
 import com.group8.comp2300.presentation.screens.medical.routine.RoutineViewModel
 import com.group8.comp2300.presentation.screens.profile.ProfileViewModel
@@ -31,6 +32,7 @@ import org.koin.dsl.module
 // Koin module for UI-only dependencies.
 val appModule = module {
     viewModel<Navigator> { RealNavigator(get(), Screen.Onboarding) }
+    single { MedicalRecordFileOpener() }
 
     // ViewModels
     viewModel {

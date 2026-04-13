@@ -16,6 +16,7 @@ import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordResponse
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
@@ -113,7 +114,13 @@ interface ApiService {
 
     suspend fun getMedicalRecords(sort: String): List<MedicalRecordResponse>
 
-    suspend fun uploadMedicalRecord(fileBytes: ByteArray, fileName: String)
+    suspend fun uploadMedicalRecord(
+        fileBytes: ByteArray,
+        fileName: String,
+        category: MedicalRecordCategory,
+    )
+
+    suspend fun downloadMedicalRecord(id: String): ByteArray
 
     suspend fun deleteMedicalRecord(id: String)
 }
@@ -219,10 +226,15 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun getMedicalRecords(sort: String): List<MedicalRecordResponse> =
         client.get("/api/medical-records/user?sort=$sort").body()
 
-    override suspend fun uploadMedicalRecord(fileBytes: ByteArray, fileName: String) {
+    override suspend fun uploadMedicalRecord(
+        fileBytes: ByteArray,
+        fileName: String,
+        category: MedicalRecordCategory,
+    ) {
         client.submitFormWithBinaryData(
             url = "/api/medical-records/upload",
             formData = formData {
+                append("category", category.name)
                 append(
                     "file",
                     fileBytes,
@@ -233,6 +245,9 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
             },
         )
     }
+
+    override suspend fun downloadMedicalRecord(id: String): ByteArray =
+        client.get("/api/medical-records/download/$id").body()
 
     override suspend fun deleteMedicalRecord(id: String) {
         client.delete("/api/medical-records/$id")
