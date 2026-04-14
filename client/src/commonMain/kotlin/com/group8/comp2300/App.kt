@@ -29,7 +29,9 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
+import com.group8.comp2300.data.local.AccessibilitySettingsDataSource
 import com.group8.comp2300.di.*
+import com.group8.comp2300.presentation.accessibility.grayscale
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.presentation.navigation.*
 import com.group8.comp2300.presentation.screens.auth.AuthViewModel
@@ -53,8 +55,12 @@ fun App() {
     KoinApplication(
         configuration = koinConfiguration { modules(coreModule, appModule, platformModule, navigationModule) },
         content = {
+            val accessibilitySettingsDataSource: AccessibilitySettingsDataSource = koinInject()
+            val accessibilitySettings by accessibilitySettingsDataSource.state.collectAsState()
             AppTheme {
-                MainApp()
+                MainApp(
+                    modifier = Modifier.grayscale(accessibilitySettings.grayscaleEnabled),
+                )
             }
         },
     )

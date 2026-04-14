@@ -2,7 +2,6 @@ package com.group8.comp2300.presentation.screens.medical.labresults
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
 import com.group8.comp2300.mock.sampleResults
+import com.group8.comp2300.presentation.accessibility.AccessibleStatusChip
+import com.group8.comp2300.presentation.accessibility.StatusIcon
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.util.DateFormatter
 import comp2300.i18n.generated.resources.*
@@ -22,7 +23,6 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: Modifier = Modifier) {
-    // Mock complete lab results data using proper types
     // Mock complete lab results data using proper types
     val allResults = remember { sampleResults }
 
@@ -215,33 +215,35 @@ private fun LabResultCard(result: LabResult) {
     }
 }
 
-private data class LabResultStatusColors(val bgColor: Color, val textColor: Color, val statusRes: StringResource)
+private data class LabResultStatusColors(
+    val bgColor: Color,
+    val textColor: Color,
+    val statusRes: StringResource,
+    val icon: StatusIcon,
+)
 
 @Composable
 private fun labResultStatusColors(result: LabResult): LabResultStatusColors {
     val bgColor = if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
     val textColor = if (result.isPositive) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
-    val statusRes = when (result.status) {
-        LabStatus.PENDING -> Res.string.lab_status_pending
-        LabStatus.NEGATIVE -> Res.string.lab_status_negative
-        LabStatus.POSITIVE -> Res.string.lab_status_positive
-        LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
+    val (statusRes, icon) = when (result.status) {
+        LabStatus.PENDING -> Res.string.lab_status_pending to StatusIcon.DATE
+        LabStatus.NEGATIVE -> Res.string.lab_status_negative to StatusIcon.SUCCESS
+        LabStatus.POSITIVE -> Res.string.lab_status_positive to StatusIcon.DANGER
+        LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive to StatusIcon.WARNING
     }
-    return LabResultStatusColors(bgColor, textColor, statusRes)
+    return LabResultStatusColors(bgColor, textColor, statusRes, icon)
 }
 
 @Composable
 private fun StatusBadge(result: LabResult) {
-    val (bgColor, textColor, statusRes) = labResultStatusColors(result)
-    Surface(color = bgColor, shape = RoundedCornerShape(8.dp)) {
-        Text(
-            stringResource(statusRes),
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            style = MaterialTheme.typography.labelMedium,
-            color = textColor,
-            fontWeight = FontWeight.Bold,
-        )
-    }
+    val (bgColor, textColor, statusRes, icon) = labResultStatusColors(result)
+    AccessibleStatusChip(
+        label = stringResource(statusRes),
+        icon = icon,
+        containerColor = bgColor,
+        contentColor = textColor,
+    )
 }
 
 @Composable

@@ -28,6 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
+import com.group8.comp2300.presentation.accessibility.AccessibleStatusChip
+import com.group8.comp2300.presentation.accessibility.StatusIcon
 import com.group8.comp2300.presentation.components.ScreenHeader
 import com.group8.comp2300.presentation.components.shimmerEffect
 import com.group8.comp2300.presentation.util.DateFormatter
@@ -45,6 +47,7 @@ fun ProfileScreen(
     onNavigateToLabResults: () -> Unit = {},
     onNavigateToMedicalRecords: () -> Unit = {},
     onNavigateToPrivacySecurity: () -> Unit = {},
+    onNavigateToAccessibility: () -> Unit = {},
     onNavigateToPrivacyLegalese: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToHelpSupport: () -> Unit = {},
@@ -104,6 +107,7 @@ fun ProfileScreen(
                 isSignedIn = uiState.userName.isNotEmpty(),
                 onNavigateToMedicalRecords = onNavigateToMedicalRecords,
                 onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
+                onNavigateToAccessibility = onNavigateToAccessibility,
                 onNavigateToPrivacyLegalese = onNavigateToPrivacyLegalese,
                 onNavigateToNotifications = onNavigateToNotifications,
                 onNavigateToHelpSupport = onNavigateToHelpSupport,
@@ -451,33 +455,35 @@ private fun ResultShimmer() {
     }
 }
 
-private data class LabResultStatusColors(val bgColor: Color, val textColor: Color, val statusRes: StringResource)
+private data class LabResultStatusColors(
+    val bgColor: Color,
+    val textColor: Color,
+    val statusRes: StringResource,
+    val icon: StatusIcon,
+)
 
 @Composable
 private fun labResultStatusColors(result: LabResult): LabResultStatusColors {
     val bgColor = if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
     val textColor = if (result.isPositive) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
-    val statusRes = when (result.status) {
-        LabStatus.PENDING -> Res.string.lab_status_pending
-        LabStatus.NEGATIVE -> Res.string.lab_status_negative
-        LabStatus.POSITIVE -> Res.string.lab_status_positive
-        LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
+    val (statusRes, icon) = when (result.status) {
+        LabStatus.PENDING -> Res.string.lab_status_pending to StatusIcon.DATE
+        LabStatus.NEGATIVE -> Res.string.lab_status_negative to StatusIcon.SUCCESS
+        LabStatus.POSITIVE -> Res.string.lab_status_positive to StatusIcon.DANGER
+        LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive to StatusIcon.WARNING
     }
-    return LabResultStatusColors(bgColor, textColor, statusRes)
+    return LabResultStatusColors(bgColor, textColor, statusRes, icon)
 }
 
 @Composable
 private fun StatusSurface(result: LabResult) {
-    val (bgColor, textColor, statusRes) = labResultStatusColors(result)
-    Surface(color = bgColor, shape = RoundedCornerShape(8.dp)) {
-        Text(
-            stringResource(statusRes),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelMedium,
-            color = textColor,
-            fontWeight = FontWeight.Bold,
-        )
-    }
+    val (bgColor, textColor, statusRes, icon) = labResultStatusColors(result)
+    AccessibleStatusChip(
+        label = stringResource(statusRes),
+        icon = icon,
+        containerColor = bgColor,
+        contentColor = textColor,
+    )
 }
 
 /* ------------------  EDGE-TO-EDGE SETTINGS  ------------------ */
@@ -486,6 +492,7 @@ private fun EdgeToEdgeSettings(
     isSignedIn: Boolean,
     onNavigateToMedicalRecords: () -> Unit,
     onNavigateToPrivacySecurity: () -> Unit,
+    onNavigateToAccessibility: () -> Unit,
     onNavigateToPrivacyLegalese: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToHelpSupport: () -> Unit,
@@ -510,6 +517,12 @@ private fun EdgeToEdgeSettings(
             title = stringResource(Res.string.profile_privacy_legalese_title),
             subtitle = stringResource(Res.string.profile_privacy_legalese_desc),
             onClick = onNavigateToPrivacyLegalese,
+        )
+        SettingsItem(
+            icon = Icons.VisibilityW400Outlinedfill1,
+            title = stringResource(Res.string.profile_accessibility_title),
+            subtitle = stringResource(Res.string.profile_accessibility_desc),
+            onClick = onNavigateToAccessibility,
         )
         SettingsItem(
             icon = Icons.NotificationsW400Outlinedfill1,

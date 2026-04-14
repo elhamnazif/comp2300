@@ -29,8 +29,8 @@ class MedicationViewModel(
     private val routineRepository: RoutineDataRepository,
     private val syncCoordinator: SyncCoordinator,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(MedicationUiState(isLoading = true))
-    val state: StateFlow<MedicationUiState> = _state.asStateFlow()
+    val state: StateFlow<MedicationUiState>
+        field: MutableStateFlow<MedicationUiState> = MutableStateFlow(MedicationUiState(isLoading = true))
 
     init {
         refresh()
@@ -38,52 +38,52 @@ class MedicationViewModel(
 
     fun refresh() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
+            state.update { it.copy(isLoading = true, error = null) }
             runCatching {
                 syncCoordinator.refreshAuthenticatedData()
                 refreshState()
             }.onSuccess {
-                _state.update { current -> current.copy(isLoading = false) }
+                state.update { current -> current.copy(isLoading = false) }
             }.onFailure { error ->
-                _state.update { it.copy(isLoading = false, error = error.message ?: "Failed to load medications") }
+                state.update { it.copy(isLoading = false, error = error.message ?: "Failed to load medications") }
             }
         }
     }
 
     fun saveMedication(request: MedicationCreateRequest, id: String? = null, onSuccess: (Medication) -> Unit = {}) {
         viewModelScope.launch {
-            _state.update { it.copy(error = null) }
+            state.update { it.copy(error = null) }
             runCatching {
                 val savedMedication = medicationRepository.saveMedication(request = request, id = id)
                 refreshState()
                 savedMedication
             }.onSuccess {
-                _state.update { current -> current.copy(error = null) }
+                state.update { current -> current.copy(error = null) }
                 onSuccess(it)
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "Failed to save medication") }
+                state.update { it.copy(error = error.message ?: "Failed to save medication") }
             }
         }
     }
 
     fun deleteMedication(id: String) {
         viewModelScope.launch {
-            _state.update { it.copy(error = null) }
+            state.update { it.copy(error = null) }
             runCatching {
                 removeMedicationFromAllRoutines(id)
                 medicationRepository.deleteMedication(id)
                 refreshState()
             }.onSuccess {
-                _state.update { current -> current.copy(error = null) }
+                state.update { current -> current.copy(error = null) }
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "Failed to delete medication") }
+                state.update { it.copy(error = error.message ?: "Failed to delete medication") }
             }
         }
     }
 
     fun updateRoutineLinks(medicationId: String, selectedRoutineIds: Set<String>) {
         viewModelScope.launch {
-            _state.update { it.copy(error = null) }
+            state.update { it.copy(error = null) }
             runCatching {
                 val routines = routineRepository.getRoutines()
                 routines.forEach { routine ->
@@ -105,27 +105,27 @@ class MedicationViewModel(
                 }
                 refreshState()
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "Failed to update routine links") }
+                state.update { it.copy(error = error.message ?: "Failed to update routine links") }
             }
         }
     }
 
     fun saveRoutine(request: RoutineCreateRequest, id: String? = null, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            _state.update { it.copy(error = null) }
+            state.update { it.copy(error = null) }
             runCatching {
                 routineRepository.saveRoutine(request = request, id = id)
                 refreshState()
                 onSuccess()
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "Failed to create routine") }
+                state.update { it.copy(error = error.message ?: "Failed to create routine") }
             }
         }
     }
 
     fun unlinkMedicationFromRoutine(medicationId: String, routineId: String) {
         viewModelScope.launch {
-            _state.update { it.copy(error = null) }
+            state.update { it.copy(error = null) }
             runCatching {
                 val routine = routineRepository.getRoutines().firstOrNull { it.id == routineId }
                     ?: error("Schedule not found")
@@ -137,31 +137,31 @@ class MedicationViewModel(
                 )
                 refreshState()
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "Failed to remove schedule link") }
+                state.update { it.copy(error = error.message ?: "Failed to remove schedule link") }
             }
         }
     }
 
     fun deleteRoutine(id: String) {
         viewModelScope.launch {
-            _state.update { it.copy(error = null) }
+            state.update { it.copy(error = null) }
             runCatching {
                 routineRepository.deleteRoutine(id)
                 refreshState()
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "Failed to delete schedule") }
+                state.update { it.copy(error = error.message ?: "Failed to delete schedule") }
             }
         }
     }
 
     fun dismissError() {
-        _state.update { it.copy(error = null) }
+        state.update { it.copy(error = null) }
     }
 
     private suspend fun refreshState() {
         val medications = medicationRepository.getMedications()
         val routines = routineRepository.getRoutines()
-        _state.update {
+        state.update {
             it.copy(
                 medications = medications,
                 routines = routines,

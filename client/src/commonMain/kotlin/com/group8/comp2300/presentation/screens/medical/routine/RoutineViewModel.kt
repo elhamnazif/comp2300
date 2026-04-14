@@ -27,8 +27,8 @@ class RoutineViewModel(
     private val medicationRepository: MedicationDataRepository,
     private val syncCoordinator: SyncCoordinator,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(RoutineUiState(isLoading = true))
-    val state: StateFlow<RoutineUiState> = _state.asStateFlow()
+    val state: StateFlow<RoutineUiState>
+        field: MutableStateFlow<RoutineUiState> = MutableStateFlow(RoutineUiState(isLoading = true))
 
     init {
         refresh()
@@ -36,12 +36,12 @@ class RoutineViewModel(
 
     fun refresh() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
+            state.update { it.copy(isLoading = true, error = null) }
             runCatching {
                 syncCoordinator.refreshAuthenticatedData()
                 routineRepository.getRoutines() to medicationRepository.getMedications()
             }.onSuccess { (routines, medications) ->
-                _state.update {
+                state.update {
                     it.copy(
                         isLoading = false,
                         routines = routines,
@@ -49,40 +49,40 @@ class RoutineViewModel(
                     )
                 }
             }.onFailure { error ->
-                _state.update { it.copy(isLoading = false, error = error.message ?: "Failed to load routines") }
+                state.update { it.copy(isLoading = false, error = error.message ?: "Failed to load routines") }
             }
         }
     }
 
     fun saveRoutine(request: RoutineCreateRequest, id: String? = null) {
         viewModelScope.launch {
-            _state.update { it.copy(error = null) }
+            state.update { it.copy(error = null) }
             runCatching {
                 routineRepository.saveRoutine(request, id)
                 routineRepository.getRoutines()
             }.onSuccess { routines ->
-                _state.update { it.copy(routines = routines) }
+                state.update { it.copy(routines = routines) }
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "Failed to save routine") }
+                state.update { it.copy(error = error.message ?: "Failed to save routine") }
             }
         }
     }
 
     fun deleteRoutine(id: String) {
         viewModelScope.launch {
-            _state.update { it.copy(error = null) }
+            state.update { it.copy(error = null) }
             runCatching {
                 routineRepository.deleteRoutine(id)
                 routineRepository.getRoutines()
             }.onSuccess { routines ->
-                _state.update { it.copy(routines = routines) }
+                state.update { it.copy(routines = routines) }
             }.onFailure { error ->
-                _state.update { it.copy(error = error.message ?: "Failed to delete routine") }
+                state.update { it.copy(error = error.message ?: "Failed to delete routine") }
             }
         }
     }
 
     fun dismissError() {
-        _state.update { it.copy(error = null) }
+        state.update { it.copy(error = null) }
     }
 }
