@@ -1,18 +1,16 @@
 package com.group8.comp2300.presentation.screens.profile
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.screens.auth.PinScreen
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ChevronRightW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.FingerprintW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.InfoW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.LockW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.SendW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ShieldW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -126,171 +124,105 @@ fun PrivacySecurityScreen(
     }
 
     // --- Normal settings view ---
-    Scaffold(
+    SettingsDetailScaffold(
+        title = stringResource(Res.string.privacy_security_title),
+        onBack = onBack,
         modifier = modifier,
-        topBar = {
-            AppTopBar(
-                title = { Text(stringResource(Res.string.privacy_security_title)) },
-                onBackClick = onBack,
-                backContentDescription = stringResource(Res.string.auth_back_desc),
-            )
-        },
-    ) { paddingValues ->
-        Column(
-            modifier =
-            Modifier.fillMaxSize().padding(paddingValues).verticalScroll(rememberScrollState()).padding(16.dp),
-        ) {
-            Text(
-                stringResource(Res.string.privacy_security_settings_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
-
-            val effectivePinEnabled = isPinEnabled || pinTogglePending
-            SettingToggleItem(
-                title = stringResource(Res.string.privacy_security_pin_toggle_title),
-                description = if (effectivePinEnabled) {
-                    stringResource(Res.string.privacy_security_pin_toggle_desc_enabled)
-                } else {
-                    stringResource(Res.string.privacy_security_pin_toggle_desc_disabled)
-                },
-                checked = effectivePinEnabled,
-                onCheckedChange = { enable ->
-                    if (enable && !isPinEnabled) {
-                        pinTogglePending = true
-                        pinFlow = PinFlow.SetupNew
-                    } else if (!enable && isPinEnabled) {
-                        pinFlow = PinFlow.VerifyThenClear
-                    }
-                },
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            if (isPinEnabled) {
-                Card(
-                    onClick = {
-                        pinFlow = PinFlow.VerifyThenSetup
-                        pinStep = PinStep.VerifyOld
-                        pinErrorMessage = null
-                    },
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                stringResource(Res.string.privacy_security_change_pin_title),
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.SemiBold,
-                            )
-                        }
-                        Icon(
-                            Icons.ChevronRightW400Outlinedfill1,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.outline,
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(8.dp))
-            }
-
-            SettingToggleItem(
-                title = stringResource(Res.string.privacy_security_biometrics_title),
-                description = stringResource(Res.string.privacy_security_biometrics_desc),
-                checked = biometricsEnabled,
-                onCheckedChange = { biometricsEnabled = it },
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            SettingToggleItem(
-                title = stringResource(Res.string.privacy_security_encryption_title),
-                description = stringResource(Res.string.privacy_security_encryption_desc),
-                checked = dataEncryptionEnabled,
-                onCheckedChange = { dataEncryptionEnabled = it },
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            Text(
-                stringResource(Res.string.privacy_security_privacy_settings_title),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp),
-            )
-
-            SettingToggleItem(
-                title = stringResource(Res.string.privacy_security_anonymous_reporting_title),
-                description = stringResource(Res.string.privacy_security_anonymous_reporting_desc),
-                checked = anonymousReporting,
-                onCheckedChange = { anonymousReporting = it },
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            SettingToggleItem(
-                title = stringResource(Res.string.privacy_security_share_data_title),
-                description = stringResource(Res.string.privacy_security_share_data_desc),
-                checked = shareDataForResearch,
-                onCheckedChange = { shareDataForResearch = it },
-            )
-
-            Spacer(Modifier.height(24.dp))
-
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        stringResource(Res.string.privacy_security_info_title),
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        stringResource(Res.string.privacy_security_info_body),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingToggleItem(
-    title: String,
-    description: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = modifier.fillMaxWidth(),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
+        item {
+            val effectivePinEnabled = isPinEnabled || pinTogglePending
+            val total = if (isPinEnabled) 4 else 3
+
+            SettingsSection(title = stringResource(Res.string.privacy_security_settings_title)) {
+                SettingsToggleRow(
+                    icon = Icons.LockW400Outlinedfill1,
+                    title = stringResource(Res.string.privacy_security_pin_toggle_title),
+                    description = if (effectivePinEnabled) {
+                        stringResource(Res.string.privacy_security_pin_toggle_desc_enabled)
+                    } else {
+                        stringResource(Res.string.privacy_security_pin_toggle_desc_disabled)
+                    },
+                    checked = effectivePinEnabled,
+                    index = 0,
+                    total = total,
+                    onCheckedChange = { enable ->
+                        if (enable && !isPinEnabled) {
+                            pinTogglePending = true
+                            pinFlow = PinFlow.SetupNew
+                        } else if (!enable && isPinEnabled) {
+                            pinFlow = PinFlow.VerifyThenClear
+                        }
+                    },
+                )
+                if (isPinEnabled) {
+                    SettingsNavigationRow(
+                        icon = Icons.LockW400Outlinedfill1,
+                        title = stringResource(Res.string.privacy_security_change_pin_title),
+                        index = 1,
+                        total = total,
+                        onClick = {
+                            pinFlow = PinFlow.VerifyThenSetup
+                            pinStep = PinStep.VerifyOld
+                            pinErrorMessage = null
+                        },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.ChevronRightW400Outlinedfill1,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.outline,
+                            )
+                        },
+                    )
+                }
+                SettingsToggleRow(
+                    icon = Icons.FingerprintW400Outlinedfill1,
+                    title = stringResource(Res.string.privacy_security_biometrics_title),
+                    description = stringResource(Res.string.privacy_security_biometrics_desc),
+                    checked = biometricsEnabled,
+                    index = if (isPinEnabled) 2 else 1,
+                    total = total,
+                    onCheckedChange = { biometricsEnabled = it },
+                )
+                SettingsToggleRow(
+                    icon = Icons.ShieldW400Outlinedfill1,
+                    title = stringResource(Res.string.privacy_security_encryption_title),
+                    description = stringResource(Res.string.privacy_security_encryption_desc),
+                    checked = dataEncryptionEnabled,
+                    index = if (isPinEnabled) 3 else 2,
+                    total = total,
+                    onCheckedChange = { dataEncryptionEnabled = it },
                 )
             }
-            Spacer(Modifier.width(16.dp))
-            Switch(checked = checked, onCheckedChange = onCheckedChange)
+        }
+        item {
+            SettingsSection(title = stringResource(Res.string.privacy_security_privacy_settings_title)) {
+                SettingsToggleRow(
+                    icon = Icons.InfoW400Outlinedfill1,
+                    title = stringResource(Res.string.privacy_security_anonymous_reporting_title),
+                    description = stringResource(Res.string.privacy_security_anonymous_reporting_desc),
+                    checked = anonymousReporting,
+                    index = 0,
+                    total = 2,
+                    onCheckedChange = { anonymousReporting = it },
+                )
+                SettingsToggleRow(
+                    icon = Icons.SendW400Outlinedfill1,
+                    title = stringResource(Res.string.privacy_security_share_data_title),
+                    description = stringResource(Res.string.privacy_security_share_data_desc),
+                    checked = shareDataForResearch,
+                    index = 1,
+                    total = 2,
+                    onCheckedChange = { shareDataForResearch = it },
+                )
+            }
+        }
+        item {
+            SettingsInfoCard(
+                title = stringResource(Res.string.privacy_security_info_title),
+                description = stringResource(Res.string.privacy_security_info_body),
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            )
         }
     }
 }
