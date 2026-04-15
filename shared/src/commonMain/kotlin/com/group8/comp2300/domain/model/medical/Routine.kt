@@ -20,3 +20,13 @@ data class Routine(
 
 @Serializable
 data class RoutineMedicationLink(val id: String, val routineId: String, val medicationId: String)
+
+fun Routine.normalized(): Routine = copy(
+    daysOfWeek = daysOfWeek.sorted().distinct(),
+    timesOfDayMs = timesOfDayMs.sorted().distinct(),
+    reminderOffsetsMins = reminderOffsetsMins.sorted().distinct(),
+    medicationIds = medicationIds.distinct(),
+)
+
+fun List<Routine>.sortedByRoutineTime(): List<Routine> =
+    sortedWith(compareBy<Routine>({ it.timesOfDayMs.firstOrNull() ?: Long.MAX_VALUE }, { it.name }))

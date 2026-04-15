@@ -34,9 +34,10 @@ class QueuedWriteDispatcher(
     }
 
     fun deletePending(mutation: OfflineMutationSpec<*>, localId: String) {
-        outbox.getAll()
-            .filter { it.entityType == mutation.type && it.localId == localId }
-            .forEach { outbox.delete(it.id) }
+        outbox.deleteByEntityTypeAndLocalId(
+            entityType = mutation.type,
+            localId = localId,
+        )
     }
 
     private suspend fun flushIfAuthenticated() {
