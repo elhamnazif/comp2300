@@ -576,6 +576,8 @@
     <string name="privacy_security_encryption_title">Data Encryption</string>
     <string name="privacy_security_encryption_desc">Encrypt all health records stored on device</string>
     <string name="privacy_security_privacy_settings_title">Privacy Settings</string>
+    <string name="privacy_security_background_blur_title">Blur App in Background</string>
+    <string name="privacy_security_background_blur_desc">Hide app contents when the app is not in the foreground</string>
     <string name="privacy_security_anonymous_reporting_title">Anonymous Reporting</string>
     <string name="privacy_security_anonymous_reporting_desc">Share anonymous health trends to help public health research</string>
     <string name="privacy_security_share_data_title">Share Data for Research</string>

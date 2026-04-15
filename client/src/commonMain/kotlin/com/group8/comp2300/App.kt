@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,10 +20,13 @@ import androidx.compose.material3.adaptive.navigationsuite.rememberNavigationSui
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
@@ -30,6 +34,7 @@ import androidx.navigationevent.compose.LocalNavigationEventDispatcherOwner
 import androidx.navigationevent.compose.rememberNavigationEventDispatcherOwner
 import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
 import com.group8.comp2300.data.local.AccessibilitySettingsDataSource
+import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.di.*
 import com.group8.comp2300.presentation.accessibility.grayscale
 import com.group8.comp2300.domain.model.session.AuthSession
@@ -57,10 +62,46 @@ fun App() {
         content = {
             val accessibilitySettingsDataSource: AccessibilitySettingsDataSource = koinInject()
             val accessibilitySettings by accessibilitySettingsDataSource.state.collectAsState()
+            val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
+            val privacySettings by privacySettingsDataSource.state.collectAsState()
             AppTheme {
-                MainApp(
-                    modifier = Modifier.grayscale(accessibilitySettings.grayscaleEnabled),
-                )
+                var isAppInForeground by remember { mutableStateOf(true) }
+
+                LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+                    isAppInForeground = true
+                }
+                LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+                    isAppInForeground = false
+                }
+
+                val shouldBlurApp = privacySettings.blurAppWhenBackgrounded && !isAppInForeground
+
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .grayscale(accessibilitySettings.grayscaleEnabled)
+                            .let { baseModifier ->
+                                if (shouldBlurApp) {
+                                    baseModifier.blur(24.dp)
+                                } else {
+                                    baseModifier
+                                }
+                            },
+                    ) {
+                        MainApp()
+                    }
+
+                    if (shouldBlurApp) {
+                        Box(
+                            modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.28f)),
+                        )
+                    }
+                }
             }
         },
     )

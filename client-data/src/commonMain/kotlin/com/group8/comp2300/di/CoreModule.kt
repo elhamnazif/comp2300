@@ -15,6 +15,7 @@ import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.data.local.PinRateLimiter
+import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.data.local.ProductLocalDataSource
 import com.group8.comp2300.data.local.ReminderLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
@@ -138,6 +139,7 @@ val coreModule = module {
     single { PersonalDataCleaner(get()) }
     single { Settings() }
     single { AccessibilitySettingsDataSource(get()) }
+    single { PrivacySettingsDataSource(get()) }
     single { OfflineMapSettingsDataSource(get()) }
     single { RoutineNotificationRegistry(get()) }
     single<RoutineNotificationScheduler> {

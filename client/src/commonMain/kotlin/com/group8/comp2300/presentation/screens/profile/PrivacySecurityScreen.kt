@@ -3,6 +3,7 @@ package com.group8.comp2300.presentation.screens.profile
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.presentation.screens.auth.PinScreen
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ChevronRightW400Outlinedfill1
@@ -11,9 +12,11 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.InfoW400Outlinedf
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.LockW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.SendW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ShieldW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.VisibilityOffW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 private enum class PinFlow { None, SetupNew, VerifyThenClear, VerifyThenSetup }
 private enum class PinStep { VerifyOld, SetNew }
@@ -27,6 +30,8 @@ fun PrivacySecurityScreen(
     onClearPin: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
+    val privacySettings by privacySettingsDataSource.state.collectAsState()
     var biometricsEnabled by remember { mutableStateOf(true) }
     var dataEncryptionEnabled by remember { mutableStateOf(true) }
     var anonymousReporting by remember { mutableStateOf(false) }
@@ -197,12 +202,21 @@ fun PrivacySecurityScreen(
         item {
             SettingsSection(title = stringResource(Res.string.privacy_security_privacy_settings_title)) {
                 SettingsToggleRow(
+                    icon = Icons.VisibilityOffW400Outlinedfill1,
+                    title = stringResource(Res.string.privacy_security_background_blur_title),
+                    description = stringResource(Res.string.privacy_security_background_blur_desc),
+                    checked = privacySettings.blurAppWhenBackgrounded,
+                    index = 0,
+                    total = 3,
+                    onCheckedChange = privacySettingsDataSource::setBlurAppWhenBackgrounded,
+                )
+                SettingsToggleRow(
                     icon = Icons.InfoW400Outlinedfill1,
                     title = stringResource(Res.string.privacy_security_anonymous_reporting_title),
                     description = stringResource(Res.string.privacy_security_anonymous_reporting_desc),
                     checked = anonymousReporting,
-                    index = 0,
-                    total = 2,
+                    index = 1,
+                    total = 3,
                     onCheckedChange = { anonymousReporting = it },
                 )
                 SettingsToggleRow(
@@ -210,8 +224,8 @@ fun PrivacySecurityScreen(
                     title = stringResource(Res.string.privacy_security_share_data_title),
                     description = stringResource(Res.string.privacy_security_share_data_desc),
                     checked = shareDataForResearch,
-                    index = 1,
-                    total = 2,
+                    index = 2,
+                    total = 3,
                     onCheckedChange = { shareDataForResearch = it },
                 )
             }
