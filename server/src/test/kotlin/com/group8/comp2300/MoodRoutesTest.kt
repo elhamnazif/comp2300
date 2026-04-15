@@ -39,12 +39,14 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientCon
 class MoodRoutesTest {
     @Test
     fun getMoodHistoryRequiresAuthentication() = testApplication {
-        configureMoodTestModule()
-        val client = jsonClient()
+        withDevAuthBypassDisabled {
+            configureMoodTestModule()
+            val client = jsonClient()
 
-        val response = client.get("/api/moods")
+            val response = client.get("/api/moods")
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+            assertEquals(HttpStatusCode.Unauthorized, response.status)
+        }
     }
 
     @Test
@@ -68,6 +70,20 @@ class MoodRoutesTest {
         val history = historyResponse.body<List<Mood>>()
         assertEquals(1, history.size)
         assertEquals(MoodType.GOOD, history.single().moodType)
+    }
+}
+
+private inline fun withDevAuthBypassDisabled(block: () -> Unit) {
+    val previous = System.getProperty("DEV_AUTH_BYPASS")
+    System.setProperty("DEV_AUTH_BYPASS", "false")
+    try {
+        block()
+    } finally {
+        if (previous == null) {
+            System.clearProperty("DEV_AUTH_BYPASS")
+        } else {
+            System.setProperty("DEV_AUTH_BYPASS", previous)
+        }
     }
 }
 

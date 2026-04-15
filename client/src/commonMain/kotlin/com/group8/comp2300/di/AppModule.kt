@@ -17,13 +17,16 @@ import com.group8.comp2300.presentation.screens.auth.ResetPasswordViewModel
 import com.group8.comp2300.presentation.screens.education.EducationViewModel
 import com.group8.comp2300.presentation.screens.medical.booking.BookingViewModel
 import com.group8.comp2300.presentation.screens.medical.calendar.CalendarViewModel
+import com.group8.comp2300.presentation.screens.medical.labresults.LabResultsViewModel
 import com.group8.comp2300.presentation.screens.medical.medication.MedicationViewModel
 import com.group8.comp2300.presentation.screens.medical.record.MedicalRecordFileOpener
 import com.group8.comp2300.presentation.screens.medical.record.MedicalRecordViewModel
 import com.group8.comp2300.presentation.screens.medical.routine.RoutineViewModel
 import com.group8.comp2300.presentation.screens.profile.ProfileViewModel
 import com.group8.comp2300.presentation.screens.shop.ShopViewModel
+import com.group8.comp2300.services.ClinicFilterService
 import org.koin.core.module.dsl.bind
+import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
@@ -33,6 +36,7 @@ import org.koin.dsl.module
 val appModule = module {
     viewModel<Navigator> { RealNavigator(get(), Screen.Onboarding) }
     single { MedicalRecordFileOpener() }
+    singleOf(::ClinicFilterService)
 
     // ViewModels
     viewModel {
@@ -67,6 +71,7 @@ val appModule = module {
     viewModelOf(::EducationViewModel)
     viewModelOf(::ProfileViewModel)
     viewModelOf(::CalendarViewModel)
+    viewModelOf(::LabResultsViewModel)
     viewModelOf(::MedicationViewModel)
     viewModelOf(::RoutineViewModel)
     viewModelOf(::MedicalRecordViewModel)

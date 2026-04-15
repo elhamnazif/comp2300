@@ -19,7 +19,7 @@ Thank you for your interest in contributing to Vita! We welcome contributions fr
 - Write clear, descriptive variable and function names.
 - Add comments where necessary, especially for complex logic.
 - Keep methods and classes focused and concise.
-- Use localised strings; edit the English [`strings.xml`](<TODO:_FILL_ME_IN!>) file. CrowdIn will manage translations to other languages.
+- Use localised strings; edit the English [`strings.xml`](i18n/src/commonMain/composeResources/values/strings.xml) file. CrowdIn will manage translations to other languages.
     - For example,
 
       ```kotlin
@@ -27,7 +27,7 @@ Thank you for your interest in contributing to Vita! We welcome contributions fr
       Text("Settings")
   
       // use the localised string resource:
-      Text(stringResource(R.string.settings))
+      Text(stringResource(Res.string.settings))
       ```
 
 ### Linting

@@ -8,11 +8,11 @@ import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordResponse
 import com.group8.comp2300.domain.model.medical.RecordSortOrder
-import com.group8.comp2300.domain.repository.MedicalRepository
+import com.group8.comp2300.domain.repository.medical.MedicalRecordDataRepository
 import kotlinx.coroutines.launch
 
 class MedicalRecordViewModel(
-    private val repository: MedicalRepository,
+    private val repository: MedicalRecordDataRepository,
     private val fileOpener: MedicalRecordFileOpener,
 ) : ViewModel() {
 

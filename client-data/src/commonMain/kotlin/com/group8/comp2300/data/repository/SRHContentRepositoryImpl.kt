@@ -5,7 +5,10 @@ import com.group8.comp2300.domain.model.content.SRHContent
 import com.group8.comp2300.domain.model.content.SRHContentType
 import com.group8.comp2300.domain.repository.SRHContentRepository
 
-class SRHContentRepositoryImpl : SRHContentRepository {
+/**
+ * Temporary fixture-backed repository until SRH content is fetched from a real data source.
+ */
+class FixtureSRHContentRepository : SRHContentRepository {
 
     private val contents = listOf(
         SRHContent(

@@ -25,7 +25,9 @@ import com.group8.comp2300.presentation.screens.medical.components.formatTimesSu
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400Outlinedfill1
+import comp2300.i18n.generated.resources.*
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -37,6 +39,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
     var editingRoutine by remember { mutableStateOf<Routine?>(null) }
+    val notificationDisabledMessage = stringResource(Res.string.medical_routine_notification_disabled)
 
     LaunchedEffect(state.error) {
         state.error?.let {
@@ -53,7 +56,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
-                title = { Text("Schedules", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(Res.string.medical_routine_title), fontWeight = FontWeight.Bold) },
                 onBackClick = onBack,
                 containerColor = MaterialTheme.colorScheme.surface,
             )
@@ -63,7 +66,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                 editingRoutine = null
                 showSheet = true
             }) {
-                Icon(Icons.AddW400Outlinedfill1, contentDescription = "Add schedule")
+                Icon(Icons.AddW400Outlinedfill1, contentDescription = stringResource(Res.string.medical_routine_add_desc))
             }
         },
     ) { innerPadding ->
@@ -84,26 +87,26 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Text(
-                                "No schedules yet",
+                                stringResource(Res.string.medical_routine_empty_title),
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                             )
                             Text(
-                                "Create reminder schedules like Morning meds or Bedtime meds.",
+                                stringResource(Res.string.medical_routine_empty_desc),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Button(onClick = {
                                 editingRoutine = null
                                 showSheet = true
                             }) {
-                                Text("Create schedule")
+                                Text(stringResource(Res.string.medical_routine_empty_button))
                             }
                         }
                     }
                 }
             } else {
                 if (activeRoutines.isNotEmpty()) {
-                    item { SectionHeader("Active", activeRoutines.size) }
+                    item { SectionHeader(stringResource(Res.string.medical_medication_section_active), activeRoutines.size) }
                 }
                 items(activeRoutines, key = Routine::id) { routine ->
                     RoutineCard(
@@ -117,7 +120,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                 }
             }
             if (archivedRoutines.isNotEmpty()) {
-                item { SectionHeader("Archived", archivedRoutines.size) }
+                item { SectionHeader(stringResource(Res.string.medical_medication_section_archived), archivedRoutines.size) }
                 items(archivedRoutines, key = Routine::id) { routine ->
                     RoutineCard(
                         routine = routine,
@@ -137,7 +140,11 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
     if (showSheet) {
         ModalBottomSheet(onDismissRequest = { showSheet = false }, sheetState = sheetState) {
             ScheduleFormSheet(
-                title = if (editingRoutine == null) "Add schedule" else "Edit schedule",
+                title = if (editingRoutine == null) {
+                    stringResource(Res.string.medical_routine_form_add_title)
+                } else {
+                    stringResource(Res.string.medical_routine_form_edit_title)
+                },
                 routineToEdit = editingRoutine,
                 medications = state.medications.filter { it.status == MedicationStatus.ACTIVE },
                 onSave = { request, id ->
@@ -149,9 +156,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                         }
                         viewModel.saveRoutine(request, id)
                         if (permissionResult != NotificationPermissionResult.GRANTED) {
-                            snackbarHostState.showSnackbar(
-                                "Schedule saved, but notifications are disabled in system settings.",
-                            )
+                            snackbarHostState.showSnackbar(notificationDisabledMessage)
                         }
                     }
                     showSheet = false
@@ -208,7 +213,7 @@ private fun RoutineCard(
                     ) {
                         Icon(
                             Icons.NotificationsW400Outlinedfill1,
-                            contentDescription = "Reminders enabled",
+                            contentDescription = stringResource(Res.string.calendar_reminders_enabled_desc),
                             tint = MaterialTheme.colorScheme.primary,
                         )
                         reminderMeta?.let {
@@ -259,21 +264,22 @@ private fun RoutineCard(
     }
 }
 
+@Composable
 private fun routineRepeatSummary(routine: Routine): String = when (routine.repeatType) {
-    com.group8.comp2300.domain.model.medical.RoutineRepeatType.DAILY -> "Every day"
+    com.group8.comp2300.domain.model.medical.RoutineRepeatType.DAILY -> stringResource(Res.string.medical_routine_repeat_daily)
 
     com.group8.comp2300.domain.model.medical.RoutineRepeatType.WEEKLY -> {
+        val weekdayLabels = mapOf(
+            0 to stringResource(Res.string.common_day_sun_short),
+            1 to stringResource(Res.string.common_day_mon_short),
+            2 to stringResource(Res.string.common_day_tue_short),
+            3 to stringResource(Res.string.common_day_wed_short),
+            4 to stringResource(Res.string.common_day_thu_short),
+            5 to stringResource(Res.string.common_day_fri_short),
+            6 to stringResource(Res.string.common_day_sat_short),
+        )
         routine.daysOfWeek.sorted().joinToString { day ->
-            when (day) {
-                0 -> "Sun"
-                1 -> "Mon"
-                2 -> "Tue"
-                3 -> "Wed"
-                4 -> "Thu"
-                5 -> "Fri"
-                6 -> "Sat"
-                else -> ""
-            }
+            weekdayLabels[day].orEmpty()
         }
     }
 }

@@ -30,7 +30,9 @@ import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DeleteW400Outlined
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.EditW400Outlinedfill1
+import comp2300.i18n.generated.resources.*
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 private enum class MedicationSheetStep {
@@ -53,6 +55,7 @@ fun MedicationScreen(
     var editingMedication by remember { mutableStateOf<Medication?>(null) }
     var editingRoutine by remember { mutableStateOf<Routine?>(null) }
     var sheetStep by remember { mutableStateOf(MedicationSheetStep.FORM) }
+    val notificationDisabledMessage = stringResource(Res.string.medical_medication_notification_disabled)
 
     LaunchedEffect(state.error) {
         state.error?.let {
@@ -73,7 +76,7 @@ fun MedicationScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
-                title = { Text("Medication cabinet", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(Res.string.medical_medication_title), fontWeight = FontWeight.Bold) },
                 onBackClick = onBack,
                 containerColor = MaterialTheme.colorScheme.surface,
             )
@@ -87,7 +90,7 @@ fun MedicationScreen(
                     showSheet = true
                 },
             ) {
-                Icon(Icons.AddW400Outlinedfill1, contentDescription = "Add medication")
+                Icon(Icons.AddW400Outlinedfill1, contentDescription = stringResource(Res.string.medical_medication_add_desc))
             }
         },
     ) { innerPadding ->
@@ -123,7 +126,7 @@ fun MedicationScreen(
                     }
                 } else {
                     if (activeMedications.isNotEmpty()) {
-                        item { SectionHeader("Active", activeMedications.size) }
+                        item { SectionHeader(stringResource(Res.string.medical_medication_section_active), activeMedications.size) }
                         items(activeMedications, key = Medication::id) { medication ->
                             MedicationCard(
                                 medication = medication,
@@ -139,11 +142,11 @@ fun MedicationScreen(
                     }
 
                     if (activeMedications.isEmpty() && archivedMedications.isNotEmpty()) {
-                        item { EmptyStateMessage("No active medications right now.") }
+                        item { EmptyStateMessage(stringResource(Res.string.medical_medication_empty_active)) }
                     }
 
                     if (archivedMedications.isNotEmpty()) {
-                        item { SectionHeader("Archived", archivedMedications.size) }
+                        item { SectionHeader(stringResource(Res.string.medical_medication_section_archived), archivedMedications.size) }
                         items(archivedMedications, key = Medication::id) { medication ->
                             MedicationCard(
                                 medication = medication,
@@ -235,7 +238,11 @@ fun MedicationScreen(
 
                 MedicationSheetStep.SCHEDULE_FORM -> editingMedication?.let { medication ->
                     ScheduleFormSheet(
-                        title = if (editingRoutine == null) "Add schedule" else "Edit schedule",
+                        title = if (editingRoutine == null) {
+                            stringResource(Res.string.medical_routine_form_add_title)
+                        } else {
+                            stringResource(Res.string.medical_routine_form_edit_title)
+                        },
                         subtitle = null,
                         routineToEdit = editingRoutine,
                         medications = state.medications.filter { it.status == MedicationStatus.ACTIVE },
@@ -253,9 +260,7 @@ fun MedicationScreen(
                                     sheetStep = MedicationSheetStep.FORM
                                 }
                                 if (permissionResult != NotificationPermissionResult.GRANTED) {
-                                    snackbarHostState.showSnackbar(
-                                        "Schedule saved, but notifications are disabled in system settings.",
-                                    )
+                                    snackbarHostState.showSnackbar(notificationDisabledMessage)
                                 }
                             }
                         },
@@ -287,14 +292,18 @@ private fun MedicationEmptyState(onAddMedication: () -> Unit, modifier: Modifier
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Text("No medications yet", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text(
-                "Add a medication to start tracking doses and reminders.",
+                stringResource(Res.string.medical_medication_empty_title),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                stringResource(Res.string.medical_medication_empty_desc),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Button(onClick = onAddMedication) {
-                Text("Add medication")
+                Text(stringResource(Res.string.medical_medication_empty_add_button))
             }
         }
     }
@@ -353,11 +362,7 @@ private fun MedicationCard(
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(medication.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text("${medication.dosage}$quantityLabel", color = MaterialTheme.colorScheme.secondary)
-                Text(
-                    medicationScheduleLabel(linkedRoutines),
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelLarge,
-                )
+                Text(medicationScheduleLabel(linkedRoutines), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 medication.instruction?.takeIf(String::isNotBlank)?.let {
                     Text(
                         it,
@@ -366,29 +371,53 @@ private fun MedicationCard(
                     )
                 }
             }
-            Icon(Icons.EditW400Outlinedfill1, contentDescription = "Edit medication")
+            Icon(Icons.EditW400Outlinedfill1, contentDescription = stringResource(Res.string.medical_medication_edit_desc))
         }
     }
 }
 
+@Composable
 private fun medicationScheduleLabel(linkedRoutines: List<Routine>): String {
-    if (linkedRoutines.isEmpty()) return "No schedule"
-    if (linkedRoutines.size > 1) return "${linkedRoutines.size} schedules"
+    val weekdayLabels = mapOf(
+        0 to stringResource(Res.string.common_day_sun_short),
+        1 to stringResource(Res.string.common_day_mon_short),
+        2 to stringResource(Res.string.common_day_tue_short),
+        3 to stringResource(Res.string.common_day_wed_short),
+        4 to stringResource(Res.string.common_day_thu_short),
+        5 to stringResource(Res.string.common_day_fri_short),
+        6 to stringResource(Res.string.common_day_sat_short),
+    )
+
+    if (linkedRoutines.isEmpty()) return stringResource(Res.string.medical_medication_no_schedule)
+    if (linkedRoutines.size > 1) {
+        return stringResource(Res.string.medical_medication_schedule_count, linkedRoutines.size)
+    }
 
     val routine = linkedRoutines.single()
     val times = routine.timesOfDayMs.sorted().distinct()
     val timeLabel = when (times.size) {
         0 -> ""
-        1 -> " at ${formatTimeOfDayMs(times.single())}"
-        else -> " • ${times.size} times"
+        1 -> stringResource(Res.string.medical_medication_schedule_at, formatTimeOfDayMs(times.single()))
+        else -> stringResource(Res.string.medical_medication_schedule_times, times.size)
     }
 
     return when (routine.repeatType) {
-        RoutineRepeatType.DAILY -> "Daily$timeLabel"
+        RoutineRepeatType.DAILY -> when (times.size) {
+            1 -> stringResource(Res.string.medical_medication_schedule_daily_at, formatTimeOfDayMs(times.single()))
+            else -> if (timeLabel.isBlank()) {
+                stringResource(Res.string.medical_routine_repeat_daily)
+            } else {
+                stringResource(Res.string.medical_medication_schedule_daily_multi, times.size)
+            }
+        }
 
         RoutineRepeatType.WEEKLY -> {
-            val days = routine.daysOfWeek.sorted().joinToString { day -> scheduleWeekdayLabel(day) }
-            if (days.isBlank()) "Scheduled$timeLabel" else "$days$timeLabel"
+            val days = routine.daysOfWeek.sorted().joinToString { day -> weekdayLabels[day].orEmpty() }
+            if (days.isBlank()) {
+                stringResource(Res.string.medical_medication_schedule_weekly_default, timeLabel)
+            } else {
+                "$days$timeLabel"
+            }
         }
     }
 }
@@ -439,7 +468,11 @@ fun MedicationFormSheet(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                if (medicationToEdit == null) "Add medication" else "Edit medication",
+                if (medicationToEdit == null) {
+                    stringResource(Res.string.medical_medication_form_add_title)
+                } else {
+                    stringResource(Res.string.medical_medication_form_edit_title)
+                },
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
             )
@@ -447,35 +480,35 @@ fun MedicationFormSheet(
                 IconButton(onClick = { onDelete(medicationToEdit.id) }) {
                     Icon(
                         Icons.DeleteW400Outlined,
-                        contentDescription = "Delete medication",
+                        contentDescription = stringResource(Res.string.medical_medication_delete_desc),
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
             }
         }
 
-        MedicalFormTextField(label = "Medication name", value = name, onValueChange = { name = it })
+        MedicalFormTextField(label = stringResource(Res.string.medical_medication_form_name_label), value = name, onValueChange = { name = it })
         MedicalFormTextField(
-            label = "Dose taken each time",
+            label = stringResource(Res.string.medical_medication_form_dose_label),
             value = dosage,
             onValueChange = { dosage = it },
-            placeholder = "1 tablet",
+            placeholder = stringResource(Res.string.medical_medication_form_dose_placeholder),
         )
         MedicalFormTextField(
-            label = "Strength",
+            label = stringResource(Res.string.medical_medication_form_strength_label),
             value = quantity,
             onValueChange = { quantity = it },
-            placeholder = "500 mg",
+            placeholder = stringResource(Res.string.medical_medication_form_strength_placeholder),
         )
         MedicalFormTextField(
-            label = "Instructions",
+            label = stringResource(Res.string.medical_medication_form_instructions_label),
             value = instruction,
             onValueChange = { instruction = it },
             minLines = 2,
         )
 
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Color tag", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+            Text(stringResource(Res.string.medical_medication_form_color_tag_label), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -517,7 +550,7 @@ fun MedicationFormSheet(
                 }
             }
             Text(
-                "Selected: ${medicationColorOption(selectedColor.toHexString()).label}",
+                stringResource(Res.string.medical_medication_form_selected_color, medicationColorOption(selectedColor.toHexString()).label),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -530,13 +563,13 @@ fun MedicationFormSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Schedules", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(Res.string.medical_medication_form_schedule_section), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 TextButton(onClick = { onAddSchedule?.invoke() }, enabled = onAddSchedule != null) {
-                    Text("Add")
+                    Text(stringResource(Res.string.medical_medication_form_schedule_add))
                 }
             }
             if (linkedSchedules.isEmpty()) {
-                Text("No schedule", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(Res.string.medical_medication_form_schedule_none), color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else {
                 linkedSchedules.forEachIndexed { index, routine ->
                     Row(
@@ -554,10 +587,10 @@ fun MedicationFormSheet(
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                             TextButton(onClick = { onEditSchedule(routine) }) {
-                                Text("Edit")
+                                Text(stringResource(Res.string.medical_medication_edit_desc))
                             }
                             TextButton(onClick = { onRemoveSchedule(routine) }) {
-                                Text("Remove")
+                                Text(stringResource(Res.string.medical_medication_form_schedule_remove))
                             }
                         }
                     }
@@ -573,7 +606,7 @@ fun MedicationFormSheet(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text("Archived", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(Res.string.medical_medication_section_archived), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                 Switch(
                     checked = status == MedicationStatus.ARCHIVED,
                     onCheckedChange = { isArchived ->
@@ -590,14 +623,14 @@ fun MedicationFormSheet(
                 enabled = canSave,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Save and add schedule")
+                Text(stringResource(Res.string.medical_medication_form_save_add_schedule))
             }
             OutlinedButton(
                 onClick = { save(addScheduleAfterSave = false) },
                 enabled = canSave,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Save medication")
+                Text(stringResource(Res.string.medical_medication_form_save_medication))
             }
         } else {
             Button(
@@ -605,25 +638,14 @@ fun MedicationFormSheet(
                 enabled = canSave,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Text("Update medication")
+                Text(stringResource(Res.string.medical_medication_form_update_medication))
             }
         }
 
         TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
-            Text("Cancel")
+            Text(stringResource(Res.string.common_cancel))
         }
     }
-}
-
-private fun scheduleWeekdayLabel(day: Int): String = when (day) {
-    0 -> "Sun"
-    1 -> "Mon"
-    2 -> "Tue"
-    3 -> "Wed"
-    4 -> "Thu"
-    5 -> "Fri"
-    6 -> "Sat"
-    else -> ""
 }
 
 private data class MedicationColorOption(

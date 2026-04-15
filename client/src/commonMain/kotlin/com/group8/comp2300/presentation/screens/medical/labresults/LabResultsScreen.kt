@@ -12,7 +12,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
-import com.group8.comp2300.mock.sampleResults
 import com.group8.comp2300.presentation.accessibility.AccessibleStatusChip
 import com.group8.comp2300.presentation.accessibility.StatusIcon
 import com.group8.comp2300.presentation.components.AppTopBar
@@ -22,9 +21,13 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun LabResultsScreen(onBack: () -> Unit, onScheduleTest: () -> Unit, modifier: Modifier = Modifier) {
-    // Mock complete lab results data using proper types
-    val allResults = remember { sampleResults }
+fun LabResultsScreen(
+    viewModel: LabResultsViewModel,
+    onBack: () -> Unit,
+    onScheduleTest: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val allResults = viewModel.results
 
     val filterAll = stringResource(Res.string.medical_lab_results_filter_all)
     val filterHiv = stringResource(Res.string.medical_lab_results_filter_hiv)

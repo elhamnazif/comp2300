@@ -1,7 +1,6 @@
 package com.group8.comp2300.data.remote
 
 import co.touchlab.kermit.Logger
-import com.group8.comp2300.ServerConfig
 import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import io.ktor.client.HttpClient
@@ -126,7 +125,7 @@ fun createHttpClient(): HttpClient = HttpClient {
     }
 
     defaultRequest {
-        url(ServerConfig.BASE_URL)
+        url(BuildKonfig.API_BASE_URL)
         contentType(ContentType.Application.Json)
     }
 }

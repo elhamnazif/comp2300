@@ -22,8 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -47,13 +45,10 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import com.materialkolor.DynamicMaterialExpressiveTheme
 import com.materialkolor.PaletteStyle
 import org.koin.compose.KoinApplication
-import org.koin.compose.KoinApplicationPreview
 import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.koinConfiguration
-import org.koin.dsl.module
 
 @Composable
 fun App() {
@@ -256,43 +251,3 @@ private fun AppTheme(content: @Composable () -> Unit) {
 
 @Composable
 expect fun getWallpaperSeedColor(): Color?
-
-@PreviewScreenSizes
-@Preview(name = "Onboarding")
-@Composable
-internal fun PreviewMainApp() {
-    KoinApplicationPreview(
-        application = {
-            modules(
-                previewModule,
-                navigationModule,
-                module { viewModel<Navigator> { FakeNavigator(Screen.Onboarding) } },
-            )
-        },
-    ) {
-        val dispatcherOwner = rememberNavigationEventDispatcherOwner(parent = null)
-        CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides dispatcherOwner) {
-            MainApp()
-        }
-    }
-}
-
-@PreviewScreenSizes
-@Preview(name = "Navigation Tabs")
-@Composable
-internal fun PreviewNavigationTabs() {
-    KoinApplicationPreview(
-        application = {
-            modules(
-                previewModule,
-                navigationModule,
-                module { viewModel<Navigator> { FakeNavigator(Screen.Home) } },
-            )
-        },
-    ) {
-        val dispatcherOwner = rememberNavigationEventDispatcherOwner(parent = null)
-        CompositionLocalProvider(LocalNavigationEventDispatcherOwner provides dispatcherOwner) {
-            MainApp()
-        }
-    }
-}

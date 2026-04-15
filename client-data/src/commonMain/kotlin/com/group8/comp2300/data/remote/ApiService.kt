@@ -15,7 +15,6 @@ import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
-import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordResponse
 import com.group8.comp2300.domain.model.medical.Medication
@@ -78,8 +77,6 @@ interface ApiService {
     suspend fun resendVerificationEmail(email: String): MessageResponse
 
     // Medical API methods
-    suspend fun getCalendarOverview(year: Int, month: Int): List<CalendarOverviewResponse>
-
     suspend fun getAppointments(): List<Appointment>
 
     suspend fun scheduleAppointment(request: AppointmentRequest): Appointment
@@ -170,9 +167,6 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
         }.body()
 
     // --- Medical API ---
-    override suspend fun getCalendarOverview(year: Int, month: Int): List<CalendarOverviewResponse> =
-        client.get("/api/calendar/overview?year=$year&month=$month").body()
-
     override suspend fun getAppointments(): List<Appointment> = client.get("/api/appointments").body()
 
     override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment =

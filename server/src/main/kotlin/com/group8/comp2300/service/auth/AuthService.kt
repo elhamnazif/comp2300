@@ -450,7 +450,7 @@ class AuthService(
         // Also clean up unactivated accounts older than 24 hours
         val unactivatedCutoff = Clock.System.now() - UNACTIVATED_ACCOUNT_MAX_AGE
         userRepository.deleteUnactivatedAccounts(unactivatedCutoff.toEpochMilliseconds())
-        passwordResetTokenRepository.deleteExpired(cutoff.toEpochMilliseconds())
+        passwordResetTokenRepository.deleteExpired(Clock.System.now().toEpochMilliseconds())
     }
 
     private fun validateRegisterRequest(request: RegisterRequest): ValidationResult {

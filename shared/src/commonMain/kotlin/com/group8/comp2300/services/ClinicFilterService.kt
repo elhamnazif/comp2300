@@ -1,58 +1,63 @@
 package com.group8.comp2300.services
 
-import com.group8.comp2300.domain.model.medical.*
-import kotlin.math.*
+import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.medical.ClinicFilters
+import kotlin.math.PI
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 class ClinicFilterService {
-
     fun filterClinics(
         clinics: List<Clinic>,
-        filters: ClinicFilters
+        filters: ClinicFilters = ClinicFilters(),
+        searchQuery: String = "",
     ): List<Clinic> {
-        return clinics.filter { clinic ->
-            applyFilters(clinic, filters)
-        }.sortedBy { it.distanceKm }
+        val normalizedQuery = searchQuery.trim()
+
+        return clinics
+            .filter { clinic ->
+                matchesSearch(clinic, normalizedQuery) &&
+                    matchesStructuredFilters(clinic, filters)
+            }
+            .sortedBy(Clinic::distanceKm)
     }
 
-    private fun applyFilters(clinic: Clinic, filters: ClinicFilters): Boolean {
-        // Pricing filter
-        val pricingOk = filters.pricingTiers.isEmpty() ||
-                (clinic.pricingTier != null && filters.pricingTiers.contains(clinic.pricingTier))
+    private fun matchesSearch(clinic: Clinic, query: String): Boolean {
+        if (query.isBlank()) return true
 
-        // Service type filter
-        val serviceOk = filters.serviceTypes.isEmpty() ||
-                clinic.serviceTypes.any { filters.serviceTypes.contains(it) }
+        return clinic.name.contains(query, ignoreCase = true) ||
+            clinic.address?.contains(query, ignoreCase = true) == true ||
+            clinic.tags.any { it.contains(query, ignoreCase = true) }
+    }
 
-        // LGBTQ+ filter
-        val lgbtqOk = !filters.requireLgbtqFriendly || clinic.inclusivityFlags.lgbtqFriendly
+    private fun matchesStructuredFilters(clinic: Clinic, filters: ClinicFilters): Boolean {
+        val pricingMatches = filters.pricingTiers.isEmpty() ||
+            clinic.pricingTier in filters.pricingTiers
 
-        // Wheelchair filter
-        val wheelchairOk = !filters.requireWheelchairAccessible || clinic.inclusivityFlags.wheelchairAccessible
+        val serviceMatches = filters.serviceTypes.isEmpty() ||
+            clinic.serviceTypes.any(filters.serviceTypes::contains)
 
-        // Location filter
-        val locationOk = if (filters.locationLat != null && filters.locationLng != null) {
-            val lat1 = filters.locationLat
-            val lng1 = filters.locationLng
-            val distance = calculateDistance(
-                lat1,
-                lng1,
-                clinic.lat,
-                clinic.lng
-            )
-            distance <= filters.maxDistanceKm
+        val lgbtqMatches = !filters.requireLgbtqFriendly || clinic.inclusivityFlags.lgbtqFriendly
+        val accessibilityMatches =
+            !filters.requireWheelchairAccessible || clinic.inclusivityFlags.wheelchairAccessible
+
+        val locationMatches = if (filters.locationLat != null && filters.locationLng != null) {
+            calculateDistanceKm(
+                lat1 = filters.locationLat,
+                lon1 = filters.locationLng,
+                lat2 = clinic.lat,
+                lon2 = clinic.lng,
+            ) <= filters.maxDistanceKm
         } else {
             true
         }
 
-        return pricingOk && serviceOk && lgbtqOk && wheelchairOk && locationOk
+        return pricingMatches && serviceMatches && lgbtqMatches && accessibilityMatches && locationMatches
     }
 
-    private fun calculateDistance(
-        lat1: Double,
-        lon1: Double,
-        lat2: Double,
-        lon2: Double
-    ): Double {
+    private fun calculateDistanceKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val earthRadiusKm = 6371.0
 
         fun toRadians(degrees: Double): Double = degrees * PI / 180.0
@@ -61,11 +66,10 @@ class ClinicFilterService {
         val dLon = toRadians(lon2 - lon1)
 
         val a = sin(dLat / 2) * sin(dLat / 2) +
-                cos(toRadians(lat1)) * cos(toRadians(lat2)) *
-                sin(dLon / 2) * sin(dLon / 2)
+            cos(toRadians(lat1)) * cos(toRadians(lat2)) *
+            sin(dLon / 2) * sin(dLon / 2)
 
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
         return earthRadiusKm * c
     }
 }

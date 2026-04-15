@@ -15,6 +15,11 @@ import com.group8.comp2300.presentation.components.AppTopBar
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
+private enum class DiagnosisRisk {
+    HIGH,
+    LOW,
+}
+
 /**
  * Self Diagnosis Screen
  *
@@ -27,15 +32,10 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
     var unprotectedSex by remember { mutableStateOf<Boolean?>(null) }
     var sharedNeedles by remember { mutableStateOf<Boolean?>(null) }
     var showResultDialog by remember { mutableStateOf(false) }
-    var diagnosisResult by remember { mutableStateOf("") }
+    var diagnosisRisk by remember { mutableStateOf(DiagnosisRisk.LOW) }
 
     fun calculateRisk() {
-        diagnosisResult =
-            if (unprotectedSex == true || sharedNeedles == true) {
-                "High Risk" // internal key for logic
-            } else {
-                "Low Risk" // internal key for logic
-            }
+        diagnosisRisk = if (unprotectedSex == true || sharedNeedles == true) DiagnosisRisk.HIGH else DiagnosisRisk.LOW
         showResultDialog = true
     }
 
@@ -47,14 +47,14 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                 Column {
                     Text(
                         text =
-                        if (diagnosisResult == "High Risk") {
+                        if (diagnosisRisk == DiagnosisRisk.HIGH) {
                             stringResource(Res.string.medical_self_diagnosis_risk_high)
                         } else {
                             stringResource(Res.string.medical_self_diagnosis_risk_low)
                         },
                         style = MaterialTheme.typography.headlineMedium,
                         color =
-                        if (diagnosisResult == "High Risk") {
+                        if (diagnosisRisk == DiagnosisRisk.HIGH) {
                             MaterialTheme.colorScheme.error
                         } else {
                             MaterialTheme.colorScheme.primary
@@ -63,7 +63,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text =
-                        if (diagnosisResult == "High Risk") {
+                        if (diagnosisRisk == DiagnosisRisk.HIGH) {
                             stringResource(Res.string.medical_self_diagnosis_feedback_high)
                         } else {
                             stringResource(Res.string.medical_self_diagnosis_feedback_low)
@@ -140,7 +140,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                                 },
                             ),
                         ) {
-                            Text("Yes")
+                            Text(stringResource(Res.string.common_yes))
                         }
                         Button(
                             onClick = { unprotectedSex = false },
@@ -160,7 +160,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                                 },
                             ),
                         ) {
-                            Text("No")
+                            Text(stringResource(Res.string.common_no))
                         }
                     }
                 }
@@ -193,7 +193,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                                 },
                             ),
                         ) {
-                            Text("Yes")
+                            Text(stringResource(Res.string.common_yes))
                         }
                         Button(
                             onClick = { sharedNeedles = false },
@@ -213,7 +213,7 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                                 },
                             ),
                         ) {
-                            Text("No")
+                            Text(stringResource(Res.string.common_no))
                         }
                     }
                 }

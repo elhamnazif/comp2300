@@ -406,9 +406,9 @@ CREATE TABLE PinEntity (
     id TEXT NOT NULL PRIMARY KEY,
     pinHash TEXT NOT NULL,
     createdAt INTEGER NOT NULL,
-    pinSalt TEXT NOT NULL DEFAULT 'legacy',
-    pinIterations INTEGER NOT NULL DEFAULT 0,
-    pinVersion INTEGER NOT NULL DEFAULT 1
+    pinSalt TEXT NOT NULL DEFAULT '',
+    pinIterations INTEGER NOT NULL DEFAULT 100000,
+    pinVersion INTEGER NOT NULL DEFAULT 2
 );
 
 selectPin:

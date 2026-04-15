@@ -4,6 +4,9 @@ import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.repository.LabResultsRepository
 import com.group8.comp2300.mock.sampleResults
 
-class LabResultsRepositoryImpl : LabResultsRepository {
+/**
+ * Temporary fixture-backed repository until lab results are fetched from a real data source.
+ */
+class FixtureLabResultsRepository : LabResultsRepository {
     override fun getRecentLabResults(): List<LabResult> = sampleResults
 }

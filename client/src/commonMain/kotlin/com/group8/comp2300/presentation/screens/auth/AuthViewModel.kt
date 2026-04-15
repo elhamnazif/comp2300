@@ -6,10 +6,7 @@ import com.group8.comp2300.domain.model.session.AuthSession
 import kotlinx.coroutines.flow.StateFlow
 import org.jetbrains.compose.resources.StringResource
 
-/**
- * Interface for AuthViewModel to allow fake implementations for previews. This abstraction avoids triggering
- * viewModelScope/Dispatchers.Main in layout previews.
- */
+/** Shared auth view-model contract for UI code and tests. */
 abstract class AuthViewModel : ViewModel() {
     abstract val state: StateFlow<State>
     abstract val session: StateFlow<AuthSession>

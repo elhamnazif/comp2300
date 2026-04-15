@@ -32,7 +32,7 @@ import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 
 fun main() {
-    embeddedServer(Netty, port = ServerConfig.PORT, host = "0.0.0.0", module = Application::module).start(wait = true)
+    embeddedServer(Netty, port = Environment.port, host = "0.0.0.0", module = Application::module).start(wait = true)
 }
 
 fun Application.module() {
@@ -77,7 +77,7 @@ fun Application.module() {
     }
 
     routing {
-        get("/") { call.respondText("Ktor: ${Greeting().greet()}") }
+        get("/") { call.respondText("Ktor: ready") }
 
         get("/api/health") { call.respond(mapOf("status" to "OK")) }
 

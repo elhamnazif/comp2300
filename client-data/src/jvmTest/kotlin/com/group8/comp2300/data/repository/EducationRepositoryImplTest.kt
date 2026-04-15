@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class EducationRepositoryImplTest {
-    private val repository = EducationRepositoryImpl(SRHContentRepositoryImpl())
+    private val repository = EducationRepositoryImpl(FixtureSRHContentRepository())
 
     @Test
     fun searchContentReturnsSrhArticles() {

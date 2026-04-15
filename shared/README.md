@@ -1,6 +1,6 @@
 # Shared Module
 
-The `shared` module contains common business logic, domain models, and platform-specific abstractions.
+The `shared` module contains common business logic, domain models, and sample data used across the project.
 
 ## Purpose
 
@@ -9,8 +9,7 @@ To provide a single source of truth for the domain layer and any reusable logic 
 ## Contents
 
 - **Domain Models**: Located in `src/commonMain/kotlin/.../domain/model/`. Organised by feature area (education, medical, reminder, shop, user).
-- **Mocks**: Located in `src/commonMain/kotlin/.../mock/`, providing sample data for previews and development.
-- **Platform Abstractions**: The `Platform` interface and platform-specific implementations.
+- **Mocks**: Located in `src/commonMain/kotlin/.../mock/`, providing sample data for fixtures and development.
 
 ## Usage
 

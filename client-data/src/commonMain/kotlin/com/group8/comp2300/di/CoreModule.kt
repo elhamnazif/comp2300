@@ -6,7 +6,6 @@ import com.group8.comp2300.data.database.DatabaseDriverFactory
 import com.group8.comp2300.data.database.createDatabase
 import com.group8.comp2300.data.local.AccessibilitySettingsDataSource
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
-import com.group8.comp2300.data.local.CalendarOverviewLocalDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.MoodLocalDataSource
@@ -47,15 +46,15 @@ import com.group8.comp2300.data.remote.TokenProvider
 import com.group8.comp2300.data.remote.createHttpClient
 import com.group8.comp2300.data.remote.tokenProviderDelegate
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
-import com.group8.comp2300.data.repository.ClinicRepositoryImpl
+import com.group8.comp2300.data.repository.FixtureClinicRepository
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
-import com.group8.comp2300.data.repository.LabResultsRepositoryImpl
-import com.group8.comp2300.data.repository.MedicalRepositoryImpl
+import com.group8.comp2300.data.repository.FixtureLabResultsRepository
 import com.group8.comp2300.data.repository.ReminderRepositoryImpl
-import com.group8.comp2300.data.repository.SRHContentRepositoryImpl
+import com.group8.comp2300.data.repository.FixtureSRHContentRepository
 import com.group8.comp2300.data.repository.ShopRepositoryImpl
 import com.group8.comp2300.data.repository.medical.AppointmentDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.CalendarDataRepositoryImpl
+import com.group8.comp2300.data.repository.medical.MedicalRecordDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MedicationDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MedicationLogDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.MoodDataRepositoryImpl
@@ -64,12 +63,12 @@ import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
 import com.group8.comp2300.domain.repository.LabResultsRepository
-import com.group8.comp2300.domain.repository.MedicalRepository
 import com.group8.comp2300.domain.repository.ReminderRepository
 import com.group8.comp2300.domain.repository.SRHContentRepository
 import com.group8.comp2300.domain.repository.ShopRepository
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 import com.group8.comp2300.domain.repository.medical.CalendarDataRepository
+import com.group8.comp2300.domain.repository.medical.MedicalRecordDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
 import com.group8.comp2300.domain.repository.medical.MoodDataRepository
@@ -127,7 +126,6 @@ val coreModule = module {
 
     // Offline-first local data sources
     single { AppointmentLocalDataSource(get()) }
-    single { CalendarOverviewLocalDataSource(get()) }
     single { MedicationLocalDataSource(get()) }
     single { RoutineLocalDataSource(get()) }
     single { RoutineOccurrenceOverrideLocalDataSource(get()) }
@@ -173,11 +171,12 @@ val coreModule = module {
     single<MedicationLogDataRepository> { MedicationLogDataRepositoryImpl(get(), get(), get(), get(), get(), get()) }
     single<MoodDataRepository> { MoodDataRepositoryImpl(get(), get(), get()) }
     single<CalendarDataRepository> { CalendarDataRepositoryImpl(get(), get(), get(), get(), get()) }
-    single<LabResultsRepository> { LabResultsRepositoryImpl() }
-    single<MedicalRepository> { MedicalRepositoryImpl(get(), get(), get(), get(), get()) }
+    single<MedicalRecordDataRepository> { MedicalRecordDataRepositoryImpl(get()) }
+    // These features still ship with local fixtures; bind them explicitly so they are not mistaken for remote-backed data.
+    single<LabResultsRepository> { FixtureLabResultsRepository() }
     single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get()) }
-    single<ClinicRepository> { ClinicRepositoryImpl() }
-    single<SRHContentRepository> { SRHContentRepositoryImpl() }
+    single<ClinicRepository> { FixtureClinicRepository() }
+    single<SRHContentRepository> { FixtureSRHContentRepository() }
     single<EducationRepository> { EducationRepositoryImpl(get()) }
     single<ReminderRepository> { ReminderRepositoryImpl(get()) }
 

@@ -36,6 +36,7 @@ val secondaryNavigationModule = module {
     navigation<Screen.LabResults> {
         val navigator = LocalNavigator.current
         LabResultsScreen(
+            viewModel = koinViewModel(),
             onBack = navigator::goBack,
             onScheduleTest = { navigator.navigate(Screen.Booking) },
         )

@@ -4,7 +4,6 @@ import com.group8.comp2300.config.DevSeeder
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.config.ResendConfig
 import com.group8.comp2300.data.repository.AppointmentRepositoryImpl
-import com.group8.comp2300.data.repository.AppointmentSlotRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicTagRepositoryImpl
 import com.group8.comp2300.data.repository.MedicalRecordRepositoryImpl
@@ -19,7 +18,6 @@ import com.group8.comp2300.data.repository.RoutineRepositoryImpl
 import com.group8.comp2300.data.repository.UserRepositoryImpl
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.repository.AppointmentRepository
-import com.group8.comp2300.domain.repository.AppointmentSlotRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.ClinicTagRepository
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
@@ -38,12 +36,9 @@ import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
 import com.group8.comp2300.security.MedicalRecordCipher
 import com.group8.comp2300.security.MedicalRecordEncryptionConfig
-import com.group8.comp2300.service.appointment.AppointmentService
 import com.group8.comp2300.service.auth.AuthService
 import com.group8.comp2300.service.email.EmailService
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
-import com.group8.comp2300.service.payment.PaymentService
-import com.group8.comp2300.service.payment.PaymentServiceImpl
 import org.koin.dsl.module
 
 val serverModule = module {
@@ -69,7 +64,6 @@ val serverModule = module {
     }
     single<PasswordResetTokenRepository> { PasswordResetTokenRepositoryImpl(get()) }
     single<AppointmentRepository> { AppointmentRepositoryImpl(get()) }
-    single<AppointmentSlotRepository> { AppointmentSlotRepositoryImpl(get()) }
     single<ClinicTagRepository> { ClinicTagRepositoryImpl(get()) }
     single<ClinicRepository> { ClinicRepositoryImpl(get(), get()) }
     single<MedicationRepository> { MedicationRepositoryImpl(get()) }
@@ -92,7 +86,5 @@ val serverModule = module {
             emailService = if (ResendConfig.isConfigured) get<EmailService>() else null,
         )
     }
-    single<PaymentService> { PaymentServiceImpl() }
-    single { AppointmentService(get(), get(), get()) }
     single { MedicalRecordService(repository = get(), medicalRecordCipher = get()) }
 }

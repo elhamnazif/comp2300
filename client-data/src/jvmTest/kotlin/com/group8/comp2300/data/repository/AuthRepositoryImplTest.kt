@@ -24,7 +24,6 @@ import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.data.repository.medical.TestSyncCoordinator
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
-import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationFrequency
@@ -213,8 +212,6 @@ internal open class FakeApiService(
     override suspend fun completeProfile(request: CompleteProfileRequest): User = profileUser
 
     override suspend fun resendVerificationEmail(email: String): MessageResponse = MessageResponse("ok")
-
-    override suspend fun getCalendarOverview(year: Int, month: Int): List<CalendarOverviewResponse> = emptyList()
 
     override suspend fun getAppointments(): List<Appointment> = appointments.toList()
 
