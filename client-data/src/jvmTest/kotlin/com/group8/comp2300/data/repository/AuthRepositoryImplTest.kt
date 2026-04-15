@@ -17,7 +17,6 @@ import com.group8.comp2300.data.remote.dto.MessageResponse
 import com.group8.comp2300.data.remote.dto.PreregisterRequest
 import com.group8.comp2300.data.remote.dto.PreregisterResponse
 import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
-import com.group8.comp2300.data.remote.dto.RegisterRequest
 import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
 import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
@@ -189,9 +188,6 @@ internal open class FakeApiService(
     override suspend fun getHealth(): Map<String, String> = emptyMap()
     override suspend fun getProducts() = emptyList<com.group8.comp2300.data.remote.dto.ProductDto>()
     override suspend fun getProduct(id: String) = error("unused")
-    override suspend fun register(request: RegisterRequest): AuthResponse =
-        AuthResponse(profileUser, "access", "refresh")
-
     override suspend fun login(request: LoginRequest): AuthResponse = AuthResponse(profileUser, "access", "refresh")
 
     override suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse = error("unused")

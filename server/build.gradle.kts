@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.JavaExec
+
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.kotlinx.serialization)
@@ -19,6 +21,35 @@ sqldelight {
 group = "com.group8.comp2300"
 
 version = "1.0.0"
+
+fun loadDotEnv(file: File): Map<String, String> =
+    if (!file.exists()) {
+        emptyMap()
+    } else {
+        file.readLines()
+            .mapNotNull { line ->
+                val trimmed = line.trim()
+                if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                    return@mapNotNull null
+                }
+
+                val assignment = trimmed.removePrefix("export ").trim()
+                val separatorIndex = assignment.indexOf('=')
+                if (separatorIndex <= 0) {
+                    return@mapNotNull null
+                }
+
+                val key = assignment.substring(0, separatorIndex).trim()
+                if (key.isEmpty()) {
+                    return@mapNotNull null
+                }
+
+                val rawValue = assignment.substring(separatorIndex + 1).trim()
+                val value = rawValue.removeSurrounding("\"").removeSurrounding("'")
+                key to value
+            }
+            .toMap()
+    }
 
 application {
     mainClass.set("com.group8.comp2300.ApplicationKt")
@@ -63,4 +94,23 @@ tasks.withType<Test>().configureEach {
     systemProperty("ENV", "development")
     // Also set ktor.testing property as backup
     systemProperty("ktor.testing", "true")
+}
+
+tasks.named<JavaExec>("run") {
+    val dotEnvFile = project.file(".env")
+    val dotEnvValues = loadDotEnv(dotEnvFile)
+    val effectiveDotEnvValues = dotEnvValues.filterKeys { key -> System.getenv(key) == null }
+
+    if (effectiveDotEnvValues.isNotEmpty()) {
+        environment(effectiveDotEnvValues)
+    }
+
+    doFirst {
+        if (dotEnvValues.isNotEmpty()) {
+            logger.lifecycle(
+                "Loaded ${dotEnvValues.size} values from ${project.relativePath(dotEnvFile)}. " +
+                    "Existing shell environment variables take precedence.",
+            )
+        }
+    }
 }

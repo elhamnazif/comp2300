@@ -2,6 +2,7 @@ package com.group8.comp2300
 
 import com.group8.comp2300.config.Environment
 import com.group8.comp2300.config.JwtConfig
+import com.group8.comp2300.config.ResendConfig
 import com.group8.comp2300.di.serverModule
 import com.group8.comp2300.routes.appointmentRoutes
 import com.group8.comp2300.routes.authRoutes
@@ -75,6 +76,15 @@ fun Application.module() {
     if (devBypass) {
         log.warn("⚠️  DEV AUTH BYPASS is ENABLED — authenticated routes accept unauthenticated requests")
     }
+
+    log.info(
+        "Startup config: env={}, port={}, dbPath={}, authBypass={}, emailConfigured={}",
+        Environment.environmentName,
+        Environment.port,
+        Environment.dbPath,
+        devBypass,
+        ResendConfig.isConfigured,
+    )
 
     routing {
         get("/") { call.respondText("Ktor: ready") }

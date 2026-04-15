@@ -140,20 +140,11 @@ class RealAuthViewModel(
     }
 
     private fun categorizeError(exception: Throwable?): Pair<String?, StringResource?> {
-        val exceptionName = exception?.let { it::class.simpleName } ?: ""
-        val exceptionMessage = exception?.message ?: ""
-
-        val isNetworkError = exceptionName.contains("Connect") ||
-            exceptionName.contains("Socket") ||
-            exceptionName.contains("Timeout") ||
-            exceptionName.contains("UnknownHost") ||
-            exceptionName.contains("EOF") ||
-            exceptionMessage.contains("Failed to connect", ignoreCase = true) ||
-            exceptionMessage.contains("Connection refused", ignoreCase = true) ||
-            exceptionMessage.contains("unexpected end of stream", ignoreCase = true)
+        val exceptionMessage = exception?.message.orEmpty()
+        val errorFlags = parseAuthError(exception)
 
         return when {
-            isNetworkError -> null to Res.string.auth_error_network
+            errorFlags.isNetworkError -> null to Res.string.auth_error_network
             exceptionMessage.isNotBlank() && !exceptionMessage.contains("Exception") -> exceptionMessage to null
             else -> null to Res.string.auth_error_authentication_failed
         }

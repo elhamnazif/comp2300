@@ -42,12 +42,10 @@ val medicalNavigationModule = module {
         BookingDetailsScreen(
             clinicId = route.clinicId,
             onBack = navigator::goBack,
-            onConfirm = {
-                if (session !is AuthSession.SignedIn) {
-                    navigator.requireAuth(Screen.ClinicDetail(route.clinicId))
-                } else {
-                    // TODO: Handle booking confirmation
-                }
+            isSignedIn = session is AuthSession.SignedIn,
+            onRequireAuth = { navigator.requireAuth(Screen.ClinicDetail(route.clinicId)) },
+            onBookingConfirmed = {
+                navigator.navigate(Screen.Calendar)
             },
         )
     }

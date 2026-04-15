@@ -4,18 +4,6 @@ import com.group8.comp2300.domain.model.user.User
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class RegisterRequest(
-    val email: String,
-    val password: String,
-    val firstName: String,
-    val lastName: String,
-    val phone: String? = null,
-    val gender: String? = null,
-    val sexualOrientation: String? = null,
-    val dateOfBirth: Long? = null,
-)
-
-@Serializable
 data class LoginRequest(val email: String, val password: String)
 
 @Serializable

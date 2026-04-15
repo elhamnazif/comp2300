@@ -34,10 +34,15 @@ fun OnboardingScreen(
     onPinCreated: (String) -> Unit = {},
 ) {
     var step by remember { mutableIntStateOf(0) } // 0: Welcome, 1: Auth, 2: PIN, 3+: Questions, Last: Result
-    var riskScore by remember { mutableIntStateOf(0) }
+    val answers = remember(sampleOnboardingQuestions.size) {
+        mutableStateListOf<Int?>().apply {
+            repeat(sampleOnboardingQuestions.size) { add(null) }
+        }
+    }
 
     val questionStartIndex = 3
     val questionEndIndex = questionStartIndex + sampleOnboardingQuestions.size
+    val riskScore = remember(answers.toList()) { answers.sumOf { it ?: 0 } }
 
     // Animated progress
     // Step 2 is now the unified PIN step.
@@ -98,7 +103,13 @@ fun OnboardingScreen(
                 // Skip Button (Right side of middle area or separate?)
                 // User said "put skip in top right", so it should be at the absolute end.
                 TextButton(
-                    onClick = { step++ },
+                    onClick = {
+                        val questionIndex = step - questionStartIndex
+                        if (questionIndex in answers.indices) {
+                            answers[questionIndex] = null
+                        }
+                        step++
+                    },
                 ) {
                     Text(stringResource(Res.string.onboarding_skip))
                 }
@@ -177,7 +188,7 @@ fun OnboardingScreen(
                             question = questionText,
                             options = localizedOptions,
                             onAnswerSelect = { index ->
-                                riskScore += index
+                                answers[questionIndex] = index
                                 step++
                             },
                         )

@@ -191,6 +191,7 @@
     <string name="medical_booking_details_verified_clinic">4.8 (Verified Clinic)</string>
     <string name="medical_booking_details_prev_month">Previous</string>
     <string name="medical_booking_details_next_month">Next</string>
+    <string name="medical_booking_details_submit_error">Failed to book appointment</string>
     <string name="medical_booking_back_desc">Back</string>
     <string name="day_initial_mon">M</string>
     <string name="day_initial_tue">T</string>
@@ -279,6 +280,29 @@
     <string name="medical_routine_form_edit_title">Edit schedule</string>
     <string name="medical_routine_repeat_daily">Every day</string>
     <string name="medical_routine_notification_disabled">Schedule saved, but notifications are disabled in system settings.</string>
+    <string name="medical_routine_form_name_label">Schedule name</string>
+    <string name="medical_routine_form_name_placeholder">Morning meds</string>
+    <string name="medical_routine_form_dose_times">Dose times</string>
+    <string name="medical_routine_form_repeat">Repeat</string>
+    <string name="medical_routine_repeat_specific_days">Specific days</string>
+    <string name="medical_routine_form_remove_time">Remove</string>
+    <string name="medical_routine_form_add_time">Add time</string>
+    <string name="medical_routine_form_start_date">Start date</string>
+    <string name="medical_routine_form_ongoing">Ongoing</string>
+    <string name="medical_routine_form_end_date">End date</string>
+    <string name="medical_routine_form_end_date_error">End date must be on or after the start date.</string>
+    <string name="medical_routine_form_reminders">Reminders</string>
+    <string name="medical_routine_form_reminder_at_time">At time</string>
+    <string name="medical_routine_form_reminder_before">%1$d min before</string>
+    <string name="medical_routine_form_included_medications">Included medications</string>
+    <string name="medical_routine_form_done">Done</string>
+    <string name="medical_routine_form_change">Change</string>
+    <string name="medical_routine_form_archive">Archive schedule</string>
+    <string name="medical_routine_form_save_button">Save schedule</string>
+    <string name="medical_routine_form_update_button">Update schedule</string>
+    <string name="medical_routine_summary_no_reminders">No reminders</string>
+    <string name="medical_routine_summary_reminder_prefix">Reminder %1$s</string>
+    <string name="medical_routine_summary_on_days">On %1$s</string>
     
     <!-- Calendar Module -->
     <string name="calendar_title">Your Schedule</string>
@@ -396,6 +420,15 @@
     <string name="calendar_appt_location_value">Room 304, Sexual Health Clinic</string>
     <string name="calendar_appt_directions_button">Get Directions</string>
     <string name="calendar_appt_cancel_button">Cancel Appointment</string>
+    <string name="medical_record_choose_category">Choose a category</string>
+    <string name="medical_records_title">My Medical Records</string>
+    <string name="medical_records_upload">Upload</string>
+    <string name="medical_records_upload_desc">Upload record</string>
+    <string name="medical_records_error_load">Failed to load records</string>
+    <string name="medical_records_error_file_too_large">File exceeds 10MB limit</string>
+    <string name="medical_records_error_upload">Failed to upload records</string>
+    <string name="medical_records_error_open">Failed to open record</string>
+    <string name="shop_retry">Retry</string>
     
     <!-- Daily Action -->
     <string name="calendar_action_all_done">All done!</string>

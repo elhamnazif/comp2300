@@ -1,6 +1,7 @@
 package com.group8.comp2300.data.repository
 
 import co.touchlab.kermit.Logger
+import com.group8.comp2300.data.auth.extractJwtExpiration
 import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.offline.isRetryable
@@ -8,7 +9,6 @@ import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
 import com.group8.comp2300.data.remote.dto.LoginRequest
 import com.group8.comp2300.data.remote.dto.PreregisterRequest
-import com.group8.comp2300.data.remote.dto.RegisterRequest
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
@@ -25,8 +25,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.minutes
 
 class AuthRepositoryImpl(
     private val apiService: ApiService,
@@ -46,30 +44,6 @@ class AuthRepositoryImpl(
 
     override suspend fun login(email: String, password: String): Result<User> = runCatching {
         val response = apiService.login(LoginRequest(email, password))
-        establishAuthenticatedSession(response.user.id, response.accessToken, response.refreshToken)
-    }
-
-    override suspend fun register(
-        email: String,
-        password: String,
-        firstName: String,
-        lastName: String,
-        gender: Gender,
-        sexualOrientation: SexualOrientation,
-        dateOfBirth: LocalDate?,
-    ): Result<User> = runCatching {
-        val response = apiService.register(
-            RegisterRequest(
-                email = email,
-                password = password,
-                firstName = firstName,
-                lastName = lastName,
-                phone = null,
-                gender = gender.name,
-                sexualOrientation = sexualOrientation.name,
-                dateOfBirth = dateOfBirth.toEpochMilliseconds(),
-            ),
-        )
         establishAuthenticatedSession(response.user.id, response.accessToken, response.refreshToken)
     }
 
@@ -166,17 +140,12 @@ class AuthRepositoryImpl(
     }
 
     private suspend fun establishAuthenticatedSession(userId: String, accessToken: String, refreshToken: String): User {
-        val expiresAt = Clock.System.now().toEpochMilliseconds() + ACCESS_TOKEN_EXPIRATION_MS
+        val expiresAt = extractJwtExpiration(accessToken) ?: 0L
         tokenManager.saveTokens(userId, accessToken, refreshToken, expiresAt)
         val user = apiService.getProfile()
         _session.value = AuthSession.SignedIn(user)
         syncCoordinator.flushOutbox()
         syncCoordinator.refreshAuthenticatedData()
         return user
-    }
-
-    private companion object {
-        val ACCESS_TOKEN_EXPIRATION = 15.minutes
-        val ACCESS_TOKEN_EXPIRATION_MS = ACCESS_TOKEN_EXPIRATION.inWholeMilliseconds
     }
 }

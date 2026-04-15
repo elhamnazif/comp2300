@@ -79,7 +79,6 @@ import com.group8.comp2300.domain.usecase.auth.CompleteProfileUseCase
 import com.group8.comp2300.domain.usecase.auth.ForgotPasswordUseCase
 import com.group8.comp2300.domain.usecase.auth.LoginUseCase
 import com.group8.comp2300.domain.usecase.auth.PreregisterUseCase
-import com.group8.comp2300.domain.usecase.auth.RegisterUseCase
 import com.group8.comp2300.domain.usecase.auth.ResendVerificationEmailUseCase
 import com.group8.comp2300.domain.usecase.auth.ResetPasswordUseCase
 import com.group8.comp2300.domain.usecase.medical.GetRecentLabResultsUseCase
@@ -182,7 +181,6 @@ val coreModule = module {
 
     singleOf(::GetProductsUseCase)
     singleOf(::LoginUseCase)
-    singleOf(::RegisterUseCase)
     singleOf(::ActivateAccountUseCase)
     singleOf(::CompleteProfileUseCase)
     singleOf(::ForgotPasswordUseCase)

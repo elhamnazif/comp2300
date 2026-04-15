@@ -246,16 +246,6 @@ private class FakeSessionAuthRepository(initialSession: AuthSession) : AuthRepos
 
     override suspend fun login(email: String, password: String) = error("unused")
 
-    override suspend fun register(
-        email: String,
-        password: String,
-        firstName: String,
-        lastName: String,
-        gender: com.group8.comp2300.domain.model.user.Gender,
-        sexualOrientation: com.group8.comp2300.domain.model.user.SexualOrientation,
-        dateOfBirth: kotlinx.datetime.LocalDate?,
-    ) = error("unused")
-
     override suspend fun preregister(email: String, password: String) = error("unused")
 
     override suspend fun completeProfile(

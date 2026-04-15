@@ -130,21 +130,12 @@ class RealEmailVerificationViewModel(
     private fun analyzeError(exception: Throwable?): Pair<String?, StringResource?> {
         if (exception == null) return null to null
 
-        val exceptionName = exception::class.simpleName ?: ""
-        val exceptionMessage = exception.message ?: ""
-
-        val isNetworkError = exceptionName.contains("Connect") ||
-            exceptionName.contains("Socket") ||
-            exceptionName.contains("Timeout") ||
-            exceptionName.contains("UnknownHost") ||
-            exceptionMessage.contains("Failed to connect", ignoreCase = true) ||
-            exceptionMessage.contains("Connection refused", ignoreCase = true)
+        val exceptionMessage = exception.message.orEmpty()
+        val errorFlags = parseAuthError(exception)
 
         return when {
-            isNetworkError -> null to Res.string.email_verification_error_network
-
-            exceptionMessage.contains("invalid", ignoreCase = true) ||
-                exceptionMessage.contains("expired", ignoreCase = true) ->
+            errorFlags.isNetworkError -> null to Res.string.email_verification_error_network
+            errorFlags.isInvalidOrExpiredToken ->
                 null to Res.string.email_verification_error_invalid_token
 
             exceptionMessage.isNotBlank() && !exceptionMessage.contains("Exception") ->

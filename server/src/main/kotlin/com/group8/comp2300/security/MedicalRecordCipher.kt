@@ -19,7 +19,7 @@ object MedicalRecordEncryptionConfig {
     private const val KEY_SIZE_BYTES = 32
 
     val keyBytes: ByteArray by lazy {
-        val configuredKey = System.getenv(KEY_ENV_NAME)?.takeIf { it.isNotBlank() }
+        val configuredKey = Environment.value(KEY_ENV_NAME)
         when {
             configuredKey != null -> decodeConfiguredKey(configuredKey)
 

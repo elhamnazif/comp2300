@@ -36,13 +36,14 @@ import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DeleteW400Outlined
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
 private val ScheduleReminderOffsets = listOf(0, 5, 10, 15, 30, 60)
-private val ScheduleWeekdays = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 
 @Composable
 fun ScheduleFormSheet(
@@ -56,6 +57,7 @@ fun ScheduleFormSheet(
     onCancel: () -> Unit,
 ) {
     val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
+    val weekdayLabels = scheduleWeekdayLabels()
     var name by remember(routineToEdit?.id, title) { mutableStateOf(routineToEdit?.name ?: "") }
     var timesOfDayMs by remember(routineToEdit?.id, title) {
         mutableStateOf(
@@ -105,7 +107,7 @@ fun ScheduleFormSheet(
                 IconButton(onClick = { onDelete(routineToEdit.id) }) {
                     Icon(
                         Icons.DeleteW400Outlined,
-                        contentDescription = "Delete schedule",
+                        contentDescription = stringResource(Res.string.medical_routine_form_archive),
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -113,13 +115,17 @@ fun ScheduleFormSheet(
         }
 
         MedicalFormTextField(
-            label = "Schedule name",
+            label = stringResource(Res.string.medical_routine_form_name_label),
             value = name,
             onValueChange = { name = it },
-            placeholder = "Morning meds",
+            placeholder = stringResource(Res.string.medical_routine_form_name_placeholder),
         )
 
-        Text("Dose times", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+        Text(
+            stringResource(Res.string.medical_routine_form_dose_times),
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+        )
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             timesOfDayMs.forEachIndexed { index, timeOfDayMs ->
                 Row(
@@ -140,7 +146,7 @@ fun ScheduleFormSheet(
                         },
                         enabled = timesOfDayMs.size > 1,
                     ) {
-                        Text("Remove")
+                        Text(stringResource(Res.string.medical_routine_form_remove_time))
                     }
                 }
             }
@@ -148,11 +154,11 @@ fun ScheduleFormSheet(
                 editingTimeIndex = null
                 showTimePicker = true
             }) {
-                Text("Add time")
+                Text(stringResource(Res.string.medical_routine_form_add_time))
             }
         }
 
-        Text("Repeat", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(Res.string.medical_routine_form_repeat), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -160,11 +166,11 @@ fun ScheduleFormSheet(
             FilterChip(selected = repeatType == RoutineRepeatType.DAILY, onClick = {
                 repeatType =
                     RoutineRepeatType.DAILY
-            }, label = { Text("Every day") })
+            }, label = { Text(stringResource(Res.string.medical_routine_repeat_daily)) })
             FilterChip(selected = repeatType == RoutineRepeatType.WEEKLY, onClick = {
                 repeatType =
                     RoutineRepeatType.WEEKLY
-            }, label = { Text("Specific days") })
+            }, label = { Text(stringResource(Res.string.medical_routine_repeat_specific_days)) })
         }
 
         if (repeatType == RoutineRepeatType.WEEKLY) {
@@ -172,7 +178,7 @@ fun ScheduleFormSheet(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                ScheduleWeekdays.forEachIndexed { index, day ->
+                weekdayLabels.forEachIndexed { index, day ->
                     FilterChip(
                         selected = index in daysOfWeek,
                         onClick = {
@@ -186,7 +192,7 @@ fun ScheduleFormSheet(
             }
         }
 
-        DateValueField(label = "Start date", value = LocalDate.parse(startDate), onClick = {
+        DateValueField(label = stringResource(Res.string.medical_routine_form_start_date), value = LocalDate.parse(startDate), onClick = {
             activeDatePicker = "start"
         })
         Row(
@@ -194,13 +200,13 @@ fun ScheduleFormSheet(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("Ongoing", fontWeight = FontWeight.SemiBold)
+            Text(stringResource(Res.string.medical_routine_form_ongoing), fontWeight = FontWeight.SemiBold)
             Switch(checked = ongoing, onCheckedChange = { ongoing = it })
         }
         if (!ongoing) {
-            DateValueField(label = "End date", value = LocalDate.parse(endDate), onClick = { activeDatePicker = "end" })
+            DateValueField(label = stringResource(Res.string.medical_routine_form_end_date), value = LocalDate.parse(endDate), onClick = { activeDatePicker = "end" })
             if (invalidEndDate) {
-                Text("End date must be on or after the start date.", color = MaterialTheme.colorScheme.error)
+                Text(stringResource(Res.string.medical_routine_form_end_date_error), color = MaterialTheme.colorScheme.error)
             }
         }
 
@@ -209,7 +215,7 @@ fun ScheduleFormSheet(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("Reminders", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(Res.string.medical_routine_form_reminders), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             Switch(checked = hasReminder, onCheckedChange = { hasReminder = it })
         }
         if (hasReminder) {
@@ -225,7 +231,15 @@ fun ScheduleFormSheet(
                                 if (!add(offset)) remove(offset)
                             }
                         },
-                        label = { Text(if (offset == 0) "At time" else "$offset min before") },
+                        label = {
+                            Text(
+                                if (offset == 0) {
+                                    stringResource(Res.string.medical_routine_form_reminder_at_time)
+                                } else {
+                                    stringResource(Res.string.medical_routine_form_reminder_before, offset)
+                                },
+                            )
+                        },
                     )
                 }
             }
@@ -236,10 +250,16 @@ fun ScheduleFormSheet(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text("Included medications", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(Res.string.medical_routine_form_included_medications), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             if (medications.size > 1) {
                 TextButton(onClick = { showMedicationPicker = !showMedicationPicker }) {
-                    Text(if (showMedicationPicker) "Done" else "Change")
+                    Text(
+                        if (showMedicationPicker) {
+                            stringResource(Res.string.medical_routine_form_done)
+                        } else {
+                            stringResource(Res.string.medical_routine_form_change)
+                        },
+                    )
                 }
             }
         }
@@ -277,13 +297,13 @@ fun ScheduleFormSheet(
         if (routineToEdit != null) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text("Archive schedule", fontWeight = FontWeight.SemiBold)
-                Switch(
-                    checked = status == RoutineStatus.ARCHIVED,
-                    onCheckedChange = { status = if (it) RoutineStatus.ARCHIVED else RoutineStatus.ACTIVE },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(stringResource(Res.string.medical_routine_form_archive), fontWeight = FontWeight.SemiBold)
+            Switch(
+                checked = status == RoutineStatus.ARCHIVED,
+                onCheckedChange = { status = if (it) RoutineStatus.ARCHIVED else RoutineStatus.ACTIVE },
                 )
             }
         }
@@ -313,10 +333,16 @@ fun ScheduleFormSheet(
                 (repeatType != RoutineRepeatType.WEEKLY || daysOfWeek.isNotEmpty()),
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Text(if (routineToEdit == null) "Save schedule" else "Update schedule")
+            Text(
+                if (routineToEdit == null) {
+                    stringResource(Res.string.medical_routine_form_save_button)
+                } else {
+                    stringResource(Res.string.medical_routine_form_update_button)
+                },
+            )
         }
         TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
-            Text("Cancel")
+            Text(stringResource(Res.string.common_cancel))
         }
     }
 
@@ -353,27 +379,49 @@ fun ScheduleFormSheet(
     }
 }
 
+@Composable
 fun scheduleSummary(routine: Routine): String {
+    val weekdayLabels = scheduleWeekdayLabels()
     val timeSummary = formatTimesSummary(routine.timesOfDayMs)
     val repeat = when (routine.repeatType) {
-        RoutineRepeatType.DAILY -> "Daily"
-        RoutineRepeatType.WEEKLY -> "On ${routine.daysOfWeek.sorted().joinToString { ScheduleWeekdays[it] }}"
+        RoutineRepeatType.DAILY -> stringResource(Res.string.medical_routine_repeat_daily)
+        RoutineRepeatType.WEEKLY -> stringResource(
+            Res.string.medical_routine_summary_on_days,
+            routine.daysOfWeek.sorted().joinToString { weekdayLabels[it] },
+        )
     }
     val reminder =
         if (!routine.hasReminder || routine.reminderOffsetsMins.isEmpty()) {
-            "No reminders"
+            stringResource(Res.string.medical_routine_summary_no_reminders)
         } else {
-            routine.reminderOffsetsMins.joinToString(prefix = "Reminder ", separator = ", ") { offset ->
-                if (offset == 0) "at time" else "$offset min before"
+            val reminderParts = buildList {
+                for (offset in routine.reminderOffsetsMins) {
+                    add(
+                        if (offset == 0) {
+                            stringResource(Res.string.medical_routine_form_reminder_at_time)
+                        } else {
+                            stringResource(Res.string.medical_routine_form_reminder_before, offset)
+                        },
+                    )
+                }
             }
+            stringResource(
+                Res.string.medical_routine_summary_reminder_prefix,
+                reminderParts.joinToString(separator = ", "),
+            )
         }
     return "$timeSummary • $repeat • $reminder"
 }
 
+@Composable
 fun scheduleLinkSummary(routine: Routine): String {
+    val weekdayLabels = scheduleWeekdayLabels()
     val repeatSummary = when (routine.repeatType) {
-        RoutineRepeatType.DAILY -> "Daily"
-        RoutineRepeatType.WEEKLY -> "On ${routine.daysOfWeek.sorted().joinToString { day -> ScheduleWeekdays[day] }}"
+        RoutineRepeatType.DAILY -> stringResource(Res.string.medical_routine_repeat_daily)
+        RoutineRepeatType.WEEKLY -> stringResource(
+            Res.string.medical_routine_summary_on_days,
+            routine.daysOfWeek.sorted().joinToString { day -> weekdayLabels[day] },
+        )
     }
     return "${formatTimesSummary(routine.timesOfDayMs)} • $repeatSummary"
 }
@@ -385,3 +433,14 @@ fun formatTimeOfDayMs(timeOfDayMs: Long): String {
     val totalMinutes = (timeOfDayMs / 60_000L).toInt()
     return DateFormatter.formatTime(totalMinutes / 60, totalMinutes % 60)
 }
+
+@Composable
+private fun scheduleWeekdayLabels(): List<String> = listOf(
+    stringResource(Res.string.common_day_sun_short),
+    stringResource(Res.string.common_day_mon_short),
+    stringResource(Res.string.common_day_tue_short),
+    stringResource(Res.string.common_day_wed_short),
+    stringResource(Res.string.common_day_thu_short),
+    stringResource(Res.string.common_day_fri_short),
+    stringResource(Res.string.common_day_sat_short),
+)

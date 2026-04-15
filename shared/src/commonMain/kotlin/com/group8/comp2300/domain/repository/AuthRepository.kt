@@ -11,15 +11,6 @@ interface AuthRepository {
     val session: StateFlow<AuthSession>
 
     suspend fun login(email: String, password: String): Result<User>
-    suspend fun register(
-        email: String,
-        password: String,
-        firstName: String,
-        lastName: String,
-        gender: Gender,
-        sexualOrientation: SexualOrientation,
-        dateOfBirth: LocalDate?,
-    ): Result<User>
 
     suspend fun preregister(email: String, password: String): Result<String>
 

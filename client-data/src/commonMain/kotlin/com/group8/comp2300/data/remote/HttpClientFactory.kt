@@ -1,6 +1,7 @@
 package com.group8.comp2300.data.remote
 
 import co.touchlab.kermit.Logger
+import com.group8.comp2300.data.auth.extractJwtExpiration
 import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import io.ktor.client.HttpClient
@@ -22,8 +23,6 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlin.time.Clock
-import kotlin.time.Duration.Companion.minutes
 
 private val logger = Logger.withTag("HttpClientFactory")
 
@@ -93,8 +92,7 @@ fun createHttpClient(): HttpClient = HttpClient {
                                 setBody(RefreshTokenRequest(refreshToken))
                             }.body<TokenResponse>()
 
-                        // Use Duration-based expiration time
-                        val expiresAt = Clock.System.now().toEpochMilliseconds() + ACCESS_TOKEN_EXPIRATION_MS
+                        val expiresAt = extractJwtExpiration(response.accessToken) ?: 0L
                         tokenProviderDelegate.saveTokens(response.accessToken, response.refreshToken, expiresAt)
                         logger.i { "Token refresh successful" }
                         BearerTokens(accessToken = response.accessToken, refreshToken = response.refreshToken)
@@ -161,6 +159,3 @@ private fun defaultErrorMessage(status: HttpStatusCode): String = when (status) 
     HttpStatusCode.Conflict -> "Request conflicts with current data"
     else -> "Request failed (${status.value})"
 }
-
-private val ACCESS_TOKEN_EXPIRATION = 15.minutes
-private val ACCESS_TOKEN_EXPIRATION_MS = ACCESS_TOKEN_EXPIRATION.inWholeMilliseconds

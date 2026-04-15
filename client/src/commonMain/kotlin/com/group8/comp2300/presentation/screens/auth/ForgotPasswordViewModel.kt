@@ -8,7 +8,6 @@ import com.group8.comp2300.domain.usecase.auth.ForgotPasswordUseCase
 import comp2300.i18n.generated.resources.Res
 import comp2300.i18n.generated.resources.auth_error_invalid_email
 import comp2300.i18n.generated.resources.forgot_password_error_network
-import comp2300.i18n.generated.resources.forgot_password_error_not_found
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -107,23 +106,11 @@ class RealForgotPasswordViewModel(private val forgotPasswordUseCase: ForgotPassw
     private fun analyzeError(exception: Throwable?): Pair<String?, StringResource?> {
         if (exception == null) return null to null
 
-        val exceptionName = exception::class.simpleName ?: ""
-        val exceptionMessage = exception.message ?: ""
-
-        val isNetworkError = exceptionName.contains("Connect") ||
-            exceptionName.contains("Socket") ||
-            exceptionName.contains("Timeout") ||
-            exceptionName.contains("UnknownHost") ||
-            exceptionMessage.contains("Failed to connect", ignoreCase = true) ||
-            exceptionMessage.contains("Connection refused", ignoreCase = true)
+        val exceptionMessage = exception.message.orEmpty()
+        val errorFlags = parseAuthError(exception)
 
         return when {
-            isNetworkError -> null to Res.string.forgot_password_error_network
-
-            exceptionMessage.contains("not found", ignoreCase = true) ||
-                exceptionMessage.contains("no account", ignoreCase = true) ->
-                null to Res.string.forgot_password_error_not_found
-
+            errorFlags.isNetworkError -> null to Res.string.forgot_password_error_network
             exceptionMessage.isNotBlank() && !exceptionMessage.contains("Exception") ->
                 exceptionMessage to null
 

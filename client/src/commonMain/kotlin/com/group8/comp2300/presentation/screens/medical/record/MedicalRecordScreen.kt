@@ -35,11 +35,13 @@ import com.group8.comp2300.domain.model.medical.RecordSortOrder
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
+import comp2300.i18n.generated.resources.*
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.name
 import io.github.vinceglb.filekit.readBytes
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun MedicalRecordScreen(viewModel: MedicalRecordViewModel, onNavigateBack: () -> Unit) {
@@ -68,7 +70,7 @@ fun MedicalRecordScreen(viewModel: MedicalRecordViewModel, onNavigateBack: () ->
     state.pendingUploadFileName?.let { pendingFileName ->
         AlertDialog(
             onDismissRequest = viewModel::dismissPendingUpload,
-            title = { Text("Choose a category") },
+            title = { Text(stringResource(Res.string.medical_record_choose_category)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
@@ -92,12 +94,12 @@ fun MedicalRecordScreen(viewModel: MedicalRecordViewModel, onNavigateBack: () ->
             },
             confirmButton = {
                 TextButton(onClick = viewModel::confirmUpload) {
-                    Text("Upload")
+                    Text(stringResource(Res.string.medical_records_upload))
                 }
             },
             dismissButton = {
                 TextButton(onClick = viewModel::dismissPendingUpload) {
-                    Text("Cancel")
+                    Text(stringResource(Res.string.common_cancel))
                 }
             },
         )
@@ -107,7 +109,7 @@ fun MedicalRecordScreen(viewModel: MedicalRecordViewModel, onNavigateBack: () ->
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
-                title = { Text("My Medical Records") },
+                title = { Text(stringResource(Res.string.medical_records_title)) },
                 onBackClick = onNavigateBack,
             )
         },
@@ -115,7 +117,10 @@ fun MedicalRecordScreen(viewModel: MedicalRecordViewModel, onNavigateBack: () ->
             FloatingActionButton(
                 onClick = { filePickerLauncher.launch() },
             ) {
-                Icon(Icons.AddW400Outlinedfill1, contentDescription = "Upload record")
+                Icon(
+                    Icons.AddW400Outlinedfill1,
+                    contentDescription = stringResource(Res.string.medical_records_upload_desc),
+                )
             }
         },
     ) { innerPadding ->

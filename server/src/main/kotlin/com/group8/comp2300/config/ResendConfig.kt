@@ -5,13 +5,13 @@ import org.slf4j.LoggerFactory
 object ResendConfig {
     private val logger = LoggerFactory.getLogger("ResendConfig")
 
-    val apiKey: String = System.getenv("RESEND_API_KEY") ?: ""
+    val apiKey: String = Environment.value("RESEND_API_KEY") ?: ""
 
-    val fromEmail: String = System.getenv("RESEND_FROM_EMAIL") ?: "Vita <noreply@vita.local>"
+    val fromEmail: String = Environment.value("RESEND_FROM_EMAIL") ?: "Vita <noreply@vita.local>"
 
-    val appBaseUrl: String = System.getenv("APP_BASE_URL") ?: "http://localhost:8080"
+    val appBaseUrl: String = Environment.value("APP_BASE_URL") ?: "http://localhost:8080"
 
-    val appName: String = System.getenv("APP_NAME") ?: "Vita"
+    val appName: String = Environment.value("APP_NAME") ?: "Vita"
 
     val isConfigured: Boolean = apiKey.isNotBlank()
 

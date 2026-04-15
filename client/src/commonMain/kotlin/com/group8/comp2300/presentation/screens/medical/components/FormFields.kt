@@ -13,6 +13,8 @@ import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.CheckCircleW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DateRangeW400Outlinedfill1
+import comp2300.i18n.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import kotlinx.datetime.*
 import kotlin.time.Instant
 
@@ -132,9 +134,9 @@ fun DatePickerSheet(initialDate: LocalDate, onDismiss: () -> Unit, onConfirm: (L
                         onConfirm(Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.UTC).date)
                     }
                 },
-            ) { Text("OK") }
+            ) { Text(stringResource(Res.string.common_ok)) }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.common_cancel)) } },
     ) { DatePicker(state = state) }
 }
 
@@ -145,9 +147,11 @@ fun TimePickerSheet(initialTimeMs: Long, onDismiss: () -> Unit, onConfirm: (Long
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onConfirm(((state.hour * 60L) + state.minute) * 60_000L) }) { Text("OK") }
+            TextButton(onClick = { onConfirm(((state.hour * 60L) + state.minute) * 60_000L) }) {
+                Text(stringResource(Res.string.common_ok))
+            }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(Res.string.common_cancel)) } },
         text = { TimePicker(state = state) },
     )
 }

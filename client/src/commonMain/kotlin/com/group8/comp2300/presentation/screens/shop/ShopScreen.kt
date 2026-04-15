@@ -167,7 +167,7 @@ private fun ShopContent(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(error, color = MaterialTheme.colorScheme.error)
                             androidx.compose.material3.TextButton(onClick = { onCategorySelect(selectedCategory) }) {
-                                Text("Retry")
+                                Text(stringResource(Res.string.shop_retry))
                             }
                         }
                     }

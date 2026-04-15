@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.mock.baseTimeSlots
 import com.group8.comp2300.presentation.components.AppTopBar
@@ -27,6 +28,7 @@ import com.group8.comp2300.presentation.util.DateFormatter
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
+import kotlinx.coroutines.flow.collect
 import kotlinx.datetime.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -38,7 +40,9 @@ val baseSlots = baseTimeSlots
 fun BookingDetailsScreen(
     clinicId: String,
     onBack: () -> Unit,
-    onConfirm: () -> Unit,
+    isSignedIn: Boolean,
+    onRequireAuth: () -> Unit,
+    onBookingConfirmed: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: BookingViewModel = koinViewModel(),
 ) {
@@ -50,6 +54,8 @@ fun BookingDetailsScreen(
     }
     val timeZone = TimeZone.currentSystemDefault()
     val today = Clock.System.now().toLocalDateTime(timeZone).date
+    val bookingState by viewModel.bookingState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     // Dynamic Mock Data: Generate taken slots relative to 'today'
     val takenSlots =
@@ -88,9 +94,25 @@ fun BookingDetailsScreen(
             reasonText.isBlank() -> stringResource(Res.string.medical_booking_details_add_reason)
             else -> stringResource(Res.string.medical_booking_details_confirm_format, "$85.00")
         }
+    val bookingFailedMessage = stringResource(Res.string.medical_booking_details_submit_error)
+
+    LaunchedEffect(viewModel) {
+        viewModel.bookingEvents.collect { event ->
+            when (event) {
+                BookingViewModel.BookingEvent.Submitted -> onBookingConfirmed()
+            }
+        }
+    }
+
+    LaunchedEffect(bookingState.errorMessage) {
+        val errorMessage = bookingState.errorMessage ?: return@LaunchedEffect
+        snackbarHostState.showSnackbar(errorMessage.ifBlank { bookingFailedMessage })
+        viewModel.clearBookingError()
+    }
 
     Scaffold(
         modifier = modifier,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             AppTopBar(
                 title = {
@@ -124,11 +146,31 @@ fun BookingDetailsScreen(
                         )
                     }
                     Button(
-                        onClick = onConfirm,
-                        enabled = selectedTimeSlot != null && reasonText.isNotBlank(),
+                        onClick = {
+                            if (!isSignedIn) {
+                                onRequireAuth()
+                                return@Button
+                            }
+                            val slot = selectedTimeSlot ?: return@Button
+                            viewModel.scheduleAppointment(
+                                clinic = clinic,
+                                date = selectedDate,
+                                timeSlot = slot,
+                                reason = reasonText,
+                            )
+                        },
+                        enabled = !bookingState.isSubmitting && selectedTimeSlot != null && reasonText.isNotBlank(),
                         modifier = Modifier.width(200.dp),
                     ) {
-                        Text(contextString)
+                        if (bookingState.isSubmitting) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Text(contextString)
+                        }
                     }
                 }
             }
