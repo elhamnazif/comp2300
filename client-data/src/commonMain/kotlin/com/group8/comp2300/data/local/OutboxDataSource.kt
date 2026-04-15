@@ -33,7 +33,8 @@ class OutboxDataSource(private val database: AppDatabase) {
 
     fun getAll(): List<OutboxItem> = database.appDatabaseQueries.selectAllOutbox().executeAsList().map(::toOutboxItem)
 
-    fun getPending(): List<OutboxItem> = database.appDatabaseQueries.selectPendingOutbox().executeAsList().map(::toOutboxItem)
+    fun getPending(): List<OutboxItem> =
+        database.appDatabaseQueries.selectPendingOutbox().executeAsList().map(::toOutboxItem)
 
     fun delete(id: String) {
         database.appDatabaseQueries.deleteOutbox(id)

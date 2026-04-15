@@ -152,8 +152,7 @@ class MedicalRepositoryImpl(
         false
     }
 
-    override suspend fun downloadMedicalRecord(id: String): ByteArray =
-        apiService.downloadMedicalRecord(id)
+    override suspend fun downloadMedicalRecord(id: String): ByteArray = apiService.downloadMedicalRecord(id)
 
     override suspend fun deleteMedicalRecord(id: String) {
         try {

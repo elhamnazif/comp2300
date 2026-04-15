@@ -10,6 +10,7 @@ import com.group8.comp2300.data.local.CalendarOverviewLocalDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.MoodLocalDataSource
+import com.group8.comp2300.data.local.OfflineMapSettingsDataSource
 import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.local.PinDataSource
@@ -137,6 +138,7 @@ val coreModule = module {
     single { PersonalDataCleaner(get()) }
     single { Settings() }
     single { AccessibilitySettingsDataSource(get()) }
+    single { OfflineMapSettingsDataSource(get()) }
     single { RoutineNotificationRegistry(get()) }
     single<RoutineNotificationScheduler> {
         RoutineNotificationSchedulerImpl(

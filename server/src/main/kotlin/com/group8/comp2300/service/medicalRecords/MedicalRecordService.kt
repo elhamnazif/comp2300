@@ -39,54 +39,53 @@ class MedicalRecordService(
         fileName: String,
         fileBytes: ByteArray,
         category: MedicalRecordCategory,
-    ): UploadResult =
-        withContext(Dispatchers.IO) {
-            val fileId = UUID.randomUUID().toString()
-            val originalName = fileName.ifBlank { "upload_${System.currentTimeMillis()}" }
+    ): UploadResult = withContext(Dispatchers.IO) {
+        val fileId = UUID.randomUUID().toString()
+        val originalName = fileName.ifBlank { "upload_${System.currentTimeMillis()}" }
 
-            val extension = originalName.substringAfterLast(".", "").lowercase()
+        val extension = originalName.substringAfterLast(".", "").lowercase()
 
-            if (extension.isNotEmpty() && extension !in ALLOWED_EXTENSIONS) {
-                return@withContext UploadResult.Failed("File type '.$extension' is not allowed")
-            }
+        if (extension.isNotEmpty() && extension !in ALLOWED_EXTENSIONS) {
+            return@withContext UploadResult.Failed("File type '.$extension' is not allowed")
+        }
 
-            if (fileBytes.size > MAX_FILE_SIZE) {
-                return@withContext UploadResult.Failed("File size exceeds the 10 MB limit")
-            }
+        if (fileBytes.size > MAX_FILE_SIZE) {
+            return@withContext UploadResult.Failed("File size exceeds the 10 MB limit")
+        }
 
-            val storageFileName = if (extension.isNotEmpty()) "$fileId.$extension.enc" else "$fileId.enc"
-            val physicalFile = File(uploadDir, storageFileName)
+        val storageFileName = if (extension.isNotEmpty()) "$fileId.$extension.enc" else "$fileId.enc"
+        val physicalFile = File(uploadDir, storageFileName)
 
-            try {
-                physicalFile.writeBytes(medicalRecordCipher.encrypt(fileBytes))
+        try {
+            physicalFile.writeBytes(medicalRecordCipher.encrypt(fileBytes))
 
-                val now = System.currentTimeMillis()
-                val originalSize = fileBytes.size.toLong()
+            val now = System.currentTimeMillis()
+            val originalSize = fileBytes.size.toLong()
 
-                repository.insert(
+            repository.insert(
+                id = fileId,
+                userId = userId,
+                fileName = originalName,
+                storagePath = physicalFile.path,
+                fileSize = originalSize,
+                createdAt = now,
+                category = category,
+            )
+
+            UploadResult.Success(
+                MedicalRecord(
                     id = fileId,
-                    userId = userId,
                     fileName = originalName,
-                    storagePath = physicalFile.path,
                     fileSize = originalSize,
                     createdAt = now,
                     category = category,
-                )
-
-                UploadResult.Success(
-                    MedicalRecord(
-                        id = fileId,
-                        fileName = originalName,
-                        fileSize = originalSize,
-                        createdAt = now,
-                        category = category,
-                    ),
-                )
-            } catch (e: Exception) {
-                if (physicalFile.exists()) physicalFile.delete()
-                UploadResult.Failed("Upload failed: ${e.message}")
-            }
+                ),
+            )
+        } catch (e: Exception) {
+            if (physicalFile.exists()) physicalFile.delete()
+            UploadResult.Failed("Upload failed: ${e.message}")
         }
+    }
 
     fun getRecordsForUser(userId: String, sortQuery: String?): List<MedicalRecord> {
         val sortOrder = when (sortQuery?.uppercase()) {
@@ -232,12 +231,17 @@ private fun String.toDownloadContentType(): ContentType {
     val extension = substringAfterLast(".", "").lowercase()
     return when (extension) {
         "pdf" -> ContentType.Application.Pdf
+
         "jpg", "jpeg" -> ContentType.Image.JPEG
+
         "png" -> ContentType.Image.PNG
+
         "doc" -> ContentType.parse("application/msword")
+
         "docx" -> ContentType.parse(
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         )
+
         else -> ContentType.Application.OctetStream
     }
 }

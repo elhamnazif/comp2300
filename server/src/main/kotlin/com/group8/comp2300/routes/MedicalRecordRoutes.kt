@@ -1,10 +1,10 @@
 package com.group8.comp2300.routes
 
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.dto.ErrorResponse
 import com.group8.comp2300.dto.MessageResponse
 import com.group8.comp2300.dto.RenameRequest
 import com.group8.comp2300.dto.toDto
-import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import com.group8.comp2300.service.medicalRecords.UploadResult
 import io.ktor.http.*

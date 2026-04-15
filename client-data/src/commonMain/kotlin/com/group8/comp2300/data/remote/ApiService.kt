@@ -114,11 +114,7 @@ interface ApiService {
 
     suspend fun getMedicalRecords(sort: String): List<MedicalRecordResponse>
 
-    suspend fun uploadMedicalRecord(
-        fileBytes: ByteArray,
-        fileName: String,
-        category: MedicalRecordCategory,
-    )
+    suspend fun uploadMedicalRecord(fileBytes: ByteArray, fileName: String, category: MedicalRecordCategory)
 
     suspend fun downloadMedicalRecord(id: String): ByteArray
 
@@ -226,11 +222,7 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun getMedicalRecords(sort: String): List<MedicalRecordResponse> =
         client.get("/api/medical-records/user?sort=$sort").body()
 
-    override suspend fun uploadMedicalRecord(
-        fileBytes: ByteArray,
-        fileName: String,
-        category: MedicalRecordCategory,
-    ) {
+    override suspend fun uploadMedicalRecord(fileBytes: ByteArray, fileName: String, category: MedicalRecordCategory) {
         client.submitFormWithBinaryData(
             url = "/api/medical-records/upload",
             formData = formData {

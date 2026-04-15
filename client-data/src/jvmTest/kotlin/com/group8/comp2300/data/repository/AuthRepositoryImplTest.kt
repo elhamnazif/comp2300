@@ -251,7 +251,8 @@ internal open class FakeApiService(
         request: RoutineOccurrenceOverrideRequest,
     ): RoutineOccurrenceOverride = error("unused")
 
-    override suspend fun getMedicalRecords(sort: String) = emptyList<com.group8.comp2300.domain.model.medical.MedicalRecordResponse>()
+    override suspend fun getMedicalRecords(sort: String) =
+        emptyList<com.group8.comp2300.domain.model.medical.MedicalRecordResponse>()
 
     override suspend fun uploadMedicalRecord(
         fileBytes: ByteArray,

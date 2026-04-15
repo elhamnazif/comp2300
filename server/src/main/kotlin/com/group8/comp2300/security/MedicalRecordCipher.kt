@@ -22,7 +22,9 @@ object MedicalRecordEncryptionConfig {
         val configuredKey = System.getenv(KEY_ENV_NAME)?.takeIf { it.isNotBlank() }
         when {
             configuredKey != null -> decodeConfiguredKey(configuredKey)
+
             Environment.isDevelopment -> deriveDevelopmentKey()
+
             else -> throw IllegalStateException(
                 "$KEY_ENV_NAME must be set to a base64-encoded 256-bit key in production",
             )
@@ -43,14 +45,11 @@ object MedicalRecordEncryptionConfig {
         return decoded
     }
 
-    private fun deriveDevelopmentKey(): ByteArray =
-        MessageDigest.getInstance("SHA-256")
-            .digest("medical-records:${JwtConfig.secret}".toByteArray())
+    private fun deriveDevelopmentKey(): ByteArray = MessageDigest.getInstance("SHA-256")
+        .digest("medical-records:${JwtConfig.secret}".toByteArray())
 }
 
-class AesGcmMedicalRecordCipher(
-    keyBytes: ByteArray,
-) : MedicalRecordCipher {
+class AesGcmMedicalRecordCipher(keyBytes: ByteArray) : MedicalRecordCipher {
     private val secretKey = SecretKeySpec(keyBytes.copyOf(), KEY_ALGORITHM)
     private val secureRandom = SecureRandom()
 

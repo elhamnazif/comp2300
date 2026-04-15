@@ -209,9 +209,6 @@ private suspend fun io.ktor.server.application.ApplicationCall.respondExpectedFa
     respondError(HttpStatusCode.InternalServerError, defaultMessage)
 }
 
-private suspend fun io.ktor.server.application.ApplicationCall.respondError(
-    status: HttpStatusCode,
-    message: String,
-) {
+private suspend fun io.ktor.server.application.ApplicationCall.respondError(status: HttpStatusCode, message: String) {
     respond(status, mapOf("error" to message))
 }

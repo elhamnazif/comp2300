@@ -179,7 +179,11 @@ class MedicalRecordRoutesTest {
 
             val actualContentType = response.contentType()?.withoutParameters()
             assertEquals(expectedType, actualContentType, "Wrong MIME type for $fileName")
-            assertContentEquals(plainBytes, response.bodyAsBytes(), "Download should return decrypted bytes for $fileName")
+            assertContentEquals(
+                plainBytes,
+                response.bodyAsBytes(),
+                "Download should return decrypted bytes for $fileName",
+            )
 
             val disposition = response.headers[HttpHeaders.ContentDisposition]
             assertNotNull(disposition, "Content-Disposition header is missing")
@@ -205,9 +209,4 @@ class MedicalRecordRoutesTest {
     }
 }
 
-private data class Quadruple<A, B, C, D>(
-    val first: A,
-    val second: B,
-    val third: C,
-    val fourth: D,
-)
+private data class Quadruple<A, B, C, D>(val first: A, val second: B, val third: C, val fourth: D)
