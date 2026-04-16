@@ -2,8 +2,8 @@ package com.group8.comp2300.presentation.screens.profile
 
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +15,9 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +28,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
+import com.group8.comp2300.presentation.accessibility.AccessibleStatusChip
+import com.group8.comp2300.presentation.accessibility.StatusIcon
 import com.group8.comp2300.presentation.components.ScreenHeader
 import com.group8.comp2300.presentation.components.shimmerEffect
 import com.group8.comp2300.presentation.util.DateFormatter
@@ -42,6 +47,7 @@ fun ProfileScreen(
     onNavigateToLabResults: () -> Unit = {},
     onNavigateToMedicalRecords: () -> Unit = {},
     onNavigateToPrivacySecurity: () -> Unit = {},
+    onNavigateToAccessibility: () -> Unit = {},
     onNavigateToPrivacyLegalese: () -> Unit = {},
     onNavigateToNotifications: () -> Unit = {},
     onNavigateToHelpSupport: () -> Unit = {},
@@ -49,6 +55,28 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.state.collectAsState()
     val pullToRefreshState = rememberPullToRefreshState()
+    var showLogoutConfirm by remember { mutableStateOf(false) }
+
+    if (showLogoutConfirm) {
+        AlertDialog(
+            onDismissRequest = { showLogoutConfirm = false },
+            title = { Text(stringResource(Res.string.profile_logout_confirm_title)) },
+            text = { Text(stringResource(Res.string.profile_logout_confirm_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showLogoutConfirm = false
+                    viewModel.logout()
+                }) {
+                    Text(stringResource(Res.string.profile_logout_label))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutConfirm = false }) {
+                    Text(stringResource(Res.string.common_cancel))
+                }
+            },
+        )
+    }
 
     val scaleFraction = {
         if (uiState.isLoading) {
@@ -61,27 +89,36 @@ fun ProfileScreen(
     Box(
         modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .pullToRefresh(
                 state = pullToRefreshState,
                 isRefreshing = uiState.isLoading,
                 onRefresh = viewModel::refresh,
             ),
     ) {
-        Column(
-            Modifier.fillMaxSize()
-                .verticalScroll(rememberScrollState()),
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ScreenHeader(horizontalPadding = 0.dp) {
-                InsetContent(uiState, onNavigateToLabResults, onNavigateToGuestSignIn)
+            item {
+                ScreenHeader(horizontalPadding = 0.dp, topPadding = 16.dp) {
+                    InsetContent(uiState, onNavigateToLabResults, onNavigateToGuestSignIn)
+                }
             }
-            EdgeToEdgeSettings(
-                onNavigateToMedicalRecords = onNavigateToMedicalRecords,
-                onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
-                onNavigateToPrivacyLegalese = onNavigateToPrivacyLegalese,
-                onNavigateToNotifications = onNavigateToNotifications,
-                onNavigateToHelpSupport = onNavigateToHelpSupport,
-            )
+            item {
+                EdgeToEdgeSettings(
+                    isSignedIn = uiState.userName.isNotEmpty(),
+                    onNavigateToMedicalRecords = onNavigateToMedicalRecords,
+                    onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
+                    onNavigateToAccessibility = onNavigateToAccessibility,
+                    onNavigateToPrivacyLegalese = onNavigateToPrivacyLegalese,
+                    onNavigateToNotifications = onNavigateToNotifications,
+                    onNavigateToHelpSupport = onNavigateToHelpSupport,
+                    onLogout = { showLogoutConfirm = true },
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
         }
 
         Box(
@@ -103,7 +140,7 @@ fun GuestSignInScreen(onRequireAuth: () -> Unit, modifier: Modifier = Modifier) 
     Column(
         modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(MaterialTheme.colorScheme.surfaceContainerLowest)
             .verticalScroll(rememberScrollState())
             .statusBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -133,9 +170,9 @@ private fun InsetContent(
         Spacer(Modifier.height(24.dp))
         Text(
             stringResource(Res.string.profile_settings_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 8.dp),
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 4.dp),
         )
     }
 }
@@ -202,6 +239,7 @@ private fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = M
 private fun FeatureCard(icon: ImageVector, title: String, description: String, modifier: Modifier = Modifier) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        shape = RoundedCornerShape(28.dp),
         modifier = modifier.fillMaxWidth(),
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -246,6 +284,7 @@ private fun Header(state: ProfileViewModel.State, onNavigateToGuestSignIn: () ->
     if (!state.isLoading && state.userName.isEmpty()) {
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            shape = RoundedCornerShape(28.dp),
             onClick = onNavigateToGuestSignIn,
             modifier = Modifier.fillMaxWidth(),
         ) {
@@ -343,6 +382,7 @@ private fun RecentResultsCard(
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        shape = RoundedCornerShape(28.dp),
         modifier = modifier.fillMaxWidth(),
         onClick = onNavigateToLabResults,
     ) {
@@ -424,94 +464,115 @@ private fun ResultShimmer() {
     }
 }
 
-private data class LabResultStatusColors(val bgColor: Color, val textColor: Color, val statusRes: StringResource)
+private data class LabResultStatusColors(
+    val bgColor: Color,
+    val textColor: Color,
+    val statusRes: StringResource,
+    val icon: StatusIcon,
+)
 
 @Composable
 private fun labResultStatusColors(result: LabResult): LabResultStatusColors {
     val bgColor = if (result.isPositive) MaterialTheme.colorScheme.errorContainer else Color(0xFFE8F5E9)
     val textColor = if (result.isPositive) MaterialTheme.colorScheme.error else Color(0xFF2E7D32)
-    val statusRes = when (result.status) {
-        LabStatus.PENDING -> Res.string.lab_status_pending
-        LabStatus.NEGATIVE -> Res.string.lab_status_negative
-        LabStatus.POSITIVE -> Res.string.lab_status_positive
-        LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive
+    val (statusRes, icon) = when (result.status) {
+        LabStatus.PENDING -> Res.string.lab_status_pending to StatusIcon.DATE
+        LabStatus.NEGATIVE -> Res.string.lab_status_negative to StatusIcon.SUCCESS
+        LabStatus.POSITIVE -> Res.string.lab_status_positive to StatusIcon.DANGER
+        LabStatus.INCONCLUSIVE -> Res.string.lab_status_inconclusive to StatusIcon.WARNING
     }
-    return LabResultStatusColors(bgColor, textColor, statusRes)
+    return LabResultStatusColors(bgColor, textColor, statusRes, icon)
 }
 
 @Composable
 private fun StatusSurface(result: LabResult) {
-    val (bgColor, textColor, statusRes) = labResultStatusColors(result)
-    Surface(color = bgColor, shape = RoundedCornerShape(8.dp)) {
-        Text(
-            stringResource(statusRes),
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.labelMedium,
-            color = textColor,
-            fontWeight = FontWeight.Bold,
-        )
-    }
+    val (bgColor, textColor, statusRes, icon) = labResultStatusColors(result)
+    AccessibleStatusChip(
+        label = stringResource(statusRes),
+        icon = icon,
+        containerColor = bgColor,
+        contentColor = textColor,
+    )
 }
 
 /* ------------------  EDGE-TO-EDGE SETTINGS  ------------------ */
 @Composable
 private fun EdgeToEdgeSettings(
+    isSignedIn: Boolean,
     onNavigateToMedicalRecords: () -> Unit,
     onNavigateToPrivacySecurity: () -> Unit,
+    onNavigateToAccessibility: () -> Unit,
     onNavigateToPrivacyLegalese: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToHelpSupport: () -> Unit,
+    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier) {
-        SettingsItem(
-            icon = Icons.ArticleW400Outlined,
-            title = stringResource(Res.string.profile_health_records_title),
-            subtitle = stringResource(Res.string.profile_track_results_desc),
-            onClick = onNavigateToMedicalRecords,
-        )
-        SettingsItem(
-            icon = Icons.LockW400Outlinedfill1,
-            title = stringResource(Res.string.profile_privacy_security_title),
-            subtitle = stringResource(Res.string.profile_biometrics_enabled),
-            onClick = onNavigateToPrivacySecurity,
-        )
-        SettingsItem(
-            icon = Icons.ShieldW400Outlinedfill1,
-            title = stringResource(Res.string.profile_privacy_legalese_title),
-            subtitle = stringResource(Res.string.profile_privacy_legalese_desc),
-            onClick = onNavigateToPrivacyLegalese,
-        )
-        SettingsItem(
-            icon = Icons.NotificationsW400Outlinedfill1,
-            title = stringResource(Res.string.profile_notifications_title),
-            subtitle = stringResource(Res.string.profile_notifications_desc),
-            onClick = onNavigateToNotifications,
-        )
-        SettingsItem(
-            icon = Icons.InfoW400Outlined,
-            title = stringResource(Res.string.profile_help_support_title),
-            subtitle = stringResource(Res.string.profile_faqs_desc),
-            onClick = onNavigateToHelpSupport,
-        )
-    }
-}
-
-@Composable
-private fun SettingsItem(icon: ImageVector, title: String, subtitle: String, onClick: () -> Unit) {
-    Surface(color = Color.Transparent, modifier = Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Row(Modifier.padding(vertical = 12.dp, horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
-            Spacer(Modifier.width(16.dp))
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.bodyLarge)
-                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-            }
-            Icon(
-                Icons.ChevronRightW400Outlined,
-                null,
-                tint = MaterialTheme.colorScheme.outline,
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        SettingsSection {
+            SettingsNavigationRow(
+                icon = Icons.ArticleW400Outlined,
+                title = stringResource(Res.string.profile_health_records_title),
+                description = stringResource(Res.string.profile_track_results_desc),
+                index = 0,
+                total = 3,
+                onClick = onNavigateToMedicalRecords,
             )
+            SettingsNavigationRow(
+                icon = Icons.LockW400Outlinedfill1,
+                title = stringResource(Res.string.profile_privacy_security_title),
+                description = stringResource(Res.string.profile_biometrics_enabled),
+                index = 1,
+                total = 3,
+                onClick = onNavigateToPrivacySecurity,
+            )
+            SettingsNavigationRow(
+                icon = Icons.ShieldW400Outlinedfill1,
+                title = stringResource(Res.string.profile_privacy_legalese_title),
+                description = stringResource(Res.string.profile_privacy_legalese_desc),
+                index = 2,
+                total = 3,
+                onClick = onNavigateToPrivacyLegalese,
+            )
+        }
+
+        SettingsSection {
+            SettingsNavigationRow(
+                icon = Icons.VisibilityW400Outlinedfill1,
+                title = stringResource(Res.string.profile_accessibility_title),
+                description = stringResource(Res.string.profile_accessibility_desc),
+                index = 0,
+                total = 3,
+                onClick = onNavigateToAccessibility,
+            )
+            SettingsNavigationRow(
+                icon = Icons.NotificationsW400Outlinedfill1,
+                title = stringResource(Res.string.profile_notifications_title),
+                description = stringResource(Res.string.profile_notifications_desc),
+                index = 1,
+                total = 3,
+                onClick = onNavigateToNotifications,
+            )
+            SettingsNavigationRow(
+                icon = Icons.InfoW400Outlined,
+                title = stringResource(Res.string.profile_help_support_title),
+                description = stringResource(Res.string.profile_faqs_desc),
+                index = 2,
+                total = 3,
+                onClick = onNavigateToHelpSupport,
+            )
+        }
+
+        if (isSignedIn) {
+            SettingsSection {
+                SettingsNavigationRow(
+                    icon = Icons.LogoutW400Outlined,
+                    title = stringResource(Res.string.profile_logout_label),
+                    index = 0,
+                    total = 1,
+                    onClick = onLogout,
+                )
+            }
         }
     }
 }

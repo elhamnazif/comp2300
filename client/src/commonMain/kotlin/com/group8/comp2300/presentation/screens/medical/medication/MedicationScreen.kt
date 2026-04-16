@@ -15,6 +15,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.domain.model.medical.*
+import com.group8.comp2300.presentation.accessibility.IndicatorPattern
+import com.group8.comp2300.presentation.accessibility.PatternSwatch
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.notifications.NotificationPermissionResult
 import com.group8.comp2300.presentation.notifications.rememberNotificationPermissionRequester
@@ -307,6 +309,7 @@ private fun MedicationCard(
     isArchived: Boolean = false,
 ) {
     val quantityLabel = medication.quantity.takeIf(String::isNotBlank)?.let { " • $it" }.orEmpty()
+    val colorOption = medicationColorOption(medication.colorHex)
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
@@ -323,13 +326,28 @@ private fun MedicationCard(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier.size(
-                    44.dp,
-                ).background(parseColorHex(medication.colorHex).copy(alpha = 0.18f), CircleShape),
-                contentAlignment = Alignment.Center,
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Box(modifier = Modifier.size(18.dp).background(parseColorHex(medication.colorHex), CircleShape))
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(parseColorHex(medication.colorHex).copy(alpha = 0.18f), CircleShape)
+                        .padding(5.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    PatternSwatch(
+                        color = parseColorHex(medication.colorHex),
+                        pattern = colorOption.pattern,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                Text(
+                    colorOption.shortLabel,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
             Spacer(Modifier.size(16.dp))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -462,30 +480,47 @@ fun MedicationFormSheet(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Medication.PRESET_COLORS.forEach { swatch ->
-                    val color = parseColorHex(swatch)
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
-                            .border(
-                                width = if (selectedColor == color) 2.dp else 0.dp,
-                                color = if (selectedColor ==
-                                    color
-                                ) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    Color.Transparent
-                                },
-                                shape = CircleShape,
-                            )
-                            .padding(4.dp)
-                            .clickable { selectedColor = color },
+                medicationColorOptions.forEach { option ->
+                    val color = parseColorHex(option.hex)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        Box(modifier = Modifier.fillMaxSize().background(color, CircleShape))
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
+                                .border(
+                                    width = if (selectedColor == color) 2.dp else 0.dp,
+                                    color = if (selectedColor == color) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        Color.Transparent
+                                    },
+                                    shape = CircleShape,
+                                )
+                                .padding(4.dp)
+                                .clickable { selectedColor = color },
+                        ) {
+                            PatternSwatch(
+                                color = color,
+                                pattern = option.pattern,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                        Text(
+                            option.shortLabel,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                 }
             }
+            Text(
+                "Selected: ${medicationColorOption(selectedColor.toHexString()).label}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
 
         if (medicationToEdit != null) {
@@ -591,8 +626,32 @@ private fun scheduleWeekdayLabel(day: Int): String = when (day) {
     else -> ""
 }
 
+private data class MedicationColorOption(
+    val hex: String,
+    val label: String,
+    val shortLabel: String,
+    val pattern: IndicatorPattern,
+)
+
+private val medicationColorOptions = listOf(
+    MedicationColorOption("#42A5F5", "Blue tag", "Blue", IndicatorPattern.DIAGONAL),
+    MedicationColorOption("#EF5350", "Red tag", "Red", IndicatorPattern.GRID),
+    MedicationColorOption("#66BB6A", "Green tag", "Green", IndicatorPattern.DOTS),
+    MedicationColorOption("#FFA726", "Orange tag", "Orange", IndicatorPattern.HORIZONTAL),
+    MedicationColorOption("#AB47BC", "Purple tag", "Purple", IndicatorPattern.VERTICAL),
+    MedicationColorOption("#26C6DA", "Cyan tag", "Cyan", IndicatorPattern.DIAGONAL),
+    MedicationColorOption("#78909C", "Blue grey tag", "Grey", IndicatorPattern.GRID),
+)
+
+private fun medicationColorOption(hex: String?): MedicationColorOption {
+    val normalized = normalizeColorHex(hex)
+    return medicationColorOptions.firstOrNull { it.hex == normalized } ?: medicationColorOptions.first()
+}
+
+private fun normalizeColorHex(hex: String?): String = "#${(hex ?: Medication.PRESET_COLORS.first()).removePrefix("#").uppercase()}"
+
 private fun parseColorHex(hex: String?): Color = try {
-    val raw = (hex ?: Medication.PRESET_COLORS.first()).removePrefix("#")
+    val raw = normalizeColorHex(hex).removePrefix("#")
     Color((raw.toLong(16) or 0xFF000000L).toInt())
 } catch (_: Exception) {
     Color(0xFF42A5F5)

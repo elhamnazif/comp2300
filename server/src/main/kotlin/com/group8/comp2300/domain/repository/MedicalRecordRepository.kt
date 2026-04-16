@@ -1,10 +1,19 @@
 package com.group8.comp2300.domain.repository
 
 import com.group8.comp2300.domain.model.medical.MedicalRecord
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordSortOrder
 
 interface MedicalRecordRepository {
-    fun insert(id: String, userId: String, fileName: String, storagePath: String, fileSize: Long, createdAt: Long)
+    fun insert(
+        id: String,
+        userId: String,
+        fileName: String,
+        storagePath: String,
+        fileSize: Long,
+        createdAt: Long,
+        category: MedicalRecordCategory,
+    )
 
     // Does not include the storagePath
     fun getRecordById(id: String, userId: String): MedicalRecord?

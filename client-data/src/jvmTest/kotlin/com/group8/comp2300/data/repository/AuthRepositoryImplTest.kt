@@ -224,6 +224,8 @@ internal open class FakeApiService(
 
     override suspend fun getMedicationLogHistory(): List<MedicationLog> = medicationLogs.toList()
 
+    override suspend fun getMedicationAgenda(date: String): List<MedicationLog> = medicationLogs.toList()
+
     override suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda> = error("unused")
 
     override suspend fun logMood(request: MoodEntryRequest): Mood = error("unused")
@@ -248,4 +250,17 @@ internal open class FakeApiService(
     override suspend fun upsertRoutineOccurrenceOverride(
         request: RoutineOccurrenceOverrideRequest,
     ): RoutineOccurrenceOverride = error("unused")
+
+    override suspend fun getMedicalRecords(sort: String) =
+        emptyList<com.group8.comp2300.domain.model.medical.MedicalRecordResponse>()
+
+    override suspend fun uploadMedicalRecord(
+        fileBytes: ByteArray,
+        fileName: String,
+        category: com.group8.comp2300.domain.model.medical.MedicalRecordCategory,
+    ) = Unit
+
+    override suspend fun downloadMedicalRecord(id: String): ByteArray = error("unused")
+
+    override suspend fun deleteMedicalRecord(id: String) = Unit
 }

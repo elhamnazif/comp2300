@@ -33,8 +33,11 @@ import com.group8.comp2300.domain.repository.RoutineOccurrenceOverrideRepository
 import com.group8.comp2300.domain.repository.RoutineRepository
 import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.infrastructure.database.createServerDatabase
+import com.group8.comp2300.security.AesGcmMedicalRecordCipher
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
+import com.group8.comp2300.security.MedicalRecordCipher
+import com.group8.comp2300.security.MedicalRecordEncryptionConfig
 import com.group8.comp2300.service.appointment.AppointmentService
 import com.group8.comp2300.service.auth.AuthService
 import com.group8.comp2300.service.email.EmailService
@@ -56,6 +59,7 @@ val serverModule = module {
             audience = JwtConfig.audience,
         )
     }
+    single<MedicalRecordCipher> { AesGcmMedicalRecordCipher(MedicalRecordEncryptionConfig.keyBytes) }
 
     // Data layer - Repositories
     single<UserRepository> { UserRepositoryImpl(get()) }
@@ -90,5 +94,5 @@ val serverModule = module {
     }
     single<PaymentService> { PaymentServiceImpl() }
     single { AppointmentService(get(), get(), get()) }
-    single { MedicalRecordService(repository = get()) }
+    single { MedicalRecordService(repository = get(), medicalRecordCipher = get()) }
 }

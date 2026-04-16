@@ -1,12 +1,15 @@
 package com.group8.comp2300.service
 
 import com.group8.comp2300.domain.model.medical.MedicalRecord
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
+import com.group8.comp2300.security.AesGcmMedicalRecordCipher
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import com.group8.comp2300.service.medicalRecords.UploadResult
-import io.ktor.http.content.*
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import java.io.File
@@ -15,7 +18,8 @@ import kotlin.test.*
 class MedicalRecordServiceTest {
     private val repository = mockk<MedicalRecordRepository>()
     private val testUploadDir = "test_uploads"
-    private val service = MedicalRecordService(repository, uploadDir = testUploadDir)
+    private val cipher = AesGcmMedicalRecordCipher(ByteArray(32) { (it + 1).toByte() })
+    private val service = MedicalRecordService(repository, uploadDir = testUploadDir, medicalRecordCipher = cipher)
 
     @BeforeTest
     fun setup() {
@@ -53,6 +57,13 @@ class MedicalRecordServiceTest {
         oldFile.writeText("Old content")
         assertTrue(oldFile.exists())
 
+        every { repository.getRecordById(id, userId) } returns MedicalRecord(
+            id = id,
+            fileName = "old_file.pdf",
+            fileSize = oldFile.length(),
+            createdAt = 123L,
+            category = MedicalRecordCategory.GENERAL,
+        )
         every { repository.getFilePath(id, userId) } returns oldPath
         every {
             repository.updateRecordMetadata(
@@ -74,7 +85,7 @@ class MedicalRecordServiceTest {
                 id = id,
                 userId = userId,
                 newName = "updated_report.pdf",
-                newPath = match { it.contains(id) && it.endsWith(".pdf") },
+                newPath = match { it.contains(id) && it.endsWith(".pdf.enc") },
                 newSize = newContent.size.toLong(),
                 newTimestamp = any(),
             )
@@ -158,7 +169,7 @@ class MedicalRecordServiceTest {
         val id = "ghost-id"
         val userId = "user-1"
 
-        every { repository.getFilePath(id, userId) } returns null
+        every { repository.getRecordById(id, userId) } returns null
 
         val result = service.reuploadRecord(id, userId, "report.pdf", "content".toByteArray())
 
@@ -175,13 +186,71 @@ class MedicalRecordServiceTest {
 
     @Test
     fun `uploadMedicalRecord rejects unsupported file types`() = runBlocking {
-        val part = mockk<PartData.FileItem>(relaxed = true)
-        every { part.originalFileName } returns "malicious.exe"
-
-        val result = service.uploadMedicalRecord("user-1", part)
+        val result = service.uploadMedicalRecord(
+            userId = "user-1",
+            fileName = "malicious.exe",
+            fileBytes = "bad".toByteArray(),
+            category = MedicalRecordCategory.OTHER,
+        )
 
         assertTrue(result is UploadResult.Failed)
         assertTrue(result.reason.contains("not allowed", ignoreCase = true))
+    }
+
+    @Test
+    fun `uploadMedicalRecord encrypts file contents at rest`() = runBlocking {
+        val plainBytes = "Highly sensitive lab data".toByteArray()
+        every {
+            repository.insert(
+                id = any(),
+                userId = "user-1",
+                fileName = "lab-report.pdf",
+                storagePath = any(),
+                fileSize = plainBytes.size.toLong(),
+                createdAt = any(),
+                category = MedicalRecordCategory.LAB_RESULT,
+            )
+        } just runs
+
+        val result = service.uploadMedicalRecord(
+            userId = "user-1",
+            fileName = "lab-report.pdf",
+            fileBytes = plainBytes,
+            category = MedicalRecordCategory.LAB_RESULT,
+        )
+
+        assertTrue(result is UploadResult.Success)
+
+        val encryptedFile = File(testUploadDir).listFiles()?.singleOrNull()
+        assertNotNull(encryptedFile, "Encrypted upload should be written to disk")
+
+        val encryptedBytes = encryptedFile.readBytes()
+        assertFalse(encryptedBytes.contentEquals(plainBytes), "Stored bytes must not remain plaintext")
+        assertContentEquals(plainBytes, cipher.decrypt(encryptedBytes))
+    }
+
+    @Test
+    fun `getDownloadableRecord decrypts stored file bytes`() {
+        val id = "file-1"
+        val userId = "user-1"
+        val plainBytes = "MRI scan".toByteArray()
+        val encryptedFile = File(testUploadDir, "file-1.png.enc")
+        encryptedFile.writeBytes(cipher.encrypt(plainBytes))
+
+        every { repository.getRecordById(id, userId) } returns MedicalRecord(
+            id = id,
+            fileName = "scan.png",
+            fileSize = plainBytes.size.toLong(),
+            createdAt = 123L,
+            category = MedicalRecordCategory.IMAGING,
+        )
+        every { repository.getFilePath(id, userId) } returns encryptedFile.path
+
+        val result = service.getDownloadableRecord(id, userId)
+
+        assertNotNull(result)
+        assertContentEquals(plainBytes, result.fileBytes)
+        assertEquals(io.ktor.http.ContentType.Image.PNG, result.contentType)
     }
 
     @Test
@@ -191,6 +260,13 @@ class MedicalRecordServiceTest {
         val oldPath = "$testUploadDir/old_file.pdf"
         File(oldPath).writeText("Old content")
 
+        every { repository.getRecordById(id, userId) } returns MedicalRecord(
+            id = id,
+            fileName = "old_file.pdf",
+            fileSize = File(oldPath).length(),
+            createdAt = 123L,
+            category = MedicalRecordCategory.GENERAL,
+        )
         every { repository.getFilePath(id, userId) } returns oldPath
         every {
             repository.updateRecordMetadata(any(), any(), any(), any(), any(), any())

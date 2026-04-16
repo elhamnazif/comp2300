@@ -487,6 +487,8 @@
     <string name="profile_biometrics_enabled">Biometrics enabled</string>
     <string name="profile_privacy_legalese_title">Privacy &amp; Legal</string>
     <string name="profile_privacy_legalese_desc">Terms, privacy policy</string>
+    <string name="profile_accessibility_title">Accessibility</string>
+    <string name="profile_accessibility_desc">Visual accommodations and readability</string>
 
     <!-- Privacy & Legalese Screen -->
     <string name="privacy_legalese_overview_title">Legal Information</string>
@@ -505,6 +507,8 @@
     <string name="profile_faqs_desc">FAQs</string>
     <string name="profile_language_label">Language</string>
     <string name="profile_logout_label">Logout</string>
+    <string name="profile_logout_confirm_title">Are you sure you want to logout?</string>
+    <string name="profile_logout_confirm_message">You will need to sign in again to access your account.</string>
 
     <!-- Months -->
     <string name="month_jan">Jan</string>
@@ -538,6 +542,8 @@
     <!-- Notifications -->
     <string name="notifications_title">Notifications</string>
     <string name="notifications_general_title">General</string>
+    <string name="notifications_grayscale_title">Grayscale Mode</string>
+    <string name="notifications_grayscale_desc">Desaturate the app so status differences are easier to perceive without relying on colour</string>
     <string name="notifications_discreet_mode_title">Discreet Mode</string>
     <string name="notifications_discreet_mode_desc">Hide sensitive information in notifications</string>
     <string name="notifications_health_reminders_title">Health Reminders</string>
@@ -553,6 +559,14 @@
     <string name="notifications_product_deals_title">Product Deals</string>
     <string name="notifications_product_deals_desc">Special offers on protection and testing kits</string>
     <string name="notifications_discreet_mode_info">When enabled, notifications will not show specific details about appointments or test results. You'll receive a generic reminder to check the app.</string>
+    <string name="notifications_grayscale_info">Grayscale mode is saved on this device and applies across the calendar, charts, and the rest of the app interface.</string>
+
+    <!-- Accessibility -->
+    <string name="accessibility_title">Accessibility</string>
+    <string name="accessibility_supporting_text">Adjust visual accommodations so information remains clear without depending on colour alone.</string>
+    <string name="accessibility_grayscale_title">Grayscale Mode</string>
+    <string name="accessibility_grayscale_desc">Desaturate the app so status differences are easier to perceive without relying on colour</string>
+    <string name="accessibility_grayscale_info">Grayscale mode is saved on this device and applies across the calendar, charts, and the rest of the app interface.</string>
 
     <!-- Privacy & Security -->
     <string name="privacy_security_title">Privacy &amp; Security</string>

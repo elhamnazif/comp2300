@@ -17,77 +17,53 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+private const val DUPLICATE_ACCOUNT_MESSAGE = "An account with this email already exists"
+private const val FORGOT_PASSWORD_RESPONSE_MESSAGE =
+    "If an account with that email exists, a password reset link has been sent"
+
 fun Route.authRoutes(authService: AuthService) {
     post("/api/auth/register") {
         val request = call.receive<RegisterRequest>()
-        val result = authService.register(request)
-        result.fold(
-            onSuccess = { authResponse -> call.respond(HttpStatusCode.Created, authResponse) },
+        call.respondResult(
+            result = authService.register(request),
+            successStatus = HttpStatusCode.Created,
             onFailure = { error ->
-                when (error) {
-                    is IllegalArgumentException -> {
-                        val message = error.message ?: "Registration failed"
-                        val status =
-                            if (message == "An account with this email already exists") {
-                                HttpStatusCode.Conflict
-                            } else {
-                                HttpStatusCode.BadRequest
-                            }
-                        call.respond(status, mapOf("error" to message))
-                    }
-
-                    else -> call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Registration failed"))
-                }
+                respondConflictAwareFailure(error, "Registration failed")
             },
         )
     }
 
     post("/api/auth/login") {
         val request = call.receive<LoginRequest>()
-        val result = authService.login(request)
-        result.fold(
-            onSuccess = { authResponse -> call.respond(HttpStatusCode.OK, authResponse) },
+        call.respondResult(
+            result = authService.login(request),
             onFailure = { error ->
-                when (error) {
-                    is IllegalArgumentException ->
-                        call.respond(HttpStatusCode.Unauthorized, mapOf("error" to (error.message ?: "Login failed")))
-
-                    else ->
-                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Login failed"))
-                }
+                respondExpectedFailure(
+                    error = error,
+                    expectedStatus = HttpStatusCode.Unauthorized,
+                    defaultMessage = "Login failed",
+                )
             },
         )
     }
 
     post("/api/auth/refresh") {
         val request = call.receive<RefreshTokenRequest>()
-        val result = authService.refreshToken(request.refreshToken)
-        result.fold(
-            onSuccess = { tokenResponse -> call.respond(HttpStatusCode.OK, tokenResponse) },
+        call.respondResult(
+            result = authService.refreshToken(request.refreshToken),
             onFailure = { error ->
-                when (error) {
-                    is IllegalArgumentException ->
-                        call.respond(
-                            HttpStatusCode.Unauthorized,
-                            mapOf("error" to (error.message ?: "Token refresh failed")),
-                        )
-
-                    else ->
-                        call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Token refresh failed"))
-                }
+                respondExpectedFailure(
+                    error = error,
+                    expectedStatus = HttpStatusCode.Unauthorized,
+                    defaultMessage = "Token refresh failed",
+                )
             },
         )
     }
 
     post("/api/auth/activate") {
         val request = call.receive<ActivateRequest>()
-        val result = authService.activateAccount(request.token)
-        result.fold(
-            onSuccess = { authResponse -> call.respond(HttpStatusCode.OK, authResponse) },
-            onFailure = { error ->
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Activation failed")))
-            },
-        )
+        call.respondActivationResult(authService.activateAccount(request.token))
     }
 
     get("/api/auth/activate") {
@@ -98,85 +74,48 @@ fun Route.authRoutes(authService: AuthService) {
             return@get
         }
 
-        val result = authService.activateAccount(token)
-        result.fold(
-            onSuccess = { authResponse -> call.respond(HttpStatusCode.OK, authResponse) },
-            onFailure = { error ->
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Activation failed")))
-            },
-        )
+        call.respondActivationResult(authService.activateAccount(token))
     }
 
     post("/api/auth/forgot-password") {
         val request = call.receive<ForgotPasswordRequest>()
-        val result = authService.forgotPassword(request.email)
-        result.fold(
-            onSuccess = {
-                call.respond(
-                    HttpStatusCode.OK,
-                    MessageResponse("If an account with that email exists, a password reset link has been sent"),
-                )
-            },
-            onFailure = { error ->
-                // Rate limiting error - still return a generic message to not leak info
-                call.respond(
-                    HttpStatusCode.OK,
-                    MessageResponse("If an account with that email exists, a password reset link has been sent"),
-                )
-            },
-        )
+        authService.forgotPassword(request.email)
+        // Return a generic success response to avoid email enumeration and rate-limit leakage.
+        call.respond(HttpStatusCode.OK, MessageResponse(FORGOT_PASSWORD_RESPONSE_MESSAGE))
     }
 
     post("/api/auth/reset-password") {
         val request = call.receive<ResetPasswordRequest>()
-        val result = authService.resetPassword(request.token, request.newPassword)
-        result.fold(
-            onSuccess = {
-                call.respond(HttpStatusCode.OK, MessageResponse("Password has been reset successfully"))
-            },
+        call.respondResult(
+            result = authService.resetPassword(request.token, request.newPassword),
+            successBody = MessageResponse("Password has been reset successfully"),
             onFailure = { error ->
-                call.respond(HttpStatusCode.BadRequest, mapOf("error" to (error.message ?: "Password reset failed")))
+                respondError(HttpStatusCode.BadRequest, error.message ?: "Password reset failed")
             },
         )
     }
 
     post("/api/auth/preregister") {
         val request = call.receive<PreregisterRequest>()
-        val result = authService.preregister(request)
-        result.fold(
-            onSuccess = { response -> call.respond(HttpStatusCode.OK, response) },
+        call.respondResult(
+            result = authService.preregister(request),
             onFailure = { error ->
-                when (error) {
-                    is IllegalArgumentException -> {
-                        val message = error.message ?: "Preregistration failed"
-                        val status =
-                            if (message == "An account with this email already exists") {
-                                HttpStatusCode.Conflict
-                            } else {
-                                HttpStatusCode.BadRequest
-                            }
-                        call.respond(status, mapOf("error" to message))
-                    }
-
-                    else -> call.respond(HttpStatusCode.InternalServerError, mapOf("error" to "Preregistration failed"))
-                }
+                respondConflictAwareFailure(error, "Preregistration failed")
             },
         )
     }
 
     post("/api/auth/resend-verification") {
         val request = call.receive<ResendVerificationRequest>()
-        val result = authService.resendVerificationEmail(request.email)
-        result.fold(
-            onSuccess = { call.respond(HttpStatusCode.OK, MessageResponse("Verification email sent")) },
+        call.respondResult(
+            result = authService.resendVerificationEmail(request.email),
+            successBody = MessageResponse("Verification email sent"),
             onFailure = { error ->
-                val status =
-                    if (error is IllegalArgumentException) {
-                        HttpStatusCode.BadRequest
-                    } else {
-                        HttpStatusCode.InternalServerError
-                    }
-                call.respond(status, mapOf("error" to (error.message ?: "Failed to resend")))
+                respondExpectedFailure(
+                    error = error,
+                    expectedStatus = HttpStatusCode.BadRequest,
+                    defaultMessage = "Failed to resend",
+                )
             },
         )
     }
@@ -203,26 +142,73 @@ fun Route.authRoutes(authService: AuthService) {
         post("/api/auth/complete-profile") {
             withUserId { userId ->
                 val request = call.receive<CompleteProfileRequest>()
-                val result = authService.completeProfile(userId, request)
-                result.fold(
-                    onSuccess = { user -> call.respond(HttpStatusCode.OK, user) },
+                call.respondResult(
+                    result = authService.completeProfile(userId, request),
                     onFailure = { error ->
-                        when (error) {
-                            is IllegalArgumentException ->
-                                call.respond(
-                                    HttpStatusCode.BadRequest,
-                                    mapOf("error" to (error.message ?: "Profile completion failed")),
-                                )
-
-                            else ->
-                                call.respond(
-                                    HttpStatusCode.InternalServerError,
-                                    mapOf("error" to "Profile completion failed"),
-                                )
-                        }
+                        respondExpectedFailure(
+                            error = error,
+                            expectedStatus = HttpStatusCode.BadRequest,
+                            defaultMessage = "Profile completion failed",
+                        )
                     },
                 )
             }
         }
     }
+}
+
+private suspend fun <T> io.ktor.server.application.ApplicationCall.respondResult(
+    result: Result<T>,
+    successStatus: HttpStatusCode = HttpStatusCode.OK,
+    successBody: Any? = null,
+    onFailure: suspend io.ktor.server.application.ApplicationCall.(Throwable) -> Unit,
+) {
+    result.fold(
+        onSuccess = { value ->
+            respond(successStatus, successBody ?: value as Any)
+        },
+        onFailure = { error ->
+            onFailure(error)
+        },
+    )
+}
+
+private suspend fun io.ktor.server.application.ApplicationCall.respondActivationResult(result: Result<*>) {
+    respondResult(
+        result = result,
+        onFailure = { error ->
+            respondError(HttpStatusCode.BadRequest, error.message ?: "Activation failed")
+        },
+    )
+}
+
+private suspend fun io.ktor.server.application.ApplicationCall.respondConflictAwareFailure(
+    error: Throwable,
+    defaultMessage: String,
+) {
+    if (error is IllegalArgumentException) {
+        val message = error.message ?: defaultMessage
+        val status = if (message == DUPLICATE_ACCOUNT_MESSAGE) HttpStatusCode.Conflict else HttpStatusCode.BadRequest
+        respondError(status, message)
+        return
+    }
+
+    respondError(HttpStatusCode.InternalServerError, defaultMessage)
+}
+
+private suspend fun io.ktor.server.application.ApplicationCall.respondExpectedFailure(
+    error: Throwable,
+    expectedStatus: HttpStatusCode,
+    defaultMessage: String,
+) {
+    if (error is IllegalArgumentException) {
+        respondError(expectedStatus, error.message ?: defaultMessage)
+        return
+    }
+
+    respondError(HttpStatusCode.InternalServerError, defaultMessage)
+}
+
+private suspend fun io.ktor.server.application.ApplicationCall.respondError(status: HttpStatusCode, message: String) {
+    respond(status, mapOf("error" to message))
 }

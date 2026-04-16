@@ -8,6 +8,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.data.local.OfflineMapSettingsDataSource
+import com.group8.comp2300.data.offline.OfflineMapManager
 import com.group8.comp2300.domain.model.medical.Clinic
 import kotlinx.serialization.json.JsonPrimitive
 import org.maplibre.compose.camera.CameraPosition
@@ -21,11 +23,13 @@ import org.maplibre.compose.layers.CircleLayer
 import org.maplibre.compose.map.MapOptions
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.map.OrnamentOptions
+import org.maplibre.compose.offline.rememberOfflineManager
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.style.BaseStyle
 import org.maplibre.compose.util.ClickResult
 import org.maplibre.spatialk.geojson.*
+import org.koin.compose.koinInject
 import kotlin.time.Duration.Companion.seconds
 
 @Composable
@@ -39,7 +43,7 @@ fun ClinicMap(
     val secondaryColor = MaterialTheme.colorScheme.secondary
     val surfaceColor = MaterialTheme.colorScheme.surface
 
-    val styleUri = "https://tiles.openfreemap.org/styles/liberty"
+    val styleUri = OfflineMapManager.StyleUrl
 
     val cameraState =
         rememberCameraState(
@@ -91,12 +95,23 @@ fun ClinicMap(
         }
     }
 
+    val offlineManager = rememberOfflineManager()
+    val offlineSettings: OfflineMapSettingsDataSource = koinInject()
+    val offlineMapManager = remember(offlineManager, offlineSettings) {
+        OfflineMapManager(offlineManager, offlineSettings)
+    }
+    LaunchedEffect(offlineMapManager) {
+        offlineMapManager.ensureOfflineMapDownload()
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         MaplibreMap(
             modifier = Modifier.fillMaxSize(),
             baseStyle = BaseStyle.Uri(styleUri),
             options = MapOptions(ornamentOptions = OrnamentOptions.OnlyLogo),
             cameraState = cameraState,
+            boundingBox = OfflineMapManager.MalaysiaBounds,
+            zoomRange = OfflineMapManager.MinCameraZoom..Float.MAX_VALUE,
         ) {
             val clinicSource =
                 rememberGeoJsonSource(

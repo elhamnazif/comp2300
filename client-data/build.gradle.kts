@@ -36,6 +36,7 @@ kotlin {
             "-opt-in=kotlin.time.ExperimentalTime",
             "-Xexpect-actual-classes",
             "-Xannotation-default-target=param-property",
+            "-Xexplicit-backing-fields",
         )
     }
 

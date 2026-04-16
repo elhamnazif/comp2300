@@ -5,6 +5,8 @@ import com.group8.comp2300.data.database.RoutineEntity
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineRepeatType
 import com.group8.comp2300.domain.model.medical.RoutineStatus
+import com.group8.comp2300.domain.model.medical.normalized
+import com.group8.comp2300.domain.model.medical.sortedByRoutineTime
 
 class RoutineLocalDataSource(private val database: AppDatabase) {
     fun getAll(): List<Routine> = database.appDatabaseQueries.selectAllRoutines()
@@ -104,8 +106,3 @@ class RoutineLocalDataSource(private val database: AppDatabase) {
             .map { it.medicationId },
     ).normalized()
 }
-
-private fun Routine.normalized(): Routine = copy(timesOfDayMs = timesOfDayMs.sorted().distinct())
-
-private fun List<Routine>.sortedByRoutineTime(): List<Routine> =
-    sortedWith(compareBy<Routine>({ it.timesOfDayMs.firstOrNull() ?: Long.MAX_VALUE }, { it.name }))

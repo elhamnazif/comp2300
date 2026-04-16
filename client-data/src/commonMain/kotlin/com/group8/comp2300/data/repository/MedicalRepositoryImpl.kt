@@ -9,6 +9,7 @@ import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.LabResult
+import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordResponse
 import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
@@ -140,12 +141,18 @@ class MedicalRepositoryImpl(
         emptyList()
     }
 
-    override suspend fun uploadMedicalRecord(fileBytes: ByteArray, fileName: String): Boolean = try {
-        apiService.uploadMedicalRecord(fileBytes, fileName)
+    override suspend fun uploadMedicalRecord(
+        fileBytes: ByteArray,
+        fileName: String,
+        category: MedicalRecordCategory,
+    ): Boolean = try {
+        apiService.uploadMedicalRecord(fileBytes, fileName, category)
         true
     } catch (_: Exception) {
         false
     }
+
+    override suspend fun downloadMedicalRecord(id: String): ByteArray = apiService.downloadMedicalRecord(id)
 
     override suspend fun deleteMedicalRecord(id: String) {
         try {

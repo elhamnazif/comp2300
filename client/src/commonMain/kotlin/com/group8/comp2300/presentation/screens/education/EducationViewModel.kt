@@ -11,9 +11,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class EducationViewModel(private val repository: EducationRepository) : ViewModel() {
-
-    val selectedCategory: StateFlow<ContentTopic?>
-        field = MutableStateFlow<ContentTopic?>(null)
+    private val selectedCategory = MutableStateFlow<ContentTopic?>(null)
 
     private val searchQuery: MutableStateFlow<String> = MutableStateFlow("")
 
@@ -30,37 +28,10 @@ class EducationViewModel(private val repository: EducationRepository) : ViewMode
         }
     }
         .combine(selectedCategory) { currentState, category ->
-            if (currentState.isLoading || currentState.isError) {
-                currentState
-            } else {
-                val filtered = if (category == null) {
-                    currentState.allContent
-                } else {
-                    currentState.allContent.filter { it.category == category }
-                }
-                currentState.copy(
-                    selectedCategory = category,
-                    filteredContent = filtered,
-                )
-            }
+            currentState.applyFilters(category = category)
         }
         .combine(searchQuery) { currentState, query ->
-            if (currentState.isLoading || currentState.isError) {
-                currentState
-            } else if (query.isBlank()) {
-                currentState
-            } else {
-                val searchResults = repository.searchContent(query)
-                val filtered = if (currentState.selectedCategory == null) {
-                    searchResults
-                } else {
-                    searchResults.filter { it.category == currentState.selectedCategory }
-                }
-                currentState.copy(
-                    filteredContent = filtered,
-                    searchQuery = query,
-                )
-            }
+            currentState.applyFilters(query = query)
         }
         .stateIn(
             scope = viewModelScope,
@@ -100,6 +71,32 @@ class EducationViewModel(private val repository: EducationRepository) : ViewMode
 
     fun getContentById(id: String): ContentItem? = repository.getContentById(id)
     fun getQuizById(id: String): Quiz? = repository.getQuizById(id)
+
+    private fun State.applyFilters(
+        category: ContentTopic? = selectedCategory,
+        query: String = searchQuery,
+    ): State {
+        if (isLoading || isError) {
+            return copy(
+                selectedCategory = category,
+                searchQuery = query,
+            )
+        }
+
+        val baseContent = if (query.isBlank()) allContent else repository.searchContent(query)
+        val filteredContent =
+            if (category == null) {
+                baseContent
+            } else {
+                baseContent.filter { it.category == category }
+            }
+
+        return copy(
+            filteredContent = filteredContent,
+            selectedCategory = category,
+            searchQuery = query,
+        )
+    }
 
     @Immutable
     data class State(

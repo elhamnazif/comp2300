@@ -31,23 +31,20 @@ class OutboxDataSource(private val database: AppDatabase) {
         )
     }
 
-    fun getAll(): List<OutboxItem> = database.appDatabaseQueries.selectAllOutbox().executeAsList().map { entity ->
-        OutboxItem(
-            id = entity.id,
-            entityType = entity.entityType,
-            payload = entity.payload,
-            localId = entity.localId,
-            state = OutboxState.valueOf(entity.state),
-            createdAt = entity.createdAt,
-            retryCount = entity.retryCount,
-            lastError = entity.lastError,
-        )
-    }
+    fun getAll(): List<OutboxItem> = database.appDatabaseQueries.selectAllOutbox().executeAsList().map(::toOutboxItem)
 
-    fun getPending(): List<OutboxItem> = getAll().filter { it.state == OutboxState.PENDING }
+    fun getPending(): List<OutboxItem> =
+        database.appDatabaseQueries.selectPendingOutbox().executeAsList().map(::toOutboxItem)
 
     fun delete(id: String) {
         database.appDatabaseQueries.deleteOutbox(id)
+    }
+
+    fun deleteByEntityTypeAndLocalId(entityType: String, localId: String) {
+        database.appDatabaseQueries.deleteOutboxByEntityTypeAndLocalId(
+            entityType = entityType,
+            localId = localId,
+        )
     }
 
     fun incrementRetry(id: String) {
@@ -65,4 +62,15 @@ class OutboxDataSource(private val database: AppDatabase) {
     fun clearAll() {
         database.appDatabaseQueries.deleteAllOutbox()
     }
+
+    private fun toOutboxItem(entity: com.group8.comp2300.data.database.OutboxEntity): OutboxItem = OutboxItem(
+        id = entity.id,
+        entityType = entity.entityType,
+        payload = entity.payload,
+        localId = entity.localId,
+        state = OutboxState.valueOf(entity.state),
+        createdAt = entity.createdAt,
+        retryCount = entity.retryCount,
+        lastError = entity.lastError,
+    )
 }

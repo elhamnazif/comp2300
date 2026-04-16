@@ -372,6 +372,11 @@ selectAllOutbox:
 SELECT * FROM OutboxEntity
 ORDER BY createdAt ASC;
 
+selectPendingOutbox:
+SELECT * FROM OutboxEntity
+WHERE state = 'PENDING'
+ORDER BY createdAt ASC;
+
 insertOutbox:
 INSERT INTO OutboxEntity (id, entityType, payload, localId, state, createdAt, retryCount, lastError)
 VALUES (?, ?, ?, ?, ?, ?, 0, NULL);
@@ -379,6 +384,10 @@ VALUES (?, ?, ?, ?, ?, ?, 0, NULL);
 deleteOutbox:
 DELETE FROM OutboxEntity
 WHERE id = ?;
+
+deleteOutboxByEntityTypeAndLocalId:
+DELETE FROM OutboxEntity
+WHERE entityType = ? AND localId = ?;
 
 incrementOutboxRetry:
 UPDATE OutboxEntity

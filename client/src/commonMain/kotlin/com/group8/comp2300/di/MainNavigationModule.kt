@@ -49,6 +49,7 @@ val mainNavigationModule = module {
                 if (isSignedIn) navigator.navigate(Screen.MedicalRecords) else navigator.requireAuth(Screen.Profile)
             },
             onNavigateToPrivacySecurity = { navigator.navigate(Screen.PrivacySecurity) },
+            onNavigateToAccessibility = { navigator.navigate(Screen.Accessibility) },
             onNavigateToPrivacyLegalese = { navigator.navigate(Screen.PrivacyLegalese) },
             onNavigateToNotifications = { navigator.navigate(Screen.Notifications) },
             onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) },

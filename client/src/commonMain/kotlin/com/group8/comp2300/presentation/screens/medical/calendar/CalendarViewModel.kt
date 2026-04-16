@@ -2,28 +2,10 @@ package com.group8.comp2300.presentation.screens.medical.calendar
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.AppointmentRequest
-import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
-import com.group8.comp2300.domain.model.medical.Medication
-import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationLog
-import com.group8.comp2300.domain.model.medical.MedicationLogRequest
-import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
-import com.group8.comp2300.domain.model.medical.Mood
-import com.group8.comp2300.domain.model.medical.MoodEntryRequest
-import com.group8.comp2300.domain.model.medical.MoodType
-import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
-import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
-import com.group8.comp2300.domain.repository.medical.CalendarDataRepository
-import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
-import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
-import com.group8.comp2300.domain.repository.medical.MoodDataRepository
-import com.group8.comp2300.domain.repository.medical.SyncCoordinator
+import com.group8.comp2300.domain.model.medical.*
+import com.group8.comp2300.domain.repository.medical.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -53,8 +35,8 @@ class CalendarViewModel(
     private val moodRepository: MoodDataRepository,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(CalendarUiState())
-    val state: StateFlow<CalendarUiState> = _state.asStateFlow()
+    val state: StateFlow<CalendarUiState>
+        field: MutableStateFlow<CalendarUiState> = MutableStateFlow(CalendarUiState())
 
     init {
         loadInitialData()
@@ -62,7 +44,7 @@ class CalendarViewModel(
 
     private fun loadInitialData(dateStringOverride: String? = null) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
+            state.update { it.copy(isLoading = true, error = null) }
             try {
                 syncCoordinator.refreshAuthenticatedData()
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
@@ -72,9 +54,9 @@ class CalendarViewModel(
                     2,
                     '0',
                 )}-${now.day.toString().padStart(2, '0')}"
-                val dateString = dateStringOverride ?: _state.value.selectedDate.ifBlank { todayDateString }
+                val dateString = dateStringOverride ?: state.value.selectedDate.ifBlank { todayDateString }
 
-                _state.update {
+                state.update {
                     it.copy(
                         isLoading = false,
                         overview = calendarRepository.getCalendarOverview(year, month),
@@ -86,7 +68,7 @@ class CalendarViewModel(
                     )
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(isLoading = false, error = e.message ?: "Failed to load calendar data") }
+                state.update { it.copy(isLoading = false, error = e.message ?: "Failed to load calendar data") }
             }
         }
     }
@@ -95,7 +77,7 @@ class CalendarViewModel(
         viewModelScope.launch {
             try {
                 val moods = moodRepository.getMoodsForDate(dateString)
-                _state.update {
+                state.update {
                     it.copy(
                         selectedDate = dateString,
                         routineAgenda = medicationLogRepository.getRoutineAgenda(dateString),
@@ -104,7 +86,7 @@ class CalendarViewModel(
                     )
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(error = e.message) }
+                state.update { it.copy(error = e.message) }
             }
         }
     }
@@ -116,18 +98,18 @@ class CalendarViewModel(
                     val moodCounts = moodRepository.getMoodsForMonth(year, month)
                         .groupingBy { it.moodType }
                         .eachCount()
-                    _state.update { state -> state.copy(overview = overview, monthMoodSummary = moodCounts) }
+                    state.update { state -> state.copy(overview = overview, monthMoodSummary = moodCounts) }
                 }
-                .onFailure { error -> _state.update { state -> state.copy(error = error.message) } }
+                .onFailure { error -> state.update { state -> state.copy(error = error.message) } }
         }
     }
 
     fun createMedication(request: MedicationCreateRequest) {
         viewModelScope.launch {
             runCatching { medicationRepository.saveMedication(request) }
-                .onSuccess { loadInitialData(_state.value.selectedDate.takeIf(String::isNotBlank)) }
+                .onSuccess { loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank)) }
                 .onFailure { error ->
-                    _state.update { state -> state.copy(error = error.errorMessage("Failed to save medication")) }
+                    state.update { state -> state.copy(error = error.errorMessage("Failed to save medication")) }
                 }
         }
     }
@@ -135,9 +117,9 @@ class CalendarViewModel(
     fun logMedication(request: MedicationLogRequest) {
         viewModelScope.launch {
             runCatching { medicationLogRepository.logMedication(request) }
-                .onSuccess { loadInitialData(_state.value.selectedDate.takeIf(String::isNotBlank)) }
+                .onSuccess { loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank)) }
                 .onFailure { error ->
-                    _state.update { state -> state.copy(error = error.errorMessage("Failed to log medication")) }
+                    state.update { state -> state.copy(error = error.errorMessage("Failed to log medication")) }
                 }
         }
     }
@@ -155,7 +137,7 @@ class CalendarViewModel(
                 )
             }.onSuccess(onLoaded)
                 .onFailure { error ->
-                    _state.update { state -> state.copy(error = error.errorMessage("Failed to load matching doses")) }
+                    state.update { state -> state.copy(error = error.errorMessage("Failed to load matching doses")) }
                 }
         }
     }
@@ -163,9 +145,9 @@ class CalendarViewModel(
     fun rescheduleRoutineOccurrence(request: RoutineOccurrenceOverrideRequest) {
         viewModelScope.launch {
             runCatching { medicationLogRepository.rescheduleRoutineOccurrence(request) }
-                .onSuccess { loadInitialData(_state.value.selectedDate.takeIf(String::isNotBlank)) }
+                .onSuccess { loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank)) }
                 .onFailure { error ->
-                    _state.update { state -> state.copy(error = error.errorMessage("Failed to move scheduled dose")) }
+                    state.update { state -> state.copy(error = error.errorMessage("Failed to move scheduled dose")) }
                 }
         }
     }
@@ -182,7 +164,7 @@ class CalendarViewModel(
                 appointmentRepository.scheduleAppointment(request)
             }.onSuccess { loadInitialData() }
                 .onFailure { error ->
-                    _state.update { state -> state.copy(error = error.errorMessage("Failed to save appointment")) }
+                    state.update { state -> state.copy(error = error.errorMessage("Failed to save appointment")) }
                 }
         }
     }
@@ -200,20 +182,20 @@ class CalendarViewModel(
                     ),
                 )
             }.onSuccess {
-                val currentDate = _state.value.selectedDate
+                val currentDate = state.value.selectedDate
                 if (currentDate.isNotBlank()) {
                     loadAgendaForDate(currentDate)
                 } else {
                     loadInitialData()
                 }
             }.onFailure { error ->
-                _state.update { state -> state.copy(error = error.errorMessage("Failed to log mood")) }
+                state.update { state -> state.copy(error = error.errorMessage("Failed to log mood")) }
             }
         }
     }
 
     fun dismissError() {
-        _state.update { it.copy(error = null) }
+        state.update { it.copy(error = null) }
     }
 
     companion object {

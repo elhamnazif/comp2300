@@ -4,11 +4,13 @@ import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.auth.TokenManagerImpl
 import com.group8.comp2300.data.database.DatabaseDriverFactory
 import com.group8.comp2300.data.database.createDatabase
+import com.group8.comp2300.data.local.AccessibilitySettingsDataSource
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
 import com.group8.comp2300.data.local.CalendarOverviewLocalDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.MoodLocalDataSource
+import com.group8.comp2300.data.local.OfflineMapSettingsDataSource
 import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.local.PinDataSource
@@ -135,6 +137,8 @@ val coreModule = module {
     single { ProductLocalDataSource(get()) }
     single { PersonalDataCleaner(get()) }
     single { Settings() }
+    single { AccessibilitySettingsDataSource(get()) }
+    single { OfflineMapSettingsDataSource(get()) }
     single { RoutineNotificationRegistry(get()) }
     single<RoutineNotificationScheduler> {
         RoutineNotificationSchedulerImpl(

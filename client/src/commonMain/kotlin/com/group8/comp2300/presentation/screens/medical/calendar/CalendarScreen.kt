@@ -28,6 +28,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.domain.model.medical.*
+import com.group8.comp2300.presentation.accessibility.AccessibleStatusChip
+import com.group8.comp2300.presentation.accessibility.IndicatorLegendItem
+import com.group8.comp2300.presentation.accessibility.IndicatorPattern
+import com.group8.comp2300.presentation.accessibility.PatternSwatch
+import com.group8.comp2300.presentation.accessibility.StatusIcon
+import com.group8.comp2300.presentation.accessibility.drawIndicatorPattern
 import com.group8.comp2300.presentation.components.AppTopBar
 import com.group8.comp2300.presentation.screens.medical.components.DatePickerSheet
 import com.group8.comp2300.presentation.screens.medical.components.DateValueField
@@ -67,6 +73,13 @@ private sealed interface CalendarSheetState {
 
     data class AppointmentDetails(val appointment: Appointment) : CalendarSheetState
 }
+
+private data class StatusVisual(
+    val label: String,
+    val color: Color,
+    val pattern: IndicatorPattern,
+    val icon: StatusIcon,
+)
 
 @Composable
 fun CalendarScreen(
@@ -707,6 +720,7 @@ private fun RoutineMedicationRow(
     medication: RoutineMedicationAgenda,
     onLogMedication: (String, MedicationLogStatus) -> Unit,
 ) {
+    val statusVisual = medicationStatusVisual(medication.status)
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -717,10 +731,11 @@ private fun RoutineMedicationRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            Text(
-                medication.status.displayName,
-                style = MaterialTheme.typography.labelMedium,
-                color = medicationStatusColor(medication.status),
+            AccessibleStatusChip(
+                label = statusVisual.label,
+                icon = statusVisual.icon,
+                containerColor = statusVisual.color.copy(alpha = 0.16f),
+                contentColor = statusVisual.color,
             )
         }
         if (
@@ -751,6 +766,24 @@ private fun medicationStatusColor(status: MedicationLogStatus): Color = when (st
     MedicationLogStatus.SNOOZED -> MaterialTheme.colorScheme.primary
     MedicationLogStatus.PENDING -> MaterialTheme.colorScheme.onSurfaceVariant
 }
+
+@Composable
+private fun medicationStatusVisual(status: MedicationLogStatus): StatusVisual = StatusVisual(
+    label = status.displayName,
+    color = medicationStatusColor(status),
+    pattern = when (status) {
+        MedicationLogStatus.TAKEN -> IndicatorPattern.DIAGONAL
+        MedicationLogStatus.SKIPPED, MedicationLogStatus.MISSED -> IndicatorPattern.GRID
+        MedicationLogStatus.SNOOZED -> IndicatorPattern.HORIZONTAL
+        MedicationLogStatus.PENDING -> IndicatorPattern.DOTS
+    },
+    icon = when (status) {
+        MedicationLogStatus.TAKEN -> StatusIcon.SUCCESS
+        MedicationLogStatus.SKIPPED, MedicationLogStatus.MISSED -> StatusIcon.DANGER
+        MedicationLogStatus.SNOOZED -> StatusIcon.WARNING
+        MedicationLogStatus.PENDING -> StatusIcon.DATE
+    },
+)
 
 private fun routineMedicationSummary(medications: List<RoutineMedicationAgenda>): String = when (medications.size) {
     0 -> ""
@@ -895,6 +928,29 @@ fun CalendarCard(
                     }
                 }
             }
+            Spacer(Modifier.height(12.dp))
+            CalendarLegend()
+        }
+    }
+}
+
+@Composable
+private fun CalendarLegend() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        listOf(
+            calendarDayVisual(AdherenceStatus.TAKEN),
+            calendarDayVisual(AdherenceStatus.MISSED),
+            calendarDayVisual(AdherenceStatus.APPOINTMENT),
+        ).forEach { visual ->
+            IndicatorLegendItem(
+                label = visual.label,
+                color = visual.color,
+                pattern = visual.pattern,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }
@@ -918,12 +974,7 @@ fun DayCell(day: CalendarDay, isSelected: Boolean, onClick: () -> Unit, modifier
         } else {
             MaterialTheme.colorScheme.onSurface
         }
-    val statusDotColor = when (day.status) {
-        AdherenceStatus.TAKEN -> Color(0xFF4CAF50)
-        AdherenceStatus.MISSED -> MaterialTheme.colorScheme.error
-        AdherenceStatus.APPOINTMENT -> Color(0xFFD4AF37)
-        else -> Color.Transparent
-    }
+    val statusVisual = calendarDayVisual(day.status)
     Box(
         modifier = modifier
             .aspectRatio(1f)
@@ -942,15 +993,42 @@ fun DayCell(day: CalendarDay, isSelected: Boolean, onClick: () -> Unit, modifier
             )
             if (day.status != AdherenceStatus.NONE && day.isCurrentMonth) {
                 Spacer(Modifier.height(4.dp))
-                Box(
-                    modifier = Modifier
-                        .size(width = 16.dp, height = 4.dp)
-                        .clip(RoundedCornerShape(999.dp))
-                        .background(statusDotColor),
+                PatternSwatch(
+                    color = statusVisual.color,
+                    pattern = statusVisual.pattern,
+                    modifier = Modifier.size(width = 16.dp, height = 6.dp),
                 )
             }
         }
     }
+}
+
+@Composable
+private fun calendarDayVisual(status: AdherenceStatus): StatusVisual = when (status) {
+    AdherenceStatus.TAKEN -> StatusVisual(
+        label = stringResource(Res.string.calendar_taken_action),
+        color = Color(0xFF4CAF50),
+        pattern = IndicatorPattern.DIAGONAL,
+        icon = StatusIcon.SUCCESS,
+    )
+    AdherenceStatus.MISSED -> StatusVisual(
+        label = stringResource(Res.string.calendar_skip_action),
+        color = MaterialTheme.colorScheme.error,
+        pattern = IndicatorPattern.GRID,
+        icon = StatusIcon.DANGER,
+    )
+    AdherenceStatus.APPOINTMENT -> StatusVisual(
+        label = stringResource(Res.string.calendar_appointments),
+        color = Color(0xFFD4AF37),
+        pattern = IndicatorPattern.VERTICAL,
+        icon = StatusIcon.DATE,
+    )
+    AdherenceStatus.NONE -> StatusVisual(
+        label = "",
+        color = Color.Transparent,
+        pattern = IndicatorPattern.SOLID,
+        icon = StatusIcon.WARNING,
+    )
 }
 
 @Composable
@@ -1419,6 +1497,13 @@ private fun MonthlyMoodChart(moodCounts: Map<MoodType, Int>) {
         Color(0xFFAED581),
         Color(0xFF66BB6A),
     )
+    val moodPatterns = listOf(
+        IndicatorPattern.GRID,
+        IndicatorPattern.DIAGONAL,
+        IndicatorPattern.HORIZONTAL,
+        IndicatorPattern.DOTS,
+        IndicatorPattern.VERTICAL,
+    )
 
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -1442,13 +1527,19 @@ private fun MonthlyMoodChart(moodCounts: Map<MoodType, Int>) {
                         topLeft = Offset(currentX, 0f),
                         size = Size(width, size.height),
                     )
+                    drawIndicatorPattern(
+                        pattern = moodPatterns[index],
+                        color = chartPatternOverlay(moodColors[index]),
+                        topLeft = Offset(currentX, 0f),
+                        size = Size(width, size.height),
+                    )
                     currentX += width
                 }
             }
         }
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             moodTypes.forEachIndexed { index, type ->
                 val count = moodCounts[type] ?: 0
@@ -1457,13 +1548,13 @@ private fun MonthlyMoodChart(moodCounts: Map<MoodType, Int>) {
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Box(
-                            modifier = Modifier.size(8.dp)
-                                .clip(RoundedCornerShape(2.dp))
-                                .background(moodColors[index]),
+                        PatternSwatch(
+                            color = moodColors[index],
+                            pattern = moodPatterns[index],
+                            modifier = Modifier.size(width = 16.dp, height = 10.dp),
                         )
                         Text(
-                            "${type.displayName}: $count",
+                            "${type.toEmoji()} ${type.displayName}: $count",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -1473,6 +1564,14 @@ private fun MonthlyMoodChart(moodCounts: Map<MoodType, Int>) {
         }
     }
 }
+
+private fun chartPatternOverlay(color: Color): Color = if (relativeBrightness(color) > 0.5f) {
+    Color.Black.copy(alpha = 0.22f)
+} else {
+    Color.White.copy(alpha = 0.4f)
+}
+
+private fun relativeBrightness(color: Color): Float = (0.299f * color.red) + (0.587f * color.green) + (0.114f * color.blue)
 
 private fun MoodType.toEmoji(): String = when (this) {
     MoodType.VERY_SAD -> "😢"

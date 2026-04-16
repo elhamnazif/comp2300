@@ -84,6 +84,7 @@ The server supports a development mode with authentication bypass for easier tes
 | `ENV`               | (unset)                               | Set to `development` to enable dev mode |
 | `DEV_AUTH_BYPASS`   | `true` (in dev)                       | Set to `false` to disable auth bypass   |
 | `JWT_SECRET`        | `dev-secret-key-change-in-production` | JWT signing secret                      |
+| `MEDICAL_RECORD_ENCRYPTION_KEY` | derived from `JWT_SECRET` (dev only) | Base64-encoded 32-byte AES key for encrypted medical-record storage |
 | `JWT_REALM`         | `comp2300`                            | JWT realm                               |
 | `JWT_ISSUER`        | `http://0.0.0.0:8080`                 | JWT issuer                              |
 | `JWT_AUDIENCE`      | `http://0.0.0.0:8080`                 | JWT audience                            |

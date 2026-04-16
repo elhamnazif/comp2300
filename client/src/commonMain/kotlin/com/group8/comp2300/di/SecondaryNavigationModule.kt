@@ -14,6 +14,7 @@ import com.group8.comp2300.presentation.screens.medical.routine.RoutineScreen
 import com.group8.comp2300.presentation.screens.medical.selfdiagnosis.SelfDiagnosisScreen
 import com.group8.comp2300.presentation.screens.profile.GuestSignInScreen
 import com.group8.comp2300.presentation.screens.profile.HelpSupportScreen
+import com.group8.comp2300.presentation.screens.profile.AccessibilityScreen
 import com.group8.comp2300.presentation.screens.profile.NotificationsScreen
 import com.group8.comp2300.presentation.screens.profile.PrivacyLegaleseScreen
 import com.group8.comp2300.presentation.screens.profile.PrivacySecurityScreen
@@ -63,6 +64,13 @@ val secondaryNavigationModule = module {
     navigation<Screen.Notifications> {
         val navigator = LocalNavigator.current
         NotificationsScreen(
+            onBack = navigator::goBack,
+        )
+    }
+
+    navigation<Screen.Accessibility> {
+        val navigator = LocalNavigator.current
+        AccessibilityScreen(
             onBack = navigator::goBack,
         )
     }
