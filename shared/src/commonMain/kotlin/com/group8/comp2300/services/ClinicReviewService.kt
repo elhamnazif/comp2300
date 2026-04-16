@@ -5,13 +5,11 @@ import com.group8.comp2300.domain.repository.ClinicReviewRepository
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-class ClinicReviewService(  // Renamed class
+class ClinicReviewService(
     private val repository: ClinicReviewRepository
 ) {
 
-    /**
-     * Submit a new review
-     */
+    //Submit a new review
     @OptIn(ExperimentalUuidApi::class)
     suspend fun submitReview(request: CreateReviewRequest): Result<Review> {
         // Validation
@@ -30,9 +28,7 @@ class ClinicReviewService(  // Renamed class
         return repository.createReview(request)
     }
 
-    /**
-     * Get reviews for a clinic
-     */
+    //Get reviews for a clinic
     suspend fun getClinicReviews(
         clinicId: String,
         sortBy: ReviewSortBy = ReviewSortBy.MOST_RECENT
@@ -44,16 +40,12 @@ class ClinicReviewService(  // Renamed class
         return repository.getReviewsByClinicId(clinicId, sortBy)
     }
 
-    /**
-     * Get average rating for a clinic
-     */
+    //Get average rating for a clinic
     suspend fun getClinicRating(clinicId: String): Result<Double> {
         return repository.getAverageRating(clinicId)
     }
 
-    /**
-     * Update a review (author only)
-     */
+    //Update a review (author only)
     suspend fun updateReview(
         reviewId: String,
         userId: String,
@@ -84,17 +76,61 @@ class ClinicReviewService(  // Renamed class
         return repository.updateReview(request, userId)
     }
 
-    /**
-     * Delete a review
-     */
+    //Delete a review
     suspend fun deleteReview(reviewId: String, userId: String): Result<Boolean> {
         return repository.deleteReview(reviewId, userId)
     }
 
-    /**
-     * Mark review as helpful
-     */
+    //Mark review as helpful
     suspend fun markReviewHelpful(reviewId: String, userId: String): Result<Boolean> {
         return repository.markHelpful(reviewId, userId)
     }
+
+    // Search reviews by keyword with sorting
+    suspend fun searchClinicReviews(
+        clinicId: String,
+        keyword: String,
+        sortBy: ReviewSortBy = ReviewSortBy.MOST_RECENT
+    ): Result<List<Review>> {
+        if (clinicId.isBlank()) {
+            return Result.failure(IllegalArgumentException("Clinic ID cannot be empty"))
+        }
+
+        if (keyword.isBlank()) {
+            return repository.getReviewsByClinicId(clinicId, sortBy)
+        }
+
+        return repository.searchReviewsByClinicId(clinicId, keyword, sortBy)
+    }
+
+    //Get reviews with multiple filter options (rating + keyword)
+    suspend fun getFilteredReviews(
+        clinicId: String,
+        sortBy: ReviewSortBy = ReviewSortBy.MOST_RECENT,
+        minRating: Int? = null,
+        keyword: String? = null
+    ): Result<List<Review>> {
+        if (clinicId.isBlank()) {
+            return Result.failure(IllegalArgumentException("Clinic ID cannot be empty"))
+        }
+
+        val reviewsResult = if (!keyword.isNullOrBlank()) {
+            repository.searchReviewsByClinicId(clinicId, keyword, sortBy)
+        } else {
+            repository.getReviewsByClinicId(clinicId, sortBy)
+        }
+
+        if (reviewsResult.isFailure) {
+            return reviewsResult
+        }
+
+        var reviews = reviewsResult.getOrNull() ?: emptyList()
+
+        if (minRating != null && minRating in 1..5) {
+            reviews = reviews.filter { it.rating >= minRating }
+        }
+
+        return Result.success(reviews)
+    }
+
 }
