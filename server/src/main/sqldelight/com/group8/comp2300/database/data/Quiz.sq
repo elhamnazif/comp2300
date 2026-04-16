@@ -1,0 +1,44 @@
+CREATE TABLE QuizEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    article_id TEXT UNIQUE REFERENCES ArticleEnt(id) ON DELETE CASCADE,
+    title TEXT NOT NULL
+);
+
+upsertQuiz:
+INSERT OR REPLACE INTO QuizEnt (
+    id,
+    article_id,
+    title
+) VALUES (
+    :id,
+    :articleId,
+    :title
+);
+
+getQuizByArticleId:
+SELECT * FROM QuizEnt
+WHERE article_id = :articleId;
+
+getQuizById:
+SELECT * FROM QuizEnt
+WHERE id = :quizId;
+
+-- for boolean check in ViewModel
+doesQuizExistForArticle:
+SELECT EXISTS(
+    SELECT 1 FROM QuizEnt
+    WHERE article_id = :articleId
+);
+
+-- For a "Quiz Center" or "Challenges" screen
+getAllQuizzes:
+SELECT * FROM QuizEnt;
+
+updateQuizTitle:
+UPDATE QuizEnt
+SET title = :newTitle
+WHERE id = :quizId;
+
+deleteQuiz:
+DELETE FROM QuizEnt
+WHERE id = :quizId;

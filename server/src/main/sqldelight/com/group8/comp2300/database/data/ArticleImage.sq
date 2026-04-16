@@ -1,0 +1,35 @@
+CREATE TABLE ArticleImageEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    article_id TEXT NOT NULL REFERENCES ArticleEnt(id) ON DELETE CASCADE,
+    picture_url TEXT NOT NULL,
+    caption TEXT
+);
+
+
+-- Fetch all images for a specific article
+getImagesByArticleId:
+SELECT * FROM ArticleImageEnt
+WHERE article_id = :articleId
+ORDER BY id ASC;
+
+getFirstImageForArticle:
+SELECT * FROM ArticleImageEnt
+WHERE article_id = :articleId
+LIMIT 1;
+
+insertArticleImage:
+INSERT INTO ArticleImageEnt (id, article_id, picture_url, caption)
+VALUES (:id, :articleId, :pictureUrl, :caption);
+
+updateImageCaption:
+UPDATE ArticleImageEnt
+SET caption = :caption
+WHERE id = :id;
+
+deleteImagesByArticleId:
+DELETE FROM ArticleImageEnt
+WHERE article_id = :articleId;
+
+deleteImage:
+DELETE FROM ArticleImageEnt
+WHERE id = :id;

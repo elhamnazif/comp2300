@@ -1,0 +1,22 @@
+CREATE TABLE ContentCategoryEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL
+);
+
+getAllCategories:
+SELECT * FROM ContentCategoryEnt
+ORDER BY title ASC;
+
+getCategoryById:
+SELECT * FROM ContentCategoryEnt
+WHERE id = :categoryId;
+
+upsertCategory:
+INSERT OR REPLACE INTO ContentCategoryEnt (id, title)
+VALUES (:id, :title);
+
+deleteCategory:
+DELETE FROM ContentCategoryEnt
+WHERE id = :categoryId;
+
+

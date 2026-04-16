@@ -1,0 +1,43 @@
+CREATE TABLE UserBadgeEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+	badge_id TEXT NOT NULL REFERENCES BadgeEnt(id) ON DELETE CASCADE,
+	earned_at INTEGER NOT NULL,
+    UNIQUE(user_id, badge_id)
+);
+
+insertUserBadge:
+INSERT INTO UserBadgeEnt (id, user_id, badge_id, earned_at)
+VALUES (:id, :userId, :badgeId, :earnedAt);
+
+-- Check if a user already has a specific badge
+-- Returns 1 (true) or 0 (false)
+hasUserEarnedBadge:
+SELECT EXISTS(
+    SELECT 1 FROM UserBadgeEnt
+    WHERE user_id = :userId AND badge_id = :badgeId
+);
+
+getEarnedBadgeIds:
+SELECT badge_id FROM UserBadgeEnt
+WHERE user_id = :userId;
+
+getBadgeUserBadgeCount:
+SELECT COUNT(*) FROM UserBadgeEnt
+WHERE user_id = :userId;
+
+getLatestBadgeForUser:
+SELECT * FROM UserBadgeEnt
+WHERE user_id = :userId
+ORDER BY earned_at DESC
+LIMIT 1;
+
+-- Revoke a specific badge (e.g., if a quiz attempt was invalidated)
+deleteUserBadge:
+DELETE FROM UserBadgeEnt
+WHERE user_id = :userId AND badge_id = :badgeId;
+
+-- Clear all badges (e.g., when a user deletes their account or resets progress)
+deleteAllBadgesForUser:
+DELETE FROM UserBadgeEnt
+WHERE user_id = :userId;
