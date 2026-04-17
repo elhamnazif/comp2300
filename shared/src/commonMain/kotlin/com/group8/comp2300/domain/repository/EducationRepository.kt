@@ -15,4 +15,8 @@ interface EducationRepository {
 
     /** Search education content by query string. */
     fun searchContent(query: String): List<ContentItem>
+
+    //functions..?
+    //suspend fun getAllArticles(): List<ArticleSummary>
+    //suspend fun getArticlesByCategory(categoryId: String): List<ArticleSummary>
 }
