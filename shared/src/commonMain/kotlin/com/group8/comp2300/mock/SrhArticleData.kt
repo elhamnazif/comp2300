@@ -2,8 +2,7 @@ package com.group8.comp2300.mock
 
 import com.group8.comp2300.domain.model.education.Article
 import com.group8.comp2300.domain.model.education.ArticleImage
-import com.group8.comp2300.domain.model.education.Category
-import com.group8.comp2300.mock.ContentCategory
+
 
 val article1 = Article(
     id = "safer-sex-basics",
