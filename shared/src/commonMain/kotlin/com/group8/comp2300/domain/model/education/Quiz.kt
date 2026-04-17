@@ -3,8 +3,9 @@ package com.group8.comp2300.domain.model.education
 import com.group8.comp2300.domain.model.content.ContentTopic
 import kotlinx.serialization.Serializable
 
+/*
 @Serializable
-data class Quiz(
+data class Quizxx(
     val id: String,
     val title: String,
     val description: String,
@@ -13,3 +14,4 @@ data class Quiz(
     val difficultyLevel: QuizDifficulty = QuizDifficulty.MEDIUM,
     val estimatedMinutes: Int = 5,
 )
+*/
