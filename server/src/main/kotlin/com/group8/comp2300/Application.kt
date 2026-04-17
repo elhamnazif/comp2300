@@ -6,6 +6,7 @@ import com.group8.comp2300.config.ResendConfig
 import com.group8.comp2300.di.serverModule
 import com.group8.comp2300.routes.appointmentRoutes
 import com.group8.comp2300.routes.authRoutes
+import com.group8.comp2300.routes.clinicRoutes
 import com.group8.comp2300.routes.medicalRecordRoutes
 import com.group8.comp2300.routes.medicationRoutes
 import com.group8.comp2300.routes.moodRoutes
@@ -93,6 +94,7 @@ fun Application.module() {
 
         authRoutes(get())
         productRoutes()
+        clinicRoutes()
 
         authenticate("auth-jwt", optional = devBypass) {
             appointmentRoutes()

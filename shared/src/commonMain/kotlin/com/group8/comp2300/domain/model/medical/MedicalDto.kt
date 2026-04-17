@@ -71,6 +71,15 @@ data class AppointmentRequest(
 )
 
 @Serializable
+data class ClinicBookingRequest(
+    val clinicId: String,
+    val slotId: String,
+    val appointmentType: String,
+    val reason: String? = null,
+    val hasReminder: Boolean = true,
+)
+
+@Serializable
 data class MoodEntryRequest(
     val moodScore: Int,
     val tags: List<String>,

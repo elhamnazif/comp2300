@@ -15,7 +15,7 @@ class AppointmentRepositoryImpl(private val database: ServerDatabase) : Appointm
             appointment_time = appointment.appointmentTime,
             appointment_type = appointment.appointmentType,
             clinic_id = appointment.clinicId,
-            booking_id = null,
+            booking_id = appointment.bookingId,
             status = appointment.status,
             notes = appointment.notes,
             has_reminder = if (appointment.hasReminder) 1L else 0L,

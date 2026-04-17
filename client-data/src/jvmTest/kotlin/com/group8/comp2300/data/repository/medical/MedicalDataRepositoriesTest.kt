@@ -1,6 +1,7 @@
 package com.group8.comp2300.data.repository.medical
 
 import com.group8.comp2300.data.auth.TokenManagerImpl
+import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
@@ -13,7 +14,10 @@ import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
 import com.group8.comp2300.data.repository.newDatabase
 import com.group8.comp2300.data.repository.sampleMedication
-import com.group8.comp2300.domain.model.medical.AppointmentRequest
+import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.domain.model.medical.AppointmentSlot
+import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
@@ -91,27 +95,26 @@ class MedicalDataRepositoriesTest {
     }
 
     @Test
-    fun guestAppointmentSaveQueuesPendingWrite() = runTest {
+    fun bookingAppointmentPersistsServerResultLocally() = runTest {
         val db = newDatabase()
-        val outbox = OutboxDataSource(db)
         val repository = AppointmentDataRepositoryImpl(
-            authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             appointmentLocal = AppointmentLocalDataSource(db),
-            queuedWriteDispatcher = dispatcher(db, outbox),
+            apiService = BookingApiStub(),
         )
 
-        repository.scheduleAppointment(
-            AppointmentRequest(
-                title = "Appointment with Dr Tan",
-                appointmentTime = 123456789L,
+        repository.bookClinicAppointment(
+            ClinicBookingRequest(
+                clinicId = "clinic-1",
+                slotId = "slot-1",
                 appointmentType = "CONSULTATION",
-                doctorName = "Dr Tan",
+                reason = "Fever",
+                hasReminder = true,
             ),
         )
 
         assertEquals(1, AppointmentLocalDataSource(db).getAll().size)
-        assertEquals("APPOINTMENT", outbox.getAll().single().entityType)
-        assertEquals(OutboxState.PENDING, outbox.getAll().single().state)
+        assertEquals("clinic-1", AppointmentLocalDataSource(db).getAll().single().clinicId)
+        assertEquals("slot-1", AppointmentLocalDataSource(db).getAll().single().bookingId)
     }
 
     @Test
@@ -225,6 +228,79 @@ class MedicalDataRepositoriesTest {
         assertEquals("ROUTINE_OCCURRENCE_OVERRIDE_UPSERT", outbox.getAll().single().entityType)
         assertEquals(listOf("Morning meds"), notificationScheduler.syncedRoutineNames)
     }
+}
+
+private class BookingApiStub : ApiService {
+    override suspend fun getHealth(): Map<String, String> = emptyMap()
+    override suspend fun getProducts() = emptyList<com.group8.comp2300.data.remote.dto.ProductDto>()
+    override suspend fun getProduct(id: String) = error("unused")
+    override suspend fun login(request: com.group8.comp2300.data.remote.dto.LoginRequest) = error("unused")
+    override suspend fun refreshToken(request: com.group8.comp2300.data.remote.dto.RefreshTokenRequest) = error("unused")
+    override suspend fun logout() = Unit
+    override suspend fun getProfile() = error("unused")
+    override suspend fun activateAccount(token: String) = error("unused")
+    override suspend fun forgotPassword(email: String) = error("unused")
+    override suspend fun resetPassword(token: String, newPassword: String) = error("unused")
+    override suspend fun preregister(request: com.group8.comp2300.data.remote.dto.PreregisterRequest) = error("unused")
+    override suspend fun completeProfile(request: com.group8.comp2300.data.remote.dto.CompleteProfileRequest) = error("unused")
+    override suspend fun resendVerificationEmail(email: String) = error("unused")
+    override suspend fun getClinics(): List<Clinic> = emptyList()
+    override suspend fun getClinic(id: String): Clinic = error("unused")
+    override suspend fun getClinicAvailability(clinicId: String): List<AppointmentSlot> = emptyList()
+    override suspend fun getAppointments(): List<Appointment> = emptyList()
+    override suspend fun scheduleAppointment(request: com.group8.comp2300.domain.model.medical.AppointmentRequest): Appointment =
+        error("unused")
+
+    override suspend fun bookClinicAppointment(request: ClinicBookingRequest): Appointment = Appointment(
+        id = "appointment-1",
+        userId = "user-1",
+        title = "Appointment at Clinic",
+        appointmentTime = 123456789L,
+        appointmentType = request.appointmentType,
+        clinicId = request.clinicId,
+        bookingId = request.slotId,
+        status = "CONFIRMED",
+        notes = request.reason,
+        hasReminder = request.hasReminder,
+        paymentStatus = "PENDING",
+    )
+
+    override suspend fun logMedication(request: MedicationLogRequest) = error("unused")
+    override suspend fun getMedicationLogHistory() = emptyList<com.group8.comp2300.domain.model.medical.MedicationLog>()
+    override suspend fun getMedicationAgenda(date: String) = emptyList<com.group8.comp2300.domain.model.medical.MedicationLog>()
+    override suspend fun getRoutineAgenda(date: String) = error("unused")
+    override suspend fun logMood(request: com.group8.comp2300.domain.model.medical.MoodEntryRequest) = error("unused")
+    override suspend fun getMoodHistory() = emptyList<com.group8.comp2300.domain.model.medical.Mood>()
+    override suspend fun getUserMedications() = emptyList<com.group8.comp2300.domain.model.medical.Medication>()
+    override suspend fun upsertMedication(
+        id: String,
+        request: MedicationCreateRequest,
+    ) = error("unused")
+
+    override suspend fun deleteMedication(id: String) = Unit
+    override suspend fun getUserRoutines() = emptyList<Routine>()
+    override suspend fun upsertRoutine(
+        id: String,
+        request: RoutineCreateRequest,
+    ) = error("unused")
+
+    override suspend fun deleteRoutine(id: String) = Unit
+    override suspend fun getRoutineOccurrenceOverrides() =
+        emptyList<com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride>()
+
+    override suspend fun upsertRoutineOccurrenceOverride(
+        request: RoutineOccurrenceOverrideRequest,
+    ) = error("unused")
+
+    override suspend fun getMedicalRecords(sort: String) = emptyList<com.group8.comp2300.domain.model.medical.MedicalRecordResponse>()
+    override suspend fun uploadMedicalRecord(
+        fileBytes: ByteArray,
+        fileName: String,
+        category: com.group8.comp2300.domain.model.medical.MedicalRecordCategory,
+    ) = Unit
+
+    override suspend fun downloadMedicalRecord(id: String): ByteArray = ByteArray(0)
+    override suspend fun deleteMedicalRecord(id: String) = Unit
 }
 
 class TestSyncCoordinator : SyncCoordinator {

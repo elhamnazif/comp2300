@@ -22,8 +22,6 @@ internal sealed interface CalendarSheetState {
         val candidates: List<MedicationOccurrenceCandidate>,
     ) : CalendarSheetState
 
-    data object FormAppointment : CalendarSheetState
-
     data object FormMood : CalendarSheetState
 
     data class AppointmentDetails(val appointment: Appointment) : CalendarSheetState

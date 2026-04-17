@@ -152,23 +152,6 @@ class CalendarViewModel(
         }
     }
 
-    fun scheduleAppointment(doctorName: String, appointmentType: String, appointmentTimeMs: Long) {
-        viewModelScope.launch {
-            runCatching {
-                val request = AppointmentRequest(
-                    title = "Appointment with $doctorName",
-                    appointmentTime = appointmentTimeMs,
-                    appointmentType = normalizeAppointmentType(appointmentType),
-                    doctorName = doctorName,
-                )
-                appointmentRepository.scheduleAppointment(request)
-            }.onSuccess { loadInitialData() }
-                .onFailure { error ->
-                    state.update { state -> state.copy(error = error.errorMessage("Failed to save appointment")) }
-                }
-        }
-    }
-
     fun logMood(score: Int, tags: List<String>, symptoms: List<String>, notes: String, timestampMs: Long? = null) {
         viewModelScope.launch {
             runCatching {
@@ -196,36 +179,6 @@ class CalendarViewModel(
 
     fun dismissError() {
         state.update { it.copy(error = null) }
-    }
-
-    companion object {
-        fun normalizeAppointmentType(type: String): String {
-            val normalized = type.trim().uppercase()
-            if (normalized in knownAppointmentTypes) {
-                return normalized
-            }
-            return when (type.lowercase()) {
-                "consultation" -> "CONSULTATION"
-                "lab work", "labwork" -> "LAB_TEST"
-                "follow-up", "follow up", "followup" -> "FOLLOW_UP"
-                "checkup", "check-up" -> "CHECKUP"
-                "screening" -> "SCREENING"
-                "vaccination" -> "VACCINATION"
-                "emergency" -> "EMERGENCY"
-                else -> "OTHER"
-            }
-        }
-
-        private val knownAppointmentTypes = setOf(
-            "CONSULTATION",
-            "LAB_TEST",
-            "FOLLOW_UP",
-            "CHECKUP",
-            "SCREENING",
-            "VACCINATION",
-            "EMERGENCY",
-            "OTHER",
-        )
     }
 }
 

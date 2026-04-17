@@ -3,6 +3,8 @@ package com.group8.comp2300.domain.repository
 import com.group8.comp2300.domain.model.medical.Clinic
 
 interface ClinicRepository {
+    fun getAll(): List<Clinic>
+
     fun getById(id: String): Clinic?
 
     /**

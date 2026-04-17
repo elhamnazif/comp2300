@@ -172,6 +172,7 @@ symbolCraft {
         "delete",
         "done",
         "edit",
+        "format_list_bulleted",
         "search",
         "send",
         "share",

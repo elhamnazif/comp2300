@@ -23,6 +23,9 @@ import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.data.repository.medical.TestSyncCoordinator
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
+import com.group8.comp2300.domain.model.medical.AppointmentSlot
+import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationFrequency
@@ -209,9 +212,17 @@ internal open class FakeApiService(
 
     override suspend fun resendVerificationEmail(email: String): MessageResponse = MessageResponse("ok")
 
+    override suspend fun getClinics(): List<Clinic> = emptyList()
+
+    override suspend fun getClinic(id: String): Clinic = error("unused")
+
+    override suspend fun getClinicAvailability(clinicId: String): List<AppointmentSlot> = emptyList()
+
     override suspend fun getAppointments(): List<Appointment> = appointments.toList()
 
     override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment = error("unused")
+
+    override suspend fun bookClinicAppointment(request: ClinicBookingRequest): Appointment = error("unused")
 
     override suspend fun logMedication(request: MedicationLogRequest): MedicationLog = error("unused")
 

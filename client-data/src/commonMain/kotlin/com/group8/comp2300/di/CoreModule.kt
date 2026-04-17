@@ -46,9 +46,9 @@ import com.group8.comp2300.data.remote.TokenProvider
 import com.group8.comp2300.data.remote.createHttpClient
 import com.group8.comp2300.data.remote.tokenProviderDelegate
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
-import com.group8.comp2300.data.repository.FixtureClinicRepository
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
 import com.group8.comp2300.data.repository.FixtureLabResultsRepository
+import com.group8.comp2300.data.repository.RemoteClinicRepository
 import com.group8.comp2300.data.repository.ReminderRepositoryImpl
 import com.group8.comp2300.data.repository.FixtureSRHContentRepository
 import com.group8.comp2300.data.repository.ShopRepositoryImpl
@@ -164,7 +164,7 @@ val coreModule = module {
     single { QueuedWriteDispatcher(get(), get(), get()) }
 
     single<ShopRepository> { ShopRepositoryImpl(get(), get()) }
-    single<AppointmentDataRepository> { AppointmentDataRepositoryImpl(get(), get(), get()) }
+    single<AppointmentDataRepository> { AppointmentDataRepositoryImpl(get(), get()) }
     single<MedicationDataRepository> { MedicationDataRepositoryImpl(get(), get(), get()) }
     single<RoutineDataRepository> { RoutineDataRepositoryImpl(get(), get(), get(), get()) }
     single<MedicationLogDataRepository> { MedicationLogDataRepositoryImpl(get(), get(), get(), get(), get(), get()) }
@@ -174,7 +174,7 @@ val coreModule = module {
     // These features still ship with local fixtures; bind them explicitly so they are not mistaken for remote-backed data.
     single<LabResultsRepository> { FixtureLabResultsRepository() }
     single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get()) }
-    single<ClinicRepository> { FixtureClinicRepository() }
+    single<ClinicRepository> { RemoteClinicRepository(get()) }
     single<SRHContentRepository> { FixtureSRHContentRepository() }
     single<EducationRepository> { EducationRepositoryImpl(get()) }
     single<ReminderRepository> { ReminderRepositoryImpl(get()) }

@@ -360,25 +360,6 @@ fun CalendarScreen(
                     },
                 )
 
-                CalendarSheetState.FormAppointment -> WrapperFormLayout(
-                    title = stringResource(Res.string.calendar_form_add_appointment_title),
-                    entryDate = entryDate,
-                    entryTime = entryTime,
-                    onDateChange = { entryDate = it },
-                    onTimeChange = { h, m -> entryTime = h to m },
-                    onBack = { sheetUiState = CalendarSheetState.Menu },
-                ) {
-                    AppointmentForm { doctorName, appointmentType ->
-                        val dateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
-                        viewModel.scheduleAppointment(
-                            doctorName,
-                            appointmentType,
-                            dateTime.toInstant(timeZone).toEpochMilliseconds(),
-                        )
-                        sheetUiState = CalendarSheetState.Hidden
-                    }
-                }
-
                 CalendarSheetState.FormMood -> WrapperFormLayout(
                     title = stringResource(Res.string.form_mood_title),
                     entryDate = entryDate,

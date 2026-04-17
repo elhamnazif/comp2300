@@ -14,6 +14,9 @@ import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
+import com.group8.comp2300.domain.model.medical.AppointmentSlot
+import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
 import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordResponse
 import com.group8.comp2300.domain.model.medical.Medication
@@ -74,9 +77,17 @@ interface ApiService {
     suspend fun resendVerificationEmail(email: String): MessageResponse
 
     // Medical API methods
+    suspend fun getClinics(): List<Clinic>
+
+    suspend fun getClinic(id: String): Clinic
+
+    suspend fun getClinicAvailability(clinicId: String): List<AppointmentSlot>
+
     suspend fun getAppointments(): List<Appointment>
 
     suspend fun scheduleAppointment(request: AppointmentRequest): Appointment
+
+    suspend fun bookClinicAppointment(request: ClinicBookingRequest): Appointment
 
     suspend fun logMedication(request: MedicationLogRequest): MedicationLog
 
@@ -161,9 +172,19 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
         }.body()
 
     // --- Medical API ---
+    override suspend fun getClinics(): List<Clinic> = client.get("/api/clinics").body()
+
+    override suspend fun getClinic(id: String): Clinic = client.get("/api/clinics/$id").body()
+
+    override suspend fun getClinicAvailability(clinicId: String): List<AppointmentSlot> =
+        client.get("/api/clinics/$clinicId/slots").body()
+
     override suspend fun getAppointments(): List<Appointment> = client.get("/api/appointments").body()
 
     override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment =
+        error("Manual appointment creation is no longer supported in Calendar")
+
+    override suspend fun bookClinicAppointment(request: ClinicBookingRequest): Appointment =
         client.post("/api/appointments") { setBody(request) }.body()
 
     override suspend fun logMedication(request: MedicationLogRequest): MedicationLog =

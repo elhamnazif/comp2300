@@ -136,9 +136,6 @@ internal fun AddEntryMenu(selectedDate: LocalDate, onSelectType: (CalendarSheetS
         Button(onClick = { onSelectType(CalendarSheetState.FormMedication) }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(Res.string.calendar_menu_log_med))
         }
-        OutlinedButton(onClick = { onSelectType(CalendarSheetState.FormAppointment) }, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(Res.string.calendar_menu_track_appt))
-        }
         OutlinedButton(onClick = { onSelectType(CalendarSheetState.FormMood) }, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(Res.string.calendar_menu_track_mood))
         }
@@ -196,38 +193,6 @@ internal fun WrapperFormLayout(
                 activeTimePicker = false
             },
         )
-    }
-}
-
-@Composable
-internal fun AppointmentForm(onSave: (String, String) -> Unit) {
-    var doctorName by remember { mutableStateOf("") }
-    var appointmentType by remember { mutableStateOf("CONSULTATION") }
-    val appointmentOptions = listOf(
-        "CONSULTATION" to stringResource(Res.string.appt_type_consultation),
-        "LAB_TEST" to stringResource(Res.string.appt_type_labwork),
-        "FOLLOW_UP" to stringResource(Res.string.appt_type_followup),
-    )
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        OutlinedTextField(
-            value = doctorName,
-            onValueChange = { doctorName = it },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text(stringResource(Res.string.form_appt_doctor_label)) },
-        )
-        SimpleDropdown(
-            label = stringResource(Res.string.form_appt_type_label),
-            options = appointmentOptions,
-            selectedKey = appointmentType,
-            onSelect = { appointmentType = it },
-        )
-        Button(
-            onClick = { onSave(doctorName, appointmentType) },
-            enabled = doctorName.isNotBlank(),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(stringResource(Res.string.calendar_save_appointment))
-        }
     }
 }
 

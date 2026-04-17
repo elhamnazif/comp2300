@@ -1,11 +1,12 @@
 package com.group8.comp2300.domain.repository
 
 import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.medical.AppointmentSlot
 
 interface ClinicRepository {
-    /** Return all available clinics. */
-    fun getAllClinics(): List<Clinic>
+    suspend fun getAllClinics(): List<Clinic>
 
-    /** Return a clinic by its ID, or null if not found. */
-    fun getClinicById(id: String): Clinic?
+    suspend fun getClinicById(id: String): Clinic?
+
+    suspend fun getAvailableSlots(clinicId: String): List<AppointmentSlot>
 }

@@ -48,6 +48,12 @@ sealed interface Screen : NavKey {
     data class ClinicDetail(val clinicId: String) : Screen
 
     @Serializable
+    data class BookingConfirmation(val clinicId: String, val slotId: String) : Screen
+
+    @Serializable
+    data class BookingSuccess(val clinicId: String, val appointmentId: String, val appointmentTime: Long) : Screen
+
+    @Serializable
     data class ProductDetail(val productId: String) : Screen
 
     @Serializable

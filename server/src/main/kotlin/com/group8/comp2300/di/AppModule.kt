@@ -4,6 +4,7 @@ import com.group8.comp2300.config.DevSeeder
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.config.ResendConfig
 import com.group8.comp2300.data.repository.AppointmentRepositoryImpl
+import com.group8.comp2300.data.repository.AppointmentSlotRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicRepositoryImpl
 import com.group8.comp2300.data.repository.ClinicTagRepositoryImpl
 import com.group8.comp2300.data.repository.MedicalRecordRepositoryImpl
@@ -18,6 +19,7 @@ import com.group8.comp2300.data.repository.RoutineRepositoryImpl
 import com.group8.comp2300.data.repository.UserRepositoryImpl
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.repository.AppointmentRepository
+import com.group8.comp2300.domain.repository.AppointmentSlotRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.ClinicTagRepository
 import com.group8.comp2300.domain.repository.MedicalRecordRepository
@@ -31,6 +33,7 @@ import com.group8.comp2300.domain.repository.RoutineOccurrenceOverrideRepository
 import com.group8.comp2300.domain.repository.RoutineRepository
 import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.infrastructure.database.createServerDatabase
+import com.group8.comp2300.config.CareCatalogSeeder
 import com.group8.comp2300.security.AesGcmMedicalRecordCipher
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
@@ -43,7 +46,10 @@ import org.koin.dsl.module
 
 val serverModule = module {
     single<ServerDatabase> {
-        createServerDatabase().also { DevSeeder.seedIfDevBypassEnabled(it) }
+        createServerDatabase().also {
+            DevSeeder.seedIfDevBypassEnabled(it)
+            CareCatalogSeeder.seedIfEmpty(it)
+        }
     }
 
     // Security
@@ -64,8 +70,9 @@ val serverModule = module {
     }
     single<PasswordResetTokenRepository> { PasswordResetTokenRepositoryImpl(get()) }
     single<AppointmentRepository> { AppointmentRepositoryImpl(get()) }
+    single<AppointmentSlotRepository> { AppointmentSlotRepositoryImpl(get()) }
     single<ClinicTagRepository> { ClinicTagRepositoryImpl(get()) }
-    single<ClinicRepository> { ClinicRepositoryImpl(get(), get()) }
+    single<ClinicRepository> { ClinicRepositoryImpl(get(), get(), get()) }
     single<MedicationRepository> { MedicationRepositoryImpl(get()) }
     single<RoutineRepository> { RoutineRepositoryImpl(get()) }
     single<RoutineOccurrenceOverrideRepository> { RoutineOccurrenceOverrideRepositoryImpl(get()) }

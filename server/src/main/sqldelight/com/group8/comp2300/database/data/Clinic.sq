@@ -11,6 +11,9 @@ insertClinic:
 INSERT INTO ClinicEntity (id, name, address, phone, latitude, longitude)
 VALUES (?, ?, ?, ?, ?, ?);
 
+selectAllClinics:
+SELECT * FROM ClinicEntity;
+
 selectClinicById:
 SELECT * FROM ClinicEntity WHERE id = ?;
 
