@@ -8,21 +8,10 @@ CREATE TABLE QuizOptionEnt (
 	UNIQUE (question_id, option_order)
 );
 
-getAllOptionsForQuiz:
-SELECT qo.* FROM QuizOptionEnt qo
-INNER JOIN QuizQuestionEnt qq ON qo.question_id = qq.id
-WHERE qq.quiz_id = :quizId
-ORDER BY qq.question_order ASC, qo.option_order ASC;
-
 getAllOptionsForQuestion:
 SELECT * FROM QuizOptionEnt
 WHERE question_id = :questionId
 ORDER BY option_order ASC;
-
--- To validate an answer on the database side
-getCorrectOptionForQuestion:
-SELECT * FROM QuizOptionEnt
-WHERE question_id = :questionId AND is_correct = 1;
 
 insertOption:
 INSERT INTO QuizOptionEnt (
@@ -38,6 +27,11 @@ INSERT INTO QuizOptionEnt (
     :isCorrect,
     :optionOrder
 );
+
+-- To validate an answer on the database side
+getCorrectOptionForQuestion:
+SELECT * FROM QuizOptionEnt
+WHERE question_id = :questionId AND is_correct = 1;
 
 updateOption:
 UPDATE QuizOptionEnt

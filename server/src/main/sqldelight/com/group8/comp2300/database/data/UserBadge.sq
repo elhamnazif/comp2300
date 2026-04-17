@@ -10,8 +10,6 @@ insertUserBadge:
 INSERT INTO UserBadgeEnt (id, user_id, badge_id, earned_at)
 VALUES (:id, :userId, :badgeId, :earnedAt);
 
--- Check if a user already has a specific badge
--- Returns 1 (true) or 0 (false)
 hasUserEarnedBadge:
 SELECT EXISTS(
     SELECT 1 FROM UserBadgeEnt

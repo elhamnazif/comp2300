@@ -13,7 +13,7 @@ UPDATE BadgeEnt
 SET badge_name = :name, badge_path = :path
 WHERE id = :id;
 
--- For showing a 'locked' version of all badges to motivate users
+-- For showing a 'locked' version of all badges
 getAllBadges:
 SELECT * FROM BadgeEnt;
 
@@ -39,7 +39,6 @@ WHERE id NOT IN (
     SELECT badge_id FROM UserBadgeEnt WHERE user_id = :userId
 );
 
---also deletes from user
-deleteBadge:
+deleteBadge: --also deletes from user
 DELETE FROM BadgeEnt
 WHERE id = :badgeId;

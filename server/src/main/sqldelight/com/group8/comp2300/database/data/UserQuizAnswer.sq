@@ -6,7 +6,6 @@ CREATE TABLE UserQuizAnswerEnt (
 	UNIQUE (attempt_id, question_id)
 );
 
--- Save a single answer choice
 insertUserAnswer:
 INSERT INTO UserQuizAnswerEnt (id, attempt_id, question_id, selected_option_id)
 VALUES (:id, :attemptId, :questionId, :selectedOptionId);
@@ -24,13 +23,7 @@ LEFT JOIN QuizQuestionEnt qq ON ua.question_id = qq.id
 LEFT JOIN QuizOptionEnt qo ON ua.selected_option_id = qo.id
 WHERE ua.attempt_id = :attemptId;
 
--- Wipe previous attempt for the user on a specific quiz
-deletePreviousAttempt:
-DELETE FROM QuizAttemptEnt
-WHERE user_id = :userId AND quiz_id = :quizId;
-
--- Get only the IDs of the questions the user got WRONG in an attempt
--- For a "Retry Missed Questions" feature
+-- Get only the IDs of the questions the user got Wrong in an attempt
 getIncorrectAnswersByAttempt:
 SELECT ua.question_id
 FROM UserQuizAnswerEnt ua

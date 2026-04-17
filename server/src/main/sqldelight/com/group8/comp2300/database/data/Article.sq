@@ -41,7 +41,7 @@ WHERE title LIKE ('%' || :searchQuery || '%')
    OR description LIKE ('%' || :searchQuery || '%')
 ORDER BY published_date DESC;
 
--- Get a paginated list of articles (useful for infinite scroll)
+-- To get a paginated list of articles
 -- Offset = (pageNumber * pageSize)
 getArticlesPaginated:
 SELECT * FROM ArticleEnt
@@ -57,7 +57,6 @@ removeCategoryFromArticle:
 DELETE FROM ArticleCategoryEnt
 WHERE article_id = :articleId AND content_category_id = :categoryId;
 
--- Note: will automatically remove related quizzes and images
 deleteArticle:
 DELETE FROM ArticleEnt
 WHERE id = :id;
