@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -619,7 +620,30 @@ internal fun ClinicCompactRow(
     onNavigate: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+    val containerColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f)
+        } else {
+            Color.Transparent
+        }
+    val titleColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurface
+        }
+    val supportingColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f)
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
+    val chipContainerColor =
+        if (isSelected) {
+            MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHigh
+        }
 
     Row(
         modifier = modifier
@@ -630,34 +654,62 @@ internal fun ClinicCompactRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             Text(
                 text = clinic.name,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                },
+                color = titleColor,
             )
-            Text(
-                text = "${clinic.formattedDistance} • ${clinic.tags.joinToString()}",
-                style = MaterialTheme.typography.bodySmall,
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                } else {
-                    MaterialTheme.colorScheme.secondary
-                },
-                maxLines = 1,
-            )
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                androidx.compose.material3.Icon(
+                    imageVector = Icons.LocationOnW400Outlinedfill1,
+                    contentDescription = null,
+                    tint = supportingColor,
+                )
+                Text(
+                    text = "${clinic.formattedDistance} away",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = supportingColor,
+                    maxLines = 1,
+                )
+            }
+
+            if (clinic.tags.isNotEmpty()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    clinic.tags.take(3).forEach { tag ->
+                        Surface(
+                            color = chipContainerColor,
+                            shape = MaterialTheme.shapes.large,
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f)),
+                        ) {
+                            Text(
+                                text = tag.replaceFirstChar(Char::uppercase),
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = titleColor,
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         IconButton(onClick = onNavigate) {
             androidx.compose.material3.Icon(
                 imageVector = Icons.ArrowForwardW400Outlinedfill1,
                 contentDescription = stringResource(Res.string.medical_booking_view_details_desc),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = if (isSelected) supportingColor else MaterialTheme.colorScheme.primary,
             )
         }
     }
@@ -761,22 +813,22 @@ private fun ClinicListCard(
                     color = MaterialTheme.colorScheme.onSurface,
                 )
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     clinic.phone?.takeIf(String::isNotBlank)?.let {
                         Text(
                             text = it,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f),
-                            maxLines = 1,
+                            maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
-                    } ?: Spacer(modifier = Modifier.weight(1f))
+                    }
                     Button(
                         onClick = onViewAvailability,
                         shape = MaterialTheme.shapes.large,
+                        modifier = Modifier.align(Alignment.End),
                     ) {
                         Text("View availability")
                     }

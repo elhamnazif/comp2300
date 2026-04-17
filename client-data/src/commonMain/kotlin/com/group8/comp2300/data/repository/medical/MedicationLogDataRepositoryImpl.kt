@@ -10,8 +10,10 @@ import com.group8.comp2300.data.offline.QueuedOfflineStore
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
 import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -71,6 +73,32 @@ class MedicationLogDataRepositoryImpl(
         )
     }
 
+    override suspend fun getRoutineAgendaRange(
+        startDate: String,
+        endDate: String,
+    ): Map<String, List<RoutineDayAgenda>> {
+        val start = LocalDate.parse(startDate)
+        val end = LocalDate.parse(endDate)
+        val nowMs = Clock.System.now().toEpochMilliseconds()
+        val timeZone = TimeZone.currentSystemDefault()
+        val routines = routineLocal.getAll()
+        val medications = medicationLocal.getAll()
+        val logs = medicationLogLocal.getAll()
+        val overrides = routineOccurrenceOverrideLocal.getAll()
+
+        return datesInRange(start, end).associate { date ->
+            date.toString() to buildRoutineDayAgenda(
+                routines = routines,
+                medications = medications,
+                logs = logs,
+                overrides = overrides,
+                date = date,
+                nowMs = nowMs,
+                timeZone = timeZone,
+            )
+        }
+    }
+
     override suspend fun getManualMedicationLogs(date: String): List<MedicationLog> {
         val localDate = LocalDate.parse(date)
         return medicationLogLocal.getAll()
@@ -81,6 +109,29 @@ class MedicationLogDataRepositoryImpl(
                     .date == localDate
             }
             .sortedByDescending(MedicationLog::medicationTime)
+    }
+
+    override suspend fun getManualMedicationLogsRange(
+        startDate: String,
+        endDate: String,
+    ): Map<String, List<MedicationLog>> {
+        val start = LocalDate.parse(startDate)
+        val end = LocalDate.parse(endDate)
+        val timeZone = TimeZone.currentSystemDefault()
+        val manualLogs = medicationLogLocal.getAll()
+            .filter { it.routineId == null }
+            .groupBy { log ->
+                Instant.fromEpochMilliseconds(log.medicationTime)
+                    .toLocalDateTime(timeZone)
+                    .date
+                    .toString()
+            }
+            .mapValues { (_, logs) -> logs.sortedByDescending(MedicationLog::medicationTime) }
+
+        return datesInRange(start, end).associate { date ->
+            val dateKey = date.toString()
+            dateKey to manualLogs[dateKey].orEmpty()
+        }
     }
 
     override suspend fun getMedicationOccurrenceCandidates(
@@ -129,4 +180,14 @@ class MedicationLogDataRepositoryImpl(
             id = logId,
         )
     }
+}
+
+private fun datesInRange(startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
+    val dates = mutableListOf<LocalDate>()
+    var current = startDate
+    while (current <= endDate) {
+        dates += current
+        current = current.plus(1, DateTimeUnit.DAY)
+    }
+    return dates
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -16,7 +17,9 @@ import com.group8.comp2300.core.ui.components.ConsumeSnackbarMessage
 import com.group8.comp2300.core.ui.components.EmptyStateMessage
 import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
+import com.group8.comp2300.domain.model.medical.MedicationLogStatus
 import com.group8.comp2300.domain.model.medical.MedicationStatus
+import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.feature.calendar.components.*
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -42,6 +45,7 @@ fun CalendarScreen(
 
     var sheetUiState by remember { mutableStateOf<CalendarSheetState>(CalendarSheetState.Hidden) }
     var selectedDateForEntry by remember { mutableStateOf<CalendarDay?>(null) }
+    var viewMode by rememberSaveable { mutableStateOf(CalendarViewMode.CALENDAR) }
     var entryDate by remember { mutableStateOf(today) }
     var entryTime by remember { mutableStateOf(9 to 0) }
 
@@ -66,10 +70,55 @@ fun CalendarScreen(
                 .date == selectedDate
         }
     }
-    var expandedRoutineKeys by remember(
-        selectedDate,
-        state.routineAgenda.map { "${it.routineId}:${it.occurrenceTimeMs}" },
-    ) { mutableStateOf(emptySet<String>()) }
+    val agendaAppointmentsByDate = remember(state.appointments, state.agendaDays) {
+        state.agendaDays.associate { day ->
+            day.date to state.appointments.filter { appointment ->
+                Instant.fromEpochMilliseconds(appointment.appointmentTime)
+                    .toLocalDateTime(timeZone)
+                    .date == day.date
+            }
+        }
+    }
+    val agendaVisibleDays = remember(state.agendaDays, agendaAppointmentsByDate) {
+        state.agendaDays.filter { day -> hasAgendaContent(day, agendaAppointmentsByDate[day.date].orEmpty()) }
+    }
+    val agendaEndDate = remember(selectedDate) { selectedDate.plus(6, DateTimeUnit.DAY) }
+    var expandedRoutineKeys by remember { mutableStateOf(emptySet<String>()) }
+
+    val onToggleRoutineExpansion: (String) -> Unit = { routineKey ->
+        expandedRoutineKeys = expandedRoutineKeys.toMutableSet().apply {
+            if (!add(routineKey)) remove(routineKey)
+        }
+    }
+    val onLogMedication: (RoutineDayAgenda, String, MedicationLogStatus) -> Unit = { routine, medicationId, status ->
+        viewModel.logMedication(
+            routineLogRequest(
+                routine = routine,
+                medicationId = medicationId,
+                status = status,
+            ),
+        )
+    }
+    val onLogAll: (RoutineDayAgenda, MedicationLogStatus) -> Unit = { routine, status ->
+        val loggedAt = Clock.System.now().toEpochMilliseconds()
+        routine.medications.forEach { medication ->
+            viewModel.logMedication(
+                routineLogRequest(
+                    routine = routine,
+                    medicationId = medication.medicationId,
+                    status = status,
+                    nowMs = loggedAt,
+                ),
+            )
+        }
+    }
+    val onMoveDose: (RoutineDayAgenda) -> Unit = { routine ->
+        val occurrence = Instant.fromEpochMilliseconds(routine.occurrenceTimeMs)
+            .toLocalDateTime(timeZone)
+        entryDate = occurrence.date
+        entryTime = occurrence.hour to occurrence.minute
+        sheetUiState = CalendarSheetState.FormReschedule(routine)
+    }
 
     Scaffold(
         modifier = modifier,
@@ -105,123 +154,104 @@ fun CalendarScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             item {
-                CalendarCard(
-                    baseDate = today,
-                    overview = state.overview,
-                    selectedDate = selectedDateForEntry,
-                    onDayClick = { day ->
-                        selectedDateForEntry = day
-                        entryDate = day.date
-                        viewModel.loadAgendaForDate(day.date.toString())
-                    },
-                    onMonthChange = viewModel::loadOverviewForMonth,
+                CalendarViewModeSwitch(
+                    viewMode = viewMode,
+                    onSelect = { viewMode = it },
                 )
             }
 
-            item {
-                CalendarDayHeader(
-                    date = selectedDate,
-                    agenda = state.routineAgenda,
-                    extraLogCount = state.manualLogs.size,
-                    appointmentCount = selectedAppointments.size,
-                    moodCount = state.dayMoodEntries.size,
-                )
-            }
-
-            if (state.dayMoodEntries.isNotEmpty()) {
+            if (viewMode == CalendarViewMode.CALENDAR) {
                 item {
-                    DailyMoodSummaryCard(moods = state.dayMoodEntries)
-                }
-            }
-
-            if (state.monthMoodSummary.isNotEmpty()) {
-                item {
-                    MonthlyMoodChart(moodCounts = state.monthMoodSummary)
-                }
-            }
-
-            item {
-                Text(
-                    stringResource(Res.string.calendar_scheduled_doses),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                )
-            }
-
-            if (state.routineAgenda.isEmpty()) {
-                item {
-                    EmptyStateMessage(stringResource(Res.string.calendar_no_scheduled_doses_day))
-                }
-            } else {
-                items(
-                    items = state.routineAgenda,
-                    key = { "${it.routineId}:${it.occurrenceTimeMs}" },
-                ) { routine ->
-                    val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
-                    RoutineAgendaCard(
-                        routine = routine,
-                        isExpanded = routineKey in expandedRoutineKeys,
-                        onToggleExpansion = {
-                            expandedRoutineKeys = expandedRoutineKeys.toMutableSet().apply {
-                                if (!add(routineKey)) remove(routineKey)
-                            }
+                    CalendarCard(
+                        baseDate = today,
+                        overview = state.overview,
+                        selectedDate = selectedDateForEntry,
+                        onDayClick = { day ->
+                            selectedDateForEntry = day
+                            entryDate = day.date
+                            viewModel.loadAgendaForDate(day.date.toString())
                         },
-                        onLogMedication = { medicationId, status ->
-                            viewModel.logMedication(
-                                routineLogRequest(
-                                    routine = routine,
-                                    medicationId = medicationId,
-                                    status = status,
-                                ),
-                            )
-                        },
-                        onLogAll = { status ->
-                            val loggedAt = Clock.System.now().toEpochMilliseconds()
-                            routine.medications.forEach { medication ->
-                                viewModel.logMedication(
-                                    routineLogRequest(
-                                        routine = routine,
-                                        medicationId = medication.medicationId,
-                                        status = status,
-                                        nowMs = loggedAt,
-                                    ),
-                                )
-                            }
-                        },
-                        onMoveDose = {
-                            val occurrence = Instant.fromEpochMilliseconds(routine.occurrenceTimeMs)
-                                .toLocalDateTime(timeZone)
-                            entryDate = occurrence.date
-                            entryTime = occurrence.hour to occurrence.minute
-                            sheetUiState = CalendarSheetState.FormReschedule(routine)
-                        },
+                        onMonthChange = viewModel::loadOverviewForMonth,
                     )
                 }
-            }
 
-            if (state.manualLogs.isNotEmpty()) {
+                item {
+                    CalendarDayHeader(
+                        date = selectedDate,
+                        agenda = state.routineAgenda,
+                        extraLogCount = state.manualLogs.size,
+                        appointmentCount = selectedAppointments.size,
+                        moodCount = state.dayMoodEntries.size,
+                    )
+                }
+
+                if (state.dayMoodEntries.isNotEmpty()) {
+                    item {
+                        DailyMoodSummaryCard(moods = state.dayMoodEntries)
+                    }
+                }
+
+                if (state.monthMoodSummary.isNotEmpty()) {
+                    item {
+                        MonthlyMoodChart(moodCounts = state.monthMoodSummary)
+                    }
+                }
+
                 item {
                     Text(
-                        stringResource(Res.string.calendar_extra_logs),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        stringResource(Res.string.calendar_scheduled_doses),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
                     )
                 }
-                items(
-                    items = state.manualLogs,
-                    key = { it.id.ifBlank { "manual:${it.medicationTime}" } },
-                ) { log ->
-                    ManualLogCard(log = log)
-                }
-            }
 
-            if (selectedAppointments.isNotEmpty()) {
+                if (state.routineAgenda.isEmpty()) {
+                    item {
+                        EmptyStateMessage(stringResource(Res.string.calendar_no_scheduled_doses_day))
+                    }
+                } else {
+                    items(
+                        items = state.routineAgenda,
+                        key = { "${it.routineId}:${it.occurrenceTimeMs}" },
+                    ) { routine ->
+                        val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
+                        RoutineAgendaCard(
+                            routine = routine,
+                            isExpanded = routineKey in expandedRoutineKeys,
+                            onToggleExpansion = { onToggleRoutineExpansion(routineKey) },
+                            onLogMedication = { medicationId, status ->
+                                onLogMedication(routine, medicationId, status)
+                            },
+                            onLogAll = { status -> onLogAll(routine, status) },
+                            onMoveDose = { onMoveDose(routine) },
+                        )
+                    }
+                }
+
+                if (state.manualLogs.isNotEmpty()) {
+                    item {
+                        Text(
+                            stringResource(Res.string.calendar_extra_logs),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    items(
+                        items = state.manualLogs,
+                        key = { it.id.ifBlank { "manual:${it.medicationTime}" } },
+                    ) { log ->
+                        ManualLogCard(log = log)
+                    }
+                }
+
                 item {
-                    Text(
-                        stringResource(Res.string.calendar_appointments),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    if (selectedAppointments.isNotEmpty()) {
+                        Text(
+                            stringResource(Res.string.calendar_appointments),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
                 items(
                     items = selectedAppointments,
@@ -231,6 +261,72 @@ fun CalendarScreen(
                         appointment = appointment,
                         onClick = { sheetUiState = CalendarSheetState.AppointmentDetails(appointment) },
                     )
+                }
+            } else {
+                item {
+                    AgendaRangeHeader(
+                        startDate = selectedDate,
+                        endDate = agendaEndDate,
+                        onPrevious = {
+                            val previousStart = selectedDate.minus(7, DateTimeUnit.DAY)
+                            selectedDateForEntry = CalendarDay(
+                                day = previousStart.day,
+                                date = previousStart,
+                                status = AdherenceStatus.NONE,
+                                isToday = previousStart == today,
+                                isCurrentMonth = true,
+                            )
+                            entryDate = previousStart
+                            viewModel.loadAgendaForDate(previousStart.toString())
+                        },
+                        onToday = {
+                            selectedDateForEntry = CalendarDay(
+                                day = today.day,
+                                date = today,
+                                status = AdherenceStatus.NONE,
+                                isToday = true,
+                                isCurrentMonth = true,
+                            )
+                            entryDate = today
+                            viewModel.loadAgendaForDate(today.toString())
+                        },
+                        onNext = {
+                            val nextStart = selectedDate.plus(7, DateTimeUnit.DAY)
+                            selectedDateForEntry = CalendarDay(
+                                day = nextStart.day,
+                                date = nextStart,
+                                status = AdherenceStatus.NONE,
+                                isToday = nextStart == today,
+                                isCurrentMonth = true,
+                            )
+                            entryDate = nextStart
+                            viewModel.loadAgendaForDate(nextStart.toString())
+                        },
+                    )
+                }
+
+                if (agendaVisibleDays.isEmpty()) {
+                    item {
+                        AgendaEmptyState()
+                    }
+                } else {
+                    items(
+                        items = agendaVisibleDays,
+                        key = { it.date.toString() },
+                    ) { day ->
+                        AgendaDaySection(
+                            day = day,
+                            appointments = agendaAppointmentsByDate[day.date].orEmpty(),
+                            expandedRoutineKeys = expandedRoutineKeys,
+                            onToggleRoutineExpansion = onToggleRoutineExpansion,
+                            onLogMedication = onLogMedication,
+                            onLogAll = onLogAll,
+                            onMoveDose = onMoveDose,
+                            onAppointmentClick = { appointment ->
+                                sheetUiState = CalendarSheetState.AppointmentDetails(appointment)
+                            },
+                        )
+                    }
                 }
             }
 

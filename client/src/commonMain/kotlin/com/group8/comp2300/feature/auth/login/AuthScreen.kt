@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +46,8 @@ fun AuthScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
 
@@ -58,60 +61,69 @@ fun AuthScreen(
             )
         },
     ) { innerPadding ->
-        LazyColumn(
-            state = listState,
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(24.dp).imePadding(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(24.dp),
         ) {
-            item {
-                HeaderSection(
-                    isRegistering = state.isRegistering,
-                )
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize().imePadding(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                item {
+                    HeaderSection(
+                        isRegistering = state.isRegistering,
+                    )
+                }
+
+                item { Spacer(Modifier.height(24.dp)) }
+
+                // Credentials form
+                item {
+                    CredentialsForm(
+                        state = state,
+                        onEvent = viewModel::onEvent,
+                        onNavigateToForgotPassword = onNavigateToForgotPassword,
+                    )
+                }
+
+                item { Spacer(Modifier.height(16.dp)) }
+
+                // Action Buttons
+                item {
+                    ActionButtons(
+                        state = state,
+                        onEvent = viewModel::onEvent,
+                        onPrepareSubmit = {
+                            focusManager.clearFocus(force = true)
+                            keyboardController?.hide()
+                        },
+                        onLoginSuccess = onLoginSuccess,
+                        onRegisterSuccess = { email ->
+                            onNavigateToEmailVerification(email)
+                        },
+                    )
+                }
+
+                item { Spacer(Modifier.height(16.dp)) }
+
+                // Footer (Switch Mode / Guest)
+                item {
+                    FooterSection(
+                        isRegistering = state.isRegistering,
+                        onToggleMode = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ToggleAuthMode) },
+                        onGuestParams = onDismiss,
+                    )
+                }
             }
 
-            item { Spacer(Modifier.height(24.dp)) }
-
-            // Error banner
-            item {
-                AuthBanner(message = authError)
-            }
-
-            item { Spacer(Modifier.height(8.dp)) }
-
-            // Credentials form
-            item {
-                CredentialsForm(
-                    state = state,
-                    onEvent = viewModel::onEvent,
-                    onNavigateToForgotPassword = onNavigateToForgotPassword,
-                )
-            }
-
-            item { Spacer(Modifier.height(16.dp)) }
-
-            // Action Buttons
-            item {
-                ActionButtons(
-                    state = state,
-                    onEvent = viewModel::onEvent,
-                    onLoginSuccess = onLoginSuccess,
-                    onRegisterSuccess = { email ->
-                        onNavigateToEmailVerification(email)
-                    },
-                )
-            }
-
-            item { Spacer(Modifier.height(16.dp)) }
-
-            // Footer (Switch Mode / Guest)
-            item {
-                FooterSection(
-                    isRegistering = state.isRegistering,
-                    onToggleMode = { viewModel.onEvent(AuthViewModel.AuthUiEvent.ToggleAuthMode) },
-                    onGuestParams = onDismiss,
-                )
-            }
+            AuthBanner(
+                message = authError,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
         }
     }
 }
@@ -263,6 +275,7 @@ private fun CredentialsForm(
 private fun ActionButtons(
     state: AuthViewModel.State,
     onEvent: (AuthViewModel.AuthUiEvent) -> Unit,
+    onPrepareSubmit: () -> Unit,
     onLoginSuccess: () -> Unit,
     onRegisterSuccess: (String) -> Unit = {},
 ) {
@@ -274,6 +287,7 @@ private fun ActionButtons(
                 stringResource(Res.string.auth_sign_in)
             },
             onClick = {
+                onPrepareSubmit()
                 onEvent(AuthViewModel.AuthUiEvent.ClearError)
                 if (state.isRegistering) {
                     // Registration - call preregister API then navigate to email verification

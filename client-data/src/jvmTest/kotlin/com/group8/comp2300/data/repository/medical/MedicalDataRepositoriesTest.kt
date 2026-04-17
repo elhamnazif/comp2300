@@ -19,6 +19,7 @@ import com.group8.comp2300.domain.model.medical.AppointmentSlot
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
+import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
 import com.group8.comp2300.domain.model.medical.Routine
@@ -180,6 +181,117 @@ class MedicalDataRepositoriesTest {
         assertEquals(2, agenda.size)
         assertTrue(candidates.isNotEmpty())
         assertTrue(candidates.all { it.routineId == "routine-1" })
+    }
+
+    @Test
+    fun routineAgendaRangeIncludesEmptyDaysAndMovedOccurrenceOnTargetDate() = runTest {
+        val db = newDatabase()
+        MedicationLocalDataSource(db).insert(sampleMedication())
+        RoutineLocalDataSource(db).insert(
+            Routine(
+                id = "routine-1",
+                userId = "",
+                name = "Morning meds",
+                timesOfDayMs = listOf(9 * 60 * 60 * 1000L),
+                repeatType = RoutineRepeatType.DAILY,
+                startDate = "2026-03-17",
+                endDate = "2026-03-18",
+                hasReminder = true,
+                reminderOffsetsMins = listOf(0),
+                status = RoutineStatus.ACTIVE,
+                medicationIds = listOf("med-1"),
+            ),
+        )
+        val repository = MedicationLogDataRepositoryImpl(
+            medicationLocal = MedicationLocalDataSource(db),
+            routineLocal = RoutineLocalDataSource(db),
+            routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
+            medicationLogLocal = MedicationLogLocalDataSource(db),
+            queuedWriteDispatcher = dispatcher(db, OutboxDataSource(db)),
+            routineNotificationScheduler = RecordingRoutineNotificationScheduler(),
+        )
+        val originalTimestamp = LocalDateTime(2026, Month.MARCH, 17, 9, 0, 0, 0)
+            .toInstant(TimeZone.currentSystemDefault())
+            .toEpochMilliseconds()
+        val movedTimestamp = LocalDateTime(2026, Month.MARCH, 18, 11, 30, 0, 0)
+            .toInstant(TimeZone.currentSystemDefault())
+            .toEpochMilliseconds()
+
+        repository.rescheduleRoutineOccurrence(
+            RoutineOccurrenceOverrideRequest(
+                routineId = "routine-1",
+                originalOccurrenceTimeMs = originalTimestamp,
+                rescheduledOccurrenceTimeMs = movedTimestamp,
+            ),
+        )
+
+        val agendaRange = repository.getRoutineAgendaRange("2026-03-17", "2026-03-19")
+
+        assertEquals(
+            listOf("2026-03-17", "2026-03-18", "2026-03-19"),
+            agendaRange.keys.toList(),
+        )
+        assertTrue(agendaRange.getValue("2026-03-17").isEmpty())
+        assertTrue(agendaRange.getValue("2026-03-19").isEmpty())
+        val movedDayAgenda = agendaRange.getValue("2026-03-18")
+        assertEquals(2, movedDayAgenda.size)
+        val rescheduledAgenda = movedDayAgenda.first { it.isRescheduled }
+        assertEquals(movedTimestamp, rescheduledAgenda.occurrenceTimeMs)
+        assertEquals(originalTimestamp, rescheduledAgenda.originalOccurrenceTimeMs)
+    }
+
+    @Test
+    fun manualMedicationLogRangeBucketsLogsByDate() = runTest {
+        val db = newDatabase()
+        MedicationLocalDataSource(db).insert(sampleMedication())
+        val logLocal = MedicationLogLocalDataSource(db)
+        val repository = MedicationLogDataRepositoryImpl(
+            medicationLocal = MedicationLocalDataSource(db),
+            routineLocal = RoutineLocalDataSource(db),
+            routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
+            medicationLogLocal = logLocal,
+            queuedWriteDispatcher = dispatcher(db, OutboxDataSource(db)),
+            routineNotificationScheduler = RecordingRoutineNotificationScheduler(),
+        )
+        val firstLogTime = LocalDateTime(2026, Month.MARCH, 17, 8, 15, 0, 0)
+            .toInstant(TimeZone.currentSystemDefault())
+            .toEpochMilliseconds()
+        val secondLogTime = LocalDateTime(2026, Month.MARCH, 18, 22, 45, 0, 0)
+            .toInstant(TimeZone.currentSystemDefault())
+            .toEpochMilliseconds()
+
+        logLocal.insert(
+            MedicationLog(
+                id = "manual-1",
+                medicationId = "med-1",
+                medicationTime = firstLogTime,
+                status = MedicationLogStatus.TAKEN,
+                routineId = null,
+                occurrenceTimeMs = null,
+                medicationName = "PrEP",
+            ),
+        )
+        logLocal.insert(
+            MedicationLog(
+                id = "manual-2",
+                medicationId = "med-1",
+                medicationTime = secondLogTime,
+                status = MedicationLogStatus.SKIPPED,
+                routineId = null,
+                occurrenceTimeMs = null,
+                medicationName = "PrEP",
+            ),
+        )
+
+        val logsByDate = repository.getManualMedicationLogsRange("2026-03-17", "2026-03-19")
+
+        assertEquals(
+            listOf("2026-03-17", "2026-03-18", "2026-03-19"),
+            logsByDate.keys.toList(),
+        )
+        assertEquals(listOf("manual-1"), logsByDate.getValue("2026-03-17").map { it.id })
+        assertEquals(listOf("manual-2"), logsByDate.getValue("2026-03-18").map { it.id })
+        assertTrue(logsByDate.getValue("2026-03-19").isEmpty())
     }
 
     @Test

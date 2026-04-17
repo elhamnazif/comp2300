@@ -1,12 +1,14 @@
 package com.group8.comp2300.feature.calendar
 
 import androidx.compose.ui.graphics.Color
+import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.core.ui.accessibility.IndicatorPattern
 import com.group8.comp2300.core.ui.accessibility.StatusIcon
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
 import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
+import kotlinx.datetime.LocalDate
 
 internal sealed interface CalendarSheetState {
     data object Hidden : CalendarSheetState
@@ -32,4 +34,15 @@ internal data class StatusVisual(
     val color: Color,
     val pattern: IndicatorPattern,
     val icon: StatusIcon,
+)
+
+internal enum class CalendarViewMode {
+    CALENDAR,
+    AGENDA,
+}
+
+internal data class CalendarAgendaDay(
+    val date: LocalDate,
+    val routineAgenda: List<RoutineDayAgenda>,
+    val manualLogs: List<MedicationLog>,
 )

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,6 +51,7 @@ fun sanitizeVerificationCode(value: String, maxLength: Int = 6): String =
 fun AuthFormScaffold(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
+    bannerContent: @Composable ColumnScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val scrollState = rememberScrollState()
@@ -64,17 +66,28 @@ fun AuthFormScaffold(
             )
         },
     ) { innerPadding ->
-        Column(
+        Box(
             Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(scrollState)
                 .padding(24.dp)
-                .imePadding(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            content = content,
-        )
+        ) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .imePadding(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                content = content,
+            )
+
+            Column(
+                modifier = Modifier.fillMaxWidth().align(Alignment.TopCenter),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                content = bannerContent,
+            )
+        }
     }
 }
 

@@ -10,6 +10,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -38,12 +40,27 @@ fun ResetPasswordScreen(
     },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
 
     AuthFormScaffold(
         onBack = onBack,
         modifier = modifier,
+        bannerContent = {
+            AuthBanner(message = authError)
+            AuthBanner(
+                message = if (state.isPasswordReset) {
+                    stringResource(Res.string.reset_password_success)
+                } else {
+                    null
+                },
+                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+            )
+        },
     ) {
         AuthHeroSection(
             icon = Icons.PasswordW400Outlinedfill1,
@@ -52,19 +69,6 @@ fun ResetPasswordScreen(
         )
 
         Spacer(Modifier.height(24.dp))
-
-        AuthBanner(message = authError)
-
-        AuthBanner(
-            message = if (state.isPasswordReset) {
-                stringResource(Res.string.reset_password_success)
-            } else {
-                null
-            },
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-        )
 
         AuthPasswordField(
             value = state.newPassword,
@@ -104,6 +108,8 @@ fun ResetPasswordScreen(
             ),
             keyboardActions = KeyboardActions(onDone = {
                 if (state.isFormValid) {
+                    focusManager.clearFocus(force = true)
+                    keyboardController?.hide()
                     viewModel.onEvent(ResetPasswordViewModel.Event.Submit)
                 }
             }),
@@ -122,7 +128,11 @@ fun ResetPasswordScreen(
 
         AuthLoadingButton(
             text = stringResource(Res.string.reset_password_submit),
-            onClick = { viewModel.onEvent(ResetPasswordViewModel.Event.Submit) },
+            onClick = {
+                focusManager.clearFocus(force = true)
+                keyboardController?.hide()
+                viewModel.onEvent(ResetPasswordViewModel.Event.Submit)
+            },
             enabled = !state.isLoading && state.isFormValid && !state.isPasswordReset,
             isLoading = state.isLoading,
         )

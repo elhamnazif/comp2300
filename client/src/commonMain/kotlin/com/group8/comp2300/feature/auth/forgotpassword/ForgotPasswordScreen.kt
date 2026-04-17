@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -34,12 +36,17 @@ fun ForgotPasswordScreen(
     viewModel: ForgotPasswordViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
 
     AuthFormScaffold(
         onBack = onBack,
         modifier = modifier,
+        bannerContent = {
+            AuthBanner(message = authError)
+        },
     ) {
         AnimatedContent(
             targetState = state.emailSent,
@@ -59,8 +66,11 @@ fun ForgotPasswordScreen(
             } else {
                 FormContent(
                     state = state,
-                    authError = authError,
                     onEvent = viewModel::onEvent,
+                    onPrepareSubmit = {
+                        focusManager.clearFocus(force = true)
+                        keyboardController?.hide()
+                    },
                 )
             }
         }
@@ -107,8 +117,8 @@ private fun SuccessContent(
 @Composable
 private fun FormContent(
     state: ForgotPasswordViewModel.State,
-    authError: String?,
     onEvent: (ForgotPasswordViewModel.Event) -> Unit,
+    onPrepareSubmit: () -> Unit,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -120,8 +130,6 @@ private fun FormContent(
         )
 
         Spacer(Modifier.height(24.dp))
-
-        AuthBanner(message = authError)
 
         AuthTextField(
             value = state.email,
@@ -135,6 +143,7 @@ private fun FormContent(
             ),
             keyboardActions = KeyboardActions(onDone = {
                 if (state.email.isNotBlank() && state.emailError == null) {
+                    onPrepareSubmit()
                     onEvent(ForgotPasswordViewModel.Event.Submit)
                 }
             }),
@@ -144,7 +153,10 @@ private fun FormContent(
 
         AuthLoadingButton(
             text = stringResource(Res.string.forgot_password_submit),
-            onClick = { onEvent(ForgotPasswordViewModel.Event.Submit) },
+            onClick = {
+                onPrepareSubmit()
+                onEvent(ForgotPasswordViewModel.Event.Submit)
+            },
             enabled = !state.isLoading && state.email.isNotBlank() && state.emailError == null,
             isLoading = state.isLoading,
         )

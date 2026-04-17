@@ -10,6 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -41,6 +42,8 @@ fun CompleteProfileScreen(
     },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
 
@@ -80,6 +83,9 @@ fun CompleteProfileScreen(
     AuthFormScaffold(
         onBack = onBack,
         modifier = modifier,
+        bannerContent = {
+            AuthBanner(message = authError)
+        },
     ) {
         AuthHeroSection(
             icon = Icons.PersonW400Outlinedfill1,
@@ -88,10 +94,6 @@ fun CompleteProfileScreen(
         )
 
         Spacer(Modifier.height(24.dp))
-
-        AuthBanner(message = authError)
-
-        val focusManager = LocalFocusManager.current
 
         AuthTextField(
             value = state.firstName,
@@ -164,7 +166,11 @@ fun CompleteProfileScreen(
 
         AuthLoadingButton(
             text = stringResource(Res.string.complete_profile_button),
-            onClick = { viewModel.onEvent(CompleteProfileViewModel.Event.Submit) },
+            onClick = {
+                focusManager.clearFocus(force = true)
+                keyboardController?.hide()
+                viewModel.onEvent(CompleteProfileViewModel.Event.Submit)
+            },
             enabled = !state.isLoading && state.isFormValid,
             isLoading = state.isLoading,
         )

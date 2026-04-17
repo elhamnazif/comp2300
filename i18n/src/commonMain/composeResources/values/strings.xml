@@ -311,6 +311,14 @@
     <string name="calendar_upcoming">Upcoming</string>
     <string name="calendar_prev_month_desc">Previous Month</string>
     <string name="calendar_next_month_desc">Next Month</string>
+    <string name="calendar_view_calendar">Calendar</string>
+    <string name="calendar_view_agenda">Agenda</string>
+    <string name="calendar_agenda_empty">Nothing scheduled in the next 7 days.</string>
+    <string name="calendar_agenda_window_previous_desc">Previous 7 days</string>
+    <string name="calendar_agenda_window_forward_desc">Next 7 days</string>
+    <string name="calendar_agenda_scheduled_one">1 scheduled dose</string>
+    <string name="calendar_agenda_scheduled_many">%1$d scheduled doses</string>
+    <string name="calendar_today_button">Today</string>
     
     <!-- Add Entry Menu -->
     <string name="calendar_menu_title">What would you like to add?</string>

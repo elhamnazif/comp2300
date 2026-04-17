@@ -10,7 +10,17 @@ import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 interface MedicationLogDataRepository {
     suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda>
 
+    suspend fun getRoutineAgendaRange(
+        startDate: String,
+        endDate: String,
+    ): Map<String, List<RoutineDayAgenda>>
+
     suspend fun getManualMedicationLogs(date: String): List<MedicationLog>
+
+    suspend fun getManualMedicationLogsRange(
+        startDate: String,
+        endDate: String,
+    ): Map<String, List<MedicationLog>>
 
     suspend fun getMedicationOccurrenceCandidates(
         medicationId: String,

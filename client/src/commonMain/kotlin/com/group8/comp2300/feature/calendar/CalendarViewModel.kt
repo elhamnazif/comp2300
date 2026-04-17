@@ -8,12 +8,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.number
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
-data class CalendarUiState(
+internal data class CalendarUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val appointments: List<Appointment> = emptyList(),
@@ -22,6 +25,7 @@ data class CalendarUiState(
     val selectedDate: String = "",
     val routineAgenda: List<RoutineDayAgenda> = emptyList(),
     val manualLogs: List<MedicationLog> = emptyList(),
+    val agendaDays: List<CalendarAgendaDay> = emptyList(),
     val dayMoodEntries: List<Mood> = emptyList(),
     val monthMoodSummary: Map<MoodType, Int> = emptyMap(),
 )
@@ -35,7 +39,7 @@ class CalendarViewModel(
     private val moodRepository: MoodDataRepository,
 ) : ViewModel() {
 
-    val state: StateFlow<CalendarUiState>
+    internal val state: StateFlow<CalendarUiState>
         field: MutableStateFlow<CalendarUiState> = MutableStateFlow(CalendarUiState())
 
     init {
@@ -55,6 +59,7 @@ class CalendarViewModel(
                     '0',
                 )}-${now.day.toString().padStart(2, '0')}"
                 val dateString = dateStringOverride ?: state.value.selectedDate.ifBlank { todayDateString }
+                val agendaDays = loadAgendaDays(dateString)
 
                 state.update {
                     it.copy(
@@ -65,6 +70,7 @@ class CalendarViewModel(
                         selectedDate = dateString,
                         routineAgenda = medicationLogRepository.getRoutineAgenda(dateString),
                         manualLogs = medicationLogRepository.getManualMedicationLogs(dateString),
+                        agendaDays = agendaDays,
                     )
                 }
             } catch (e: Exception) {
@@ -77,11 +83,13 @@ class CalendarViewModel(
         viewModelScope.launch {
             try {
                 val moods = moodRepository.getMoodsForDate(dateString)
+                val agendaDays = loadAgendaDays(dateString)
                 state.update {
                     it.copy(
                         selectedDate = dateString,
                         routineAgenda = medicationLogRepository.getRoutineAgenda(dateString),
                         manualLogs = medicationLogRepository.getManualMedicationLogs(dateString),
+                        agendaDays = agendaDays,
                         dayMoodEntries = moods,
                     )
                 }
@@ -179,6 +187,28 @@ class CalendarViewModel(
 
     fun dismissError() {
         state.update { it.copy(error = null) }
+    }
+
+    private suspend fun loadAgendaDays(startDateString: String): List<CalendarAgendaDay> {
+        val startDate = LocalDate.parse(startDateString)
+        val endDate = startDate.plus(6, DateTimeUnit.DAY)
+        val routinesByDate = medicationLogRepository.getRoutineAgendaRange(startDate.toString(), endDate.toString())
+        val manualLogsByDate = medicationLogRepository.getManualMedicationLogsRange(startDate.toString(), endDate.toString())
+
+        return buildList {
+            var current = startDate
+            while (current <= endDate) {
+                val dateKey = current.toString()
+                add(
+                    CalendarAgendaDay(
+                        date = current,
+                        routineAgenda = routinesByDate[dateKey].orEmpty(),
+                        manualLogs = manualLogsByDate[dateKey].orEmpty(),
+                    ),
+                )
+                current = current.plus(1, DateTimeUnit.DAY)
+            }
+        }
     }
 }
 

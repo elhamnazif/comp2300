@@ -8,6 +8,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.feature.auth.components.AuthBanner
@@ -33,6 +35,8 @@ fun EmailVerificationScreen(
     },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
 
@@ -46,6 +50,9 @@ fun EmailVerificationScreen(
     AuthFormScaffold(
         onBack = onBack,
         modifier = modifier,
+        bannerContent = {
+            AuthBanner(message = authError)
+        },
     ) {
         AuthHeroSection(
             icon = Icons.MailOutlineW400Outlined,
@@ -56,8 +63,6 @@ fun EmailVerificationScreen(
         )
 
         Spacer(Modifier.height(24.dp))
-
-        AuthBanner(message = authError)
 
         VerificationCodeField(
             value = state.token,
@@ -72,7 +77,11 @@ fun EmailVerificationScreen(
 
         AuthLoadingButton(
             text = stringResource(Res.string.email_verification_verify_button),
-            onClick = { viewModel.onEvent(EmailVerificationViewModel.Event.VerifyToken) },
+            onClick = {
+                focusManager.clearFocus(force = true)
+                keyboardController?.hide()
+                viewModel.onEvent(EmailVerificationViewModel.Event.VerifyToken)
+            },
             enabled = !state.isLoading && state.token.isNotBlank(),
             isLoading = state.isLoading,
         )
@@ -81,7 +90,11 @@ fun EmailVerificationScreen(
 
         if (state.canResend) {
             TextButton(
-                onClick = { viewModel.onEvent(EmailVerificationViewModel.Event.ResendEmail) },
+                onClick = {
+                    focusManager.clearFocus(force = true)
+                    keyboardController?.hide()
+                    viewModel.onEvent(EmailVerificationViewModel.Event.ResendEmail)
+                },
                 enabled = !state.isLoading,
             ) {
                 Text(stringResource(Res.string.email_verification_resend))
