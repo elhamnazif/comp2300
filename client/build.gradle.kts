@@ -1,7 +1,6 @@
 import io.github.frankois944.spmForKmp.swiftPackageConfig
 import io.github.kingsword09.symbolcraft.model.SymbolVariant
 import io.github.kingsword09.symbolcraft.model.SymbolWeight
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.URI
 

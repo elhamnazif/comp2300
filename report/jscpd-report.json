@@ -1,0 +1,84 @@
+{
+  "statistics": {
+    "detectionDate": "2026-04-15T17:27:23.132Z",
+    "formats": {
+      "kotlin": {
+        "sources": {
+          "client/src/commonMain/kotlin/com/group8/comp2300/feature/shop/navigation/ShopGraph.kt": {
+            "lines": 22,
+            "tokens": 214,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "client/src/commonMain/kotlin/com/group8/comp2300/feature/shop/ShopViewModel.kt": {
+            "lines": 101,
+            "tokens": 884,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "client/src/commonMain/kotlin/com/group8/comp2300/feature/shop/ShopScreen.kt": {
+            "lines": 304,
+            "tokens": 2940,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          },
+          "client/src/commonMain/kotlin/com/group8/comp2300/feature/shop/ProductDetailScreen.kt": {
+            "lines": 147,
+            "tokens": 1408,
+            "sources": 1,
+            "clones": 0,
+            "duplicatedLines": 0,
+            "duplicatedTokens": 0,
+            "percentage": 0,
+            "percentageTokens": 0,
+            "newDuplicatedLines": 0,
+            "newClones": 0
+          }
+        },
+        "total": {
+          "lines": 574,
+          "tokens": 5446,
+          "sources": 4,
+          "clones": 0,
+          "duplicatedLines": 0,
+          "duplicatedTokens": 0,
+          "percentage": 0,
+          "percentageTokens": 0,
+          "newDuplicatedLines": 0,
+          "newClones": 0
+        }
+      }
+    },
+    "total": {
+      "lines": 574,
+      "tokens": 5446,
+      "sources": 4,
+      "clones": 0,
+      "duplicatedLines": 0,
+      "duplicatedTokens": 0,
+      "percentage": 0,
+      "percentageTokens": 0,
+      "newDuplicatedLines": 0,
+      "newClones": 0
+    }
+  },
+  "duplicates": []
+}

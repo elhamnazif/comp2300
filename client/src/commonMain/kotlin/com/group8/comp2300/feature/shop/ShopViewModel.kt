@@ -1,0 +1,102 @@
+package com.group8.comp2300.feature.shop
+
+import androidx.compose.runtime.Immutable
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.group8.comp2300.domain.model.shop.Product
+import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.domain.repository.ShopRepository
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+
+class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
+
+    val selectedCategory: StateFlow<ProductCategory>
+        field: MutableStateFlow<ProductCategory> = MutableStateFlow(ProductCategory.ALL)
+
+    val cartItemCount: StateFlow<Int>
+        field: MutableStateFlow<Int> = MutableStateFlow(0)
+
+    private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
+
+    private val productsResultFlow = combine(selectedCategory, refreshTrigger.onStart { emit(Unit) }) { category, _ ->
+        category
+    }.flatMapLatest { category ->
+        flow {
+            emit(FetchResult.Loading)
+            try {
+                val products = if (category == ProductCategory.ALL) {
+                    repository.getAllProducts()
+                } else {
+                    repository.getProductsByCategory(category)
+                }
+                emit(FetchResult.Success(products))
+            } catch (e: Exception) {
+                emit(FetchResult.Error(e.message ?: "Unknown error"))
+            }
+        }
+    }
+
+    val state: StateFlow<State> = combine(
+        productsResultFlow,
+        selectedCategory,
+        cartItemCount,
+    ) { result, category, count ->
+        when (result) {
+            is FetchResult.Loading -> State(
+                isLoading = true,
+                selectedCategory = category,
+                cartItemCount = count,
+            )
+
+            is FetchResult.Success -> State(
+                isLoading = false,
+                products = result.data,
+                selectedCategory = category,
+                cartItemCount = count,
+            )
+
+            is FetchResult.Error -> State(
+                isLoading = false,
+                error = result.message,
+                selectedCategory = category,
+                cartItemCount = count,
+            )
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = State(isLoading = true),
+    )
+
+    fun selectCategory(category: ProductCategory) {
+        selectedCategory.value = category
+    }
+
+    fun addToCart(product: Product) {
+        cartItemCount.update { it + 1 }
+    }
+
+    fun refreshProducts() {
+        viewModelScope.launch {
+            refreshTrigger.emit(Unit)
+        }
+    }
+
+    suspend fun getProductById(id: String): Product? = repository.getProductById(id)
+
+    private sealed interface FetchResult {
+        data object Loading : FetchResult
+        data class Success(val data: List<Product>) : FetchResult
+        data class Error(val message: String) : FetchResult
+    }
+
+    @Immutable
+    data class State(
+        val products: List<Product> = emptyList(),
+        val selectedCategory: ProductCategory = ProductCategory.ALL,
+        val cartItemCount: Int = 0,
+        val isLoading: Boolean = false,
+        val error: String? = null,
+    )
+}

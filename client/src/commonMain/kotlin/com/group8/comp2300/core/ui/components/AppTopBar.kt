@@ -1,0 +1,70 @@
+package com.group8.comp2300.core.ui.components
+
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
+
+enum class AppTopBarStyle {
+    Surface,
+    TransparentOverlay,
+}
+
+@Composable
+fun AppTopBar(
+    title: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    centered: Boolean = false,
+    onBackClick: (() -> Unit)? = null,
+    backContentDescription: String? = null,
+    style: AppTopBarStyle = AppTopBarStyle.Surface,
+    containerColor: Color? = null,
+    contentColor: Color? = null,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    val resolvedContainerColor =
+        containerColor ?: when (style) {
+            AppTopBarStyle.Surface -> MaterialTheme.colorScheme.surface
+            AppTopBarStyle.TransparentOverlay -> Color.Transparent
+        }
+    val resolvedContentColor = contentColor ?: MaterialTheme.colorScheme.onSurface
+    val colors =
+        TopAppBarDefaults.topAppBarColors(
+            containerColor = resolvedContainerColor,
+            titleContentColor = resolvedContentColor,
+            navigationIconContentColor = resolvedContentColor,
+            actionIconContentColor = resolvedContentColor,
+        )
+
+    val navigationIcon: @Composable () -> Unit = {
+        if (onBackClick != null) {
+            IconButton(onClick = onBackClick) {
+                Icon(
+                    imageVector = Icons.ArrowBackW400Outlinedfill1,
+                    contentDescription = backContentDescription,
+                )
+            }
+        }
+    }
+
+    if (centered) {
+        CenterAlignedTopAppBar(
+            modifier = modifier,
+            title = title,
+            navigationIcon = navigationIcon,
+            actions = actions,
+            colors = colors,
+        )
+    } else {
+        TopAppBar(
+            modifier = modifier,
+            title = title,
+            navigationIcon = navigationIcon,
+            actions = actions,
+            colors = colors,
+        )
+    }
+}
