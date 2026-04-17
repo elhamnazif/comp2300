@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.data.local.OfflineMapSettingsDataSource
 import com.group8.comp2300.data.offline.OfflineMapManager
 import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.platform.systemui.SetDarkStatusBar
 import kotlinx.serialization.json.JsonPrimitive
 import org.koin.compose.koinInject
 import org.maplibre.compose.camera.CameraPosition
@@ -36,6 +37,8 @@ fun ClinicMap(
     onClinicSelect: (Clinic) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    SetDarkStatusBar(darkIcons = true)
+
     val primaryColor = MaterialTheme.colorScheme.primary
     val secondaryColor = MaterialTheme.colorScheme.secondary
     val surfaceColor = MaterialTheme.colorScheme.surface
