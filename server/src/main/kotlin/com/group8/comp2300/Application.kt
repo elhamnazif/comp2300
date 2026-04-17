@@ -4,11 +4,16 @@ import com.group8.comp2300.config.Environment
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.di.serverModule
 import com.group8.comp2300.routes.appointmentRoutes
+import com.group8.comp2300.routes.articleRoutes
 import com.group8.comp2300.routes.authRoutes
+import com.group8.comp2300.routes.badgeRoutes
+import com.group8.comp2300.routes.contentCategoryRoutes
 import com.group8.comp2300.routes.medicalRecordRoutes
 import com.group8.comp2300.routes.medicationRoutes
 import com.group8.comp2300.routes.moodRoutes
 import com.group8.comp2300.routes.productRoutes
+import com.group8.comp2300.routes.quizRoutes
+import com.group8.comp2300.routes.userQuizRoutes
 import com.group8.comp2300.security.JwtService
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
@@ -83,12 +88,17 @@ fun Application.module() {
 
         authRoutes(get())
         productRoutes()
+        articleRoutes()
+        badgeRoutes()
+        contentCategoryRoutes()
+        quizRoutes()
 
         authenticate("auth-jwt", optional = devBypass) {
             appointmentRoutes()
             medicationRoutes()
             moodRoutes()
             medicalRecordRoutes()
+            userQuizRoutes()
         }
     }
 }
