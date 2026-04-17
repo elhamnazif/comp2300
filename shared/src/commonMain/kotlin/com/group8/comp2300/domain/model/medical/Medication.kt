@@ -11,13 +11,19 @@ data class Medication(
     val id: String,
     val userId: String,
     val name: String,
-    val dosage: String, // Number of pills
-    val quantity: String, // Units in weight
-    val frequency: MedicationFrequency,
+    val doseAmount: String,
+    val doseUnit: MedicationUnit,
+    val customDoseUnit: String? = null,
+    val stockAmount: String,
+    val stockUnit: MedicationUnit,
+    val customStockUnit: String? = null,
     val instruction: String? = null,
     val colorHex: String? = null,
     val status: MedicationStatus = MedicationStatus.ACTIVE,
 ) {
+    val dosage: String
+        get() = doseLabel()
+
     companion object {
         val PRESET_COLORS =
             listOf(

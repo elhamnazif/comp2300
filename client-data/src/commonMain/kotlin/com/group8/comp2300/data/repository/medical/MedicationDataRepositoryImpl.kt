@@ -6,7 +6,7 @@ import com.group8.comp2300.data.offline.QueuedOfflineStore
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationFrequency
+import com.group8.comp2300.domain.model.medical.MedicationUnit
 import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.session.userOrNull
 import com.group8.comp2300.domain.repository.AuthRepository
@@ -25,9 +25,12 @@ class MedicationDataRepositoryImpl(
                 id = medicationId,
                 userId = authRepository.session.value.userOrNull?.id.orEmpty(),
                 name = request.name,
-                dosage = request.dosage,
-                quantity = request.quantity,
-                frequency = MedicationFrequency.valueOf(request.frequency),
+                doseAmount = request.doseAmount,
+                doseUnit = MedicationUnit.valueOf(request.doseUnit),
+                customDoseUnit = request.customDoseUnit,
+                stockAmount = request.stockAmount,
+                stockUnit = MedicationUnit.valueOf(request.stockUnit),
+                customStockUnit = request.customStockUnit,
                 instruction = request.instruction,
                 colorHex = request.colorHex,
                 status = MedicationStatus.valueOf(request.status),
@@ -43,8 +46,10 @@ class MedicationDataRepositoryImpl(
         val normalizedRequest =
             request.copy(
                 name = request.name.trim(),
-                dosage = request.dosage.trim(),
-                quantity = request.quantity.trim(),
+                doseAmount = request.doseAmount.trim(),
+                customDoseUnit = request.customDoseUnit?.trim()?.takeIf(String::isNotEmpty),
+                stockAmount = request.stockAmount.trim(),
+                customStockUnit = request.customStockUnit?.trim()?.takeIf(String::isNotEmpty),
                 instruction = request.instruction?.trim()?.takeIf(String::isNotEmpty),
             )
         return medicationWrites.write(normalizedRequest, id)

@@ -39,9 +39,12 @@ data class MedicationOccurrenceCandidate(
 @Serializable
 data class MedicationCreateRequest(
     val name: String,
-    val dosage: String,
-    val quantity: String = "",
-    val frequency: String = "DAILY",
+    val doseAmount: String,
+    val doseUnit: String,
+    val customDoseUnit: String? = null,
+    val stockAmount: String,
+    val stockUnit: String,
+    val customStockUnit: String? = null,
     val instruction: String? = null,
     val colorHex: String? = null,
     val status: String = MedicationStatus.ACTIVE.name,

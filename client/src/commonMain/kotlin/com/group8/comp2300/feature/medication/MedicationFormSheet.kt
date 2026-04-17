@@ -3,58 +3,31 @@ package com.group8.comp2300.feature.medication
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.accessibility.PatternSwatch
-import com.group8.comp2300.domain.model.medical.Medication
-import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationFrequency
-import com.group8.comp2300.domain.model.medical.MedicationStatus
-import com.group8.comp2300.domain.model.medical.Routine
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.feature.medical.shared.forms.MedicalFormTextField
 import com.group8.comp2300.feature.medical.shared.routines.scheduleLinkSummary
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DeleteW400Outlined
-import comp2300.i18n.generated.resources.Res
-import comp2300.i18n.generated.resources.common_cancel
-import comp2300.i18n.generated.resources.medical_medication_delete_desc
-import comp2300.i18n.generated.resources.medical_medication_edit_desc
-import comp2300.i18n.generated.resources.medical_medication_form_add_title
-import comp2300.i18n.generated.resources.medical_medication_form_color_tag_label
-import comp2300.i18n.generated.resources.medical_medication_form_dose_label
-import comp2300.i18n.generated.resources.medical_medication_form_dose_placeholder
-import comp2300.i18n.generated.resources.medical_medication_form_edit_title
-import comp2300.i18n.generated.resources.medical_medication_form_instructions_label
-import comp2300.i18n.generated.resources.medical_medication_form_name_label
-import comp2300.i18n.generated.resources.medical_medication_form_save_add_schedule
-import comp2300.i18n.generated.resources.medical_medication_form_save_medication
-import comp2300.i18n.generated.resources.medical_medication_form_schedule_add
-import comp2300.i18n.generated.resources.medical_medication_form_schedule_none
-import comp2300.i18n.generated.resources.medical_medication_form_schedule_remove
-import comp2300.i18n.generated.resources.medical_medication_form_schedule_section
-import comp2300.i18n.generated.resources.medical_medication_form_selected_color
-import comp2300.i18n.generated.resources.medical_medication_form_strength_label
-import comp2300.i18n.generated.resources.medical_medication_form_strength_placeholder
-import comp2300.i18n.generated.resources.medical_medication_form_update_medication
-import comp2300.i18n.generated.resources.medical_medication_section_archived
+import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
+private enum class MedicationFormStep {
+    BASICS,
+    STOCK,
+    REVIEW,
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MedicationFormSheet(
     medicationToEdit: Medication?,
@@ -66,22 +39,50 @@ fun MedicationFormSheet(
     onEditSchedule: (Routine) -> Unit = {},
     onRemoveSchedule: (Routine) -> Unit = {},
 ) {
+    var currentStep by remember(medicationToEdit?.id) { mutableStateOf(MedicationFormStep.BASICS) }
     var name by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.name ?: "") }
-    var dosage by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.dosage ?: "") }
-    var quantity by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.quantity ?: "") }
+    var doseAmount by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.doseAmount ?: "") }
+    var doseUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.doseUnit ?: MedicationUnit.TABLET) }
+    var customDoseUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.customDoseUnit ?: "") }
+    var stockAmount by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.stockAmount ?: "") }
+    var stockUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.stockUnit ?: MedicationUnit.TABLET) }
+    var customStockUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.customStockUnit ?: "") }
     var instruction by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.instruction ?: "") }
-    val frequency = medicationToEdit?.frequency ?: MedicationFrequency.DAILY
     var status by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.status ?: MedicationStatus.ACTIVE) }
     var selectedColor by remember(medicationToEdit?.id) { mutableStateOf(parseColorHex(medicationToEdit?.colorHex)) }
-    val canSave = name.isNotBlank() && dosage.isNotBlank()
+
+    val canContinueBasics = name.isNotBlank() &&
+        doseAmount.toDoubleOrNull()?.let { it > 0.0 } == true &&
+        (doseUnit != MedicationUnit.OTHER || customDoseUnit.isNotBlank())
+    val canContinueStock = stockAmount.toDoubleOrNull()?.let { it > 0.0 } == true &&
+        (stockUnit != MedicationUnit.OTHER || customStockUnit.isNotBlank())
+    val canSave = canContinueBasics && canContinueStock
+    val resolvedCustomDoseUnit = customDoseUnit.trim().takeIf(String::isNotBlank)
+    val resolvedCustomUnit = customStockUnit.trim().takeIf(String::isNotBlank)
+    val sheetTitle = when (currentStep) {
+        MedicationFormStep.BASICS -> if (medicationToEdit == null) {
+            stringResource(Res.string.medical_medication_form_add_title)
+        } else {
+            stringResource(Res.string.medical_medication_form_edit_title)
+        }
+        MedicationFormStep.STOCK -> stringResource(Res.string.medical_medication_form_stock_title)
+        MedicationFormStep.REVIEW -> if (medicationToEdit == null) {
+            stringResource(Res.string.medical_medication_form_summary_title)
+        } else {
+            stringResource(Res.string.medical_medication_form_edit_finish_title)
+        }
+    }
 
     fun save(addScheduleAfterSave: Boolean) {
         onSave(
             MedicationCreateRequest(
                 name = name,
-                dosage = dosage,
-                quantity = quantity,
-                frequency = frequency.name,
+                doseAmount = doseAmount,
+                doseUnit = doseUnit.name,
+                customDoseUnit = resolvedCustomDoseUnit.takeIf { doseUnit == MedicationUnit.OTHER },
+                stockAmount = stockAmount,
+                stockUnit = stockUnit.name,
+                customStockUnit = resolvedCustomUnit.takeIf { stockUnit == MedicationUnit.OTHER },
                 instruction = instruction.takeIf(String::isNotBlank),
                 colorHex = selectedColor.toHexString(),
                 status = status.name,
@@ -92,20 +93,36 @@ fun MedicationFormSheet(
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth().padding(24.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .padding(horizontal = 24.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                if (medicationToEdit == null) {
-                    stringResource(Res.string.medical_medication_form_add_title)
-                } else {
-                    stringResource(Res.string.medical_medication_form_edit_title)
+            IconButton(
+                onClick = {
+                    currentStep = when (currentStep) {
+                        MedicationFormStep.BASICS -> {
+                            onCancel()
+                            MedicationFormStep.BASICS
+                        }
+                        MedicationFormStep.STOCK -> MedicationFormStep.BASICS
+                        MedicationFormStep.REVIEW -> MedicationFormStep.STOCK
+                    }
                 },
+            ) {
+                Icon(
+                    Icons.ArrowBackW400Outlinedfill1,
+                    contentDescription = stringResource(Res.string.common_back_desc),
+                )
+            }
+            Text(
+                sheetTitle,
+                modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
             )
@@ -117,167 +134,568 @@ fun MedicationFormSheet(
                         tint = MaterialTheme.colorScheme.error,
                     )
                 }
+            } else {
+                Spacer(modifier = Modifier.size(48.dp))
             }
         }
 
-        Column(
-            modifier = Modifier.fillMaxWidth().heightIn(max = 520.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            MedicalFormTextField(label = stringResource(Res.string.medical_medication_form_name_label), value = name, onValueChange = { name = it })
-            MedicalFormTextField(
-                label = stringResource(Res.string.medical_medication_form_dose_label),
-                value = dosage,
-                onValueChange = { dosage = it },
-                placeholder = stringResource(Res.string.medical_medication_form_dose_placeholder),
-            )
-            MedicalFormTextField(
-                label = stringResource(Res.string.medical_medication_form_strength_label),
-                value = quantity,
-                onValueChange = { quantity = it },
-                placeholder = stringResource(Res.string.medical_medication_form_strength_placeholder),
-            )
-            MedicalFormTextField(
-                label = stringResource(Res.string.medical_medication_form_instructions_label),
-                value = instruction,
-                onValueChange = { instruction = it },
-                minLines = 2,
-            )
+        MedicationStepHeader(
+            step = currentStep,
+            isEditing = medicationToEdit != null,
+        )
 
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(stringResource(Res.string.medical_medication_form_color_tag_label), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
-                Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    medicationColorOptions.forEach { option ->
-                        val color = parseColorHex(option.hex)
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(6.dp),
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            when (currentStep) {
+                MedicationFormStep.BASICS -> {
+                    MedicalFormTextField(
+                        label = stringResource(Res.string.medical_medication_form_name_label),
+                        value = name,
+                        onValueChange = { name = it },
+                    )
+                    MedicationAmountRow(
+                        amountLabel = stringResource(Res.string.medical_medication_form_dose_label),
+                        amountValue = doseAmount,
+                        onAmountChange = { doseAmount = it },
+                        amountPlaceholder = stringResource(Res.string.medical_medication_form_dose_amount_placeholder),
+                        selectedUnit = doseUnit,
+                        unitLabel = stringResource(Res.string.medical_medication_form_dose_unit_label),
+                        onUnitSelect = { doseUnit = it },
+                    )
+                    if (doseUnit == MedicationUnit.OTHER) {
+                        MedicalFormTextField(
+                            label = stringResource(Res.string.medical_medication_form_custom_dose_unit_label),
+                            value = customDoseUnit,
+                            onValueChange = { customDoseUnit = it },
+                        )
+                    }
+                    MedicalFormTextField(
+                        label = stringResource(Res.string.medical_medication_form_instructions_label),
+                        value = instruction,
+                        onValueChange = { instruction = it },
+                        minLines = 2,
+                    )
+                    MedicationColorPicker(
+                        selectedColor = selectedColor,
+                        onColorSelected = { selectedColor = it },
+                    )
+                }
+
+                MedicationFormStep.STOCK -> {
+                    MedicationAmountRow(
+                        amountLabel = stringResource(Res.string.medical_medication_form_stock_amount_label),
+                        amountValue = stockAmount,
+                        onAmountChange = { stockAmount = it },
+                        amountPlaceholder = stringResource(Res.string.medical_medication_form_stock_amount_placeholder),
+                        selectedUnit = stockUnit,
+                        unitLabel = stringResource(Res.string.medical_medication_form_stock_unit_label),
+                        onUnitSelect = { stockUnit = it },
+                    )
+                    if (stockUnit == MedicationUnit.OTHER) {
+                        MedicalFormTextField(
+                            label = stringResource(Res.string.medical_medication_form_custom_unit_label),
+                            value = customStockUnit,
+                            onValueChange = { customStockUnit = it },
+                        )
+                    }
+                    Surface(
+                        shape = MaterialTheme.shapes.large,
+                        color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    ) {
+                        Text(
+                            stringResource(Res.string.medical_medication_form_stock_amount_hint),
+                            modifier = Modifier.padding(16.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                MedicationFormStep.REVIEW -> {
+                    val colorOption = medicationColorOption(selectedColor.toHexString())
+                    SummaryPanel(
+                        name = name,
+                        dosage = formatMedicationAmount(doseAmount, doseUnit, resolvedCustomDoseUnit),
+                        supply = formatMedicationStock(stockAmount, stockUnit, resolvedCustomUnit),
+                        instruction = instruction.takeIf(String::isNotBlank),
+                        color = selectedColor,
+                        colorOption = colorOption,
+                    )
+
+                    if (medicationToEdit != null) {
+                        HorizontalDivider()
+                        ScheduleSection(
+                            linkedSchedules = linkedSchedules,
+                            onAddSchedule = onAddSchedule,
+                            onEditSchedule = onEditSchedule,
+                            onRemoveSchedule = onRemoveSchedule,
+                        )
+                        HorizontalDivider()
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
-                                    .border(
-                                        width = if (selectedColor == color) 2.dp else 0.dp,
-                                        color = if (selectedColor == color) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                        shape = CircleShape,
-                                    )
-                                    .padding(4.dp)
-                                    .clickable { selectedColor = color },
-                            ) {
-                                PatternSwatch(
-                                    color = color,
-                                    pattern = option.pattern,
-                                    modifier = Modifier.fillMaxSize(),
-                                )
-                            }
                             Text(
-                                option.shortLabel,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                stringResource(Res.string.medical_medication_section_archived),
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Switch(
+                                checked = status == MedicationStatus.ARCHIVED,
+                                onCheckedChange = { isArchived ->
+                                    status = if (isArchived) MedicationStatus.ARCHIVED else MedicationStatus.ACTIVE
+                                },
                             )
                         }
                     }
                 }
-                Text(
-                    stringResource(Res.string.medical_medication_form_selected_color, medicationColorOption(selectedColor.toHexString()).label),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            }
+        }
+
+        HorizontalDivider()
+        MedicationFormActions(
+            step = currentStep,
+            isEditing = medicationToEdit != null,
+            canContinueBasics = canContinueBasics,
+            canContinueStock = canContinueStock,
+            canSave = canSave,
+            onContinueBasics = { currentStep = MedicationFormStep.STOCK },
+            onContinueStock = { currentStep = MedicationFormStep.REVIEW },
+            onSaveMedication = { save(addScheduleAfterSave = false) },
+            onSaveAndAddSchedule = { save(addScheduleAfterSave = true) },
+        )
+    }
+}
+
+@Composable
+private fun MedicationStepHeader(
+    step: MedicationFormStep,
+    isEditing: Boolean,
+) {
+    val stepNumber = when (step) {
+        MedicationFormStep.BASICS -> 1
+        MedicationFormStep.STOCK -> 2
+        MedicationFormStep.REVIEW -> 3
+    }
+    val progress = stepNumber / 3f
+    val description = when (step) {
+        MedicationFormStep.BASICS -> null
+        MedicationFormStep.STOCK -> null
+        MedicationFormStep.REVIEW -> if (isEditing) {
+            stringResource(Res.string.medical_medication_form_edit_finish_hint)
+        } else {
+            null
+        }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+            stringResource(Res.string.medical_medication_form_step_counter, stepNumber),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+        )
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(6.dp),
+        )
+        description?.let {
+            Text(
+                it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MedicationAmountRow(
+    amountLabel: String,
+    amountValue: String,
+    onAmountChange: (String) -> Unit,
+    amountPlaceholder: String,
+    selectedUnit: MedicationUnit,
+    unitLabel: String,
+    onUnitSelect: (MedicationUnit) -> Unit,
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val stacked = maxWidth < 320.dp
+        if (stacked) {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                MedicalFormTextField(
+                    label = amountLabel,
+                    value = amountValue,
+                    onValueChange = onAmountChange,
+                    placeholder = amountPlaceholder,
+                )
+                MedicationUnitField(
+                    selectedUnit = selectedUnit,
+                    unitLabel = unitLabel,
+                    onSelect = onUnitSelect,
                 )
             }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                MedicalFormTextField(
+                    label = amountLabel,
+                    value = amountValue,
+                    onValueChange = onAmountChange,
+                    modifier = Modifier.weight(1.15f),
+                    placeholder = amountPlaceholder,
+                )
+                MedicationUnitField(
+                    selectedUnit = selectedUnit,
+                    unitLabel = unitLabel,
+                    onSelect = onUnitSelect,
+                    modifier = Modifier.weight(0.85f),
+                )
+            }
+        }
+    }
+}
 
-            if (medicationToEdit != null) {
-                HorizontalDivider(modifier = Modifier.padding(top = 4.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+@Composable
+private fun MedicationColorPicker(
+    selectedColor: Color,
+    onColorSelected: (Color) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Text(
+            stringResource(Res.string.medical_medication_form_color_tag_label),
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Medium,
+        )
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            medicationColorOptions.forEach { option ->
+                val color = parseColorHex(option.hex)
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
+                        .border(
+                            width = if (selectedColor == color) 2.dp else 0.dp,
+                            color = if (selectedColor == color) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            shape = CircleShape,
+                        )
+                        .padding(4.dp)
+                        .clickable { onColorSelected(color) },
                 ) {
-                    Text(stringResource(Res.string.medical_medication_form_schedule_section), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    androidx.compose.material3.TextButton(onClick = { onAddSchedule?.invoke() }, enabled = onAddSchedule != null) {
-                        Text(stringResource(Res.string.medical_medication_form_schedule_add))
-                    }
+                    PatternSwatch(
+                        color = color,
+                        pattern = option.pattern,
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
-                if (linkedSchedules.isEmpty()) {
-                    Text(stringResource(Res.string.medical_medication_form_schedule_none), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MedicationFormActions(
+    step: MedicationFormStep,
+    isEditing: Boolean,
+    canContinueBasics: Boolean,
+    canContinueStock: Boolean,
+    canSave: Boolean,
+    onContinueBasics: () -> Unit,
+    onContinueStock: () -> Unit,
+    onSaveMedication: () -> Unit,
+    onSaveAndAddSchedule: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        when (step) {
+            MedicationFormStep.BASICS -> {
+                Button(
+                    onClick = onContinueBasics,
+                    enabled = canContinueBasics,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(Res.string.medical_medication_form_continue))
+                }
+            }
+
+            MedicationFormStep.STOCK -> {
+                Button(
+                    onClick = onContinueStock,
+                    enabled = canContinueStock,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(stringResource(Res.string.medical_medication_form_continue))
+                }
+            }
+
+            MedicationFormStep.REVIEW -> {
+                if (isEditing) {
+                    Button(
+                        onClick = onSaveMedication,
+                        enabled = canSave,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(Res.string.medical_medication_form_update_medication))
+                    }
                 } else {
-                    linkedSchedules.forEachIndexed { index, routine ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.Top,
-                            horizontalArrangement = Arrangement.SpaceBetween,
+                    Button(
+                        onClick = onSaveAndAddSchedule,
+                        enabled = canSave,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(Res.string.medical_medication_form_save_add_schedule))
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                    ) {
+                        TextButton(
+                            onClick = onSaveMedication,
+                            enabled = canSave,
                         ) {
-                            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                Text(routine.name, fontWeight = FontWeight.SemiBold)
-                                Text(
-                                    scheduleLinkSummary(routine),
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
-                            }
-                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                androidx.compose.material3.TextButton(onClick = { onEditSchedule(routine) }) {
-                                    Text(stringResource(Res.string.medical_medication_edit_desc))
-                                }
-                                androidx.compose.material3.TextButton(onClick = { onRemoveSchedule(routine) }) {
-                                    Text(stringResource(Res.string.medical_medication_form_schedule_remove))
-                                }
-                            }
-                        }
-                        if (index != linkedSchedules.lastIndex) {
-                            HorizontalDivider()
+                            Text(stringResource(Res.string.medical_medication_form_save_medication))
                         }
                     }
                 }
+            }
+        }
+    }
+}
 
-                HorizontalDivider()
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(stringResource(Res.string.medical_medication_section_archived), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    Switch(
-                        checked = status == MedicationStatus.ARCHIVED,
-                        onCheckedChange = { isArchived ->
-                            status = if (isArchived) MedicationStatus.ARCHIVED else MedicationStatus.ACTIVE
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MedicationUnitField(
+    selectedUnit: MedicationUnit,
+    unitLabel: String,
+    onSelect: (MedicationUnit) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember(selectedUnit) { mutableStateOf(false) }
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            unitLabel,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Medium,
+        )
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            TextField(
+                value = selectedUnit.displayName,
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true),
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                shape = RoundedCornerShape(16.dp),
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                    errorIndicatorColor = Color.Transparent,
+                ),
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+            ) {
+                MedicationUnit.entries.forEach { unit ->
+                    DropdownMenuItem(
+                        text = { Text(unit.displayName) },
+                        onClick = {
+                            onSelect(unit)
+                            expanded = false
                         },
                     )
                 }
             }
         }
+    }
+}
 
-        Spacer(Modifier.height(4.dp))
-        if (medicationToEdit == null) {
-            Button(
-                onClick = { save(addScheduleAfterSave = true) },
-                enabled = canSave,
+@Composable
+private fun SummaryPanel(
+    name: String,
+    dosage: String,
+    supply: String,
+    instruction: String?,
+    color: Color,
+    colorOption: MedicationColorOption,
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(
                 modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(stringResource(Res.string.medical_medication_form_save_add_schedule))
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(color.copy(alpha = 0.18f), CircleShape)
+                        .padding(6.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    PatternSwatch(
+                        color = color,
+                        pattern = colorOption.pattern,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        stringResource(Res.string.medical_medication_form_name_label),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
             }
-            OutlinedButton(
-                onClick = { save(addScheduleAfterSave = false) },
-                enabled = canSave,
-                modifier = Modifier.fillMaxWidth(),
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                Text(stringResource(Res.string.medical_medication_form_save_medication))
+                SummaryMetric(
+                    label = stringResource(Res.string.medical_medication_form_dose_label),
+                    value = dosage,
+                    modifier = Modifier.weight(1f),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(1.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
+                )
+                SummaryMetric(
+                    label = stringResource(Res.string.medical_medication_form_supply_label),
+                    value = supply,
+                    modifier = Modifier.weight(1f),
+                )
             }
-        } else {
-            Button(
-                onClick = { save(addScheduleAfterSave = false) },
-                enabled = canSave,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(stringResource(Res.string.medical_medication_form_update_medication))
+            instruction?.let {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+                SummaryMetric(
+                    label = stringResource(Res.string.medical_medication_form_instructions_label),
+                    value = it,
+                )
             }
         }
+    }
+}
 
-        androidx.compose.material3.TextButton(onClick = onCancel, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(Res.string.common_cancel))
+@Composable
+private fun SummaryMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Medium,
+        )
+    }
+}
+
+@Composable
+private fun ScheduleSection(
+    linkedSchedules: List<Routine>,
+    onAddSchedule: (() -> Unit)?,
+    onEditSchedule: (Routine) -> Unit,
+    onRemoveSchedule: (Routine) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                stringResource(Res.string.medical_medication_form_schedule_section),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            TextButton(onClick = { onAddSchedule?.invoke() }, enabled = onAddSchedule != null) {
+                Text(stringResource(Res.string.medical_medication_form_schedule_add))
+            }
+        }
+        if (linkedSchedules.isEmpty()) {
+            Text(
+                stringResource(Res.string.medical_medication_form_schedule_none),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        } else {
+            linkedSchedules.forEachIndexed { index, routine ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(routine.name, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            scheduleLinkSummary(routine),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    Row {
+                        TextButton(onClick = { onEditSchedule(routine) }) {
+                            Text(stringResource(Res.string.medical_medication_edit_desc))
+                        }
+                        TextButton(onClick = { onRemoveSchedule(routine) }) {
+                            Text(stringResource(Res.string.medical_medication_form_schedule_remove))
+                        }
+                    }
+                }
+                if (index != linkedSchedules.lastIndex) {
+                    HorizontalDivider()
+                }
+            }
         }
     }
 }

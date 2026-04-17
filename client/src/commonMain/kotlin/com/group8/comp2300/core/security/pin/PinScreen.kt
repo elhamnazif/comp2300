@@ -184,7 +184,7 @@ fun PinScreen(
 
         BoxWithConstraints(
             modifier = Modifier
-                .align(Alignment.Center)
+                .fillMaxSize()
                 .padding(horizontal = 24.dp),
         ) {
             val buttonSize = if (maxHeight < 560.dp) {
@@ -211,6 +211,7 @@ fun PinScreen(
             } else {
                 28.dp
             }
+            val infoKeypadSpacing = if (maxHeight < 560.dp) 24.dp else 32.dp
 
             val isLandscape = maxWidth > maxHeight
 
@@ -364,11 +365,16 @@ fun PinScreen(
                     KeypadColumn()
                 }
             } else {
-                // Portrait: stacked single column
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // Keep the keypad lower so the title/description block reads as visually centered.
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Spacer(Modifier.weight(0.35f))
                     PinInfoColumn()
-                    Spacer(Modifier.height(32.dp))
+                    Spacer(Modifier.height(infoKeypadSpacing))
                     KeypadColumn()
+                    Spacer(Modifier.weight(1f))
                 }
             }
 

@@ -26,6 +26,7 @@ import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineRepeatType
 import com.group8.comp2300.domain.model.medical.RoutineStatus
+import com.group8.comp2300.domain.model.medical.stockLabel
 import com.group8.comp2300.feature.medical.shared.routines.formatTimeOfDayMs
 import com.group8.comp2300.feature.medical.shared.routines.weekdaySummary
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -131,7 +132,6 @@ private fun MedicationCard(
     modifier: Modifier = Modifier,
     isArchived: Boolean = false,
 ) {
-    val quantityLabel = medication.quantity.takeIf(String::isNotBlank)?.let { " • $it" }.orEmpty()
     val colorOption = medicationColorOption(medication.colorHex)
     Card(
         onClick = onClick,
@@ -151,7 +151,6 @@ private fun MedicationCard(
         ) {
             androidx.compose.foundation.layout.Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Box(
                     modifier = Modifier
@@ -166,11 +165,6 @@ private fun MedicationCard(
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
-                Text(
-                    colorOption.shortLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
             Spacer(Modifier.width(16.dp))
             androidx.compose.foundation.layout.Column(
@@ -178,7 +172,7 @@ private fun MedicationCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(medication.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text("${medication.dosage}$quantityLabel", color = MaterialTheme.colorScheme.secondary)
+                Text("${medication.dosage} • ${medication.stockLabel()}", color = MaterialTheme.colorScheme.secondary)
                 Text(medicationScheduleLabel(linkedRoutines), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                 medication.instruction?.takeIf(String::isNotBlank)?.let {
                     Text(
@@ -231,19 +225,17 @@ private fun medicationScheduleLabel(linkedRoutines: List<Routine>): String {
 
 internal data class MedicationColorOption(
     val hex: String,
-    val label: String,
-    val shortLabel: String,
     val pattern: IndicatorPattern,
 )
 
 internal val medicationColorOptions = listOf(
-    MedicationColorOption("#42A5F5", "Blue tag", "Blue", IndicatorPattern.DIAGONAL),
-    MedicationColorOption("#EF5350", "Red tag", "Red", IndicatorPattern.GRID),
-    MedicationColorOption("#66BB6A", "Green tag", "Green", IndicatorPattern.DOTS),
-    MedicationColorOption("#FFA726", "Orange tag", "Orange", IndicatorPattern.HORIZONTAL),
-    MedicationColorOption("#AB47BC", "Purple tag", "Purple", IndicatorPattern.VERTICAL),
-    MedicationColorOption("#26C6DA", "Cyan tag", "Cyan", IndicatorPattern.DIAGONAL),
-    MedicationColorOption("#78909C", "Blue grey tag", "Grey", IndicatorPattern.GRID),
+    MedicationColorOption("#42A5F5", IndicatorPattern.DIAGONAL),
+    MedicationColorOption("#EF5350", IndicatorPattern.GRID),
+    MedicationColorOption("#66BB6A", IndicatorPattern.DOTS),
+    MedicationColorOption("#FFA726", IndicatorPattern.HORIZONTAL),
+    MedicationColorOption("#AB47BC", IndicatorPattern.VERTICAL),
+    MedicationColorOption("#26C6DA", IndicatorPattern.DIAGONAL),
+    MedicationColorOption("#78909C", IndicatorPattern.GRID),
 )
 
 internal fun medicationColorOption(hex: String?): MedicationColorOption {

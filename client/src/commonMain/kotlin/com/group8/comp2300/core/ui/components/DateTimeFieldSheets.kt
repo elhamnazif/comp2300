@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.focusable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -42,28 +43,36 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
 
 @Composable
-fun DateValueField(label: String, value: LocalDate, onClick: () -> Unit) {
+fun DateValueField(label: String, value: LocalDate, onClick: () -> Unit, modifier: Modifier = Modifier) {
     ValueField(
         label = label,
         value = DateFormatter.formatDayMonthYear(value),
         icon = Icons.DateRangeW400Outlinedfill1,
         onClick = onClick,
+        modifier = modifier,
     )
 }
 
 @Composable
-fun TimeValueField(label: String, value: Long, onClick: () -> Unit) {
+fun TimeValueField(label: String, value: Long, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val totalMinutes = (value / 60_000L).toInt()
     ValueField(
         label = label,
         value = DateFormatter.formatTime(totalMinutes / 60, totalMinutes % 60),
         icon = Icons.CheckCircleW400Outlinedfill1,
         onClick = onClick,
+        modifier = modifier,
     )
 }
 
 @Composable
-private fun ValueField(label: String, value: String, icon: ImageVector, onClick: () -> Unit) {
+private fun ValueField(
+    label: String,
+    value: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -74,8 +83,9 @@ private fun ValueField(label: String, value: String, icon: ImageVector, onClick:
             fontWeight = FontWeight.Medium,
         )
         Row(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
+                .focusable()
                 .clickable(onClick = onClick)
                 .padding(0.dp),
             horizontalArrangement = Arrangement.SpaceBetween,

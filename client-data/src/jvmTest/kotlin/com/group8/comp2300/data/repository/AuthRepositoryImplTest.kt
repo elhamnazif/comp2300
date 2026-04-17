@@ -25,10 +25,10 @@ import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationFrequency
 import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationStatus
+import com.group8.comp2300.domain.model.medical.MedicationUnit
 import com.group8.comp2300.domain.model.medical.Mood
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
 import com.group8.comp2300.domain.model.medical.Routine
@@ -160,9 +160,10 @@ internal fun sampleMedication(id: String = "med-1", userId: String = "") = Medic
     id = id,
     userId = userId,
     name = "Vitamin D",
-    dosage = "1 tablet",
-    quantity = "1000 IU",
-    frequency = MedicationFrequency.DAILY,
+    doseAmount = "1",
+    doseUnit = MedicationUnit.TABLET,
+    stockAmount = "30",
+    stockUnit = MedicationUnit.TABLET,
     instruction = null,
     colorHex = "#42A5F5",
     status = MedicationStatus.ACTIVE,
