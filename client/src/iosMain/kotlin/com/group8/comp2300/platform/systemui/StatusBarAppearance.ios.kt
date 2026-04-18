@@ -20,11 +20,11 @@ actual fun SetDarkStatusBar(darkIcons: Boolean) {
 
 private fun postStatusBarAppearance(darkIcons: Boolean) {
     NSNotificationCenter.defaultCenter.postNotificationName(
-        aName = STATUS_BAR_APPEARANCE_NOTIFICATION,
-        `object` = if (darkIcons) STATUS_BAR_DARK_ICONS else STATUS_BAR_LIGHT_ICONS,
+        aName = StatusBarAppearanceNotification,
+        `object` = if (darkIcons) StatusBarDarkIcons else StatusBarLightIcons,
     )
 }
 
-private const val STATUS_BAR_APPEARANCE_NOTIFICATION = "com.group8.comp2300.statusBarAppearanceDidChange"
-private const val STATUS_BAR_DARK_ICONS = "dark-icons"
-private const val STATUS_BAR_LIGHT_ICONS = "light-icons"
+private const val StatusBarAppearanceNotification = "com.group8.comp2300.statusBarAppearanceDidChange"
+private const val StatusBarDarkIcons = "dark-icons"
+private const val StatusBarLightIcons = "light-icons"

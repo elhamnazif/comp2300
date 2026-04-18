@@ -16,12 +16,7 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.DeleteW400Outline
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DescriptionW400Outlinedfill1
 
 @Composable
-fun MedicalRecordItem(
-    record: MedicalRecordResponse,
-    isOpening: Boolean,
-    onOpen: () -> Unit,
-    onDelete: () -> Unit,
-) {
+fun MedicalRecordItem(record: MedicalRecordResponse, isOpening: Boolean, onOpen: () -> Unit, onDelete: () -> Unit) {
     Card(
         onClick = onOpen,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),

@@ -1,9 +1,8 @@
 package com.group8.comp2300.config
 
 object Environment {
-    fun value(name: String): String? =
-        (System.getenv(name) ?: System.getProperty(name))
-            ?.takeIf { it.isNotBlank() }
+    fun value(name: String): String? = (System.getenv(name) ?: System.getProperty(name))
+        ?.takeIf { it.isNotBlank() }
 
     val isTesting: Boolean
         get() = System.getProperty("ktor.testing") != null

@@ -29,7 +29,10 @@ class CalendarDataRepositoryImpl(
         val routines = routineLocal.getAll()
         val overrides = routineOccurrenceOverrideLocal.getAll()
         val logs = medicationLogLocal.getAll()
-        val appointmentsByDate = appointmentLocal.getAll().groupBy { it.appointmentTime.toLocalDateString() }
+        val appointmentsByDate = appointmentLocal
+            .getAll()
+            .filterNot(::isCancelledAppointment)
+            .groupBy { it.appointmentTime.toLocalDateString() }
         val nowMs = Clock.System.now().toEpochMilliseconds()
         val timeZone = TimeZone.currentSystemDefault()
 
@@ -52,6 +55,9 @@ class CalendarDataRepositoryImpl(
         return results
     }
 }
+
+private fun isCancelledAppointment(appointment: com.group8.comp2300.domain.model.medical.Appointment): Boolean =
+    appointment.status == "CANCELLED"
 
 private fun Long.toLocalDateString(): String = Instant.fromEpochMilliseconds(this)
     .toLocalDateTime(TimeZone.currentSystemDefault())

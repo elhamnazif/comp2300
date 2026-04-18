@@ -1,9 +1,6 @@
 package com.group8.comp2300.feature.auth
 
-internal data class AuthErrorFlags(
-    val isNetworkError: Boolean,
-    val isInvalidOrExpiredToken: Boolean,
-)
+internal data class AuthErrorFlags(val isNetworkError: Boolean, val isInvalidOrExpiredToken: Boolean)
 
 internal fun parseAuthError(exception: Throwable?): AuthErrorFlags {
     val exceptionName = exception?.let { it::class.simpleName }.orEmpty()

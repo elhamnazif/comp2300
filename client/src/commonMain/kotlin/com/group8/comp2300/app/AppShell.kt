@@ -79,8 +79,8 @@ fun AppShell(
             onComplete = pinLockViewModel::onPinEntered,
             onErrorMessageCleared = pinLockViewModel::clearError,
             onBiometricSuccess = pinLockViewModel::onBiometricUnlock,
-    )
-}
+        )
+    }
 }
 
 @Composable
@@ -94,10 +94,7 @@ private fun AppLoadingState(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun AppNavigationShell(
-    navigator: Navigator,
-    modifier: Modifier = Modifier,
-) {
+private fun AppNavigationShell(navigator: Navigator, modifier: Modifier = Modifier) {
     val currentScreen = navigator.currentScreen
     val showNavBar = currentScreen in mainTabs.map(MainTab::screen)
     val navigationSuiteScaffoldState = rememberNavigationSuiteScaffoldState()
@@ -190,8 +187,4 @@ private fun PinLockOverlay(
     }
 }
 
-private data class MainTab(
-    val screen: Screen,
-    val icon: ImageVector,
-    val label: String,
-)
+private data class MainTab(val screen: Screen, val icon: ImageVector, val label: String)

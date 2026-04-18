@@ -39,11 +39,7 @@ enum class StatusIcon(val imageVector: ImageVector) {
 }
 
 @Composable
-fun PatternSwatch(
-    color: Color,
-    pattern: IndicatorPattern,
-    modifier: Modifier = Modifier,
-) {
+fun PatternSwatch(color: Color, pattern: IndicatorPattern, modifier: Modifier = Modifier) {
     Canvas(
         modifier = modifier.clip(RoundedCornerShape(999.dp)),
     ) {
@@ -90,12 +86,7 @@ fun AccessibleStatusChip(
 }
 
 @Composable
-fun IndicatorLegendItem(
-    label: String,
-    color: Color,
-    pattern: IndicatorPattern,
-    modifier: Modifier = Modifier,
-) {
+fun IndicatorLegendItem(label: String, color: Color, pattern: IndicatorPattern, modifier: Modifier = Modifier) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(999.dp),
@@ -119,21 +110,21 @@ fun IndicatorLegendItem(
     }
 }
 
-fun DrawScope.drawIndicatorPattern(
-    pattern: IndicatorPattern,
-    color: Color,
-    topLeft: Offset,
-    size: Size,
-) {
+fun DrawScope.drawIndicatorPattern(pattern: IndicatorPattern, color: Color, topLeft: Offset, size: Size) {
     when (pattern) {
         IndicatorPattern.SOLID -> Unit
+
         IndicatorPattern.DIAGONAL -> drawDiagonalPattern(color, topLeft, size)
+
         IndicatorPattern.GRID -> {
             drawDiagonalPattern(color, topLeft, size)
             drawReverseDiagonalPattern(color, topLeft, size)
         }
+
         IndicatorPattern.DOTS -> drawDotPattern(color, topLeft, size)
+
         IndicatorPattern.HORIZONTAL -> drawStripedPattern(color, topLeft, size, horizontal = true)
+
         IndicatorPattern.VERTICAL -> drawStripedPattern(color, topLeft, size, horizontal = false)
     }
 }
@@ -168,12 +159,7 @@ private fun DrawScope.drawReverseDiagonalPattern(color: Color, topLeft: Offset, 
     }
 }
 
-private fun DrawScope.drawStripedPattern(
-    color: Color,
-    topLeft: Offset,
-    size: Size,
-    horizontal: Boolean,
-) {
+private fun DrawScope.drawStripedPattern(color: Color, topLeft: Offset, size: Size, horizontal: Boolean) {
     val step = 7.dp.toPx()
     val strokeWidth = 2.dp.toPx()
     if (horizontal) {
@@ -221,4 +207,5 @@ private fun overlayColorFor(color: Color): Color = if (relativeBrightness(color)
     Color.White.copy(alpha = 0.4f)
 }
 
-private fun relativeBrightness(color: Color): Float = (0.299f * color.red) + (0.587f * color.green) + (0.114f * color.blue)
+private fun relativeBrightness(color: Color): Float =
+    (0.299f * color.red) + (0.587f * color.green) + (0.114f * color.blue)

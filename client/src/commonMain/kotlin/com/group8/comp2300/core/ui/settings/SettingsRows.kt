@@ -18,7 +18,8 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 private val SingleItemShape = RoundedCornerShape(28.dp)
 private val TopItemShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
 private val MiddleItemShape = RoundedCornerShape(12.dp)
-private val BottomItemShape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 28.dp, bottomEnd = 28.dp)
+private val BottomItemShape =
+    RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp, bottomStart = 28.dp, bottomEnd = 28.dp)
 
 @Composable
 internal fun SettingsNavigationRow(
@@ -247,11 +248,7 @@ internal fun SettingsInfoCard(
 }
 
 @Composable
-private fun SettingsRowContainer(
-    shape: Shape,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit,
-) {
+private fun SettingsRowContainer(shape: Shape, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = shape,
@@ -263,10 +260,9 @@ private fun SettingsRowContainer(
     }
 }
 
-private fun settingsItemShape(index: Int, total: Int): Shape =
-    when {
-        total <= 1 -> SingleItemShape
-        index == 0 -> TopItemShape
-        index == total - 1 -> BottomItemShape
-        else -> MiddleItemShape
-    }
+private fun settingsItemShape(index: Int, total: Int): Shape = when {
+    total <= 1 -> SingleItemShape
+    index == 0 -> TopItemShape
+    index == total - 1 -> BottomItemShape
+    else -> MiddleItemShape
+}

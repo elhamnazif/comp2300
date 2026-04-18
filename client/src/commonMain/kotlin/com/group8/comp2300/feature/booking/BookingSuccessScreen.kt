@@ -31,6 +31,7 @@ fun BookingSuccessScreen(
     clinicId: String,
     appointmentId: String,
     appointmentTime: Long,
+    wasRescheduled: Boolean,
     onBack: () -> Unit,
     onViewCalendar: () -> Unit,
     onDone: () -> Unit,
@@ -47,11 +48,15 @@ fun BookingSuccessScreen(
         }
     }
 
+    LaunchedEffect(appointmentId) {
+        viewModel.loadPersistedAppointment(appointmentId)
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
             AppTopBar(
-                title = { Text("Confirmed") },
+                title = { Text(if (wasRescheduled) "Updated" else "Confirmed") },
                 onBackClick = onBack,
                 backContentDescription = "Back",
             )
@@ -74,7 +79,11 @@ fun BookingSuccessScreen(
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                         )
-                        Text("Booking confirmed", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        Text(
+                            if (wasRescheduled) "Booking updated" else "Booking confirmed",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
                         Text(slotSummary(appointmentTime), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
@@ -87,7 +96,11 @@ fun BookingSuccessScreen(
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         Text("Clinic", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(clinic?.name ?: "Clinic booked", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            clinic?.name ?: "Clinic booked",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                        )
                         clinic?.address?.takeIf(String::isNotBlank)?.let {
                             Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -120,13 +133,4 @@ fun BookingSuccessScreen(
             }
         }
     }
-}
-
-private fun appointmentTypeLabel(value: String): String = when (value) {
-    "STI_TESTING" -> "STI testing"
-    "SYMPTOMS" -> "Symptoms"
-    "CONTRACEPTION" -> "Contraception"
-    "PREP_PEP" -> "PrEP / PEP"
-    "FOLLOW_UP" -> "Follow-up"
-    else -> value.replace('_', ' ').lowercase().replaceFirstChar(Char::uppercase)
 }

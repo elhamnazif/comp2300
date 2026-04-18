@@ -1,13 +1,14 @@
 package com.group8.comp2300.feature.booking
 
 import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +19,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -39,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
@@ -52,8 +53,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -79,12 +80,14 @@ fun BookingScreen(
     selectedTag: String?,
     isLoading: Boolean,
     isMapMode: Boolean,
+    isSignedIn: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onTagToggle: (String?) -> Unit,
     onMapModeChange: (Boolean) -> Unit,
     onRefresh: () -> Unit,
     onClinicClick: (String) -> Unit,
     onClinicSelect: (Clinic) -> Unit,
+    onViewBookings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val availableTags = clinics.flatMap(Clinic::tags).distinct().sorted()
@@ -114,11 +117,13 @@ fun BookingScreen(
                 searchQuery = searchQuery,
                 selectedTag = selectedTag,
                 isLoading = isLoading,
+                isSignedIn = isSignedIn,
                 onSearchQueryChange = onSearchQueryChange,
                 onTagToggle = onTagToggle,
                 onMapModeChange = onMapModeChange,
                 onClinicClick = onClinicClick,
                 onClinicSelect = onClinicSelect,
+                onViewBookings = onViewBookings,
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
@@ -128,11 +133,13 @@ fun BookingScreen(
                 searchQuery = searchQuery,
                 selectedTag = selectedTag,
                 isLoading = isLoading,
+                isSignedIn = isSignedIn,
                 onSearchQueryChange = onSearchQueryChange,
                 onTagToggle = onTagToggle,
                 onMapModeChange = onMapModeChange,
                 onClinicClick = onClinicClick,
                 onClinicSelect = onClinicSelect,
+                onViewBookings = onViewBookings,
                 modifier = Modifier.fillMaxSize(),
             )
         }
@@ -162,11 +169,13 @@ private fun BookingListMode(
     searchQuery: String,
     selectedTag: String?,
     isLoading: Boolean,
+    isSignedIn: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onTagToggle: (String?) -> Unit,
     onMapModeChange: (Boolean) -> Unit,
     onClinicClick: (String) -> Unit,
     onClinicSelect: (Clinic) -> Unit,
+    onViewBookings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
@@ -192,6 +201,11 @@ private fun BookingListMode(
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                         )
+                    }
+                    if (isSignedIn) {
+                        TextButton(onClick = onViewBookings) {
+                            Text("My bookings")
+                        }
                     }
                 }
             }
@@ -241,7 +255,9 @@ private fun BookingListMode(
                                         IconButton(onClick = { onSearchQueryChange("") }) {
                                             androidx.compose.material3.Icon(
                                                 imageVector = Icons.CloseW400Outlinedfill1,
-                                                contentDescription = stringResource(Res.string.medical_booking_search_desc),
+                                                contentDescription = stringResource(
+                                                    Res.string.medical_booking_search_desc,
+                                                ),
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
                                         }
@@ -331,11 +347,13 @@ private fun BookingMapMode(
     searchQuery: String,
     selectedTag: String?,
     isLoading: Boolean,
+    isSignedIn: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onTagToggle: (String?) -> Unit,
     onMapModeChange: (Boolean) -> Unit,
     onClinicClick: (String) -> Unit,
     onClinicSelect: (Clinic) -> Unit,
+    onViewBookings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -424,6 +442,16 @@ private fun BookingMapMode(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                if (isSignedIn) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        TextButton(onClick = onViewBookings) {
+                            Text("My bookings")
+                        }
+                    }
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -461,7 +489,9 @@ private fun BookingMapMode(
                                         IconButton(onClick = { onSearchQueryChange("") }) {
                                             androidx.compose.material3.Icon(
                                                 imageVector = Icons.CloseW400Outlinedfill1,
-                                                contentDescription = stringResource(Res.string.medical_booking_search_desc),
+                                                contentDescription = stringResource(
+                                                    Res.string.medical_booking_search_desc,
+                                                ),
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                             )
                                         }
@@ -716,11 +746,7 @@ internal fun ClinicCompactRow(
 }
 
 @Composable
-private fun ClinicListCard(
-    clinic: Clinic,
-    onSelect: () -> Unit,
-    onViewAvailability: () -> Unit,
-) {
+private fun ClinicListCard(clinic: Clinic, onSelect: () -> Unit, onViewAvailability: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onSelect),
         shape = MaterialTheme.shapes.extraLarge,

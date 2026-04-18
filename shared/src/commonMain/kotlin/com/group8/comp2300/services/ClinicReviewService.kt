@@ -5,11 +5,9 @@ import com.group8.comp2300.domain.repository.ClinicReviewRepository
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-class ClinicReviewService(
-    private val repository: ClinicReviewRepository
-) {
+class ClinicReviewService(private val repository: ClinicReviewRepository) {
 
-    //Submit a new review
+    // Submit a new review
     @OptIn(ExperimentalUuidApi::class)
     suspend fun submitReview(request: CreateReviewRequest): Result<Review> {
         // Validation
@@ -28,10 +26,10 @@ class ClinicReviewService(
         return repository.createReview(request)
     }
 
-    //Get reviews for a clinic
+    // Get reviews for a clinic
     suspend fun getClinicReviews(
         clinicId: String,
-        sortBy: ReviewSortBy = ReviewSortBy.MOST_RECENT
+        sortBy: ReviewSortBy = ReviewSortBy.MOST_RECENT,
     ): Result<List<Review>> {
         if (clinicId.isBlank()) {
             return Result.failure(IllegalArgumentException("Clinic ID cannot be empty"))
@@ -40,18 +38,16 @@ class ClinicReviewService(
         return repository.getReviewsByClinicId(clinicId, sortBy)
     }
 
-    //Get average rating for a clinic
-    suspend fun getClinicRating(clinicId: String): Result<Double> {
-        return repository.getAverageRating(clinicId)
-    }
+    // Get average rating for a clinic
+    suspend fun getClinicRating(clinicId: String): Result<Double> = repository.getAverageRating(clinicId)
 
-    //Update a review (author only)
+    // Update a review (author only)
     suspend fun updateReview(
         reviewId: String,
         userId: String,
         rating: Int?,
         title: String?,
-        comment: String?
+        comment: String?,
     ): Result<Review> {
         // Validation
         rating?.let {
@@ -76,21 +72,19 @@ class ClinicReviewService(
         return repository.updateReview(request, userId)
     }
 
-    //Delete a review
-    suspend fun deleteReview(reviewId: String, userId: String): Result<Boolean> {
-        return repository.deleteReview(reviewId, userId)
-    }
+    // Delete a review
+    suspend fun deleteReview(reviewId: String, userId: String): Result<Boolean> =
+        repository.deleteReview(reviewId, userId)
 
-    //Mark review as helpful
-    suspend fun markReviewHelpful(reviewId: String, userId: String): Result<Boolean> {
-        return repository.markHelpful(reviewId, userId)
-    }
+    // Mark review as helpful
+    suspend fun markReviewHelpful(reviewId: String, userId: String): Result<Boolean> =
+        repository.markHelpful(reviewId, userId)
 
     // Search reviews by keyword with sorting
     suspend fun searchClinicReviews(
         clinicId: String,
         keyword: String,
-        sortBy: ReviewSortBy = ReviewSortBy.MOST_RECENT
+        sortBy: ReviewSortBy = ReviewSortBy.MOST_RECENT,
     ): Result<List<Review>> {
         if (clinicId.isBlank()) {
             return Result.failure(IllegalArgumentException("Clinic ID cannot be empty"))
@@ -103,12 +97,12 @@ class ClinicReviewService(
         return repository.searchReviewsByClinicId(clinicId, keyword, sortBy)
     }
 
-    //Get reviews with multiple filter options (rating + keyword)
+    // Get reviews with multiple filter options (rating + keyword)
     suspend fun getFilteredReviews(
         clinicId: String,
         sortBy: ReviewSortBy = ReviewSortBy.MOST_RECENT,
         minRating: Int? = null,
-        keyword: String? = null
+        keyword: String? = null,
     ): Result<List<Review>> {
         if (clinicId.isBlank()) {
             return Result.failure(IllegalArgumentException("Clinic ID cannot be empty"))
@@ -132,5 +126,4 @@ class ClinicReviewService(
 
         return Result.success(reviews)
     }
-
 }

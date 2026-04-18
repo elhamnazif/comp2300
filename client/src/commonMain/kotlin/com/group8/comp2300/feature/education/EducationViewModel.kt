@@ -72,10 +72,7 @@ class EducationViewModel(private val repository: EducationRepository) : ViewMode
     fun getContentById(id: String): ContentItem? = repository.getContentById(id)
     fun getQuizById(id: String): Quiz? = repository.getQuizById(id)
 
-    private fun State.applyFilters(
-        category: ContentTopic? = selectedCategory,
-        query: String = searchQuery,
-    ): State {
+    private fun State.applyFilters(category: ContentTopic? = selectedCategory, query: String = searchQuery): State {
         if (isLoading || isError) {
             return copy(
                 selectedCategory = category,

@@ -15,7 +15,7 @@ data class Clinic(
     val phone: String? = null,
     val pricingTier: PricingTier? = null,
     val serviceTypes: List<ServiceType> = emptyList(),
-    val inclusivityFlags: InclusivityFlags = InclusivityFlags()
+    val inclusivityFlags: InclusivityFlags = InclusivityFlags(),
 ) {
     val formattedDistance: String
         get() = if (distanceKm < 1) {
@@ -27,9 +27,12 @@ data class Clinic(
 }
 
 enum class PricingTier {
-    LOW, MEDIUM, HIGH;
+    LOW,
+    MEDIUM,
+    HIGH,
+    ;
 
-    fun displayIcon() = when(this) {
+    fun displayIcon() = when (this) {
         LOW -> "$"
         MEDIUM -> "$$"
         HIGH -> "$$$"
@@ -37,9 +40,14 @@ enum class PricingTier {
 }
 
 enum class ServiceType {
-    PRIMARY_CARE, DENTISTRY, MENTAL_HEALTH, PEDIATRICS, OBGYN;
+    PRIMARY_CARE,
+    DENTISTRY,
+    MENTAL_HEALTH,
+    PEDIATRICS,
+    OBGYN,
+    ;
 
-    fun displayName() = when(this) {
+    fun displayName() = when (this) {
         PRIMARY_CARE -> "Primary Care"
         DENTISTRY -> "Dentistry"
         MENTAL_HEALTH -> "Mental Health"
@@ -49,7 +57,4 @@ enum class ServiceType {
 }
 
 @Serializable
-data class InclusivityFlags(
-    val lgbtqFriendly: Boolean = false,
-    val wheelchairAccessible: Boolean = false
-)
+data class InclusivityFlags(val lgbtqFriendly: Boolean = false, val wheelchairAccessible: Boolean = false)

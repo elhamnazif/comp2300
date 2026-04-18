@@ -16,7 +16,7 @@ data class Review(
     val isModerated: Boolean = false,
     val isApproved: Boolean = false,
     val helpfulCount: Int = 0,
-    val images: List<String> = emptyList()
+    val images: List<String> = emptyList(),
 )
 
 @Serializable
@@ -27,7 +27,7 @@ data class CreateReviewRequest(
     val rating: Int,
     val title: String,
     val comment: String,
-    val images: List<String> = emptyList()
+    val images: List<String> = emptyList(),
 )
 
 @Serializable
@@ -35,12 +35,12 @@ data class UpdateReviewRequest(
     val reviewId: String,
     val rating: Int? = null,
     val title: String? = null,
-    val comment: String? = null
+    val comment: String? = null,
 )
 
 enum class ReviewSortBy {
     MOST_RECENT,
     HIGHEST_RATED,
     LOWEST_RATED,
-    MOST_HELPFUL
+    MOST_HELPFUL,
 }

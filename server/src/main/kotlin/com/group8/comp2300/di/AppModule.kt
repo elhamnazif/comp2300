@@ -1,5 +1,6 @@
 package com.group8.comp2300.di
 
+import com.group8.comp2300.config.CareCatalogSeeder
 import com.group8.comp2300.config.DevSeeder
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.config.ResendConfig
@@ -33,7 +34,6 @@ import com.group8.comp2300.domain.repository.RoutineOccurrenceOverrideRepository
 import com.group8.comp2300.domain.repository.RoutineRepository
 import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.infrastructure.database.createServerDatabase
-import com.group8.comp2300.config.CareCatalogSeeder
 import com.group8.comp2300.security.AesGcmMedicalRecordCipher
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl

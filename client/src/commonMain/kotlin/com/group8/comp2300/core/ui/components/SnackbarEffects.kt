@@ -5,11 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 
 @Composable
-fun ConsumeSnackbarMessage(
-    message: String?,
-    snackbarHostState: SnackbarHostState,
-    onConsumed: () -> Unit,
-) {
+fun ConsumeSnackbarMessage(message: String?, snackbarHostState: SnackbarHostState, onConsumed: () -> Unit) {
     LaunchedEffect(message) {
         message?.let {
             snackbarHostState.showSnackbar(it)

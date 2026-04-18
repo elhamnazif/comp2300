@@ -18,10 +18,8 @@ import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Instant
 
-class CompleteProfileViewModel(
-    private val completeProfileUseCase: CompleteProfileUseCase,
-    initialEmail: String,
-) : ViewModel() {
+class CompleteProfileViewModel(private val completeProfileUseCase: CompleteProfileUseCase, initialEmail: String) :
+    ViewModel() {
     val state: StateFlow<State>
         field = MutableStateFlow(State(email = initialEmail))
 

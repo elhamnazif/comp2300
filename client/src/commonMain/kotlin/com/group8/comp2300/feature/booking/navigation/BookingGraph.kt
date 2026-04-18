@@ -1,6 +1,7 @@
 package com.group8.comp2300.feature.booking.navigation
 
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.app.navigation.LocalNavigator
@@ -9,6 +10,7 @@ import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.feature.booking.BookingConfirmationScreen
 import com.group8.comp2300.feature.booking.BookingDetailsScreen
+import com.group8.comp2300.feature.booking.BookingHistoryScreen
 import com.group8.comp2300.feature.booking.BookingScreen
 import com.group8.comp2300.feature.booking.BookingSuccessScreen
 import com.group8.comp2300.feature.booking.BookingViewModel
@@ -21,6 +23,8 @@ val bookingGraphModule = module {
     navigation<Screen.Booking>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current
         val viewModel = koinViewModel<BookingViewModel>()
+        val authRepository = koinInject<AuthRepository>()
+        val session by authRepository.session.collectAsState()
         val filteredClinics by viewModel.filteredClinics.collectAsState()
         val state by viewModel.state.collectAsState()
 
@@ -32,12 +36,14 @@ val bookingGraphModule = module {
             selectedTag = state.selectedTag,
             isLoading = state.isLoadingClinics,
             isMapMode = state.isMapMode,
+            isSignedIn = session is AuthSession.SignedIn,
             onSearchQueryChange = viewModel::updateSearchQuery,
             onTagToggle = viewModel::toggleTag,
             onMapModeChange = viewModel::setMapMode,
             onRefresh = viewModel::loadClinics,
             onClinicClick = { clinicId -> navigator.navigate(Screen.ClinicDetail(clinicId)) },
             onClinicSelect = viewModel::selectClinic,
+            onViewBookings = { navigator.navigate(Screen.BookingHistory()) },
         )
     }
 
@@ -46,9 +52,38 @@ val bookingGraphModule = module {
 
         BookingDetailsScreen(
             clinicId = route.clinicId,
+            rescheduleAppointment = route.rescheduleAppointment,
             onBack = navigator::goBack,
-            onContinueToConfirmation = { clinicId, slotId ->
-                navigator.navigate(Screen.BookingConfirmation(clinicId, slotId))
+            onContinueToConfirmation = { clinicId, slotId, rescheduleAppointment ->
+                navigator.navigate(Screen.BookingConfirmation(clinicId, slotId, rescheduleAppointment))
+            },
+        )
+    }
+
+    navigation<Screen.BookingHistory>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+        val navigator = LocalNavigator.current
+        val authRepository = koinInject<AuthRepository>()
+        val session by authRepository.session.collectAsState()
+
+        if (session !is AuthSession.SignedIn) {
+            LaunchedEffect(route.highlightedAppointmentId) {
+                navigator.requireAuth(Screen.BookingHistory(route.highlightedAppointmentId))
+            }
+            return@navigation
+        }
+
+        BookingHistoryScreen(
+            highlightedAppointmentId = route.highlightedAppointmentId,
+            onBack = navigator::goBack,
+            onReschedule = { appointment ->
+                appointment.clinicId?.let { clinicId ->
+                    navigator.navigate(
+                        Screen.ClinicDetail(
+                            clinicId = clinicId,
+                            rescheduleAppointment = appointment,
+                        ),
+                    )
+                }
             },
         )
     }
@@ -61,15 +96,25 @@ val bookingGraphModule = module {
         BookingConfirmationScreen(
             clinicId = route.clinicId,
             slotId = route.slotId,
+            rescheduleAppointment = route.rescheduleAppointment,
             onBack = navigator::goBack,
             isSignedIn = session is AuthSession.SignedIn,
-            onRequireAuth = { navigator.requireAuth(Screen.BookingConfirmation(route.clinicId, route.slotId)) },
-            onBookingConfirmed = { appointment ->
+            onRequireAuth = {
+                navigator.requireAuth(
+                    Screen.BookingConfirmation(
+                        route.clinicId,
+                        route.slotId,
+                        route.rescheduleAppointment,
+                    ),
+                )
+            },
+            onBookingConfirmed = { appointment, wasRescheduled ->
                 navigator.navigate(
                     Screen.BookingSuccess(
                         clinicId = appointment.clinicId ?: route.clinicId,
                         appointmentId = appointment.id,
                         appointmentTime = appointment.appointmentTime,
+                        wasRescheduled = wasRescheduled,
                     ),
                 )
             },
@@ -84,9 +129,15 @@ val bookingGraphModule = module {
             clinicId = route.clinicId,
             appointmentId = route.appointmentId,
             appointmentTime = route.appointmentTime,
+            wasRescheduled = route.wasRescheduled,
             onBack = {
                 viewModel.clearBookingFlow()
-                navigator.clearAndGoTo(Screen.Booking)
+                if (route.wasRescheduled) {
+                    navigator.clearAndGoTo(Screen.Booking)
+                    navigator.navigate(Screen.BookingHistory(route.appointmentId))
+                } else {
+                    navigator.clearAndGoTo(Screen.Booking)
+                }
             },
             onViewCalendar = {
                 viewModel.clearBookingFlow()
@@ -94,7 +145,12 @@ val bookingGraphModule = module {
             },
             onDone = {
                 viewModel.clearBookingFlow()
-                navigator.clearAndGoTo(Screen.Booking)
+                if (route.wasRescheduled) {
+                    navigator.clearAndGoTo(Screen.Booking)
+                    navigator.navigate(Screen.BookingHistory(route.appointmentId))
+                } else {
+                    navigator.clearAndGoTo(Screen.Booking)
+                }
             },
         )
     }

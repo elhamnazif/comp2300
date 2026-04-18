@@ -32,7 +32,13 @@ class AuthViewModel(
                 state.update {
                     it.copy(
                         email = event.email,
-                        emailError = if (isValid || event.email.isEmpty()) null else Res.string.auth_error_invalid_email,
+                        emailError = if (isValid ||
+                            event.email.isEmpty()
+                        ) {
+                            null
+                        } else {
+                            Res.string.auth_error_invalid_email
+                        },
                     )
                 }
             }

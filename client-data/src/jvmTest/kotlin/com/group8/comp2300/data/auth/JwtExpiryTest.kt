@@ -23,8 +23,7 @@ class JwtExpiryTest {
         return "$header.$payload."
     }
 
-    private fun encode(value: String): String =
-        java.util.Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(value.toByteArray())
+    private fun encode(value: String): String = java.util.Base64.getUrlEncoder()
+        .withoutPadding()
+        .encodeToString(value.toByteArray())
 }

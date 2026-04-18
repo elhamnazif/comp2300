@@ -124,7 +124,16 @@ fun MedicationFormSheet(
             modifier = Modifier.fillMaxWidth().heightIn(max = 520.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            MedicalFormTextField(label = stringResource(Res.string.medical_medication_form_name_label), value = name, onValueChange = { name = it })
+            MedicalFormTextField(
+                label = stringResource(
+                    Res.string.medical_medication_form_name_label,
+                ),
+                value = name,
+                onValueChange = {
+                    name =
+                        it
+                },
+            )
             MedicalFormTextField(
                 label = stringResource(Res.string.medical_medication_form_dose_label),
                 value = dosage,
@@ -145,7 +154,11 @@ fun MedicationFormSheet(
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(stringResource(Res.string.medical_medication_form_color_tag_label), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+                Text(
+                    stringResource(Res.string.medical_medication_form_color_tag_label),
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Medium,
+                )
                 Row(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -162,7 +175,13 @@ fun MedicationFormSheet(
                                     .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
                                     .border(
                                         width = if (selectedColor == color) 2.dp else 0.dp,
-                                        color = if (selectedColor == color) MaterialTheme.colorScheme.primary else Color.Transparent,
+                                        color = if (selectedColor ==
+                                            color
+                                        ) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            Color.Transparent
+                                        },
                                         shape = CircleShape,
                                     )
                                     .padding(4.dp)
@@ -183,7 +202,10 @@ fun MedicationFormSheet(
                     }
                 }
                 Text(
-                    stringResource(Res.string.medical_medication_form_selected_color, medicationColorOption(selectedColor.toHexString()).label),
+                    stringResource(
+                        Res.string.medical_medication_form_selected_color,
+                        medicationColorOption(selectedColor.toHexString()).label,
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -196,13 +218,24 @@ fun MedicationFormSheet(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(stringResource(Res.string.medical_medication_form_schedule_section), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    androidx.compose.material3.TextButton(onClick = { onAddSchedule?.invoke() }, enabled = onAddSchedule != null) {
+                    Text(
+                        stringResource(Res.string.medical_medication_form_schedule_section),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    androidx.compose.material3.TextButton(
+                        onClick = { onAddSchedule?.invoke() },
+                        enabled =
+                        onAddSchedule != null,
+                    ) {
                         Text(stringResource(Res.string.medical_medication_form_schedule_add))
                     }
                 }
                 if (linkedSchedules.isEmpty()) {
-                    Text(stringResource(Res.string.medical_medication_form_schedule_none), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        stringResource(Res.string.medical_medication_form_schedule_none),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 } else {
                     linkedSchedules.forEachIndexed { index, routine ->
                         Row(
@@ -239,7 +272,11 @@ fun MedicationFormSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Text(stringResource(Res.string.medical_medication_section_archived), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        stringResource(Res.string.medical_medication_section_archived),
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
                     Switch(
                         checked = status == MedicationStatus.ARCHIVED,
                         onCheckedChange = { isArchived ->

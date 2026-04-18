@@ -62,15 +62,6 @@ data class RoutineCreateRequest(
 )
 
 @Serializable
-data class AppointmentRequest(
-    val title: String,
-    val appointmentTime: Long,
-    val appointmentType: String,
-    val notes: String? = null,
-    val doctorName: String? = null,
-)
-
-@Serializable
 data class ClinicBookingRequest(
     val clinicId: String,
     val slotId: String,

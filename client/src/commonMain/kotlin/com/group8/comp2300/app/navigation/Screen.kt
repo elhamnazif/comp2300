@@ -1,6 +1,7 @@
 package com.group8.comp2300.app.navigation
 
 import androidx.navigation3.runtime.NavKey
+import com.group8.comp2300.domain.model.medical.Appointment
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -45,13 +46,25 @@ sealed interface Screen : NavKey {
 
     // Detail Screens
     @Serializable
-    data class ClinicDetail(val clinicId: String) : Screen
+    data class ClinicDetail(val clinicId: String, val rescheduleAppointment: Appointment? = null) : Screen
 
     @Serializable
-    data class BookingConfirmation(val clinicId: String, val slotId: String) : Screen
+    data class BookingHistory(val highlightedAppointmentId: String? = null) : Screen
 
     @Serializable
-    data class BookingSuccess(val clinicId: String, val appointmentId: String, val appointmentTime: Long) : Screen
+    data class BookingConfirmation(
+        val clinicId: String,
+        val slotId: String,
+        val rescheduleAppointment: Appointment? = null,
+    ) : Screen
+
+    @Serializable
+    data class BookingSuccess(
+        val clinicId: String,
+        val appointmentId: String,
+        val appointmentTime: Long,
+        val wasRescheduled: Boolean = false,
+    ) : Screen
 
     @Serializable
     data class ProductDetail(val productId: String) : Screen

@@ -1,7 +1,6 @@
 package com.group8.comp2300.data.repository.medical
 
 import com.group8.comp2300.data.auth.TokenManagerImpl
-import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
@@ -12,6 +11,7 @@ import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
+import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.repository.newDatabase
 import com.group8.comp2300.data.repository.sampleMedication
 import com.group8.comp2300.domain.model.medical.Appointment
@@ -116,6 +116,99 @@ class MedicalDataRepositoriesTest {
         assertEquals(1, AppointmentLocalDataSource(db).getAll().size)
         assertEquals("clinic-1", AppointmentLocalDataSource(db).getAll().single().clinicId)
         assertEquals("slot-1", AppointmentLocalDataSource(db).getAll().single().bookingId)
+    }
+
+    @Test
+    fun cancellingAppointmentUpdatesLocalRecord() = runTest {
+        val db = newDatabase()
+        val apiService = BookingApiStub()
+        val repository = AppointmentDataRepositoryImpl(
+            appointmentLocal = AppointmentLocalDataSource(db),
+            apiService = apiService,
+        )
+
+        repository.bookClinicAppointment(
+            ClinicBookingRequest(
+                clinicId = "clinic-1",
+                slotId = "slot-1",
+                appointmentType = "STI_TESTING",
+                reason = "Screening",
+                hasReminder = true,
+            ),
+        )
+
+        repository.cancelAppointment("appointment-1")
+
+        val stored = AppointmentLocalDataSource(db).getById("appointment-1")
+        assertEquals("CANCELLED", stored?.status)
+        assertEquals(null, stored?.bookingId)
+    }
+
+    @Test
+    fun reschedulingAppointmentUpdatesLocalRecord() = runTest {
+        val db = newDatabase()
+        val apiService = BookingApiStub()
+        val repository = AppointmentDataRepositoryImpl(
+            appointmentLocal = AppointmentLocalDataSource(db),
+            apiService = apiService,
+        )
+
+        repository.bookClinicAppointment(
+            ClinicBookingRequest(
+                clinicId = "clinic-1",
+                slotId = "slot-1",
+                appointmentType = "STI_TESTING",
+                reason = "Screening",
+                hasReminder = true,
+            ),
+        )
+
+        repository.rescheduleAppointment(
+            id = "appointment-1",
+            request = ClinicBookingRequest(
+                clinicId = "clinic-1",
+                slotId = "slot-2",
+                appointmentType = "FOLLOW_UP",
+                reason = "Bring results",
+                hasReminder = false,
+            ),
+        )
+
+        val stored = AppointmentLocalDataSource(db).getById("appointment-1")
+        assertEquals("slot-2", stored?.bookingId)
+        assertEquals("FOLLOW_UP", stored?.appointmentType)
+        assertEquals("Bring results", stored?.notes)
+        assertEquals(false, stored?.hasReminder)
+    }
+
+    @Test
+    fun appointmentRepositoryFiltersCancelledBookingsFromCalendar() = runTest {
+        val db = newDatabase()
+        val local = AppointmentLocalDataSource(db)
+        local.insert(
+            sampleAppointment(
+                id = "appointment-confirmed",
+                bookingId = "slot-1",
+                status = "CONFIRMED",
+            ),
+        )
+        local.insert(
+            sampleAppointment(
+                id = "appointment-cancelled",
+                bookingId = null,
+                status = "CANCELLED",
+            ),
+        )
+        val repository = AppointmentDataRepositoryImpl(
+            appointmentLocal = local,
+            apiService = BookingApiStub(),
+        )
+
+        assertEquals(listOf("appointment-confirmed"), repository.getAppointments().map(Appointment::id))
+        assertEquals(
+            listOf("appointment-confirmed", "appointment-cancelled"),
+            repository.getBookingHistory().map(Appointment::id),
+        )
     }
 
     @Test
@@ -343,68 +436,74 @@ class MedicalDataRepositoriesTest {
 }
 
 private class BookingApiStub : ApiService {
+    private val appointments = linkedMapOf<String, Appointment>()
+
     override suspend fun getHealth(): Map<String, String> = emptyMap()
     override suspend fun getProducts() = emptyList<com.group8.comp2300.data.remote.dto.ProductDto>()
     override suspend fun getProduct(id: String) = error("unused")
     override suspend fun login(request: com.group8.comp2300.data.remote.dto.LoginRequest) = error("unused")
-    override suspend fun refreshToken(request: com.group8.comp2300.data.remote.dto.RefreshTokenRequest) = error("unused")
+    override suspend fun refreshToken(request: com.group8.comp2300.data.remote.dto.RefreshTokenRequest) =
+        error("unused")
     override suspend fun logout() = Unit
     override suspend fun getProfile() = error("unused")
     override suspend fun activateAccount(token: String) = error("unused")
     override suspend fun forgotPassword(email: String) = error("unused")
     override suspend fun resetPassword(token: String, newPassword: String) = error("unused")
     override suspend fun preregister(request: com.group8.comp2300.data.remote.dto.PreregisterRequest) = error("unused")
-    override suspend fun completeProfile(request: com.group8.comp2300.data.remote.dto.CompleteProfileRequest) = error("unused")
+    override suspend fun completeProfile(request: com.group8.comp2300.data.remote.dto.CompleteProfileRequest) =
+        error("unused")
     override suspend fun resendVerificationEmail(email: String) = error("unused")
     override suspend fun getClinics(): List<Clinic> = emptyList()
     override suspend fun getClinic(id: String): Clinic = error("unused")
     override suspend fun getClinicAvailability(clinicId: String): List<AppointmentSlot> = emptyList()
-    override suspend fun getAppointments(): List<Appointment> = emptyList()
-    override suspend fun scheduleAppointment(request: com.group8.comp2300.domain.model.medical.AppointmentRequest): Appointment =
-        error("unused")
+    override suspend fun getAppointments(): List<Appointment> = appointments.values.toList()
 
-    override suspend fun bookClinicAppointment(request: ClinicBookingRequest): Appointment = Appointment(
+    override suspend fun bookClinicAppointment(request: ClinicBookingRequest): Appointment = sampleAppointment(
         id = "appointment-1",
-        userId = "user-1",
-        title = "Appointment at Clinic",
-        appointmentTime = 123456789L,
-        appointmentType = request.appointmentType,
         clinicId = request.clinicId,
         bookingId = request.slotId,
-        status = "CONFIRMED",
+        appointmentType = request.appointmentType,
         notes = request.reason,
         hasReminder = request.hasReminder,
-        paymentStatus = "PENDING",
-    )
+    ).also { appointments[it.id] = it }
+
+    override suspend fun cancelAppointment(id: String): Appointment = appointments.getValue(id)
+        .copy(status = "CANCELLED", bookingId = null)
+        .also { appointments[id] = it }
+
+    override suspend fun rescheduleAppointment(id: String, request: ClinicBookingRequest): Appointment =
+        appointments.getValue(id)
+            .copy(
+                appointmentType = request.appointmentType,
+                clinicId = request.clinicId,
+                bookingId = request.slotId,
+                notes = request.reason,
+                hasReminder = request.hasReminder,
+            )
+            .also { appointments[id] = it }
 
     override suspend fun logMedication(request: MedicationLogRequest) = error("unused")
     override suspend fun getMedicationLogHistory() = emptyList<com.group8.comp2300.domain.model.medical.MedicationLog>()
-    override suspend fun getMedicationAgenda(date: String) = emptyList<com.group8.comp2300.domain.model.medical.MedicationLog>()
+    override suspend fun getMedicationAgenda(date: String) =
+        emptyList<com.group8.comp2300.domain.model.medical.MedicationLog>()
     override suspend fun getRoutineAgenda(date: String) = error("unused")
     override suspend fun logMood(request: com.group8.comp2300.domain.model.medical.MoodEntryRequest) = error("unused")
     override suspend fun getMoodHistory() = emptyList<com.group8.comp2300.domain.model.medical.Mood>()
     override suspend fun getUserMedications() = emptyList<com.group8.comp2300.domain.model.medical.Medication>()
-    override suspend fun upsertMedication(
-        id: String,
-        request: MedicationCreateRequest,
-    ) = error("unused")
+    override suspend fun upsertMedication(id: String, request: MedicationCreateRequest) = error("unused")
 
     override suspend fun deleteMedication(id: String) = Unit
     override suspend fun getUserRoutines() = emptyList<Routine>()
-    override suspend fun upsertRoutine(
-        id: String,
-        request: RoutineCreateRequest,
-    ) = error("unused")
+    override suspend fun upsertRoutine(id: String, request: RoutineCreateRequest) = error("unused")
 
     override suspend fun deleteRoutine(id: String) = Unit
     override suspend fun getRoutineOccurrenceOverrides() =
         emptyList<com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride>()
 
-    override suspend fun upsertRoutineOccurrenceOverride(
-        request: RoutineOccurrenceOverrideRequest,
-    ) = error("unused")
+    override suspend fun upsertRoutineOccurrenceOverride(request: RoutineOccurrenceOverrideRequest) = error("unused")
 
-    override suspend fun getMedicalRecords(sort: String) = emptyList<com.group8.comp2300.domain.model.medical.MedicalRecordResponse>()
+    override suspend fun getMedicalRecords(sort: String) =
+        emptyList<com.group8.comp2300.domain.model.medical.MedicalRecordResponse>()
     override suspend fun uploadMedicalRecord(
         fileBytes: ByteArray,
         fileName: String,
@@ -414,6 +513,28 @@ private class BookingApiStub : ApiService {
     override suspend fun downloadMedicalRecord(id: String): ByteArray = ByteArray(0)
     override suspend fun deleteMedicalRecord(id: String) = Unit
 }
+
+private fun sampleAppointment(
+    id: String,
+    clinicId: String = "clinic-1",
+    bookingId: String? = "slot-1",
+    appointmentType: String = "CONSULTATION",
+    notes: String? = "Fever",
+    hasReminder: Boolean = true,
+    status: String = "CONFIRMED",
+): Appointment = Appointment(
+    id = id,
+    userId = "user-1",
+    title = "Appointment at Clinic",
+    appointmentTime = 123456789L,
+    appointmentType = appointmentType,
+    clinicId = clinicId,
+    bookingId = bookingId,
+    status = status,
+    notes = notes,
+    hasReminder = hasReminder,
+    paymentStatus = "PENDING",
+)
 
 class TestSyncCoordinator : SyncCoordinator {
     var flushCalls: Int = 0

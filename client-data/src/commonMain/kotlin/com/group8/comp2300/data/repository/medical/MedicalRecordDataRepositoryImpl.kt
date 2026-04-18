@@ -5,10 +5,9 @@ import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.domain.model.medical.MedicalRecordResponse
 import com.group8.comp2300.domain.repository.medical.MedicalRecordDataRepository
 
-class MedicalRecordDataRepositoryImpl(
-    private val apiService: ApiService,
-) : MedicalRecordDataRepository {
-    override suspend fun getMedicalRecords(sort: String): List<MedicalRecordResponse> = apiService.getMedicalRecords(sort)
+class MedicalRecordDataRepositoryImpl(private val apiService: ApiService) : MedicalRecordDataRepository {
+    override suspend fun getMedicalRecords(sort: String): List<MedicalRecordResponse> =
+        apiService.getMedicalRecords(sort)
 
     override suspend fun uploadMedicalRecord(
         fileBytes: ByteArray,

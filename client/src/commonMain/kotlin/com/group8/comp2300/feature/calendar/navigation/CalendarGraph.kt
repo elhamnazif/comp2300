@@ -11,6 +11,9 @@ val calendarGraphModule = module {
         val navigator = LocalNavigator.current
         CalendarScreen(
             onNavigateToMedication = { navigator.navigate(Screen.Medication) },
+            onManageAppointment = { appointment ->
+                navigator.navigate(Screen.BookingHistory(appointment.id))
+            },
         )
     }
 }

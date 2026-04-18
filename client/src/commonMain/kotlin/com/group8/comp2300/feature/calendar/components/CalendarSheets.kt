@@ -262,16 +262,21 @@ internal fun MoodEntryForm(onSave: (Int, String) -> Unit) {
 }
 
 @Composable
-internal fun AppointmentDetailSheetContent(appointment: Appointment, onClose: () -> Unit) {
+internal fun AppointmentDetailSheetContent(appointment: Appointment, onManageInCare: () -> Unit, onClose: () -> Unit) {
     val dateTime = Instant.fromEpochMilliseconds(appointment.appointmentTime)
         .toLocalDateTime(TimeZone.currentSystemDefault())
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(appointment.title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Text(
-            "${DateFormatter.formatDayMonthYear(dateTime.date)} at ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}",
+            "${DateFormatter.formatDayMonthYear(
+                dateTime.date,
+            )} at ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}",
         )
         Text(appointment.appointmentType, color = MaterialTheme.colorScheme.secondary)
         appointment.notes?.takeIf(String::isNotBlank)?.let { Text(it) }
+        TextButton(onClick = onManageInCare, modifier = Modifier.fillMaxWidth()) {
+            Text("Manage in care")
+        }
         TextButton(onClick = onClose, modifier = Modifier.fillMaxWidth()) {
             Text(stringResource(Res.string.calendar_close_action))
         }
@@ -279,11 +284,7 @@ internal fun AppointmentDetailSheetContent(appointment: Appointment, onClose: ()
 }
 
 @Composable
-internal fun AppointmentCard(
-    appointment: Appointment,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {},
-) {
+internal fun AppointmentCard(appointment: Appointment, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     val dateTime = Instant.fromEpochMilliseconds(appointment.appointmentTime)
         .toLocalDateTime(TimeZone.currentSystemDefault())
     Surface(
@@ -305,11 +306,7 @@ internal fun AppointmentCard(
     }
 }
 
-internal fun entryDateTimeToEpochMs(
-    entryDate: LocalDate,
-    entryTime: Pair<Int, Int>,
-    timeZone: TimeZone,
-): Long {
+internal fun entryDateTimeToEpochMs(entryDate: LocalDate, entryTime: Pair<Int, Int>, timeZone: TimeZone): Long {
     val logDateTime = LocalDateTime(entryDate, LocalTime(entryTime.first, entryTime.second))
     return logDateTime.toInstant(timeZone).toEpochMilliseconds()
 }

@@ -143,12 +143,7 @@ private fun CalendarLegend() {
 }
 
 @Composable
-internal fun DayCell(
-    day: CalendarDay,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+internal fun DayCell(day: CalendarDay, isSelected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val alpha = if (day.isCurrentMonth) 1f else 0.3f
     val borderColor = when {
         isSelected -> Color.Transparent
@@ -203,18 +198,21 @@ private fun calendarDayVisual(status: AdherenceStatus): StatusVisual = when (sta
         pattern = IndicatorPattern.DIAGONAL,
         icon = StatusIcon.SUCCESS,
     )
+
     AdherenceStatus.MISSED -> StatusVisual(
         label = stringResource(Res.string.calendar_skip_action),
         color = MaterialTheme.colorScheme.error,
         pattern = IndicatorPattern.GRID,
         icon = StatusIcon.DANGER,
     )
+
     AdherenceStatus.APPOINTMENT -> StatusVisual(
         label = stringResource(Res.string.calendar_appointments),
         color = Color(0xFFD4AF37),
         pattern = IndicatorPattern.VERTICAL,
         icon = StatusIcon.DATE,
     )
+
     AdherenceStatus.NONE -> StatusVisual(
         label = "",
         color = Color.Transparent,

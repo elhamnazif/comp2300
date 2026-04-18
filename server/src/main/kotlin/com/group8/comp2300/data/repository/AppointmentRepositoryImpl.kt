@@ -29,6 +29,11 @@ class AppointmentRepositoryImpl(private val database: ServerDatabase) : Appointm
     override fun getAppointmentById(id: String): Appointment? = database.appointmentQueries.selectAppointmentById(id)
         .executeAsOneOrNull()?.toDomain()
 
+    override fun getByUserId(userId: String): List<Appointment> =
+        database.appointmentQueries.selectAppointmentsByUserId(userId)
+            .executeAsList()
+            .map { it.toDomain() }
+
     override fun getConfirmedByUserId(userId: String): List<Appointment> =
         database.appointmentQueries.selectConfirmedApptsOfUser(userId)
             .executeAsList()
@@ -56,6 +61,20 @@ class AppointmentRepositoryImpl(private val database: ServerDatabase) : Appointm
         database.appointmentQueries.updateAppointmentStatus(
             status = status,
             id = id,
+        )
+    }
+
+    override fun updateAppointment(appointment: Appointment) {
+        database.appointmentQueries.updateAppointmentDetails(
+            title = appointment.title,
+            appointment_time = appointment.appointmentTime,
+            appointment_type = appointment.appointmentType,
+            clinic_id = appointment.clinicId,
+            booking_id = appointment.bookingId,
+            status = appointment.status,
+            notes = appointment.notes,
+            has_reminder = if (appointment.hasReminder) 1L else 0L,
+            id = appointment.id,
         )
     }
 

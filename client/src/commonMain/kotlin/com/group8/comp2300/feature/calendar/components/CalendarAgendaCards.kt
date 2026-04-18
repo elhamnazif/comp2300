@@ -13,7 +13,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
-import com.group8.comp2300.feature.medical.shared.routines.ReminderIndicator
 import com.group8.comp2300.core.ui.accessibility.AccessibleStatusChip
 import com.group8.comp2300.core.ui.accessibility.IndicatorPattern
 import com.group8.comp2300.core.ui.accessibility.StatusIcon
@@ -22,6 +21,7 @@ import com.group8.comp2300.domain.model.medical.MedicationLogStatus
 import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
 import com.group8.comp2300.domain.model.medical.RoutineMedicationAgenda
 import com.group8.comp2300.feature.calendar.StatusVisual
+import com.group8.comp2300.feature.medical.shared.routines.ReminderIndicator
 import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
@@ -115,7 +115,9 @@ internal fun RoutineAgendaCard(
     onLogAll: (MedicationLogStatus) -> Unit,
     onMoveDose: () -> Unit,
 ) {
-    val occurrence = Instant.fromEpochMilliseconds(routine.occurrenceTimeMs).toLocalDateTime(TimeZone.currentSystemDefault())
+    val occurrence = Instant.fromEpochMilliseconds(
+        routine.occurrenceTimeMs,
+    ).toLocalDateTime(TimeZone.currentSystemDefault())
     val actionableMeds = remember(routine.medications) {
         routine.medications.filter {
             it.status == MedicationLogStatus.PENDING ||

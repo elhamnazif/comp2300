@@ -12,10 +12,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import org.jetbrains.compose.resources.StringResource
 
-class ResetPasswordViewModel(
-    private val resetPasswordUseCase: ResetPasswordUseCase,
-    initialToken: String,
-) : ViewModel() {
+class ResetPasswordViewModel(private val resetPasswordUseCase: ResetPasswordUseCase, initialToken: String) :
+    ViewModel() {
     val state: StateFlow<State>
         field = MutableStateFlow(State(token = initialToken))
 

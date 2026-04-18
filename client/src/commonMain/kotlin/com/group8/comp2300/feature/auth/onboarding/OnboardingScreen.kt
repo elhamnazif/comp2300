@@ -207,10 +207,7 @@ fun OnboardingScreen(
 }
 
 @Composable
-private fun OnboardingIntroStep(
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit,
-) {
+private fun OnboardingIntroStep(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,

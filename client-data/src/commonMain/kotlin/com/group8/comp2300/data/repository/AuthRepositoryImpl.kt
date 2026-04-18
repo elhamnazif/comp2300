@@ -1,8 +1,8 @@
 package com.group8.comp2300.data.repository
 
 import co.touchlab.kermit.Logger
-import com.group8.comp2300.data.auth.extractJwtExpiration
 import com.group8.comp2300.data.auth.TokenManager
+import com.group8.comp2300.data.auth.extractJwtExpiration
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.offline.isRetryable
 import com.group8.comp2300.data.remote.ApiService

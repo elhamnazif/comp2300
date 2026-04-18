@@ -12,10 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.group8.comp2300.feature.medical.shared.routines.ReminderIndicator
-import com.group8.comp2300.feature.medical.shared.routines.ScheduleFormSheet
-import com.group8.comp2300.feature.medical.shared.routines.formatTimesSummary
-import com.group8.comp2300.feature.medical.shared.routines.weekdaySummary
 import com.group8.comp2300.core.ui.components.ActionEmptyStateCard
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.core.ui.components.ConsumeSnackbarMessage
@@ -24,6 +20,10 @@ import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineStatus
+import com.group8.comp2300.feature.medical.shared.routines.ReminderIndicator
+import com.group8.comp2300.feature.medical.shared.routines.ScheduleFormSheet
+import com.group8.comp2300.feature.medical.shared.routines.formatTimesSummary
+import com.group8.comp2300.feature.medical.shared.routines.weekdaySummary
 import com.group8.comp2300.platform.notifications.NotificationPermissionResult
 import com.group8.comp2300.platform.notifications.rememberNotificationPermissionRequester
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -68,7 +68,10 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                 editingRoutine = null
                 showSheet = true
             }) {
-                Icon(Icons.AddW400Outlinedfill1, contentDescription = stringResource(Res.string.medical_routine_add_desc))
+                Icon(
+                    Icons.AddW400Outlinedfill1,
+                    contentDescription = stringResource(Res.string.medical_routine_add_desc),
+                )
             }
         },
     ) { innerPadding ->
@@ -94,7 +97,9 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                 }
             } else {
                 if (activeRoutines.isNotEmpty()) {
-                    item { SectionHeader(stringResource(Res.string.medical_medication_section_active), activeRoutines.size) }
+                    item {
+                        SectionHeader(stringResource(Res.string.medical_medication_section_active), activeRoutines.size)
+                    }
                 }
                 items(activeRoutines, key = Routine::id) { routine ->
                     RoutineCard(
@@ -108,7 +113,9 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                 }
             }
             if (archivedRoutines.isNotEmpty()) {
-                item { SectionHeader(stringResource(Res.string.medical_medication_section_archived), archivedRoutines.size) }
+                item {
+                    SectionHeader(stringResource(Res.string.medical_medication_section_archived), archivedRoutines.size)
+                }
                 items(archivedRoutines, key = Routine::id) { routine ->
                     RoutineCard(
                         routine = routine,
@@ -240,7 +247,9 @@ private fun RoutineCard(
 
 @Composable
 private fun routineRepeatSummary(routine: Routine): String = when (routine.repeatType) {
-    com.group8.comp2300.domain.model.medical.RoutineRepeatType.DAILY -> stringResource(Res.string.medical_routine_repeat_daily)
+    com.group8.comp2300.domain.model.medical.RoutineRepeatType.DAILY -> stringResource(
+        Res.string.medical_routine_repeat_daily,
+    )
 
     com.group8.comp2300.domain.model.medical.RoutineRepeatType.WEEKLY -> weekdaySummary(routine.daysOfWeek)
 }

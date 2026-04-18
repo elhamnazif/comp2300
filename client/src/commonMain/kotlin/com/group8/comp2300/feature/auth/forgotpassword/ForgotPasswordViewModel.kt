@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import com.group8.comp2300.core.Validation
 import com.group8.comp2300.domain.usecase.auth.ForgotPasswordUseCase
 import com.group8.comp2300.feature.auth.AuthRequestState
-import com.group8.comp2300.feature.auth.launchAuthRequest
 import com.group8.comp2300.feature.auth.components.sanitizeVerificationCode
+import com.group8.comp2300.feature.auth.launchAuthRequest
 import comp2300.i18n.generated.resources.Res
 import comp2300.i18n.generated.resources.auth_error_invalid_email
 import comp2300.i18n.generated.resources.forgot_password_error_network
@@ -15,9 +15,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import org.jetbrains.compose.resources.StringResource
 
-class ForgotPasswordViewModel(
-    private val forgotPasswordUseCase: ForgotPasswordUseCase,
-) : ViewModel() {
+class ForgotPasswordViewModel(private val forgotPasswordUseCase: ForgotPasswordUseCase) : ViewModel() {
     val state: StateFlow<State>
         field = MutableStateFlow(State())
 

@@ -46,7 +46,10 @@ fun Route.clinicRoutes() {
 
             call.respond(
                 HttpStatusCode.OK,
-                appointmentSlotRepository.getAvailableByClinic(clinicId).filter { it.startTime > System.currentTimeMillis() },
+                appointmentSlotRepository.getAvailableByClinic(clinicId).filter {
+                    it.startTime >
+                        System.currentTimeMillis()
+                },
             )
         }
     }

@@ -8,11 +8,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 
 internal interface AuthRequestState<T> {
-    fun withRequestStatus(
-        isLoading: Boolean,
-        errorMessage: String? = null,
-        errorMessageRes: StringResource? = null,
-    ): T
+    fun withRequestStatus(isLoading: Boolean, errorMessage: String? = null, errorMessageRes: StringResource? = null): T
 }
 
 internal fun authErrorFromException(
@@ -28,6 +24,7 @@ internal fun authErrorFromException(
 
     return when {
         errorFlags.isNetworkError -> null to networkErrorRes
+
         invalidOrExpiredTokenRes != null && errorFlags.isInvalidOrExpiredToken ->
             null to invalidOrExpiredTokenRes
 

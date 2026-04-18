@@ -15,6 +15,7 @@ import com.group8.comp2300.core.format.DateFormatter
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.core.ui.components.ConsumeSnackbarMessage
 import com.group8.comp2300.core.ui.components.EmptyStateMessage
+import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
@@ -35,6 +36,7 @@ import kotlin.time.Instant
 fun CalendarScreen(
     modifier: Modifier = Modifier,
     onNavigateToMedication: () -> Unit = {},
+    onManageAppointment: (Appointment) -> Unit = {},
     viewModel: CalendarViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -474,6 +476,10 @@ fun CalendarScreen(
                 is CalendarSheetState.AppointmentDetails ->
                     AppointmentDetailSheetContent(
                         appointment = activeSheet.appointment,
+                        onManageInCare = {
+                            sheetUiState = CalendarSheetState.Hidden
+                            onManageAppointment(activeSheet.appointment)
+                        },
                         onClose = { sheetUiState = CalendarSheetState.Hidden },
                     )
             }

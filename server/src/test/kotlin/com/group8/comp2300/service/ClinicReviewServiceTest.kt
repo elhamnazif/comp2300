@@ -1,8 +1,8 @@
 package com.group8.comp2300.service
 
 import com.group8.comp2300.domain.model.medical.*
-import com.group8.comp2300.services.ClinicReviewService
 import com.group8.comp2300.domain.repository.ClinicReviewRepository
+import com.group8.comp2300.services.ClinicReviewService
 import kotlin.test.*
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -26,16 +26,13 @@ class TestClinicReviewRepository : ClinicReviewRepository {
             comment = request.comment,
             createdAt = now,
             updatedAt = now,
-            images = request.images
+            images = request.images,
         )
         reviews[review.id] = review
         return Result.success(review)
     }
 
-    override suspend fun getReviewsByClinicId(
-        clinicId: String,
-        sortBy: ReviewSortBy
-    ): Result<List<Review>> {
+    override suspend fun getReviewsByClinicId(clinicId: String, sortBy: ReviewSortBy): Result<List<Review>> {
         val clinicReviews = reviews.values.filter { it.clinicId == clinicId }
         val sorted = when (sortBy) {
             ReviewSortBy.MOST_RECENT -> clinicReviews.sortedByDescending { it.createdAt }
@@ -49,12 +46,14 @@ class TestClinicReviewRepository : ClinicReviewRepository {
     override suspend fun searchReviewsByClinicId(
         clinicId: String,
         keyword: String,
-        sortBy: ReviewSortBy
+        sortBy: ReviewSortBy,
     ): Result<List<Review>> {
         val clinicReviews = reviews.values.filter { review ->
             review.clinicId == clinicId &&
-                    (review.title.contains(keyword, ignoreCase = true) ||
-                            review.comment.contains(keyword, ignoreCase = true))
+                (
+                    review.title.contains(keyword, ignoreCase = true) ||
+                        review.comment.contains(keyword, ignoreCase = true)
+                    )
         }
         val sorted = when (sortBy) {
             ReviewSortBy.MOST_RECENT -> clinicReviews.sortedByDescending { it.createdAt }
@@ -67,14 +66,14 @@ class TestClinicReviewRepository : ClinicReviewRepository {
 
     override suspend fun getReviewById(reviewId: String): Result<Review> {
         val review = reviews[reviewId]
-        return if (review != null) Result.success(review)
-        else Result.failure(NoSuchElementException("Review not found"))
+        return if (review != null) {
+            Result.success(review)
+        } else {
+            Result.failure(NoSuchElementException("Review not found"))
+        }
     }
 
-    override suspend fun updateReview(
-        request: UpdateReviewRequest,
-        userId: String
-    ): Result<Review> {
+    override suspend fun updateReview(request: UpdateReviewRequest, userId: String): Result<Review> {
         val existing = reviews[request.reviewId]
         if (existing == null) {
             return Result.failure(NoSuchElementException("Review not found"))
@@ -86,7 +85,7 @@ class TestClinicReviewRepository : ClinicReviewRepository {
             rating = request.rating ?: existing.rating,
             title = request.title ?: existing.title,
             comment = request.comment ?: existing.comment,
-            updatedAt = System.currentTimeMillis()
+            updatedAt = System.currentTimeMillis(),
         )
         reviews[request.reviewId] = updated
         return Result.success(updated)
@@ -146,7 +145,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "Great Clinic!",
             comment = "Very professional staff.",
-            images = emptyList()
+            images = emptyList(),
         )
 
         val result = service.submitReview(request)
@@ -167,7 +166,7 @@ class ClinicReviewServiceTest {
             rating = 6,
             title = "Great",
             comment = "Awesome",
-            images = emptyList()
+            images = emptyList(),
         )
 
         val result = service.submitReview(request)
@@ -185,7 +184,7 @@ class ClinicReviewServiceTest {
             rating = 4,
             title = "Test",
             comment = "",
-            images = emptyList()
+            images = emptyList(),
         )
 
         val result = service.submitReview(request)
@@ -203,7 +202,7 @@ class ClinicReviewServiceTest {
             rating = 3,
             title = "Okay",
             comment = "It was fine",
-            images = emptyList()
+            images = emptyList(),
         )
         val submitResult = service.submitReview(request)
         val review = submitResult.getOrNull()!!
@@ -213,7 +212,7 @@ class ClinicReviewServiceTest {
             userId = "user456",
             rating = 5,
             title = "Excellent!",
-            comment = "Actually it was amazing!"
+            comment = "Actually it was amazing!",
         )
 
         assertTrue(updateResult.isSuccess)
@@ -231,7 +230,7 @@ class ClinicReviewServiceTest {
             rating = 4,
             title = "Good",
             comment = "Pretty good",
-            images = emptyList()
+            images = emptyList(),
         )
         val submitResult = service.submitReview(request)
         val review = submitResult.getOrNull()!!
@@ -241,7 +240,7 @@ class ClinicReviewServiceTest {
             userId = "hacker123",
             rating = 1,
             title = "Bad",
-            comment = "Terrible!"
+            comment = "Terrible!",
         )
 
         assertTrue(updateResult.isFailure)
@@ -256,7 +255,7 @@ class ClinicReviewServiceTest {
             rating = 4,
             title = "Good",
             comment = "Pretty good",
-            images = emptyList()
+            images = emptyList(),
         )
         val submitResult = service.submitReview(request)
         val review = submitResult.getOrNull()!!
@@ -275,7 +274,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "Great!",
             comment = "Wonderful experience",
-            images = emptyList()
+            images = emptyList(),
         )
         val submitResult = service.submitReview(request)
         val review = submitResult.getOrNull()!!
@@ -294,7 +293,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "Excellent",
             comment = "Great!",
-            images = emptyList()
+            images = emptyList(),
         )
         val request2 = CreateReviewRequest(
             clinicId = "clinic123",
@@ -303,7 +302,7 @@ class ClinicReviewServiceTest {
             rating = 3,
             title = "Okay",
             comment = "Average",
-            images = emptyList()
+            images = emptyList(),
         )
 
         service.submitReview(request1)
@@ -326,7 +325,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "First",
             comment = "First review",
-            images = emptyList()
+            images = emptyList(),
         )
         val request2 = CreateReviewRequest(
             clinicId = "clinic123",
@@ -335,7 +334,7 @@ class ClinicReviewServiceTest {
             rating = 4,
             title = "Second",
             comment = "Second review",
-            images = emptyList()
+            images = emptyList(),
         )
 
         service.submitReview(request1)
@@ -359,7 +358,7 @@ class ClinicReviewServiceTest {
             rating = 3,
             title = "Average",
             comment = "Okay",
-            images = emptyList()
+            images = emptyList(),
         )
         val request2 = CreateReviewRequest(
             clinicId = "clinic123",
@@ -368,7 +367,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "Excellent",
             comment = "Amazing!",
-            images = emptyList()
+            images = emptyList(),
         )
 
         service.submitReview(request1)
@@ -391,7 +390,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "Excellent",
             comment = "Amazing!",
-            images = emptyList()
+            images = emptyList(),
         )
         val request2 = CreateReviewRequest(
             clinicId = "clinic123",
@@ -400,7 +399,7 @@ class ClinicReviewServiceTest {
             rating = 2,
             title = "Poor",
             comment = "Disappointed",
-            images = emptyList()
+            images = emptyList(),
         )
 
         service.submitReview(request1)
@@ -423,7 +422,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "Amazing Experience",
             comment = "The staff was incredible!",
-            images = emptyList()
+            images = emptyList(),
         )
         val request2 = CreateReviewRequest(
             clinicId = "clinic123",
@@ -432,7 +431,7 @@ class ClinicReviewServiceTest {
             rating = 3,
             title = "Average",
             comment = "Nothing special",
-            images = emptyList()
+            images = emptyList(),
         )
 
         service.submitReview(request1)
@@ -455,7 +454,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "Great",
             comment = "Good experience",
-            images = emptyList()
+            images = emptyList(),
         )
 
         service.submitReview(request)
@@ -476,7 +475,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "Excellent",
             comment = "Great!",
-            images = emptyList()
+            images = emptyList(),
         )
         val request2 = CreateReviewRequest(
             clinicId = "clinic123",
@@ -485,7 +484,7 @@ class ClinicReviewServiceTest {
             rating = 3,
             title = "Average",
             comment = "Okay",
-            images = emptyList()
+            images = emptyList(),
         )
 
         service.submitReview(request1)
@@ -494,7 +493,7 @@ class ClinicReviewServiceTest {
         val result = service.getFilteredReviews(
             clinicId = "clinic123",
             sortBy = ReviewSortBy.HIGHEST_RATED,
-            minRating = 4
+            minRating = 4,
         )
 
         assertTrue(result.isSuccess)
@@ -512,7 +511,7 @@ class ClinicReviewServiceTest {
             rating = 5,
             title = "Amazing Service",
             comment = "The staff was amazing!",
-            images = emptyList()
+            images = emptyList(),
         )
         val request2 = CreateReviewRequest(
             clinicId = "clinic123",
@@ -521,7 +520,7 @@ class ClinicReviewServiceTest {
             rating = 4,
             title = "Amazing Place",
             comment = "Great location",
-            images = emptyList()
+            images = emptyList(),
         )
         val request3 = CreateReviewRequest(
             clinicId = "clinic123",
@@ -530,7 +529,7 @@ class ClinicReviewServiceTest {
             rating = 3,
             title = "Average",
             comment = "Nothing special",
-            images = emptyList()
+            images = emptyList(),
         )
 
         service.submitReview(request1)
@@ -541,7 +540,7 @@ class ClinicReviewServiceTest {
             clinicId = "clinic123",
             sortBy = ReviewSortBy.HIGHEST_RATED,
             minRating = 4,
-            keyword = "amazing"
+            keyword = "amazing",
         )
 
         assertTrue(result.isSuccess)

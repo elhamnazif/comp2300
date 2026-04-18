@@ -9,7 +9,6 @@ import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.remote.ApiService
-import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
@@ -41,17 +40,6 @@ class MedicalOfflineDataRefresher(
         moodLocal.replaceAll(remoteMoods)
         appointmentLocal.replaceAll(remoteAppointments)
         routineNotificationScheduler.syncAllRoutines()
-    }
-}
-
-class AppointmentMutationHandler(
-    private val apiService: ApiService,
-    private val appointmentLocal: AppointmentLocalDataSource,
-) : DecodingOfflineMutationHandler<AppointmentRequest>(MedicalOfflineMutations.appointment) {
-    override suspend fun handle(item: OutboxItem, payload: AppointmentRequest) {
-        val serverResult = apiService.scheduleAppointment(payload)
-        appointmentLocal.deleteById(item.localId)
-        appointmentLocal.insert(serverResult)
     }
 }
 

@@ -25,12 +25,11 @@ enum class AuthPasswordFieldStyle {
     Outlined,
 }
 
-fun passwordVisualTransformation(isPasswordVisible: Boolean): VisualTransformation =
-    if (isPasswordVisible) {
-        VisualTransformation.None
-    } else {
-        PasswordVisualTransformation()
-    }
+fun passwordVisualTransformation(isPasswordVisible: Boolean): VisualTransformation = if (isPasswordVisible) {
+    VisualTransformation.None
+} else {
+    PasswordVisualTransformation()
+}
 
 @Composable
 fun PasswordVisibilityToggle(

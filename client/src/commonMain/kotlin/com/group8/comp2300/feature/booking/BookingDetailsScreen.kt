@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.format.DateFormatter
 import com.group8.comp2300.core.ui.components.AppTopBar
+import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentSlot
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -51,8 +52,9 @@ import kotlin.time.Instant
 @Composable
 fun BookingDetailsScreen(
     clinicId: String,
+    rescheduleAppointment: Appointment? = null,
     onBack: () -> Unit,
-    onContinueToConfirmation: (String, String) -> Unit,
+    onContinueToConfirmation: (String, String, Appointment?) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: BookingViewModel = koinViewModel(),
 ) {
@@ -64,6 +66,7 @@ fun BookingDetailsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(clinicId) {
+        rescheduleAppointment?.let(viewModel::prepareReschedule)
         viewModel.loadClinicDetails(clinicId)
     }
 
@@ -79,7 +82,7 @@ fun BookingDetailsScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
-                title = { Text("Clinic") },
+                title = { Text(if (rescheduleAppointment == null) "Clinic" else "Reschedule") },
                 onBackClick = onBack,
                 backContentDescription = "Back",
             )
@@ -88,7 +91,10 @@ fun BookingDetailsScreen(
             if (clinic != null && groupedSlots.isNotEmpty()) {
                 SelectionBar(
                     selectedSlot = selectedSlot,
-                    onContinue = { selectedSlot?.let { onContinueToConfirmation(clinic.id, it.id) } },
+                    isReschedule = rescheduleAppointment != null,
+                    onContinue = {
+                        selectedSlot?.let { onContinueToConfirmation(clinic.id, it.id, rescheduleAppointment) }
+                    },
                 )
             }
         },
@@ -160,10 +166,7 @@ fun BookingDetailsScreen(
 }
 
 @Composable
-private fun SelectionBar(
-    selectedSlot: AppointmentSlot?,
-    onContinue: () -> Unit,
-) {
+private fun SelectionBar(selectedSlot: AppointmentSlot?, isReschedule: Boolean, onContinue: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surfaceBright,
@@ -193,17 +196,14 @@ private fun SelectionBar(
                 onClick = onContinue,
                 enabled = selectedSlot != null,
             ) {
-                Text("Continue")
+                Text(if (isReschedule) "Review change" else "Continue")
             }
         }
     }
 }
 
 @Composable
-private fun ClinicHero(
-    clinic: Clinic,
-    slotCount: Int,
-) {
+private fun ClinicHero(clinic: Clinic, slotCount: Int) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         shape = MaterialTheme.shapes.extraLarge,
@@ -327,12 +327,7 @@ private fun ClinicHero(
 }
 
 @Composable
-private fun MetadataRow(
-    icon: ImageVector,
-    label: String,
-    value: String,
-    iconTint: Color,
-) {
+private fun MetadataRow(icon: ImageVector, label: String, value: String, iconTint: Color) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -366,11 +361,7 @@ private fun MetadataRow(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun TagCloud(
-    icon: ImageVector,
-    title: String,
-    tags: List<String>,
-) {
+private fun TagCloud(icon: ImageVector, title: String, tags: List<String>) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -410,11 +401,7 @@ private fun TagCloud(
 }
 
 @Composable
-private fun SummaryTile(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-) {
+private fun SummaryTile(label: String, value: String, modifier: Modifier = Modifier) {
     Surface(
         modifier = modifier,
         color = MaterialTheme.colorScheme.surfaceBright,
@@ -439,10 +426,7 @@ private fun SummaryTile(
 }
 
 @Composable
-private fun AvailabilityHeader(
-    hasSlots: Boolean,
-    selectedSlot: AppointmentSlot?,
-) {
+private fun AvailabilityHeader(hasSlots: Boolean, selectedSlot: AppointmentSlot?) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Surface(
             color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f),
@@ -461,7 +445,11 @@ private fun AvailabilityHeader(
                 Text(
                     text = when {
                         !hasSlots -> "No live openings right now."
-                        selectedSlot != null -> "Selected: ${slotSummary(selectedSlot.startTime)} • ${slotDurationLabel(selectedSlot)}"
+
+                        selectedSlot != null -> "Selected: ${slotSummary(
+                            selectedSlot.startTime,
+                        )} • ${slotDurationLabel(selectedSlot)}"
+
                         else -> "Pick a time. Most visits take 30 min."
                     },
                     color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
@@ -505,11 +493,7 @@ private fun AvailabilityDaySection(
 }
 
 @Composable
-private fun SlotTile(
-    slot: AppointmentSlot,
-    selected: Boolean,
-    onSelect: () -> Unit,
-) {
+private fun SlotTile(slot: AppointmentSlot, selected: Boolean, onSelect: () -> Unit) {
     Surface(
         modifier = Modifier.clickable(onClick = onSelect),
         color = if (selected) {
@@ -531,7 +515,11 @@ private fun SlotTile(
                 text = slotTimeLabel(slot),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
-                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                color = if (selected) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurface
+                },
             )
             Text(
                 text = slotDurationLabel(slot),
@@ -548,7 +536,9 @@ private fun SlotTile(
 
 internal fun slotSummary(timestamp: Long): String {
     val dateTime = Instant.fromEpochMilliseconds(timestamp).toLocalDateTime(TimeZone.currentSystemDefault())
-    return "${DateFormatter.formatDayMonthYear(dateTime.date)} • ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}"
+    return "${DateFormatter.formatDayMonthYear(
+        dateTime.date,
+    )} • ${DateFormatter.formatTime(dateTime.hour, dateTime.minute)}"
 }
 
 private fun slotDateKey(slot: AppointmentSlot): String {

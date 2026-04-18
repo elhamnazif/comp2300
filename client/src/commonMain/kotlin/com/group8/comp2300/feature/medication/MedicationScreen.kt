@@ -11,10 +11,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.core.ui.components.ConsumeSnackbarMessage
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.Routine
-import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.feature.medical.shared.routines.ScheduleFormSheet
 import com.group8.comp2300.platform.notifications.NotificationPermissionResult
 import com.group8.comp2300.platform.notifications.rememberNotificationPermissionRequester
@@ -73,7 +73,10 @@ fun MedicationScreen(
                     showSheet = true
                 },
             ) {
-                Icon(Icons.AddW400Outlinedfill1, contentDescription = stringResource(Res.string.medical_medication_add_desc))
+                Icon(
+                    Icons.AddW400Outlinedfill1,
+                    contentDescription = stringResource(Res.string.medical_medication_add_desc),
+                )
             }
         },
     ) { innerPadding ->

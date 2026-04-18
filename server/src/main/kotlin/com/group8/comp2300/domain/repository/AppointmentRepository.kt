@@ -15,6 +15,11 @@ interface AppointmentRepository {
     fun getAppointmentById(id: String): Appointment?
 
     /**
+     * Fetches all appointments for a user regardless of status.
+     */
+    fun getByUserId(userId: String): List<Appointment>
+
+    /**
      * Fetches all appointments for a user that are in a 'CONFIRMED' state.
      */
     fun getConfirmedByUserId(userId: String): List<Appointment>
@@ -23,6 +28,11 @@ interface AppointmentRepository {
      * Updates the status of an appointment (e.g., 'CANCELLED', 'COMPLETED').
      */
     fun updateAppointmentStatus(id: String, status: String)
+
+    /**
+     * Updates booking-facing appointment fields after a cancellation or reschedule.
+     */
+    fun updateAppointment(appointment: Appointment)
 
     /**
      * Updates financial tracking information for a specific appointment.

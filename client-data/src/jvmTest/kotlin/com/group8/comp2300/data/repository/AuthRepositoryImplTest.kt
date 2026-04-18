@@ -22,7 +22,6 @@ import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.data.repository.medical.TestSyncCoordinator
 import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.AppointmentSlot
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
@@ -220,9 +219,11 @@ internal open class FakeApiService(
 
     override suspend fun getAppointments(): List<Appointment> = appointments.toList()
 
-    override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment = error("unused")
-
     override suspend fun bookClinicAppointment(request: ClinicBookingRequest): Appointment = error("unused")
+
+    override suspend fun cancelAppointment(id: String): Appointment = error("unused")
+
+    override suspend fun rescheduleAppointment(id: String, request: ClinicBookingRequest): Appointment = error("unused")
 
     override suspend fun logMedication(request: MedicationLogRequest): MedicationLog = error("unused")
 

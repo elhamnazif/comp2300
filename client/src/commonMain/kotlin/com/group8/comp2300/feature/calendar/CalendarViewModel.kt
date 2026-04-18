@@ -193,7 +193,10 @@ class CalendarViewModel(
         val startDate = LocalDate.parse(startDateString)
         val endDate = startDate.plus(6, DateTimeUnit.DAY)
         val routinesByDate = medicationLogRepository.getRoutineAgendaRange(startDate.toString(), endDate.toString())
-        val manualLogsByDate = medicationLogRepository.getManualMedicationLogsRange(startDate.toString(), endDate.toString())
+        val manualLogsByDate = medicationLogRepository.getManualMedicationLogsRange(
+            startDate.toString(),
+            endDate.toString(),
+        )
 
         return buildList {
             var current = startDate

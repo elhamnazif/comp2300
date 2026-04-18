@@ -3,7 +3,25 @@ CREATE TABLE AppointmentEntity (
     user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     appointment_time INTEGER NOT NULL, -- Unix timestamp in milliseconds
-    appointment_type TEXT NOT NULL CHECK (appointment_type IN ('CHECKUP', 'CONSULTATION', 'SCREENING', 'FOLLOW_UP', 'VACCINATION', 'OTHER', 'FOLLOWUP', 'EMERGENCY', 'VIRTUAL_CONSULTATION', 'PHYSICAL_THERAPY', 'LAB_TEST')),
+    appointment_type TEXT NOT NULL CHECK (
+        appointment_type IN (
+            'CHECKUP',
+            'CONSULTATION',
+            'SCREENING',
+            'FOLLOW_UP',
+            'VACCINATION',
+            'OTHER',
+            'FOLLOWUP',
+            'EMERGENCY',
+            'VIRTUAL_CONSULTATION',
+            'PHYSICAL_THERAPY',
+            'LAB_TEST',
+            'STI_TESTING',
+            'SYMPTOMS',
+            'CONTRACEPTION',
+            'PREP_PEP'
+        )
+    ),
     clinic_id TEXT REFERENCES ClinicEntity(id) ON DELETE SET NULL,
     booking_id TEXT REFERENCES AppointmentSlotEnt(id) ON DELETE SET NULL,
     status TEXT DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'PENDING_PAYMENT')),
@@ -21,6 +39,11 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectAppointmentById:
 SELECT * FROM AppointmentEntity WHERE id = ?;
+
+selectAppointmentsByUserId:
+SELECT * FROM AppointmentEntity
+WHERE user_id = ?
+ORDER BY appointment_time ASC;
 
 updateAppointmentStatus:
 UPDATE AppointmentEntity SET status = ? WHERE id = ?;

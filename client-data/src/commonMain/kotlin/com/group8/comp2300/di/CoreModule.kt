@@ -25,7 +25,6 @@ import com.group8.comp2300.data.notifications.RoutineNotificationRegistry
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.notifications.RoutineNotificationSchedulerImpl
 import com.group8.comp2300.data.notifications.RoutineNotificationService
-import com.group8.comp2300.data.offline.AppointmentMutationHandler
 import com.group8.comp2300.data.offline.CompositeOfflineDataRefresher
 import com.group8.comp2300.data.offline.MedicalOfflineDataRefresher
 import com.group8.comp2300.data.offline.MedicationDeleteMutationHandler
@@ -48,9 +47,9 @@ import com.group8.comp2300.data.remote.tokenProviderDelegate
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
 import com.group8.comp2300.data.repository.FixtureLabResultsRepository
-import com.group8.comp2300.data.repository.RemoteClinicRepository
-import com.group8.comp2300.data.repository.ReminderRepositoryImpl
 import com.group8.comp2300.data.repository.FixtureSRHContentRepository
+import com.group8.comp2300.data.repository.ReminderRepositoryImpl
+import com.group8.comp2300.data.repository.RemoteClinicRepository
 import com.group8.comp2300.data.repository.ShopRepositoryImpl
 import com.group8.comp2300.data.repository.medical.AppointmentDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.CalendarDataRepositoryImpl
@@ -148,7 +147,6 @@ val coreModule = module {
         )
     }
     single { RoutineNotificationBootstrap(get()) }
-    singleOf(::AppointmentMutationHandler) { bind<OfflineMutationHandler>() }
     singleOf(::MedicationUpsertMutationHandler) { bind<OfflineMutationHandler>() }
     singleOf(::MedicationDeleteMutationHandler) { bind<OfflineMutationHandler>() }
     singleOf(::RoutineUpsertMutationHandler) { bind<OfflineMutationHandler>() }

@@ -58,4 +58,5 @@ private fun String.hexToByteArray(): ByteArray? {
     }
 }
 
-private fun String.isHexEncoded(): Boolean = isNotBlank() && length % 2 == 0 && all { it.isDigit() || it.lowercaseChar() in 'a'..'f' }
+private fun String.isHexEncoded(): Boolean =
+    isNotBlank() && length % 2 == 0 && all { it.isDigit() || it.lowercaseChar() in 'a'..'f' }

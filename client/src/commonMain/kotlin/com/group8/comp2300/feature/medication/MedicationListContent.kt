@@ -92,7 +92,9 @@ internal fun MedicationListContent(
             }
         } else {
             if (activeMedications.isNotEmpty()) {
-                item { SectionHeader(stringResource(Res.string.medical_medication_section_active), activeMedications.size) }
+                item {
+                    SectionHeader(stringResource(Res.string.medical_medication_section_active), activeMedications.size)
+                }
                 items(activeMedications, key = Medication::id) { medication ->
                     MedicationCard(
                         medication = medication,
@@ -107,7 +109,12 @@ internal fun MedicationListContent(
             }
 
             if (archivedMedications.isNotEmpty()) {
-                item { SectionHeader(stringResource(Res.string.medical_medication_section_archived), archivedMedications.size) }
+                item {
+                    SectionHeader(
+                        stringResource(Res.string.medical_medication_section_archived),
+                        archivedMedications.size,
+                    )
+                }
                 items(archivedMedications, key = Medication::id) { medication ->
                     MedicationCard(
                         medication = medication,
@@ -179,7 +186,11 @@ private fun MedicationCard(
             ) {
                 Text(medication.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text("${medication.dosage}$quantityLabel", color = MaterialTheme.colorScheme.secondary)
-                Text(medicationScheduleLabel(linkedRoutines), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text(
+                    medicationScheduleLabel(linkedRoutines),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelLarge,
+                )
                 medication.instruction?.takeIf(String::isNotBlank)?.let {
                     Text(
                         it,
@@ -188,7 +199,10 @@ private fun MedicationCard(
                     )
                 }
             }
-            Icon(Icons.EditW400Outlinedfill1, contentDescription = stringResource(Res.string.medical_medication_edit_desc))
+            Icon(
+                Icons.EditW400Outlinedfill1,
+                contentDescription = stringResource(Res.string.medical_medication_edit_desc),
+            )
         }
     }
 }
@@ -211,6 +225,7 @@ private fun medicationScheduleLabel(linkedRoutines: List<Routine>): String {
     return when (routine.repeatType) {
         RoutineRepeatType.DAILY -> when (times.size) {
             1 -> stringResource(Res.string.medical_medication_schedule_daily_at, formatTimeOfDayMs(times.single()))
+
             else -> if (timeLabel.isBlank()) {
                 stringResource(Res.string.medical_routine_repeat_daily)
             } else {
@@ -251,4 +266,5 @@ internal fun medicationColorOption(hex: String?): MedicationColorOption {
     return medicationColorOptions.firstOrNull { it.hex == normalized } ?: medicationColorOptions.first()
 }
 
-internal fun normalizeColorHex(hex: String?): String = "#${(hex ?: Medication.PRESET_COLORS.first()).removePrefix("#").uppercase()}"
+internal fun normalizeColorHex(hex: String?): String =
+    "#${(hex ?: Medication.PRESET_COLORS.first()).removePrefix("#").uppercase()}"

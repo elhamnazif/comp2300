@@ -13,7 +13,6 @@ import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
 import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.AppointmentSlot
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
@@ -85,9 +84,11 @@ interface ApiService {
 
     suspend fun getAppointments(): List<Appointment>
 
-    suspend fun scheduleAppointment(request: AppointmentRequest): Appointment
-
     suspend fun bookClinicAppointment(request: ClinicBookingRequest): Appointment
+
+    suspend fun cancelAppointment(id: String): Appointment
+
+    suspend fun rescheduleAppointment(id: String, request: ClinicBookingRequest): Appointment
 
     suspend fun logMedication(request: MedicationLogRequest): MedicationLog
 
@@ -181,11 +182,13 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
 
     override suspend fun getAppointments(): List<Appointment> = client.get("/api/appointments").body()
 
-    override suspend fun scheduleAppointment(request: AppointmentRequest): Appointment =
-        error("Manual appointment creation is no longer supported in Calendar")
-
     override suspend fun bookClinicAppointment(request: ClinicBookingRequest): Appointment =
         client.post("/api/appointments") { setBody(request) }.body()
+
+    override suspend fun cancelAppointment(id: String): Appointment = client.post("/api/appointments/$id/cancel").body()
+
+    override suspend fun rescheduleAppointment(id: String, request: ClinicBookingRequest): Appointment =
+        client.post("/api/appointments/$id/reschedule") { setBody(request) }.body()
 
     override suspend fun logMedication(request: MedicationLogRequest): MedicationLog =
         client.post("/api/medications/logs") { setBody(request) }.body()

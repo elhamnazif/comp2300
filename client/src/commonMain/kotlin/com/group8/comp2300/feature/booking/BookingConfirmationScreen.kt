@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -23,7 +24,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -40,10 +40,11 @@ import org.koin.compose.viewmodel.koinViewModel
 fun BookingConfirmationScreen(
     clinicId: String,
     slotId: String,
+    rescheduleAppointment: Appointment? = null,
     onBack: () -> Unit,
     isSignedIn: Boolean,
     onRequireAuth: () -> Unit,
-    onBookingConfirmed: (Appointment) -> Unit,
+    onBookingConfirmed: (Appointment, Boolean) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: BookingViewModel = koinViewModel(),
 ) {
@@ -72,8 +73,12 @@ fun BookingConfirmationScreen(
         "Exposure concern",
     )
 
-    LaunchedEffect(clinicId, slotId) {
-        viewModel.ensureBookingDraft(clinicId, slotId)
+    LaunchedEffect(clinicId, slotId, rescheduleAppointment?.id) {
+        viewModel.ensureBookingDraft(
+            clinicId = clinicId,
+            slotId = slotId,
+            rescheduleAppointment = rescheduleAppointment,
+        )
         if (clinic == null || slot == null) {
             viewModel.loadClinicDetails(clinicId)
         }
@@ -82,7 +87,10 @@ fun BookingConfirmationScreen(
     LaunchedEffect(viewModel) {
         viewModel.bookingEvents.collect { event ->
             when (event) {
-                is BookingViewModel.BookingEvent.Submitted -> onBookingConfirmed(event.appointment)
+                is BookingViewModel.BookingEvent.Submitted -> onBookingConfirmed(
+                    event.appointment,
+                    event.wasRescheduled,
+                )
             }
         }
     }
@@ -99,7 +107,7 @@ fun BookingConfirmationScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             AppTopBar(
-                title = { Text("Review") },
+                title = { Text(if (rescheduleAppointment == null) "Review" else "Review change") },
                 onBackClick = onBack,
                 backContentDescription = "Back",
             )
@@ -145,7 +153,14 @@ fun BookingConfirmationScreen(
                                     color = MaterialTheme.colorScheme.onPrimary,
                                 )
                             } else {
-                                Text(if (isSignedIn) "Book" else "Sign in to book")
+                                Text(
+                                    when {
+                                        !isSignedIn && rescheduleAppointment != null -> "Sign in to update"
+                                        !isSignedIn -> "Sign in to book"
+                                        rescheduleAppointment != null -> "Update booking"
+                                        else -> "Book"
+                                    },
+                                )
                             }
                         }
                     }
@@ -191,6 +206,7 @@ fun BookingConfirmationScreen(
                     appointmentTime = slot.startTime,
                     address = clinic.address,
                     phone = clinic.phone,
+                    isReschedule = rescheduleAppointment != null,
                     onChangeTime = onBack,
                 )
             }
@@ -268,6 +284,7 @@ private fun BookingReviewHeader(
     appointmentTime: Long,
     address: String?,
     phone: String?,
+    isReschedule: Boolean,
     onChangeTime: () -> Unit,
 ) {
     Surface(
@@ -298,17 +315,14 @@ private fun BookingReviewHeader(
                 onClick = onChangeTime,
                 modifier = Modifier.padding(top = 4.dp),
             ) {
-                Text("Change time")
+                Text(if (isReschedule) "Change slot" else "Change time")
             }
         }
     }
 }
 
 @Composable
-private fun SectionHeader(
-    title: String,
-    supporting: String,
-) {
+private fun SectionHeader(title: String, supporting: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = title,
@@ -324,11 +338,7 @@ private fun SectionHeader(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun VisitTypeChips(
-    options: List<Pair<String, String>>,
-    selectedType: String,
-    onSelect: (String) -> Unit,
-) {
+private fun VisitTypeChips(options: List<Pair<String, String>>, selectedType: String, onSelect: (String) -> Unit) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -345,11 +355,7 @@ private fun VisitTypeChips(
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun SymptomChips(
-    symptoms: List<String>,
-    reason: String,
-    onToggle: (String) -> Unit,
-) {
+private fun SymptomChips(symptoms: List<String>, reason: String, onToggle: (String) -> Unit) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -373,10 +379,7 @@ private fun SymptomChips(
 }
 
 @Composable
-private fun ReminderRow(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
+private fun ReminderRow(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -393,10 +396,9 @@ private fun ReminderRow(
     }
 }
 
-private const val SYMPTOM_PREFIX = "Symptoms:"
+private const val SymptomPrefix = "Symptoms:"
 
-private fun isSymptomSelected(reason: String, symptom: String): Boolean =
-    extractSymptoms(reason).contains(symptom)
+private fun isSymptomSelected(reason: String, symptom: String): Boolean = extractSymptoms(reason).contains(symptom)
 
 private fun toggleSymptomInReason(reason: String, symptom: String): String {
     val currentSymptoms = extractSymptoms(reason).toMutableList()
@@ -409,22 +411,21 @@ private fun toggleSymptomInReason(reason: String, symptom: String): String {
     val otherLines = reason
         .lineSequence()
         .map { it.trim() }
-        .filter { it.isNotBlank() && !it.startsWith(SYMPTOM_PREFIX) }
+        .filter { it.isNotBlank() && !it.startsWith(SymptomPrefix) }
         .toMutableList()
 
     if (currentSymptoms.isNotEmpty()) {
-        otherLines.add(0, "$SYMPTOM_PREFIX ${currentSymptoms.joinToString(", ")}")
+        otherLines.add(0, "$SymptomPrefix ${currentSymptoms.joinToString(", ")}")
     }
 
     return otherLines.joinToString("\n")
 }
 
-private fun extractSymptoms(reason: String): List<String> =
-    reason.lineSequence()
-        .map { it.trim() }
-        .firstOrNull { it.startsWith(SYMPTOM_PREFIX) }
-        ?.removePrefix(SYMPTOM_PREFIX)
-        ?.split(',')
-        ?.map { it.trim() }
-        ?.filter(String::isNotBlank)
-        ?: emptyList()
+private fun extractSymptoms(reason: String): List<String> = reason.lineSequence()
+    .map { it.trim() }
+    .firstOrNull { it.startsWith(SymptomPrefix) }
+    ?.removePrefix(SymptomPrefix)
+    ?.split(',')
+    ?.map { it.trim() }
+    ?.filter(String::isNotBlank)
+    ?: emptyList()

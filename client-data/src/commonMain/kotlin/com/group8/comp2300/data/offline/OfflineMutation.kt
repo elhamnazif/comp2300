@@ -1,6 +1,5 @@
 package com.group8.comp2300.data.offline
 
-import com.group8.comp2300.domain.model.medical.AppointmentRequest
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
@@ -12,7 +11,6 @@ import kotlinx.serialization.builtins.serializer
 data class OfflineMutationSpec<T>(val type: String, val serializer: KSerializer<T>)
 
 object MedicalOfflineMutations {
-    val appointment = OfflineMutationSpec("APPOINTMENT", AppointmentRequest.serializer())
     val medicationUpsert = OfflineMutationSpec("MEDICATION_UPSERT", MedicationCreateRequest.serializer())
     val medicationDelete = OfflineMutationSpec("MEDICATION_DELETE", Unit.serializer())
     val routineUpsert = OfflineMutationSpec("ROUTINE_UPSERT", RoutineCreateRequest.serializer())
