@@ -114,13 +114,6 @@ class AuthRepositoryImpl(
                 return@launch
             }
 
-            if (tokenManager.isTokenExpired()) {
-                tokenManager.clearTokens()
-                personalDataCleaner.clearAllPersonalData()
-                _session.value = AuthSession.SignedOut
-                return@launch
-            }
-
             try {
                 val user = apiService.getProfile()
                 _session.value = AuthSession.SignedIn(user)

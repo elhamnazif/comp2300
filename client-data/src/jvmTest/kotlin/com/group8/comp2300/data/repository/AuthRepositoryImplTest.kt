@@ -8,6 +8,7 @@ import com.group8.comp2300.data.local.OutboxDataSource
 import com.group8.comp2300.data.local.OutboxState
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.local.SessionDataSource
+import com.group8.comp2300.data.remote.ApiException
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.dto.AuthResponse
 import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
@@ -80,7 +81,47 @@ class AuthRepositoryImplTest {
     }
 
     @Test
-    fun expiredRestoreClearsSessionAndPersonalData() = runTest {
+    fun expiredAccessTokenRestoreKeepsSessionAndPersonalDataWhenProfileLoads() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val tokenManager = TokenManagerImpl(sessionDataSource)
+        val syncCoordinator = TestSyncCoordinator()
+        tokenManager.saveTokens(
+            userId = "user-1",
+            accessToken = "access",
+            refreshToken = "refresh",
+            expiresAt = Clock.System.now().toEpochMilliseconds() - 1,
+        )
+
+        MedicationLocalDataSource(db).insert(sampleMedication())
+        OutboxDataSource(db).enqueue(
+            entityType = "MEDICATION_UPSERT",
+            payload = "{}",
+            localId = "med-1",
+            state = OutboxState.PENDING,
+        )
+
+        val repository = AuthRepositoryImpl(
+            apiService = FakeApiService(),
+            tokenManager = tokenManager,
+            personalDataCleaner = PersonalDataCleaner(db),
+            syncCoordinator = syncCoordinator,
+        )
+
+        waitForSession(repository)
+
+        val session = repository.session.value
+        assertIs<AuthSession.SignedIn>(session)
+        assertEquals("user-1", session.user.id)
+        assertEquals("user-1", tokenManager.getUserId())
+        assertEquals(1, syncCoordinator.flushCalls)
+        assertEquals(1, syncCoordinator.refreshCalls)
+        assertEquals(1, MedicationLocalDataSource(db).getAll().size)
+        assertEquals(1, OutboxDataSource(db).getAll().size)
+    }
+
+    @Test
+    fun restoreClearsSessionAndPersonalDataWhenProfileIsUnauthorized() = runTest {
         val db = newDatabase()
         val sessionDataSource = SessionDataSource(db)
         val tokenManager = TokenManagerImpl(sessionDataSource)
@@ -100,7 +141,9 @@ class AuthRepositoryImplTest {
         )
 
         val repository = AuthRepositoryImpl(
-            apiService = FakeApiService(),
+            apiService = object : FakeApiService() {
+                override suspend fun getProfile(): User = throw ApiException(401, "Authentication failed")
+            },
             tokenManager = tokenManager,
             personalDataCleaner = PersonalDataCleaner(db),
             syncCoordinator = TestSyncCoordinator(),
