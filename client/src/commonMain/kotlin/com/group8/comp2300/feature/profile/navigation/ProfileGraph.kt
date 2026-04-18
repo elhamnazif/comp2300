@@ -20,9 +20,6 @@ val profileGraphModule = module {
         val isSignedIn = session is AuthSession.SignedIn
         ProfileScreen(
             onNavigateToGuestSignIn = { navigator.navigate(Screen.GuestSignIn) },
-            onNavigateToLabResults = {
-                if (isSignedIn) navigator.navigate(Screen.LabResults) else navigator.requireAuth(Screen.Profile)
-            },
             onNavigateToMedicalRecords = {
                 if (isSignedIn) navigator.navigate(Screen.MedicalRecords) else navigator.requireAuth(Screen.Profile)
             },

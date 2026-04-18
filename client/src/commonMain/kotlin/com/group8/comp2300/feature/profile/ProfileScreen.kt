@@ -24,7 +24,6 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
     onNavigateToGuestSignIn: () -> Unit = {},
-    onNavigateToLabResults: () -> Unit = {},
     onNavigateToMedicalRecords: () -> Unit = {},
     onNavigateToPrivacySecurity: () -> Unit = {},
     onNavigateToAccessibility: () -> Unit = {},
@@ -84,7 +83,6 @@ fun ProfileScreen(
             item {
                 ProfileOverviewSection(
                     state = uiState,
-                    onNavigateToLabResults = onNavigateToLabResults,
                     onNavigateToGuestSignIn = onNavigateToGuestSignIn,
                 )
             }

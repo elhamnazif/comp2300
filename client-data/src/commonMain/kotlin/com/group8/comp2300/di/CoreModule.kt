@@ -46,7 +46,6 @@ import com.group8.comp2300.data.remote.createHttpClient
 import com.group8.comp2300.data.remote.tokenProviderDelegate
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
-import com.group8.comp2300.data.repository.FixtureLabResultsRepository
 import com.group8.comp2300.data.repository.FixtureSRHContentRepository
 import com.group8.comp2300.data.repository.ReminderRepositoryImpl
 import com.group8.comp2300.data.repository.RemoteClinicRepository
@@ -61,7 +60,6 @@ import com.group8.comp2300.data.repository.medical.RoutineDataRepositoryImpl
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
-import com.group8.comp2300.domain.repository.LabResultsRepository
 import com.group8.comp2300.domain.repository.ReminderRepository
 import com.group8.comp2300.domain.repository.SRHContentRepository
 import com.group8.comp2300.domain.repository.ShopRepository
@@ -80,7 +78,6 @@ import com.group8.comp2300.domain.usecase.auth.LoginUseCase
 import com.group8.comp2300.domain.usecase.auth.PreregisterUseCase
 import com.group8.comp2300.domain.usecase.auth.ResendVerificationEmailUseCase
 import com.group8.comp2300.domain.usecase.auth.ResetPasswordUseCase
-import com.group8.comp2300.domain.usecase.medical.GetRecentLabResultsUseCase
 import com.group8.comp2300.domain.usecase.shop.GetProductsUseCase
 import com.russhwolf.settings.Settings
 import org.koin.core.module.dsl.bind
@@ -169,8 +166,6 @@ val coreModule = module {
     single<MoodDataRepository> { MoodDataRepositoryImpl(get(), get(), get()) }
     single<CalendarDataRepository> { CalendarDataRepositoryImpl(get(), get(), get(), get(), get()) }
     single<MedicalRecordDataRepository> { MedicalRecordDataRepositoryImpl(get()) }
-    // These features still ship with local fixtures; bind them explicitly so they are not mistaken for remote-backed data.
-    single<LabResultsRepository> { FixtureLabResultsRepository() }
     single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get()) }
     single<ClinicRepository> { RemoteClinicRepository(get()) }
     single<SRHContentRepository> { FixtureSRHContentRepository() }
@@ -185,5 +180,4 @@ val coreModule = module {
     singleOf(::PreregisterUseCase)
     singleOf(::ResendVerificationEmailUseCase)
     singleOf(::ResetPasswordUseCase)
-    singleOf(::GetRecentLabResultsUseCase)
 }

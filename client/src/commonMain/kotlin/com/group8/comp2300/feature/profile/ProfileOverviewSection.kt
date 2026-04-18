@@ -45,17 +45,12 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ProfileOverviewSection(
     state: ProfileViewModel.State,
-    onNavigateToLabResults: () -> Unit,
     onNavigateToGuestSignIn: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ScreenHeader(horizontalPadding = 0.dp, topPadding = 16.dp) {
         Column(modifier.padding(horizontal = 16.dp)) {
             Header(state, onNavigateToGuestSignIn = onNavigateToGuestSignIn)
-            if (state.userName.isNotEmpty()) {
-                Spacer(Modifier.height(24.dp))
-                RecentResultsCard(state.recentResults, state.isLoading, onNavigateToLabResults)
-            }
             Spacer(Modifier.height(24.dp))
             Text(
                 stringResource(Res.string.profile_settings_title),
