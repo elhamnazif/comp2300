@@ -41,8 +41,7 @@ class QueuedWriteDispatcher(
     }
 
     private suspend fun flushIfAuthenticated() {
-        val hasValidSession = tokenManager.getUserId() != null && !tokenManager.isTokenExpired()
-        if (hasValidSession) {
+        if (tokenManager.getUserId() != null) {
             syncCoordinator.flushOutbox()
             syncCoordinator.refreshAuthenticatedData()
         }

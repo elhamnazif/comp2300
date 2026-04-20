@@ -36,6 +36,9 @@ class OutboxDataSource(private val database: AppDatabase) {
     fun getPending(): List<OutboxItem> =
         database.appDatabaseQueries.selectPendingOutbox().executeAsList().map(::toOutboxItem)
 
+    fun getFailed(): List<OutboxItem> =
+        database.appDatabaseQueries.selectFailedOutbox().executeAsList().map(::toOutboxItem)
+
     fun delete(id: String) {
         database.appDatabaseQueries.deleteOutbox(id)
     }
@@ -57,6 +60,10 @@ class OutboxDataSource(private val database: AppDatabase) {
             lastError = lastError,
             id = id,
         )
+    }
+
+    fun resetForRetry(id: String) {
+        database.appDatabaseQueries.resetOutboxForRetry(id)
     }
 
     fun clearAll() {

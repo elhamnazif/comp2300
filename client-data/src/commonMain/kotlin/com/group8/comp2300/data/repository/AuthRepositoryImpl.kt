@@ -5,6 +5,7 @@ import com.group8.comp2300.data.auth.TokenManager
 import com.group8.comp2300.data.auth.extractJwtExpiration
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.offline.isRetryable
+import com.group8.comp2300.data.remote.ApiException
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
 import com.group8.comp2300.data.remote.dto.LoginRequest
@@ -116,18 +117,17 @@ class AuthRepositoryImpl(
 
             try {
                 val user = apiService.getProfile()
-                _session.value = AuthSession.SignedIn(user)
-                syncCoordinator.flushOutbox()
-                syncCoordinator.refreshAuthenticatedData()
+                synchronizeAuthenticatedData(user)
             } catch (e: Exception) {
                 if (e.isRetryable()) {
                     logger.w(e) { "Session restore failed due to transient issue" }
+                    _session.value = AuthSession.SignedIn(staleUser(storedUserId), isStale = true)
                 } else {
                     logger.w(e) { "Session restore failed; clearing local authenticated state" }
                     tokenManager.clearTokens()
                     personalDataCleaner.clearAllPersonalData()
+                    _session.value = AuthSession.SignedOut
                 }
-                _session.value = AuthSession.SignedOut
             }
         }
     }
@@ -136,9 +136,31 @@ class AuthRepositoryImpl(
         val expiresAt = extractJwtExpiration(accessToken) ?: 0L
         tokenManager.saveTokens(userId, accessToken, refreshToken, expiresAt)
         val user = apiService.getProfile()
-        _session.value = AuthSession.SignedIn(user)
-        syncCoordinator.flushOutbox()
-        syncCoordinator.refreshAuthenticatedData()
+        synchronizeAuthenticatedData(user)
         return user
     }
+
+    private suspend fun synchronizeAuthenticatedData(user: User) {
+        _session.value = AuthSession.SignedIn(user)
+        try {
+            syncCoordinator.flushOutbox()
+            syncCoordinator.refreshAuthenticatedData()
+            _session.value = AuthSession.SignedIn(user)
+        } catch (e: Exception) {
+            if (e.isAuthenticationFailure()) {
+                throw e
+            }
+            logger.w(e) { "Authenticated sync failed; keeping cached signed-in state" }
+            _session.value = AuthSession.SignedIn(user, isStale = true)
+        }
+    }
+
+    private fun staleUser(userId: String): User = User(
+        id = userId,
+        firstName = "",
+        lastName = "",
+        email = "",
+    )
+
+    private fun Throwable.isAuthenticationFailure(): Boolean = this is ApiException && statusCode == 401
 }

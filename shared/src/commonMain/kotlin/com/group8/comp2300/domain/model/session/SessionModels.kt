@@ -7,7 +7,7 @@ sealed interface AuthSession {
 
     data object SignedOut : AuthSession
 
-    data class SignedIn(val user: User) : AuthSession
+    data class SignedIn(val user: User, val isStale: Boolean = false) : AuthSession
 }
 
 val AuthSession.userOrNull: User?
@@ -15,3 +15,6 @@ val AuthSession.userOrNull: User?
 
 val AuthSession.isSignedIn: Boolean
     get() = this is AuthSession.SignedIn
+
+val AuthSession.isStale: Boolean
+    get() = (this as? AuthSession.SignedIn)?.isStale == true

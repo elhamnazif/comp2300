@@ -10,6 +10,11 @@ import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
+import com.group8.comp2300.data.offline.MedicalOfflineMutations
+import com.group8.comp2300.data.offline.MutationHandlerRegistry
+import com.group8.comp2300.data.offline.OfflineDataRefresher
+import com.group8.comp2300.data.offline.OfflineMutationHandler
+import com.group8.comp2300.data.offline.SyncCoordinatorImpl
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.repository.newDatabase
@@ -28,8 +33,11 @@ import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.model.medical.RoutineRepeatType
 import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.domain.model.session.AuthSession
+import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
+import com.group8.comp2300.domain.repository.medical.FailedSyncMutation
 import com.group8.comp2300.domain.repository.medical.SyncCoordinator
+import com.group8.comp2300.domain.repository.medical.SyncStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.runTest
@@ -93,6 +101,75 @@ class MedicalDataRepositoriesTest {
         assertEquals(1, RoutineLocalDataSource(db).getAll().size)
         assertEquals("ROUTINE_UPSERT", outbox.getAll().single().entityType)
         assertEquals(listOf("Morning meds"), notificationScheduler.syncedRoutineNames)
+    }
+
+    @Test
+    fun signedInMedicationSaveKeepsOptimisticRowWhenSyncWriteFailsTransiently() = runTest {
+        val db = newDatabase()
+        val outbox = OutboxDataSource(db)
+        val sessionDataSource = SessionDataSource(db)
+        TokenManagerImpl(sessionDataSource).saveTokens(
+            userId = "user-1",
+            accessToken = "access",
+            refreshToken = "refresh",
+            expiresAt = Long.MAX_VALUE,
+        )
+        val dataRefresher = object : OfflineDataRefresher {
+            var refreshCalls = 0
+
+            override suspend fun refreshAuthenticatedData() {
+                refreshCalls += 1
+                MedicationLocalDataSource(db).replaceAll(emptyList())
+            }
+        }
+        val mutationHandlers = MutationHandlerRegistry(
+            listOf(
+                object : OfflineMutationHandler {
+                    override val type: String = MedicalOfflineMutations.medicationUpsert.type
+
+                    override suspend fun apply(item: com.group8.comp2300.data.local.OutboxItem) {
+                        throw Exception("offline")
+                    }
+                },
+            ),
+        )
+        val queuedWriteDispatcher = QueuedWriteDispatcher(
+            tokenManager = TokenManagerImpl(sessionDataSource),
+            outbox = outbox,
+            syncCoordinator = SyncCoordinatorImpl(
+                tokenManager = TokenManagerImpl(sessionDataSource),
+                outbox = outbox,
+                mutationHandlers = mutationHandlers,
+                dataRefresher = dataRefresher,
+            ),
+        )
+        val repository = MedicationDataRepositoryImpl(
+            authRepository = FakeSessionAuthRepository(
+                AuthSession.SignedIn(
+                    User(
+                        id = "user-1",
+                        firstName = "Test",
+                        lastName = "User",
+                        email = "user@example.com",
+                    ),
+                ),
+            ),
+            medicationLocal = MedicationLocalDataSource(db),
+            queuedWriteDispatcher = queuedWriteDispatcher,
+        )
+
+        val savedMedication = repository.saveMedication(
+            MedicationCreateRequest(
+                name = "Vitamin D",
+                dosage = "1 tablet",
+                quantity = "1000 IU",
+                frequency = "DAILY",
+            ),
+        )
+
+        assertEquals(savedMedication.id, MedicationLocalDataSource(db).getAll().single().id)
+        assertEquals(1, outbox.getPending().size)
+        assertEquals(0, dataRefresher.refreshCalls)
     }
 
     @Test
@@ -540,13 +617,36 @@ class TestSyncCoordinator : SyncCoordinator {
     var flushCalls: Int = 0
     var refreshCalls: Int = 0
 
-    override suspend fun flushOutbox() {
+    override suspend fun flushOutbox(): SyncStatus {
         flushCalls += 1
+        return SyncStatus(
+            hasAuthenticatedSession = true,
+            pendingCount = 0,
+            failedCount = 0,
+            refreshed = false,
+        )
     }
 
-    override suspend fun refreshAuthenticatedData() {
+    override suspend fun refreshAuthenticatedData(): SyncStatus {
         refreshCalls += 1
+        return SyncStatus(
+            hasAuthenticatedSession = true,
+            pendingCount = 0,
+            failedCount = 0,
+            refreshed = true,
+        )
     }
+
+    override suspend fun getFailedMutations(): List<FailedSyncMutation> = emptyList()
+
+    override suspend fun retryFailedMutation(id: String): SyncStatus = SyncStatus(
+        hasAuthenticatedSession = true,
+        pendingCount = 0,
+        failedCount = 0,
+        refreshed = false,
+    )
+
+    override suspend fun discardMutation(id: String) = Unit
 }
 
 private class FakeSessionAuthRepository(initialSession: AuthSession) : AuthRepository {

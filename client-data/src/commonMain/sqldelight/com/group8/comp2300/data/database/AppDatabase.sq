@@ -377,6 +377,11 @@ SELECT * FROM OutboxEntity
 WHERE state = 'PENDING'
 ORDER BY createdAt ASC;
 
+selectFailedOutbox:
+SELECT * FROM OutboxEntity
+WHERE state = 'FAILED'
+ORDER BY createdAt ASC;
+
 insertOutbox:
 INSERT INTO OutboxEntity (id, entityType, payload, localId, state, createdAt, retryCount, lastError)
 VALUES (?, ?, ?, ?, ?, ?, 0, NULL);
@@ -397,6 +402,11 @@ WHERE id = ?;
 updateOutboxState:
 UPDATE OutboxEntity
 SET state = ?, lastError = ?
+WHERE id = ?;
+
+resetOutboxForRetry:
+UPDATE OutboxEntity
+SET state = 'PENDING', retryCount = 0, lastError = NULL
 WHERE id = ?;
 
 deleteAllOutbox:

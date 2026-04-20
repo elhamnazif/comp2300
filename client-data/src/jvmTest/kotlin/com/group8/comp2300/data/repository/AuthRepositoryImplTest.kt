@@ -48,6 +48,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
@@ -113,9 +114,50 @@ class AuthRepositoryImplTest {
         val session = repository.session.value
         assertIs<AuthSession.SignedIn>(session)
         assertEquals("user-1", session.user.id)
+        assertFalse(session.isStale)
         assertEquals("user-1", tokenManager.getUserId())
         assertEquals(1, syncCoordinator.flushCalls)
         assertEquals(1, syncCoordinator.refreshCalls)
+        assertEquals(1, MedicationLocalDataSource(db).getAll().size)
+        assertEquals(1, OutboxDataSource(db).getAll().size)
+    }
+
+    @Test
+    fun transientRestoreFailureKeepsSignedInSessionMarkedStale() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val tokenManager = TokenManagerImpl(sessionDataSource)
+        tokenManager.saveTokens(
+            userId = "user-1",
+            accessToken = "access",
+            refreshToken = "refresh",
+            expiresAt = Clock.System.now().toEpochMilliseconds() - 1,
+        )
+
+        MedicationLocalDataSource(db).insert(sampleMedication())
+        OutboxDataSource(db).enqueue(
+            entityType = "MEDICATION_UPSERT",
+            payload = "{}",
+            localId = "med-1",
+            state = OutboxState.PENDING,
+        )
+
+        val repository = AuthRepositoryImpl(
+            apiService = object : FakeApiService() {
+                override suspend fun getProfile(): User = throw Exception("offline")
+            },
+            tokenManager = tokenManager,
+            personalDataCleaner = PersonalDataCleaner(db),
+            syncCoordinator = TestSyncCoordinator(),
+        )
+
+        waitForSession(repository)
+
+        val session = repository.session.value
+        assertIs<AuthSession.SignedIn>(session)
+        assertTrue(session.isStale)
+        assertEquals("user-1", session.user.id)
+        assertEquals("user-1", tokenManager.getUserId())
         assertEquals(1, MedicationLocalDataSource(db).getAll().size)
         assertEquals(1, OutboxDataSource(db).getAll().size)
     }
