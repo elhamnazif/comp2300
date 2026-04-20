@@ -13,7 +13,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.utils.io.readRemaining
+import io.ktor.utils.io.*
 import kotlinx.io.readByteArray
 import org.koin.ktor.ext.inject
 

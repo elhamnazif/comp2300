@@ -1,6 +1,5 @@
 package com.group8.comp2300.app
 
-import com.group8.comp2300.app.appBindingsModule
 import com.group8.comp2300.core.security.pin.pinModule
 import com.group8.comp2300.feature.auth.authModule
 import com.group8.comp2300.feature.booking.bookingModule

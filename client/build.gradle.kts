@@ -81,6 +81,11 @@ kotlin {
                 api(libs.compose.resources)
                 api(libs.compose.ui.tooling.preview)
                 implementation(libs.compose.material3)
+                implementation(libs.coil3.compose)
+                implementation(libs.coil3.network.ktor3)
+                implementation(libs.markdown.renderer)
+                implementation(libs.markdown.renderer.m3)
+                implementation(libs.markdown.renderer.coil3)
 
                 // Compose Adaptive
                 implementation(libs.material3.adaptive)
@@ -209,6 +214,9 @@ symbolCraft {
         "article",
         "quiz",
         "lightbulb",
+        "emoji_events",
+        "workspace_premium",
+        "military_tech",
         // Calendar & Reminders
         "calendar_month",
         "mark_email_read",

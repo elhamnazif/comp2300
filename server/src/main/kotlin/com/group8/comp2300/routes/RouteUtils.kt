@@ -1,11 +1,11 @@
 package com.group8.comp2300.routes
 
 import com.group8.comp2300.config.Environment
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.principal
-import io.ktor.server.response.respond
-import io.ktor.server.routing.RoutingContext
+import io.ktor.http.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 suspend fun RoutingContext.withUserId(block: suspend (String) -> Unit) {
     val principal = call.principal<JWTPrincipal>()

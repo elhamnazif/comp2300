@@ -5,12 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,32 +16,12 @@ import com.group8.comp2300.core.ui.accessibility.PatternSwatch
 import com.group8.comp2300.core.ui.components.ActionEmptyStateCard
 import com.group8.comp2300.core.ui.components.EmptyStateMessage
 import com.group8.comp2300.core.ui.components.SectionHeader
-import com.group8.comp2300.domain.model.medical.Medication
-import com.group8.comp2300.domain.model.medical.MedicationStatus
-import com.group8.comp2300.domain.model.medical.Routine
-import com.group8.comp2300.domain.model.medical.RoutineRepeatType
-import com.group8.comp2300.domain.model.medical.RoutineStatus
-import com.group8.comp2300.domain.model.medical.stockLabel
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.feature.medical.shared.routines.formatTimeOfDayMs
 import com.group8.comp2300.feature.medical.shared.routines.weekdaySummary
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.EditW400Outlinedfill1
-import comp2300.i18n.generated.resources.Res
-import comp2300.i18n.generated.resources.medical_medication_edit_desc
-import comp2300.i18n.generated.resources.medical_medication_empty_active
-import comp2300.i18n.generated.resources.medical_medication_empty_add_button
-import comp2300.i18n.generated.resources.medical_medication_empty_desc
-import comp2300.i18n.generated.resources.medical_medication_empty_title
-import comp2300.i18n.generated.resources.medical_medication_no_schedule
-import comp2300.i18n.generated.resources.medical_medication_schedule_at
-import comp2300.i18n.generated.resources.medical_medication_schedule_count
-import comp2300.i18n.generated.resources.medical_medication_schedule_daily_at
-import comp2300.i18n.generated.resources.medical_medication_schedule_daily_multi
-import comp2300.i18n.generated.resources.medical_medication_schedule_times
-import comp2300.i18n.generated.resources.medical_medication_schedule_weekly_default
-import comp2300.i18n.generated.resources.medical_medication_section_active
-import comp2300.i18n.generated.resources.medical_medication_section_archived
-import comp2300.i18n.generated.resources.medical_routine_repeat_daily
+import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -180,7 +155,11 @@ private fun MedicationCard(
             ) {
                 Text(medication.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text("${medication.dosage} • ${medication.stockLabel()}", color = MaterialTheme.colorScheme.secondary)
-                Text(medicationScheduleLabel(linkedRoutines), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
+                Text(
+                    medicationScheduleLabel(linkedRoutines),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelLarge,
+                )
                 medication.instruction?.takeIf(String::isNotBlank)?.let {
                     Text(
                         it,
@@ -234,10 +213,7 @@ private fun medicationScheduleLabel(linkedRoutines: List<Routine>): String {
     }
 }
 
-internal data class MedicationColorOption(
-    val hex: String,
-    val pattern: IndicatorPattern,
-)
+internal data class MedicationColorOption(val hex: String, val pattern: IndicatorPattern)
 
 internal val medicationColorOptions = listOf(
     MedicationColorOption("#42A5F5", IndicatorPattern.DIAGONAL),

@@ -42,10 +42,14 @@ fun MedicationFormSheet(
     var currentStep by remember(medicationToEdit?.id) { mutableStateOf(MedicationFormStep.BASICS) }
     var name by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.name ?: "") }
     var doseAmount by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.doseAmount ?: "") }
-    var doseUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.doseUnit ?: MedicationUnit.TABLET) }
+    var doseUnit by remember(medicationToEdit?.id) {
+        mutableStateOf(medicationToEdit?.doseUnit ?: MedicationUnit.TABLET)
+    }
     var customDoseUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.customDoseUnit ?: "") }
     var stockAmount by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.stockAmount ?: "") }
-    var stockUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.stockUnit ?: MedicationUnit.TABLET) }
+    var stockUnit by remember(medicationToEdit?.id) {
+        mutableStateOf(medicationToEdit?.stockUnit ?: MedicationUnit.TABLET)
+    }
     var customStockUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.customStockUnit ?: "") }
     var instruction by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.instruction ?: "") }
     var status by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.status ?: MedicationStatus.ACTIVE) }
@@ -65,7 +69,9 @@ fun MedicationFormSheet(
         } else {
             stringResource(Res.string.medical_medication_form_edit_title)
         }
+
         MedicationFormStep.STOCK -> stringResource(Res.string.medical_medication_form_stock_title)
+
         MedicationFormStep.REVIEW -> if (medicationToEdit == null) {
             stringResource(Res.string.medical_medication_form_summary_title)
         } else {
@@ -110,7 +116,9 @@ fun MedicationFormSheet(
                             onCancel()
                             MedicationFormStep.BASICS
                         }
+
                         MedicationFormStep.STOCK -> MedicationFormStep.BASICS
+
                         MedicationFormStep.REVIEW -> MedicationFormStep.STOCK
                     }
                 },
@@ -273,10 +281,7 @@ fun MedicationFormSheet(
 }
 
 @Composable
-private fun MedicationStepHeader(
-    step: MedicationFormStep,
-    isEditing: Boolean,
-) {
+private fun MedicationStepHeader(step: MedicationFormStep, isEditing: Boolean) {
     val stepNumber = when (step) {
         MedicationFormStep.BASICS -> 1
         MedicationFormStep.STOCK -> 2
@@ -285,7 +290,9 @@ private fun MedicationStepHeader(
     val progress = stepNumber / 3f
     val description = when (step) {
         MedicationFormStep.BASICS -> null
+
         MedicationFormStep.STOCK -> null
+
         MedicationFormStep.REVIEW -> if (isEditing) {
             stringResource(Res.string.medical_medication_form_edit_finish_hint)
         } else {
@@ -367,10 +374,7 @@ private fun MedicationAmountRow(
 }
 
 @Composable
-private fun MedicationColorPicker(
-    selectedColor: Color,
-    onColorSelected: (Color) -> Unit,
-) {
+private fun MedicationColorPicker(selectedColor: Color, onColorSelected: (Color) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             stringResource(Res.string.medical_medication_form_color_tag_label),
@@ -389,7 +393,13 @@ private fun MedicationColorPicker(
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
                         .border(
                             width = if (selectedColor == color) 2.dp else 0.dp,
-                            color = if (selectedColor == color) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            color = if (selectedColor ==
+                                color
+                            ) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                Color.Transparent
+                            },
                             shape = CircleShape,
                         )
                         .padding(4.dp)
@@ -619,11 +629,7 @@ private fun SummaryPanel(
 }
 
 @Composable
-private fun SummaryMetric(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-) {
+private fun SummaryMetric(label: String, value: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(6.dp),

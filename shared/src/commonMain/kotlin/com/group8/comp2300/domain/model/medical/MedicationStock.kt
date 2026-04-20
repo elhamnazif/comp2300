@@ -15,28 +15,22 @@ enum class MedicationUnit(val displayName: String) {
     ;
 
     companion object {
-        fun fromLegacyLabel(label: String): MedicationUnit? {
-            return when (label.trim().lowercase()) {
-                "tablet", "tablets", "tab", "tabs" -> TABLET
-                "capsule", "capsules", "cap", "caps" -> CAPSULE
-                "pill", "pills" -> PILL
-                "puff", "puffs" -> PUFF
-                "patch", "patches" -> PATCH
-                "ml", "milliliter", "milliliters", "millilitre", "millilitres" -> ML
-                "mg", "milligram", "milligrams" -> MG
-                else -> null
-            }
+        fun fromLegacyLabel(label: String): MedicationUnit? = when (label.trim().lowercase()) {
+            "tablet", "tablets", "tab", "tabs" -> TABLET
+            "capsule", "capsules", "cap", "caps" -> CAPSULE
+            "pill", "pills" -> PILL
+            "puff", "puffs" -> PUFF
+            "patch", "patches" -> PATCH
+            "ml", "milliliter", "milliliters", "millilitre", "millilitres" -> ML
+            "mg", "milligram", "milligrams" -> MG
+            else -> null
         }
     }
 }
 
 typealias MedicationStockUnit = MedicationUnit
 
-data class ParsedMedicationAmount(
-    val amount: String,
-    val unit: MedicationUnit,
-    val customUnit: String? = null,
-)
+data class ParsedMedicationAmount(val amount: String, val unit: MedicationUnit, val customUnit: String? = null)
 
 fun parseLegacyMedicationAmount(legacyValue: String?): ParsedMedicationAmount {
     val trimmed = legacyValue?.trim().orEmpty()
@@ -67,11 +61,7 @@ fun parseLegacyMedicationAmount(legacyValue: String?): ParsedMedicationAmount {
     )
 }
 
-fun formatMedicationAmount(
-    amount: String,
-    unit: MedicationUnit,
-    customUnit: String? = null,
-): String {
+fun formatMedicationAmount(amount: String, unit: MedicationUnit, customUnit: String? = null): String {
     val normalizedAmount = amount.trim().ifBlank { "1" }
     val unitLabel = when (unit) {
         MedicationUnit.OTHER -> customUnit?.trim()?.takeIf(String::isNotBlank) ?: "unit"
@@ -80,13 +70,11 @@ fun formatMedicationAmount(
     return "$normalizedAmount $unitLabel"
 }
 
-fun parseLegacyMedicationStock(legacyQuantity: String?): ParsedMedicationAmount = parseLegacyMedicationAmount(legacyQuantity)
+fun parseLegacyMedicationStock(legacyQuantity: String?): ParsedMedicationAmount =
+    parseLegacyMedicationAmount(legacyQuantity)
 
-fun formatMedicationStock(
-    stockAmount: String,
-    stockUnit: MedicationUnit,
-    customStockUnit: String? = null,
-): String = formatMedicationAmount(stockAmount, stockUnit, customStockUnit)
+fun formatMedicationStock(stockAmount: String, stockUnit: MedicationUnit, customStockUnit: String? = null): String =
+    formatMedicationAmount(stockAmount, stockUnit, customStockUnit)
 
 fun Medication.stockLabel(): String = formatMedicationAmount(stockAmount, stockUnit, customStockUnit)
 

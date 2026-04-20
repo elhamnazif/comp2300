@@ -1,6 +1,9 @@
 package com.group8.comp2300.service
 
-import com.group8.comp2300.domain.model.medical.*
+import com.group8.comp2300.domain.model.medical.CreateReviewRequest
+import com.group8.comp2300.domain.model.medical.Review
+import com.group8.comp2300.domain.model.medical.ReviewSortBy
+import com.group8.comp2300.domain.model.medical.UpdateReviewRequest
 import com.group8.comp2300.domain.repository.ClinicReviewRepository
 import com.group8.comp2300.services.ClinicReviewService
 import kotlin.test.*

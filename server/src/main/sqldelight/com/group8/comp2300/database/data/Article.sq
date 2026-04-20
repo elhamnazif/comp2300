@@ -1,0 +1,62 @@
+CREATE TABLE ArticleEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    content TEXT NOT NULL,
+    thumbnail_url TEXT,
+    publisher TEXT,
+    published_date INTEGER
+);
+upsertArticle:
+INSERT OR REPLACE INTO ArticleEnt (
+    id,
+    title,
+    description,
+    content,
+    thumbnail_url,
+    publisher,
+    published_date
+) VALUES (
+    :id,
+    :title,
+    :description,
+    :content,
+    :thumbnailUrl,
+    :publisher,
+    :publishedDate
+);
+
+getAllArticles:
+SELECT * FROM ArticleEnt
+ORDER BY published_date DESC;
+
+getArticleById:
+SELECT * FROM ArticleEnt
+WHERE id = :articleId;
+
+-- Search (Passing the query once maps to both title and description)
+searchArticles:
+SELECT * FROM ArticleEnt
+WHERE title LIKE ('%' || :searchQuery || '%')
+   OR description LIKE ('%' || :searchQuery || '%')
+ORDER BY published_date DESC;
+
+-- To get a paginated list of articles
+-- Offset = (pageNumber * pageSize)
+getArticlesPaginated:
+SELECT * FROM ArticleEnt
+ORDER BY published_date DESC
+LIMIT :limit OFFSET :offset;
+
+updateArticleContent:
+UPDATE ArticleEnt
+SET title = :title, description = :description, content = :content
+WHERE id = :id;
+
+removeCategoryFromArticle:
+DELETE FROM ArticleCategoryEnt
+WHERE article_id = :articleId AND content_category_id = :categoryId;
+
+deleteArticle:
+DELETE FROM ArticleEnt
+WHERE id = :id;

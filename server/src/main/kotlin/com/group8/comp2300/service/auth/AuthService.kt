@@ -7,13 +7,7 @@ import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
 import com.group8.comp2300.domain.repository.RefreshTokenRepository
 import com.group8.comp2300.domain.repository.UserRepository
-import com.group8.comp2300.dto.AuthResponse
-import com.group8.comp2300.dto.CompleteProfileRequest
-import com.group8.comp2300.dto.LoginRequest
-import com.group8.comp2300.dto.PreregisterRequest
-import com.group8.comp2300.dto.PreregisterResponse
-import com.group8.comp2300.dto.RegisterRequest
-import com.group8.comp2300.dto.TokenResponse
+import com.group8.comp2300.dto.*
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.PasswordHasher
 import com.group8.comp2300.service.email.EmailResult
@@ -24,7 +18,6 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.minutes
 
 class AuthService(
     private val userRepository: UserRepository,

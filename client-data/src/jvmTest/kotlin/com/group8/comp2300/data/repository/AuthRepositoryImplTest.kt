@@ -10,17 +10,25 @@ import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.remote.ApiException
 import com.group8.comp2300.data.remote.ApiService
+import com.group8.comp2300.data.remote.dto.ArticleDetailDto
+import com.group8.comp2300.data.remote.dto.ArticleSummaryDto
 import com.group8.comp2300.data.remote.dto.AuthResponse
+import com.group8.comp2300.data.remote.dto.CategoryDto
 import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
+import com.group8.comp2300.data.remote.dto.EarnedBadgeDto
 import com.group8.comp2300.data.remote.dto.ForgotPasswordRequest
 import com.group8.comp2300.data.remote.dto.LoginRequest
 import com.group8.comp2300.data.remote.dto.MessageResponse
 import com.group8.comp2300.data.remote.dto.PreregisterRequest
 import com.group8.comp2300.data.remote.dto.PreregisterResponse
+import com.group8.comp2300.data.remote.dto.QuizDto
+import com.group8.comp2300.data.remote.dto.QuizSubmissionRequestDto
+import com.group8.comp2300.data.remote.dto.QuizSubmissionResultDto
 import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
 import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
 import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
+import com.group8.comp2300.data.remote.dto.UserQuizStatsDto
 import com.group8.comp2300.data.repository.medical.TestSyncCoordinator
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentSlot
@@ -47,8 +55,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertIs
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
@@ -354,4 +362,21 @@ internal open class FakeApiService(
     override suspend fun downloadMedicalRecord(id: String): ByteArray = error("unused")
 
     override suspend fun deleteMedicalRecord(id: String) = Unit
+
+    override suspend fun getEducationCategories(): List<CategoryDto> = emptyList()
+
+    override suspend fun getEducationArticles(): List<ArticleSummaryDto> = emptyList()
+
+    override suspend fun getEducationArticle(id: String): ArticleDetailDto = error("unused")
+
+    override suspend fun getEducationQuiz(id: String): QuizDto = error("unused")
+
+    override suspend fun submitEducationQuiz(
+        quizId: String,
+        request: QuizSubmissionRequestDto,
+    ): QuizSubmissionResultDto = error("unused")
+
+    override suspend fun getEducationQuizStats(): UserQuizStatsDto = error("unused")
+
+    override suspend fun getEducationEarnedBadges(): List<EarnedBadgeDto> = emptyList()
 }

@@ -4,7 +4,7 @@ import com.group8.comp2300.config.Environment
 import com.group8.comp2300.config.JwtConfig
 import java.security.MessageDigest
 import java.security.SecureRandom
-import java.util.Base64
+import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec

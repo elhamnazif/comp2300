@@ -8,27 +8,8 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.settings.SettingsNavigationRow
 import com.group8.comp2300.core.ui.settings.SettingsSection
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArticleW400Outlined
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.InfoW400Outlined
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.LockW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.LogoutW400Outlined
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ShieldW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.VisibilityW400Outlinedfill1
-import comp2300.i18n.generated.resources.Res
-import comp2300.i18n.generated.resources.profile_accessibility_desc
-import comp2300.i18n.generated.resources.profile_accessibility_title
-import comp2300.i18n.generated.resources.profile_biometrics_enabled
-import comp2300.i18n.generated.resources.profile_faqs_desc
-import comp2300.i18n.generated.resources.profile_health_records_title
-import comp2300.i18n.generated.resources.profile_help_support_title
-import comp2300.i18n.generated.resources.profile_logout_label
-import comp2300.i18n.generated.resources.profile_notifications_desc
-import comp2300.i18n.generated.resources.profile_notifications_title
-import comp2300.i18n.generated.resources.profile_privacy_legalese_desc
-import comp2300.i18n.generated.resources.profile_privacy_legalese_title
-import comp2300.i18n.generated.resources.profile_privacy_security_title
-import comp2300.i18n.generated.resources.profile_track_results_desc
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

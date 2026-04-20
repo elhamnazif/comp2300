@@ -15,13 +15,7 @@ import com.group8.comp2300.core.format.DateFormatter
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.core.ui.components.ConsumeSnackbarMessage
 import com.group8.comp2300.core.ui.components.EmptyStateMessage
-import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
-import com.group8.comp2300.domain.model.medical.MedicationLogRequest
-import com.group8.comp2300.domain.model.medical.MedicationLogStatus
-import com.group8.comp2300.domain.model.medical.MedicationStatus
-import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.feature.calendar.components.*
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1

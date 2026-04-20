@@ -7,11 +7,7 @@ import com.group8.comp2300.core.ui.accessibility.AccessibleStatusChip
 import com.group8.comp2300.core.ui.accessibility.StatusIcon
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
-import comp2300.i18n.generated.resources.Res
-import comp2300.i18n.generated.resources.lab_status_inconclusive
-import comp2300.i18n.generated.resources.lab_status_negative
-import comp2300.i18n.generated.resources.lab_status_pending
-import comp2300.i18n.generated.resources.lab_status_positive
+import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 

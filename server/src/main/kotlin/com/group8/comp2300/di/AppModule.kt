@@ -4,43 +4,16 @@ import com.group8.comp2300.config.CareCatalogSeeder
 import com.group8.comp2300.config.DevSeeder
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.config.ResendConfig
-import com.group8.comp2300.data.repository.AppointmentRepositoryImpl
-import com.group8.comp2300.data.repository.AppointmentSlotRepositoryImpl
-import com.group8.comp2300.data.repository.ClinicRepositoryImpl
-import com.group8.comp2300.data.repository.ClinicTagRepositoryImpl
-import com.group8.comp2300.data.repository.MedicalRecordRepositoryImpl
-import com.group8.comp2300.data.repository.MedicationLogRepositoryImpl
-import com.group8.comp2300.data.repository.MedicationRepositoryImpl
-import com.group8.comp2300.data.repository.MoodRepositoryImpl
-import com.group8.comp2300.data.repository.PasswordResetTokenRepositoryImpl
-import com.group8.comp2300.data.repository.ProductRepositoryImpl
-import com.group8.comp2300.data.repository.RefreshTokenRepositoryImpl
-import com.group8.comp2300.data.repository.RoutineOccurrenceOverrideRepositoryImpl
-import com.group8.comp2300.data.repository.RoutineRepositoryImpl
-import com.group8.comp2300.data.repository.UserRepositoryImpl
+import com.group8.comp2300.data.repository.*
 import com.group8.comp2300.database.ServerDatabase
-import com.group8.comp2300.domain.repository.AppointmentRepository
-import com.group8.comp2300.domain.repository.AppointmentSlotRepository
-import com.group8.comp2300.domain.repository.ClinicRepository
-import com.group8.comp2300.domain.repository.ClinicTagRepository
-import com.group8.comp2300.domain.repository.MedicalRecordRepository
-import com.group8.comp2300.domain.repository.MedicationLogRepository
-import com.group8.comp2300.domain.repository.MedicationRepository
-import com.group8.comp2300.domain.repository.MoodRepository
-import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
-import com.group8.comp2300.domain.repository.ProductRepository
-import com.group8.comp2300.domain.repository.RefreshTokenRepository
-import com.group8.comp2300.domain.repository.RoutineOccurrenceOverrideRepository
-import com.group8.comp2300.domain.repository.RoutineRepository
-import com.group8.comp2300.domain.repository.UserRepository
+import com.group8.comp2300.domain.repository.*
 import com.group8.comp2300.infrastructure.database.createServerDatabase
-import com.group8.comp2300.security.AesGcmMedicalRecordCipher
-import com.group8.comp2300.security.JwtService
-import com.group8.comp2300.security.JwtServiceImpl
-import com.group8.comp2300.security.MedicalRecordCipher
-import com.group8.comp2300.security.MedicalRecordEncryptionConfig
+import com.group8.comp2300.mapper.ArticleMapper
+import com.group8.comp2300.mapper.CategoryMapper
+import com.group8.comp2300.security.*
 import com.group8.comp2300.service.appointment.AppointmentService
 import com.group8.comp2300.service.auth.AuthService
+import com.group8.comp2300.service.content.*
 import com.group8.comp2300.service.email.EmailService
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import com.group8.comp2300.service.medication.MedicationService
@@ -53,6 +26,10 @@ val serverModule = module {
             CareCatalogSeeder.seedIfEmpty(it)
         }
     }
+
+    // Mappers
+    single { CategoryMapper(categoryRepository = get()) }
+    single { ArticleMapper(categoryMapper = get()) }
 
     // Security
     single<JwtService> {
@@ -73,14 +50,20 @@ val serverModule = module {
     single<PasswordResetTokenRepository> { PasswordResetTokenRepositoryImpl(get()) }
     single<AppointmentRepository> { AppointmentRepositoryImpl(get()) }
     single<AppointmentSlotRepository> { AppointmentSlotRepositoryImpl(get()) }
+    single<ArticleRepository> { ArticleRepositoryImpl(get()) }
+    single<BadgeRepository> { BadgeRepositoryImpl(get()) }
     single<ClinicTagRepository> { ClinicTagRepositoryImpl(get()) }
     single<ClinicRepository> { ClinicRepositoryImpl(get(), get(), get()) }
+    single<ContentCategoryRepository> { ContentCategoryRepositoryImpl(get()) }
     single<MedicationRepository> { MedicationRepositoryImpl(get()) }
     single<RoutineRepository> { RoutineRepositoryImpl(get()) }
     single<RoutineOccurrenceOverrideRepository> { RoutineOccurrenceOverrideRepositoryImpl(get()) }
+    single<QuizRepository> { QuizRepositoryImpl(get()) }
     single<MedicationLogRepository> { MedicationLogRepositoryImpl(get()) }
     single<MoodRepository> { MoodRepositoryImpl(get()) }
     single<MedicalRecordRepository> { MedicalRecordRepositoryImpl(get()) }
+    single<UserBadgeRepository> { UserBadgeRepositoryImpl(get()) }
+    single<UserQuizRepository> { UserQuizRepositoryImpl(get()) }
 
     // Email
     single { EmailService(ResendConfig.apiKey, ResendConfig.fromEmail, ResendConfig.appName) }
@@ -101,7 +84,7 @@ val serverModule = module {
             appointmentRepository = get(),
             appointmentSlotRepository = get(),
             clinicRepository = get(),
-            database = get()
+            database = get(),
         )
     }
     single {
@@ -109,7 +92,25 @@ val serverModule = module {
             medicationRepository = get(),
             routineRepository = get(),
             routineOccurrenceOverrideRepository = get(),
-            medicationLogRepository = get()
+            medicationLogRepository = get(),
         )
     }
+    single {
+        ContentCategoryService(
+            categoryRepository = get(),
+            articleRepository = get(),
+            categoryMapper = get(),
+            articleMapper = get(),
+        )
+    }
+    single {
+        ArticleService(
+            articleRepository = get(),
+            quizRepository = get(),
+            articleMapper = get(),
+        )
+    }
+    single { QuizService(get()) }
+    single { UserBadgeService(badgeRepo = get(), userBadgeRepo = get(), quizRepo = get()) }
+    single { UserQuizService(userQuizRepository = get(), badgeService = get(), quizRepository = get()) }
 }

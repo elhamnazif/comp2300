@@ -1,0 +1,66 @@
+CREATE TABLE QuizAttemptEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    quiz_id TEXT REFERENCES QuizEnt(id) ON DELETE SET NULL,
+    score INTEGER NOT NULL,
+    is_full_score INTEGER NOT NULL DEFAULT 0,
+	started_at INTEGER NOT NULL,
+	submitted_at INTEGER NOT NULL
+);
+
+insertQuizAttempt:
+INSERT INTO QuizAttemptEnt (
+    id,
+    user_id,
+    quiz_id,
+    score,
+    is_full_score,
+    started_at,
+    submitted_at
+)
+VALUES (
+    :id,
+    :userId,
+    :quizId,
+    :score,
+    :isFullScore,
+    :startedAt,
+    :submittedAt
+);
+
+deleteOtherAttemptsForQuiz:
+DELETE FROM QuizAttemptEnt
+WHERE user_id = :userId AND quiz_id = :quizId AND id != :attemptId;
+
+getAttemptsByUserId:
+SELECT * FROM QuizAttemptEnt
+WHERE user_id = :userId
+ORDER BY submitted_at DESC;
+
+getBestScoreForQuiz:
+SELECT MAX(score)
+FROM QuizAttemptEnt
+WHERE user_id = :userId AND quiz_id = :quizId;
+
+deletePreviousAttempt:
+DELETE FROM QuizAttemptEnt
+WHERE user_id = :userId AND quiz_id = :quizId;
+
+hasPerfectScore:
+SELECT EXISTS(
+    SELECT 1 FROM QuizAttemptEnt
+    WHERE user_id = :userId AND quiz_id = :quizId AND is_full_score = 1
+);
+
+-- Count total perfect scores to be awarded badges (1, 2, 3, 5)
+countFullScores:
+SELECT COUNT(*)
+FROM QuizAttemptEnt
+WHERE user_id = :userId AND is_full_score = 1;
+
+-- For "Speed Demon" badge
+getAverageTimeSpent:
+SELECT AVG(submitted_at - started_at)
+FROM QuizAttemptEnt
+WHERE user_id = :userId;
+

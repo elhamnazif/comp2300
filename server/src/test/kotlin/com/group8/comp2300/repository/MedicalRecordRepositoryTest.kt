@@ -4,11 +4,7 @@ import com.group8.comp2300.data.repository.MedicalRecordRepositoryImpl
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
 import com.group8.comp2300.infrastructure.database.createServerDatabase
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class MedicalRecordRepositoryTest {
 

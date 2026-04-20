@@ -1,16 +1,11 @@
 package com.group8.comp2300.feature.booking
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import com.group8.comp2300.domain.model.medical.Clinic
-import comp2300.client.generated.resources.clinic_photo_exam_room
-import comp2300.client.generated.resources.clinic_photo_frontage_night
-import comp2300.client.generated.resources.clinic_photo_medical_center_glass
-import comp2300.client.generated.resources.clinic_photo_treatment_room
-import comp2300.client.generated.resources.clinic_photo_waiting_room
+import comp2300.client.generated.resources.*
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 import comp2300.client.generated.resources.Res as ClientRes

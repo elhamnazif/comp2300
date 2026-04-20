@@ -1,10 +1,14 @@
 package com.group8.comp2300.feature.auth.forgotpassword
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -15,12 +19,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.group8.comp2300.feature.auth.components.AuthBanner
-import com.group8.comp2300.feature.auth.components.AuthFormScaffold
-import com.group8.comp2300.feature.auth.components.AuthHeroSection
-import com.group8.comp2300.feature.auth.components.AuthLoadingButton
-import com.group8.comp2300.feature.auth.components.AuthTextField
-import com.group8.comp2300.feature.auth.components.VerificationCodeField
+import com.group8.comp2300.feature.auth.components.*
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.MailOutlineW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.MarkEmailReadW400Outlinedfill1

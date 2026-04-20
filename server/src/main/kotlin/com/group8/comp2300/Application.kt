@@ -4,30 +4,18 @@ import com.group8.comp2300.config.Environment
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.config.ResendConfig
 import com.group8.comp2300.di.serverModule
-import com.group8.comp2300.routes.appointmentRoutes
-import com.group8.comp2300.routes.authRoutes
-import com.group8.comp2300.routes.clinicRoutes
-import com.group8.comp2300.routes.medicalRecordRoutes
-import com.group8.comp2300.routes.medicationRoutes
-import com.group8.comp2300.routes.moodRoutes
-import com.group8.comp2300.routes.productRoutes
+import com.group8.comp2300.routes.*
 import com.group8.comp2300.security.JwtService
-import io.ktor.http.HttpStatusCode
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.Application
-import io.ktor.server.application.install
-import io.ktor.server.application.log
-import io.ktor.server.auth.Authentication
-import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.get
-import io.ktor.server.routing.routing
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.Koin
@@ -95,12 +83,17 @@ fun Application.module() {
         authRoutes(get())
         productRoutes()
         clinicRoutes()
+        articleRoutes()
+        contentCategoryRoutes()
+        quizRoutes()
 
         authenticate("auth-jwt", optional = devBypass) {
             appointmentRoutes()
+            badgeRoutes()
             medicationRoutes()
             moodRoutes()
             medicalRecordRoutes()
+            userQuizRoutes()
         }
     }
 }

@@ -14,8 +14,8 @@ import com.group8.comp2300.data.offline.MedicalOfflineMutations
 import com.group8.comp2300.data.offline.MutationHandlerRegistry
 import com.group8.comp2300.data.offline.OfflineDataRefresher
 import com.group8.comp2300.data.offline.OfflineMutationHandler
-import com.group8.comp2300.data.offline.SyncCoordinatorImpl
 import com.group8.comp2300.data.offline.QueuedWriteDispatcher
+import com.group8.comp2300.data.offline.SyncCoordinatorImpl
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.repository.newDatabase
 import com.group8.comp2300.data.repository.sampleMedication
@@ -128,9 +128,8 @@ class MedicalDataRepositoriesTest {
                 object : OfflineMutationHandler {
                     override val type: String = MedicalOfflineMutations.medicationUpsert.type
 
-                    override suspend fun apply(item: com.group8.comp2300.data.local.OutboxItem) {
+                    override suspend fun apply(item: com.group8.comp2300.data.local.OutboxItem): Unit =
                         throw Exception("offline")
-                    }
                 },
             ),
         )
@@ -162,9 +161,11 @@ class MedicalDataRepositoriesTest {
         val savedMedication = repository.saveMedication(
             MedicationCreateRequest(
                 name = "Vitamin D",
-                dosage = "1 tablet",
-                quantity = "1000 IU",
-                frequency = "DAILY",
+                doseAmount = "1",
+                doseUnit = "TABLET",
+                stockAmount = "1000",
+                stockUnit = "OTHER",
+                customStockUnit = "IU",
             ),
         )
 
@@ -590,6 +591,16 @@ private class BookingApiStub : ApiService {
 
     override suspend fun downloadMedicalRecord(id: String): ByteArray = ByteArray(0)
     override suspend fun deleteMedicalRecord(id: String) = Unit
+    override suspend fun getEducationCategories() = emptyList<com.group8.comp2300.data.remote.dto.CategoryDto>()
+    override suspend fun getEducationArticles() = emptyList<com.group8.comp2300.data.remote.dto.ArticleSummaryDto>()
+    override suspend fun getEducationArticle(id: String) = error("unused")
+    override suspend fun getEducationQuiz(id: String) = error("unused")
+    override suspend fun submitEducationQuiz(
+        quizId: String,
+        request: com.group8.comp2300.data.remote.dto.QuizSubmissionRequestDto,
+    ) = error("unused")
+    override suspend fun getEducationQuizStats() = error("unused")
+    override suspend fun getEducationEarnedBadges() = emptyList<com.group8.comp2300.data.remote.dto.EarnedBadgeDto>()
 }
 
 private fun sampleAppointment(

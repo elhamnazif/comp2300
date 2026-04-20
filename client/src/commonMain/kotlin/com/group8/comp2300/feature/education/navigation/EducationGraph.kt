@@ -5,11 +5,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.Screen
-import com.group8.comp2300.domain.model.education.ContentType
+import com.group8.comp2300.feature.education.ArticleDetailScreen
 import com.group8.comp2300.feature.education.EducationScreen
 import com.group8.comp2300.feature.education.EducationViewModel
 import com.group8.comp2300.feature.education.QuizScreen
-import com.group8.comp2300.feature.education.VideoDetailScreen
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
@@ -22,46 +21,42 @@ val educationGraphModule = module {
         val uiState by viewModel.state.collectAsState()
 
         EducationScreen(
-            filteredContent = uiState.filteredContent,
-            featuredItem = uiState.featuredItem,
-            selectedCategory = uiState.selectedCategory,
+            categories = uiState.categories,
+            articles = uiState.filteredArticles,
+            featuredArticle = uiState.featuredArticle,
+            selectedCategoryId = uiState.selectedCategoryId,
             searchQuery = uiState.searchQuery,
-            onContentClick = { id ->
-                val content = viewModel.getContentById(id)
-                if (content?.type == ContentType.QUIZ) {
-                    navigator.navigate(Screen.QuizScreen(id))
-                } else {
-                    navigator.navigate(Screen.VideoDetail(id))
-                }
-            },
+            stats = uiState.stats,
+            earnedBadges = uiState.earnedBadges,
+            isLoading = uiState.isLoading,
+            isError = uiState.isError,
+            onArticleClick = { id -> navigator.navigate(Screen.ArticleDetail(id)) },
             onCategorySelect = viewModel::selectCategory,
-            onSearchQueryChange = viewModel::searchContent,
+            onSearchQueryChange = viewModel::searchArticles,
+            onRetry = viewModel::refresh,
         )
     }
 
-    navigation<Screen.VideoDetail>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+    navigation<Screen.ArticleDetail>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         val navigator = LocalNavigator.current
         val viewModel =
-            koinViewModel<EducationViewModel> {
-                parametersOf(route.videoId)
+            koinViewModel<com.group8.comp2300.feature.education.ArticleDetailViewModel> {
+                parametersOf(route.articleId)
             }
 
-        VideoDetailScreen(
+        ArticleDetailScreen(
             viewModel = viewModel,
-            videoId = route.videoId,
+            articleId = route.articleId,
             onBack = navigator::goBack,
-            onActionClick = { action ->
-                if (action.contains("Clinic")) {
-                    navigator.clearAndGoTo(Screen.Booking)
-                }
-            },
+            onQuizClick = { quizId -> navigator.navigate(Screen.QuizScreen(quizId)) },
+            onRetry = viewModel::refresh,
         )
     }
 
     navigation<Screen.QuizScreen>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         val navigator = LocalNavigator.current
         val viewModel =
-            koinViewModel<EducationViewModel> {
+            koinViewModel<com.group8.comp2300.feature.education.QuizViewModel> {
                 parametersOf(route.quizId)
             }
         QuizScreen(

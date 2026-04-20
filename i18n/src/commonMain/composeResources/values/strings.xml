@@ -522,11 +522,21 @@
     <string name="education_featured_title">Featured Insight</string>
     <string name="education_latest_updates">Latest Updates</string>
     <string name="education_library_format">%1$s Library</string>
+    <string name="education_library_loading">Loading articles…</string>
+    <string name="education_library_empty">No articles match this filter yet.</string>
+    <string name="education_library_loading_error">We couldn&apos;t load education content right now.</string>
+    <string name="education_library_retry">Retry</string>
     <string name="education_category_puberty">Puberty</string>
     <string name="education_category_relationships">Relationships</string>
     <string name="education_category_sti">STIs &amp; Safety</string>
     <string name="education_category_identity">Identity</string>
     <string name="education_category_sexual_health">Sexual Health</string>
+    <string name="education_progress_title">Your progress</string>
+    <string name="education_progress_perfect_scores">Perfect scores</string>
+    <string name="education_progress_average_time">Avg. time</string>
+    <string name="education_progress_badges">Badges</string>
+    <string name="education_badges_title">Earned badges</string>
+    <string name="education_badges_empty">No badges yet. Finish a quiz to start earning them.</string>
 
     <!-- Education Video Details -->
     <string name="education_video_player_placeholder">Video Player Placeholder</string>
@@ -536,12 +546,19 @@
     <string name="education_video_action_take_quiz">Take Consent Quiz</string>
     <string name="education_video_action_find_clinic">Find PrEP Clinic</string>
     <string name="education_video_action_start_quiz">Start Quiz</string>
+    <string name="education_article_loading_error">We couldn&apos;t load this article.</string>
+    <string name="education_article_back_desc">Back to articles</string>
+    <string name="education_article_retry">Retry</string>
+    <string name="education_article_quiz_ready">Quiz ready</string>
+    <string name="education_article_quiz_cta">Take quiz</string>
 
     <!-- Education Quiz -->
     <string name="education_quiz_progress_format">Question %1$d of %2$d</string>
     <string name="education_quiz_back_desc">Back</string>
-    <string name="education_quiz_correct">✓ Correct!</string>
-    <string name="education_quiz_incorrect">✗ Incorrect</string>
+    <string name="education_quiz_loading_error">We couldn&apos;t load this quiz.</string>
+    <string name="education_quiz_retry_load">Retry</string>
+    <string name="education_quiz_correct">Correct</string>
+    <string name="education_quiz_incorrect">Incorrect</string>
     <string name="education_quiz_next_question">Next Question</string>
     <string name="education_quiz_see_results">See Results</string>
     <string name="education_quiz_score_format">%1$d%</string>
@@ -555,6 +572,9 @@
     <string name="education_quiz_feedback_low">Learning is a journey! Take time to review the material and retake the quiz to improve your understanding.</string>
     <string name="education_quiz_retake_button">Retake Quiz</string>
     <string name="education_quiz_close_button">Close</string>
+    <string name="education_quiz_submitting">Saving your result…</string>
+    <string name="education_quiz_retry_submit">Retry submit</string>
+    <string name="education_quiz_new_badges">New badges</string>
 
     <!-- Profile Module -->
     <string name="profile_title">Profile</string>

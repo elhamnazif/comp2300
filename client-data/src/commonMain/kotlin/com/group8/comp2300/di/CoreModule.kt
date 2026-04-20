@@ -46,7 +46,6 @@ import com.group8.comp2300.data.remote.createHttpClient
 import com.group8.comp2300.data.remote.tokenProviderDelegate
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
-import com.group8.comp2300.data.repository.FixtureSRHContentRepository
 import com.group8.comp2300.data.repository.ReminderRepositoryImpl
 import com.group8.comp2300.data.repository.RemoteClinicRepository
 import com.group8.comp2300.data.repository.ShopRepositoryImpl
@@ -61,7 +60,6 @@ import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
 import com.group8.comp2300.domain.repository.ReminderRepository
-import com.group8.comp2300.domain.repository.SRHContentRepository
 import com.group8.comp2300.domain.repository.ShopRepository
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 import com.group8.comp2300.domain.repository.medical.CalendarDataRepository
@@ -168,7 +166,6 @@ val coreModule = module {
     single<MedicalRecordDataRepository> { MedicalRecordDataRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get()) }
     single<ClinicRepository> { RemoteClinicRepository(get()) }
-    single<SRHContentRepository> { FixtureSRHContentRepository() }
     single<EducationRepository> { EducationRepositoryImpl(get()) }
     single<ReminderRepository> { ReminderRepositoryImpl(get()) }
 

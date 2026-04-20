@@ -1,20 +1,17 @@
 package com.group8.comp2300.feature.medication
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.core.ui.components.ConsumeSnackbarMessage
-import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.Routine
+import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.feature.medical.shared.routines.ScheduleFormSheet
 import com.group8.comp2300.platform.notifications.NotificationPermissionResult
 import com.group8.comp2300.platform.notifications.rememberNotificationPermissionRequester

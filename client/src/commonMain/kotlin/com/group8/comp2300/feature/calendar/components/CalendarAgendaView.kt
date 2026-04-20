@@ -1,16 +1,7 @@
 package com.group8.comp2300.feature.calendar.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,19 +18,7 @@ import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.CalendarMonthW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.FormatListBulletedW400Outlinedfill1
-import comp2300.i18n.generated.resources.Res
-import comp2300.i18n.generated.resources.calendar_agenda_empty
-import comp2300.i18n.generated.resources.calendar_agenda_scheduled_many
-import comp2300.i18n.generated.resources.calendar_agenda_scheduled_one
-import comp2300.i18n.generated.resources.calendar_agenda_window_forward_desc
-import comp2300.i18n.generated.resources.calendar_agenda_window_previous_desc
-import comp2300.i18n.generated.resources.calendar_appointment_many
-import comp2300.i18n.generated.resources.calendar_appointment_one
-import comp2300.i18n.generated.resources.calendar_extra_log_many
-import comp2300.i18n.generated.resources.calendar_extra_log_one
-import comp2300.i18n.generated.resources.calendar_today_button
-import comp2300.i18n.generated.resources.calendar_view_agenda
-import comp2300.i18n.generated.resources.calendar_view_calendar
+import comp2300.i18n.generated.resources.*
 import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 

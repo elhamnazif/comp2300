@@ -3,11 +3,7 @@ package com.group8.comp2300.feature.calendar
 import androidx.compose.ui.graphics.Color
 import com.group8.comp2300.core.ui.accessibility.IndicatorPattern
 import com.group8.comp2300.core.ui.accessibility.StatusIcon
-import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.MedicationLog
-import com.group8.comp2300.domain.model.medical.MedicationLogRequest
-import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
-import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
+import com.group8.comp2300.domain.model.medical.*
 import kotlinx.datetime.LocalDate
 
 internal sealed interface CalendarSheetState {

@@ -119,7 +119,9 @@ fun ScheduleFormSheet(
                             onCancel()
                             ScheduleFormStep.TIMING
                         }
+
                         ScheduleFormStep.DURATION -> ScheduleFormStep.TIMING
+
                         ScheduleFormStep.REMINDERS -> ScheduleFormStep.DURATION
                     }
                 },
@@ -192,13 +194,16 @@ fun ScheduleFormSheet(
                                     Spacer(modifier = Modifier.weight(1f))
                                     IconButton(
                                         onClick = {
-                                            timesOfDayMs = timesOfDayMs.toMutableList().apply { removeAt(index) }.sorted()
+                                            timesOfDayMs =
+                                                timesOfDayMs.toMutableList().apply { removeAt(index) }.sorted()
                                         },
                                         enabled = timesOfDayMs.size > 1,
                                     ) {
                                         Icon(
                                             Icons.CloseW400Outlinedfill1,
-                                            contentDescription = stringResource(Res.string.medical_routine_form_remove_time),
+                                            contentDescription = stringResource(
+                                                Res.string.medical_routine_form_remove_time,
+                                            ),
                                         )
                                     }
                                 }
@@ -401,7 +406,10 @@ fun ScheduleFormSheet(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            Text(stringResource(Res.string.medical_routine_form_archive), fontWeight = FontWeight.SemiBold)
+                            Text(
+                                stringResource(Res.string.medical_routine_form_archive),
+                                fontWeight = FontWeight.SemiBold,
+                            )
                             Switch(
                                 checked = status == RoutineStatus.ARCHIVED,
                                 onCheckedChange = { status = if (it) RoutineStatus.ARCHIVED else RoutineStatus.ACTIVE },
@@ -475,10 +483,7 @@ fun ScheduleFormSheet(
 }
 
 @Composable
-private fun ScheduleStepHeader(
-    step: ScheduleFormStep,
-    subtitle: String?,
-) {
+private fun ScheduleStepHeader(step: ScheduleFormStep, subtitle: String?) {
     val stepNumber = when (step) {
         ScheduleFormStep.TIMING -> 1
         ScheduleFormStep.DURATION -> 2

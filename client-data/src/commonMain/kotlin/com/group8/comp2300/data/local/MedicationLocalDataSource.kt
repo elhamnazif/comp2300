@@ -3,8 +3,8 @@ package com.group8.comp2300.data.local
 import com.group8.comp2300.data.database.AppDatabase
 import com.group8.comp2300.data.database.MedicationEntity
 import com.group8.comp2300.domain.model.medical.Medication
-import com.group8.comp2300.domain.model.medical.MedicationUnit
 import com.group8.comp2300.domain.model.medical.MedicationStatus
+import com.group8.comp2300.domain.model.medical.MedicationUnit
 import com.group8.comp2300.domain.model.medical.formatMedicationStock
 import com.group8.comp2300.domain.model.medical.parseLegacyMedicationAmount
 import com.group8.comp2300.domain.model.medical.parseLegacyMedicationStock
@@ -70,18 +70,22 @@ class MedicationLocalDataSource(private val database: AppDatabase) {
             doseAmount = entity.dose_amount?.trim().takeUnless { it.isNullOrBlank() } ?: legacyDose.amount,
             doseUnit = doseUnitValue,
             customDoseUnit = when (doseUnitValue) {
-                MedicationUnit.OTHER -> entity.custom_dose_unit?.trim().takeUnless { it.isNullOrBlank() } ?: legacyDose.customUnit
+                MedicationUnit.OTHER -> entity.custom_dose_unit?.trim().takeUnless { it.isNullOrBlank() }
+                    ?: legacyDose.customUnit
+
                 else -> null
             },
             stockAmount = entity.stock_amount?.trim().takeUnless { it.isNullOrBlank() } ?: legacyStock.amount,
             stockUnit = stockUnitValue,
-        customStockUnit = when (stockUnitValue) {
-            MedicationUnit.OTHER -> entity.custom_stock_unit?.trim().takeUnless { it.isNullOrBlank() } ?: legacyStock.customUnit
-            else -> null
-        },
-        instruction = entity.instruction,
-        colorHex = entity.color_hex,
-        status = MedicationStatus.valueOf(entity.status),
+            customStockUnit = when (stockUnitValue) {
+                MedicationUnit.OTHER -> entity.custom_stock_unit?.trim().takeUnless { it.isNullOrBlank() }
+                    ?: legacyStock.customUnit
+
+                else -> null
+            },
+            instruction = entity.instruction,
+            colorHex = entity.color_hex,
+            status = MedicationStatus.valueOf(entity.status),
         )
     }
 }

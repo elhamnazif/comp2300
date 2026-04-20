@@ -1,17 +1,25 @@
 package com.group8.comp2300.data.remote
 
+import com.group8.comp2300.data.remote.dto.ArticleDetailDto
+import com.group8.comp2300.data.remote.dto.ArticleSummaryDto
 import com.group8.comp2300.data.remote.dto.AuthResponse
+import com.group8.comp2300.data.remote.dto.CategoryDto
 import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
+import com.group8.comp2300.data.remote.dto.EarnedBadgeDto
 import com.group8.comp2300.data.remote.dto.ForgotPasswordRequest
 import com.group8.comp2300.data.remote.dto.LoginRequest
 import com.group8.comp2300.data.remote.dto.MessageResponse
 import com.group8.comp2300.data.remote.dto.PreregisterRequest
 import com.group8.comp2300.data.remote.dto.PreregisterResponse
 import com.group8.comp2300.data.remote.dto.ProductDto
+import com.group8.comp2300.data.remote.dto.QuizDto
+import com.group8.comp2300.data.remote.dto.QuizSubmissionRequestDto
+import com.group8.comp2300.data.remote.dto.QuizSubmissionResultDto
 import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
 import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
 import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
+import com.group8.comp2300.data.remote.dto.UserQuizStatsDto
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentSlot
 import com.group8.comp2300.domain.model.medical.Clinic
@@ -125,6 +133,20 @@ interface ApiService {
     suspend fun downloadMedicalRecord(id: String): ByteArray
 
     suspend fun deleteMedicalRecord(id: String)
+
+    suspend fun getEducationCategories(): List<CategoryDto>
+
+    suspend fun getEducationArticles(): List<ArticleSummaryDto>
+
+    suspend fun getEducationArticle(id: String): ArticleDetailDto
+
+    suspend fun getEducationQuiz(id: String): QuizDto
+
+    suspend fun submitEducationQuiz(quizId: String, request: QuizSubmissionRequestDto): QuizSubmissionResultDto
+
+    suspend fun getEducationQuizStats(): UserQuizStatsDto
+
+    suspend fun getEducationEarnedBadges(): List<EarnedBadgeDto>
 }
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
@@ -256,6 +278,23 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun deleteMedicalRecord(id: String) {
         client.delete("/api/medical-records/$id")
     }
+
+    override suspend fun getEducationCategories(): List<CategoryDto> = client.get("/api/categories").body()
+
+    override suspend fun getEducationArticles(): List<ArticleSummaryDto> = client.get("/api/articles").body()
+
+    override suspend fun getEducationArticle(id: String): ArticleDetailDto = client.get("/api/articles/$id").body()
+
+    override suspend fun getEducationQuiz(id: String): QuizDto = client.get("/api/quizzes/$id").body()
+
+    override suspend fun submitEducationQuiz(
+        quizId: String,
+        request: QuizSubmissionRequestDto,
+    ): QuizSubmissionResultDto = client.post("/api/quizzes/$quizId/submit") { setBody(request) }.body()
+
+    override suspend fun getEducationQuizStats(): UserQuizStatsDto = client.get("/api/users/quiz-stats").body()
+
+    override suspend fun getEducationEarnedBadges(): List<EarnedBadgeDto> = client.get("/api/badges/earned").body()
 
     /**
      * Catches JsonConvertException when server returns an error response like {"error": "..."}

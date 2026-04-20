@@ -6,15 +6,10 @@ import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.service.medication.MedicationResult
 import com.group8.comp2300.service.medication.MedicationService
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.delete
-import io.ktor.server.routing.get
-import io.ktor.server.routing.post
-import io.ktor.server.routing.put
-import io.ktor.server.routing.route
+import io.ktor.http.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun Route.medicationRoutes() {
@@ -50,8 +45,9 @@ fun Route.medicationRoutes() {
                 when (val result = medicationService.deleteMedication(userId, id)) {
                     is MedicationResult.Success -> call.respond(
                         HttpStatusCode.OK,
-                        mapOf("message" to "Medication deleted")
+                        mapOf("message" to "Medication deleted"),
                     )
+
                     is MedicationResult.Error -> call.respond(result.status, mapOf("error" to result.message))
                 }
             }
@@ -120,8 +116,9 @@ fun Route.medicationRoutes() {
                 when (val result = medicationService.deleteRoutine(userId, id)) {
                     is MedicationResult.Success -> call.respond(
                         HttpStatusCode.OK,
-                        mapOf("message" to "Routine deleted")
+                        mapOf("message" to "Routine deleted"),
                     )
+
                     is MedicationResult.Error -> call.respond(result.status, mapOf("error" to result.message))
                 }
             }

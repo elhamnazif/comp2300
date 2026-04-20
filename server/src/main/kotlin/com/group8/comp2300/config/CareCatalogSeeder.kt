@@ -5,7 +5,7 @@ import com.group8.comp2300.mock.sampleClinics
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
-import java.util.UUID
+import java.util.*
 
 object CareCatalogSeeder {
     fun seedIfEmpty(database: ServerDatabase) {

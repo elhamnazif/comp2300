@@ -1,0 +1,45 @@
+CREATE TABLE QuizQuestionEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    quiz_id TEXT NOT NULL REFERENCES QuizEnt(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    explanation TEXT NOT NULL,
+	question_order INTEGER NOT NULL
+);
+
+
+getAllQuestionsForQuiz:
+SELECT * FROM QuizQuestionEnt
+WHERE quiz_id = :quizId
+ORDER BY question_order ASC;
+
+insertQuestion:
+INSERT INTO QuizQuestionEnt (
+    id,
+    quiz_id,
+    title,
+    explanation,
+    question_order
+) VALUES (
+    :id,
+    :quizId,
+    :title,
+    :explanation,
+    :questionOrder
+);
+
+updateQuestionContent:
+UPDATE QuizQuestionEnt
+SET title = :title, explanation = :explanation
+WHERE id = :id;
+
+deleteQuestion:
+DELETE FROM QuizQuestionEnt
+WHERE id = :id;
+
+getQuestionsByQuizId:
+SELECT * FROM QuizQuestionEnt
+WHERE quiz_id = :quizId;
+
+deleteQuestionsByQuizId:
+DELETE FROM QuizQuestionEnt
+WHERE quiz_id = :quizId;

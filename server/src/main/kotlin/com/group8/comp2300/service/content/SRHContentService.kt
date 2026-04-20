@@ -1,6 +1,9 @@
 package com.group8.comp2300.service.content
 
-import com.group8.comp2300.domain.model.content.*
+import com.group8.comp2300.domain.model.content.ContentTopic
+import com.group8.comp2300.domain.model.content.SRHContent
+import com.group8.comp2300.domain.model.content.SearchRequest
+import com.group8.comp2300.domain.model.content.SearchResult
 import com.group8.comp2300.domain.repository.SRHContentRepository
 
 class SRHContentService(private val repository: SRHContentRepository) {

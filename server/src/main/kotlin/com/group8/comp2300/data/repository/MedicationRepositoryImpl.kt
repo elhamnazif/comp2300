@@ -2,12 +2,7 @@ package com.group8.comp2300.data.repository
 
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.database.data.MedicationEntity
-import com.group8.comp2300.domain.model.medical.Medication
-import com.group8.comp2300.domain.model.medical.MedicationUnit
-import com.group8.comp2300.domain.model.medical.MedicationStatus
-import com.group8.comp2300.domain.model.medical.formatMedicationStock
-import com.group8.comp2300.domain.model.medical.parseLegacyMedicationAmount
-import com.group8.comp2300.domain.model.medical.parseLegacyMedicationStock
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.repository.MedicationRepository
 
 class MedicationRepositoryImpl(private val database: ServerDatabase) : MedicationRepository {
@@ -97,7 +92,9 @@ private fun MedicationEntity.toDomain(): Medication {
         stockAmount = stock_amount?.trim().takeUnless { it.isNullOrBlank() } ?: legacyStock.amount,
         stockUnit = stockUnitValue,
         customStockUnit = when (stockUnitValue) {
-            MedicationUnit.OTHER -> custom_stock_unit?.trim().takeUnless { it.isNullOrBlank() } ?: legacyStock.customUnit
+            MedicationUnit.OTHER -> custom_stock_unit?.trim().takeUnless { it.isNullOrBlank() }
+                ?: legacyStock.customUnit
+
             else -> null
         },
         instruction = instruction,

@@ -11,38 +11,46 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.core.format.DateFormatter
 import com.group8.comp2300.core.ui.components.ScreenHeader
-import com.group8.comp2300.domain.model.content.ContentTopic
-import com.group8.comp2300.domain.model.education.ContentItem
-import com.group8.comp2300.domain.model.education.ContentType
+import com.group8.comp2300.domain.model.education.ArticleSummary
+import com.group8.comp2300.domain.model.education.Category
+import com.group8.comp2300.domain.model.education.EarnedBadge
+import com.group8.comp2300.domain.model.education.UserQuizStats
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArticleW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.PlayCircleW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.QuizW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowForwardW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.EmojiEventsW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.SearchW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+import kotlin.math.roundToInt
 
 @Composable
 fun EducationScreen(
-    filteredContent: List<ContentItem>,
-    featuredItem: ContentItem?,
-    selectedCategory: ContentTopic?,
+    categories: List<Category>,
+    articles: List<ArticleSummary>,
+    featuredArticle: ArticleSummary?,
+    selectedCategoryId: String?,
     searchQuery: String,
-    onContentClick: (String) -> Unit,
-    onCategorySelect: (ContentTopic?) -> Unit,
+    stats: UserQuizStats,
+    earnedBadges: List<EarnedBadge>,
+    isLoading: Boolean,
+    isError: Boolean,
+    onArticleClick: (String) -> Unit,
+    onCategorySelect: (String?) -> Unit,
     onSearchQueryChange: (String) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier =
-        modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface),
     ) {
@@ -57,75 +65,256 @@ fun EducationScreen(
             )
         }
 
-        LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(vertical = 12.dp),
-        ) {
-            item {
-                FilterChip(
-                    selected = selectedCategory == null,
-                    onClick = { onCategorySelect(null) },
-                    label = { Text(stringResource(Res.string.education_category_all)) },
-                )
-            }
-            items(ContentTopic.entries.toTypedArray()) { topic ->
-                FilterChip(
-                    selected = selectedCategory == topic,
-                    onClick = {
-                        onCategorySelect(if (selectedCategory == topic) null else topic)
-                    },
-                    label = {
-                        Text(stringResource(topic.labelRes))
-                    },
-                    leadingIcon = { Icon(topic.icon, contentDescription = null, modifier = Modifier.size(16.dp)) },
-                )
-            }
-        }
-
-        LazyColumn(
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            if (selectedCategory == null && searchQuery.isBlank() && featuredItem != null) {
-                item {
-                    Text(
-                        stringResource(Res.string.education_featured_title),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 8.dp),
-                    )
-                    FeaturedContentCard(
-                        featuredItem,
-                        onClick = { onContentClick(featuredItem.id) },
-                    )
+        when {
+            isLoading -> {
+                ScreenStatePanel(
+                    title = stringResource(Res.string.education_library_loading),
+                    actionLabel = null,
+                    onAction = null,
+                ) {
+                    CircularProgressIndicator()
                 }
             }
 
-            item {
-                Text(
-                    if (searchQuery.isNotBlank()) {
-                        stringResource(Res.string.education_search_results)
-                    } else if (selectedCategory == null) {
-                        stringResource(Res.string.education_latest_updates)
+            isError -> {
+                ScreenStatePanel(
+                    title = stringResource(Res.string.education_library_loading_error),
+                    actionLabel = stringResource(Res.string.education_library_retry),
+                    onAction = onRetry,
+                )
+            }
+
+            else -> {
+                LazyColumn(
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    item {
+                        CompactProgressHeader(
+                            stats = stats,
+                            earnedBadges = earnedBadges,
+                        )
+                    }
+
+                    item {
+                        CategoryRow(
+                            categories = categories,
+                            selectedCategoryId = selectedCategoryId,
+                            onCategorySelect = onCategorySelect,
+                        )
+                    }
+
+                    if (featuredArticle != null && selectedCategoryId == null && searchQuery.isBlank()) {
+                        item {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    text = stringResource(Res.string.education_featured_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                FeaturedArticleCard(
+                                    article = featuredArticle,
+                                    onClick = { onArticleClick(featuredArticle.id) },
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        Text(
+                            text = if (searchQuery.isNotBlank()) {
+                                stringResource(Res.string.education_search_results)
+                            } else {
+                                stringResource(Res.string.education_latest_updates)
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+
+                    if (articles.isEmpty()) {
+                        item {
+                            EmptyStateCard(text = stringResource(Res.string.education_library_empty))
+                        }
                     } else {
-                        stringResource(Res.string.education_library_format, stringResource(selectedCategory.labelRes))
-                    },
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 8.dp),
-                )
-            }
-
-            items(filteredContent) { item ->
-                if (item.id != featuredItem?.id || selectedCategory != null || searchQuery.isNotBlank()) {
-                    StandardContentCard(
-                        item,
-                        onClick = { onContentClick(item.id) },
-                    )
+                        items(
+                            items = articles,
+                            key = { it.id },
+                        ) { article ->
+                            StandardArticleCard(
+                                article = article,
+                                onClick = { onArticleClick(article.id) },
+                            )
+                        }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CompactProgressHeader(
+    stats: UserQuizStats,
+    earnedBadges: List<EarnedBadge>,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = MaterialTheme.shapes.extraLarge,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                ProgressSummaryMetric(
+                    value = stats.totalPerfectScores.toString(),
+                    label = stringResource(Res.string.education_progress_perfect_scores),
+                    modifier = Modifier.weight(1f),
+                )
+                ProgressSummaryMetric(
+                    value = "${stats.averageTimeSpentSeconds.roundToInt()}s",
+                    label = stringResource(Res.string.education_progress_average_time),
+                    modifier = Modifier.weight(1f),
+                )
+                ProgressSummaryMetric(
+                    value = earnedBadges.size.toString(),
+                    label = stringResource(Res.string.education_progress_badges),
+                    modifier = Modifier.weight(1f),
+                )
+            }
+
+            if (earnedBadges.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = stringResource(Res.string.education_badges_title),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        items(earnedBadges.take(3)) { badge ->
+                            AssistChip(
+                                onClick = {},
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.EmojiEventsW400Outlinedfill1,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                    )
+                                },
+                                label = {
+                                    Text(
+                                        text = badge.badge.name.replace('_', ' '),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProgressSummaryMetric(value: String, label: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(2.dp),
+    ) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun CategoryRow(categories: List<Category>, selectedCategoryId: String?, onCategorySelect: (String?) -> Unit) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        item {
+            FilterChip(
+                selected = selectedCategoryId == null,
+                onClick = { onCategorySelect(null) },
+                label = { Text(stringResource(Res.string.education_category_all)) },
+            )
+        }
+        items(categories) { category ->
+            FilterChip(
+                selected = selectedCategoryId == category.id,
+                onClick = {
+                    onCategorySelect(
+                        if (selectedCategoryId == category.id) {
+                            null
+                        } else {
+                            category.id
+                        },
+                    )
+                },
+                label = { Text(category.title) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScreenStatePanel(
+    title: String,
+    actionLabel: String?,
+    onAction: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+    leading: @Composable (() -> Unit)? = null,
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            leading?.invoke()
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (actionLabel != null && onAction != null) {
+                Button(onClick = onAction) {
+                    Text(actionLabel)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyStateCard(text: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = MaterialTheme.shapes.extraLarge,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(20.dp),
+        )
     }
 }
 
@@ -141,11 +330,11 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit, modifier: Modifier
             modifier = Modifier.padding(horizontal = 16.dp),
         ) {
             Icon(
-                Icons.SearchW400Outlinedfill1,
+                imageVector = Icons.SearchW400Outlinedfill1,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.size(12.dp))
             BasicTextField(
                 value = query,
                 onValueChange = onQueryChange,
@@ -156,7 +345,7 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit, modifier: Modifier
                     Box {
                         if (query.isEmpty()) {
                             Text(
-                                stringResource(Res.string.education_search_placeholder),
+                                text = stringResource(Res.string.education_search_placeholder),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
@@ -169,50 +358,100 @@ fun SearchBar(query: String, onQueryChange: (String) -> Unit, modifier: Modifier
 }
 
 @Composable
-fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun FeaturedArticleCard(article: ArticleSummary, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth().height(220.dp),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Box(
-                modifier =
-                Modifier.fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            colors = listOf(item.category.color.copy(alpha = 0.6f), item.category.color),
-                        ),
-                    ),
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            ArticleCover(
+                article = article,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(148.dp),
             )
 
-            if (item.type == ContentType.VIDEO) {
-                Icon(
-                    Icons.PlayCircleW400Outlinedfill1,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(48.dp).align(Alignment.Center),
-                )
-            }
-
-            Column(modifier = Modifier.align(Alignment.BottomStart).padding(20.dp)) {
-                Badge(containerColor = Color.White, contentColor = Color.Black) {
-                    Text(
-                        stringResource(item.category.labelRes),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    )
-                }
-                Spacer(Modifier.height(12.dp))
+            Column(
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
                 Text(
-                    item.title,
+                    text = article.title,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
                 )
                 Text(
-                    item.formattedDuration,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = Color.White.copy(alpha = 0.8f),
+                    text = article.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                ArticleMetaRow(article = article)
+            }
+        }
+    }
+}
+
+@Composable
+private fun StandardArticleCard(article: ArticleSummary, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Card(
+        onClick = onClick,
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = article.categories.firstOrNull()?.title.orEmpty(),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Icon(
+                        imageVector = Icons.ArrowForwardW400Outlinedfill1,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+
+                Text(
+                    text = article.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = article.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                ArticleMetaRow(article = article)
+            }
+
+            if (!article.thumbnailUrl.isNullOrBlank()) {
+                EducationRemoteImage(
+                    imageUrl = article.thumbnailUrl,
+                    modifier = Modifier
+                        .width(108.dp)
+                        .height(96.dp),
+                    shape = MaterialTheme.shapes.large,
+                    contentScale = ContentScale.Crop,
+                    overlay = articleImageGradient(alpha = 0.18f),
                 )
             }
         }
@@ -220,49 +459,86 @@ fun FeaturedContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifi
 }
 
 @Composable
-fun StandardContentCard(item: ContentItem, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Card(
-        onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+private fun ArticleCover(article: ArticleSummary, modifier: Modifier = Modifier) {
+    EducationRemoteImage(
+        imageUrl = article.thumbnailUrl,
+        modifier = modifier,
+        shape = MaterialTheme.shapes.extraLarge,
+        contentScale = ContentScale.Crop,
+        overlay = {
             Box(
-                modifier =
-                Modifier.size(72.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(item.category.color.copy(alpha = 0.2f)),
-                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.scrim.copy(alpha = 0.1f),
+                                MaterialTheme.colorScheme.scrim.copy(alpha = 0.42f),
+                            ),
+                        ),
+                    ),
+            )
+
+            Text(
+                text = article.categories.firstOrNull()?.title.orEmpty(),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp),
+            )
+
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Icon(
-                    imageVector =
-                    when (item.type) {
-                        ContentType.VIDEO -> Icons.PlayCircleW400Outlinedfill1
-                        ContentType.QUIZ -> Icons.QuizW400Outlinedfill1
-                        ContentType.ARTICLE -> Icons.ArticleW400Outlinedfill1
-                    },
-                    contentDescription = null,
-                    tint = item.category.color,
-                )
-            }
-
-            Spacer(Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(item.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Text(
-                    item.description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = article.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    "${stringResource(item.category.labelRes)} • ${item.formattedDuration}",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = item.category.color,
+                ArticleMetaRow(
+                    article = article,
+                    tint = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.82f),
                 )
             }
-        }
+        },
+    )
+}
+
+@Composable
+private fun articleImageGradient(alpha: Float): @Composable BoxScope.() -> Unit = {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        MaterialTheme.colorScheme.scrim.copy(alpha = alpha),
+                    ),
+                ),
+            ),
+    )
+}
+
+@Composable
+private fun ArticleMetaRow(article: ArticleSummary, tint: Color = MaterialTheme.colorScheme.onSurfaceVariant) {
+    val meta = buildList {
+        article.publisher?.takeIf { it.isNotBlank() }?.let(::add)
+        article.publishedDate?.let { add(DateFormatter.formatMonthDayYear(it)) }
+    }.joinToString(" • ")
+
+    if (meta.isNotBlank()) {
+        Text(
+            text = meta,
+            style = MaterialTheme.typography.labelMedium,
+            color = tint,
+        )
     }
 }

@@ -1,0 +1,44 @@
+CREATE TABLE BadgeEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    badge_name TEXT NOT NULL,
+    badge_path TEXT NOT NULL
+);
+
+insertBadge:
+INSERT INTO BadgeEnt (id, badge_name, badge_path)
+VALUES (:id, :name, :path);
+
+updateBadge:
+UPDATE BadgeEnt
+SET badge_name = :name, badge_path = :path
+WHERE id = :id;
+
+-- For showing a 'locked' version of all badges
+getAllBadges:
+SELECT * FROM BadgeEnt;
+
+-- for an 'Achievement Unlocked' popup
+getBadgeById:
+SELECT * FROM BadgeEnt
+WHERE id = :badgeId;
+
+getBadgeByName:
+SELECT * FROM BadgeEnt
+WHERE badge_name = :name;
+
+getEarnedBadgesByUserId:
+SELECT b.*, ub.earned_at
+FROM BadgeEnt b
+JOIN UserBadgeEnt ub ON b.id = ub.badge_id
+WHERE ub.user_id = :userId
+ORDER BY ub.earned_at DESC;
+
+getLockedBadgesByUserId:
+SELECT * FROM BadgeEnt
+WHERE id NOT IN (
+    SELECT badge_id FROM UserBadgeEnt WHERE user_id = :userId
+);
+
+deleteBadge: --also deletes from user
+DELETE FROM BadgeEnt
+WHERE id = :badgeId;

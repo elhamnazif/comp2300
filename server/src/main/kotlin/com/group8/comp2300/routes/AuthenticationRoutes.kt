@@ -1,15 +1,6 @@
 package com.group8.comp2300.routes
 
-import com.group8.comp2300.dto.ActivateRequest
-import com.group8.comp2300.dto.CompleteProfileRequest
-import com.group8.comp2300.dto.ForgotPasswordRequest
-import com.group8.comp2300.dto.LoginRequest
-import com.group8.comp2300.dto.MessageResponse
-import com.group8.comp2300.dto.PreregisterRequest
-import com.group8.comp2300.dto.RefreshTokenRequest
-import com.group8.comp2300.dto.RegisterRequest
-import com.group8.comp2300.dto.ResendVerificationRequest
-import com.group8.comp2300.dto.ResetPasswordRequest
+import com.group8.comp2300.dto.*
 import com.group8.comp2300.service.auth.AuthService
 import io.ktor.http.*
 import io.ktor.server.auth.*

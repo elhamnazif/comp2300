@@ -1,30 +1,16 @@
 package com.group8.comp2300.service.medication
 
-import com.group8.comp2300.domain.model.medical.Medication
-import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationLog
-import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
-import com.group8.comp2300.domain.model.medical.MedicationLogRequest
-import com.group8.comp2300.domain.model.medical.MedicationLogStatus
-import com.group8.comp2300.domain.model.medical.MedicationStatus
-import com.group8.comp2300.domain.model.medical.MedicationUnit
-import com.group8.comp2300.domain.model.medical.Routine
-import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
-import com.group8.comp2300.domain.model.medical.RoutineRepeatType
-import com.group8.comp2300.domain.model.medical.RoutineStatus
-import com.group8.comp2300.domain.model.medical.buildRoutineDayAgenda
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.repository.MedicationLogRepository
 import com.group8.comp2300.domain.repository.MedicationRepository
 import com.group8.comp2300.domain.repository.RoutineOccurrenceOverrideRepository
 import com.group8.comp2300.domain.repository.RoutineRepository
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.isoDayNumber
 import kotlinx.datetime.toLocalDateTime
-import java.util.UUID
+import java.util.*
 import kotlin.time.Instant
 
 sealed class MedicationResult<out T> {
@@ -36,14 +22,12 @@ class MedicationService(
     private val medicationRepository: MedicationRepository,
     private val routineRepository: RoutineRepository,
     private val routineOccurrenceOverrideRepository: RoutineOccurrenceOverrideRepository,
-    private val medicationLogRepository: MedicationLogRepository
+    private val medicationLogRepository: MedicationLogRepository,
 ) {
 
     // --- Medication Logic ---
 
-    fun getAllMedications(userId: String): List<Medication> {
-        return medicationRepository.getAllByUserId(userId)
-    }
+    fun getAllMedications(userId: String): List<Medication> = medicationRepository.getAllByUserId(userId)
 
     fun putMedication(userId: String, id: String, request: MedicationCreateRequest): MedicationResult<Medication> {
         val medicationResult = toMedication(userId, id, request)
@@ -75,9 +59,7 @@ class MedicationService(
 
     // --- Medication Log Logic ---
 
-    fun getMedicationLogs(userId: String): List<MedicationLog> {
-        return medicationLogRepository.getHistory(userId)
-    }
+    fun getMedicationLogs(userId: String): List<MedicationLog> = medicationLogRepository.getHistory(userId)
 
     fun logMedication(userId: String, request: MedicationLogRequest): MedicationResult<MedicationLog> {
         val medication = medicationRepository.getById(request.medicationId)
@@ -100,7 +82,7 @@ class MedicationService(
         ) {
             return MedicationResult.Error(
                 HttpStatusCode.BadRequest,
-                "routineId and occurrenceTimeMs are required when attaching to a scheduled dose"
+                "routineId and occurrenceTimeMs are required when attaching to a scheduled dose",
             )
         }
 
@@ -119,7 +101,6 @@ class MedicationService(
             request.occurrenceTimeMs != null
         ) {
             "${request.routineId}:${request.medicationId}:${request.occurrenceTimeMs}"
-
         } else {
             UUID.randomUUID().toString()
         }
@@ -140,9 +121,7 @@ class MedicationService(
 
     // --- Routine Logic ---
 
-    fun getAllRoutines(userId: String): List<Routine> {
-        return routineRepository.getAllByUserId(userId)
-    }
+    fun getAllRoutines(userId: String): List<Routine> = routineRepository.getAllByUserId(userId)
 
     fun putRoutine(userId: String, id: String, request: RoutineCreateRequest): MedicationResult<Routine> {
         val routineResult = toRoutine(userId, id, request)
@@ -174,13 +153,12 @@ class MedicationService(
 
     // --- Routine Override Logic ---
 
-    fun getRoutineOverrides(userId: String): List<RoutineOccurrenceOverride> {
-        return routineOccurrenceOverrideRepository.getAllByUserId(userId)
-    }
+    fun getRoutineOverrides(userId: String): List<RoutineOccurrenceOverride> =
+        routineOccurrenceOverrideRepository.getAllByUserId(userId)
 
     fun putRoutineOverride(
         userId: String,
-        request: RoutineOccurrenceOverrideRequest
+        request: RoutineOccurrenceOverrideRequest,
     ): MedicationResult<RoutineOccurrenceOverride> {
         val overrideResult = toRoutineOccurrenceOverride(userId, request)
         if (overrideResult is MedicationResult.Error) return overrideResult
@@ -249,27 +227,25 @@ class MedicationService(
         val status = runCatching { MedicationStatus.valueOf(request.status) }.getOrElse {
             return MedicationResult.Error(HttpStatusCode.BadRequest, "Invalid medication status")
         }
-        return MedicationResult.Success(Medication(
-            id = id,
-            userId = userId,
-            name = request.name.trim(),
-            doseAmount = doseAmount,
-            doseUnit = doseUnit,
-            customDoseUnit = customDoseUnit.takeIf { doseUnit == MedicationUnit.OTHER },
-            stockAmount = stockAmount,
-            stockUnit = stockUnit,
-            customStockUnit = customStockUnit.takeIf { stockUnit == MedicationUnit.OTHER },
-            instruction = request.instruction?.trim()?.takeIf(String::isNotEmpty),
-            colorHex = request.colorHex ?: Medication.PRESET_COLORS.random(),
-            status = status,
-        ))
+        return MedicationResult.Success(
+            Medication(
+                id = id,
+                userId = userId,
+                name = request.name.trim(),
+                doseAmount = doseAmount,
+                doseUnit = doseUnit,
+                customDoseUnit = customDoseUnit.takeIf { doseUnit == MedicationUnit.OTHER },
+                stockAmount = stockAmount,
+                stockUnit = stockUnit,
+                customStockUnit = customStockUnit.takeIf { stockUnit == MedicationUnit.OTHER },
+                instruction = request.instruction?.trim()?.takeIf(String::isNotEmpty),
+                colorHex = request.colorHex ?: Medication.PRESET_COLORS.random(),
+                status = status,
+            ),
+        )
     }
 
-    private fun toRoutine(
-        userId: String,
-        id: String,
-        request: RoutineCreateRequest,
-    ): MedicationResult<Routine> {
+    private fun toRoutine(userId: String, id: String, request: RoutineCreateRequest): MedicationResult<Routine> {
         if (request.name.isBlank()) {
             return MedicationResult.Error(HttpStatusCode.BadRequest, "Routine name is required")
         }
@@ -314,24 +290,26 @@ class MedicationService(
         if (invalidLink) {
             return MedicationResult.Error(HttpStatusCode.BadRequest, "Schedules can only link active medications")
         }
-        return MedicationResult.Success(Routine(
-            id = id,
-            userId = userId,
-            name = request.name.trim(),
-            timesOfDayMs = normalizedTimes,
-            repeatType = repeatType,
-            daysOfWeek = request.daysOfWeek.sorted().distinct(),
-            startDate = request.startDate,
-            endDate = request.endDate?.takeIf(String::isNotBlank),
-            hasReminder = request.hasReminder,
-            reminderOffsetsMins = if (request.hasReminder) {
-                request.reminderOffsetsMins.sorted().distinct()
-            } else {
-                emptyList()
-            },
-            status = status,
-            medicationIds = request.medicationIds.distinct(),
-        ))
+        return MedicationResult.Success(
+            Routine(
+                id = id,
+                userId = userId,
+                name = request.name.trim(),
+                timesOfDayMs = normalizedTimes,
+                repeatType = repeatType,
+                daysOfWeek = request.daysOfWeek.sorted().distinct(),
+                startDate = request.startDate,
+                endDate = request.endDate?.takeIf(String::isNotBlank),
+                hasReminder = request.hasReminder,
+                reminderOffsetsMins = if (request.hasReminder) {
+                    request.reminderOffsetsMins.sorted().distinct()
+                } else {
+                    emptyList()
+                },
+                status = status,
+                medicationIds = request.medicationIds.distinct(),
+            ),
+        )
     }
 
     private fun toRoutineOccurrenceOverride(
@@ -356,15 +334,17 @@ class MedicationService(
         if (!routine.isDueOn(originalDate) || originalTimeOfDayMs !in validTimes) {
             return MedicationResult.Error(
                 HttpStatusCode.BadRequest,
-                "Original occurrence does not belong to this schedule"
+                "Original occurrence does not belong to this schedule",
             )
         }
-        return MedicationResult.Success(RoutineOccurrenceOverride(
-            id = "${routine.id}:${request.originalOccurrenceTimeMs}",
-            routineId = routine.id,
-            originalOccurrenceTimeMs = request.originalOccurrenceTimeMs,
-            rescheduledOccurrenceTimeMs = request.rescheduledOccurrenceTimeMs,
-        ))
+        return MedicationResult.Success(
+            RoutineOccurrenceOverride(
+                id = "${routine.id}:${request.originalOccurrenceTimeMs}",
+                routineId = routine.id,
+                originalOccurrenceTimeMs = request.originalOccurrenceTimeMs,
+                rescheduledOccurrenceTimeMs = request.rescheduledOccurrenceTimeMs,
+            ),
+        )
     }
 
     private fun Routine.isDueOn(date: LocalDate): Boolean {
@@ -373,6 +353,7 @@ class MedicationService(
         if (date < start || (end != null && date > end)) return false
         return when (repeatType) {
             RoutineRepeatType.DAILY -> true
+
             RoutineRepeatType.WEEKLY -> {
                 val selected = daysOfWeek.toSet()
                 selected.isNotEmpty() && date.dayOfWeek.toStorageDayOfWeek() in selected

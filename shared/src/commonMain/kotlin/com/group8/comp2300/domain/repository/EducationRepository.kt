@@ -1,18 +1,28 @@
 package com.group8.comp2300.domain.repository
 
-import com.group8.comp2300.domain.model.education.ContentItem
+import com.group8.comp2300.domain.model.education.ArticleDetail
+import com.group8.comp2300.domain.model.education.ArticleSummary
+import com.group8.comp2300.domain.model.education.Category
+import com.group8.comp2300.domain.model.education.EducationProgress
 import com.group8.comp2300.domain.model.education.Quiz
+import com.group8.comp2300.domain.model.education.QuizSubmissionResult
+import com.group8.comp2300.domain.model.education.UserQuizAnswerInput
 
 interface EducationRepository {
-    /** Return all education content items. */
-    fun getAllContent(): List<ContentItem>
+    suspend fun getCategories(): List<Category>
 
-    /** Return a content item by its ID, or null if not found. */
-    fun getContentById(id: String): ContentItem?
+    suspend fun getArticles(): List<ArticleSummary>
 
-    /** Return a quiz by its ID, or null if not found. */
-    fun getQuizById(id: String): Quiz?
+    suspend fun getArticleDetail(id: String): ArticleDetail?
 
-    /** Search education content by query string. */
-    fun searchContent(query: String): List<ContentItem>
+    suspend fun getQuizById(id: String): Quiz?
+
+    suspend fun submitQuizAttempt(
+        quizId: String,
+        startedAt: Long,
+        submittedAt: Long,
+        answers: List<UserQuizAnswerInput>,
+    ): QuizSubmissionResult
+
+    suspend fun getProgress(): EducationProgress
 }

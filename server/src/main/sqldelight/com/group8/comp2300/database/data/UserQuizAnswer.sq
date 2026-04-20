@@ -1,0 +1,31 @@
+CREATE TABLE UserQuizAnswerEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    attempt_id TEXT NOT NULL REFERENCES QuizAttemptEnt(id) ON DELETE CASCADE,
+    question_id TEXT REFERENCES QuizQuestionEnt(id) ON DELETE SET NULL,
+    selected_option_id TEXT REFERENCES QuizOptionEnt(id) ON DELETE SET NULL,
+	UNIQUE (attempt_id, question_id)
+);
+
+insertUserAnswer:
+INSERT INTO UserQuizAnswerEnt (id, attempt_id, question_id, selected_option_id)
+VALUES (:id, :attemptId, :questionId, :selectedOptionId);
+
+-- Get a full summary of an attempt
+getDetailedReviewByAttempt:
+SELECT
+    ua.question_id,
+    qq.title AS question_text,
+    qo.answer_text AS selected_text,
+    qo.is_correct AS was_correct,
+    qq.explanation
+FROM UserQuizAnswerEnt ua
+LEFT JOIN QuizQuestionEnt qq ON ua.question_id = qq.id
+LEFT JOIN QuizOptionEnt qo ON ua.selected_option_id = qo.id
+WHERE ua.attempt_id = :attemptId;
+
+-- Get only the IDs of the questions the user got Wrong in an attempt
+getIncorrectAnswersByAttempt:
+SELECT ua.question_id
+FROM UserQuizAnswerEnt ua
+JOIN QuizOptionEnt qo ON ua.selected_option_id = qo.id
+WHERE ua.attempt_id = :attemptId AND qo.is_correct = 0;

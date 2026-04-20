@@ -9,9 +9,7 @@ import com.group8.comp2300.domain.repository.AuthRepository
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class ProfileViewModel(
-    private val authRepository: AuthRepository,
-) : ViewModel() {
+class ProfileViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1)
 

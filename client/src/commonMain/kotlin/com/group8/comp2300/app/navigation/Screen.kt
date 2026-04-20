@@ -70,7 +70,7 @@ sealed interface Screen : NavKey {
     data class ProductDetail(val productId: String) : Screen
 
     @Serializable
-    data class VideoDetail(val videoId: String) : Screen
+    data class ArticleDetail(val articleId: String) : Screen
 
     @Serializable
     data class QuizScreen(val quizId: String) : Screen

@@ -7,8 +7,8 @@ import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
 import com.group8.comp2300.domain.repository.AppointmentRepository
 import com.group8.comp2300.domain.repository.AppointmentSlotRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
-import io.ktor.http.HttpStatusCode
-import java.util.UUID
+import io.ktor.http.*
+import java.util.*
 
 sealed class AppointmentResult {
     data class Success(val appointment: Appointment) : AppointmentResult()
@@ -19,11 +19,9 @@ class AppointmentService(
     private val appointmentRepository: AppointmentRepository,
     private val appointmentSlotRepository: AppointmentSlotRepository,
     private val clinicRepository: ClinicRepository,
-    private val database: ServerDatabase
+    private val database: ServerDatabase,
 ) {
-    fun getAppointmentsForUser(userId: String): List<Appointment> {
-        return appointmentRepository.getByUserId(userId)
-    }
+    fun getAppointmentsForUser(userId: String): List<Appointment> = appointmentRepository.getByUserId(userId)
 
     fun bookAppointment(userId: String, request: ClinicBookingRequest): AppointmentResult {
         val clinic = clinicRepository.getById(request.clinicId)

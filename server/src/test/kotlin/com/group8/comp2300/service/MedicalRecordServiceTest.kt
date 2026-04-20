@@ -6,11 +6,7 @@ import com.group8.comp2300.domain.repository.MedicalRecordRepository
 import com.group8.comp2300.security.AesGcmMedicalRecordCipher
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import com.group8.comp2300.service.medicalRecords.UploadResult
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.verify
+import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import kotlin.test.*

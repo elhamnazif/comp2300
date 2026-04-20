@@ -1,6 +1,8 @@
 package com.group8.comp2300.service.content
 
-import com.group8.comp2300.domain.model.content.*
+import com.group8.comp2300.domain.model.content.ContentTopic
+import com.group8.comp2300.domain.model.content.ContentType
+import com.group8.comp2300.domain.model.content.SearchRequest
 import kotlin.test.*
 
 class SRHContentServiceTest {

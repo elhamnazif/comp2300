@@ -8,12 +8,7 @@ import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
-import com.group8.comp2300.feature.booking.BookingConfirmationScreen
-import com.group8.comp2300.feature.booking.BookingDetailsScreen
-import com.group8.comp2300.feature.booking.BookingHistoryScreen
-import com.group8.comp2300.feature.booking.BookingScreen
-import com.group8.comp2300.feature.booking.BookingSuccessScreen
-import com.group8.comp2300.feature.booking.BookingViewModel
+import com.group8.comp2300.feature.booking.*
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.module

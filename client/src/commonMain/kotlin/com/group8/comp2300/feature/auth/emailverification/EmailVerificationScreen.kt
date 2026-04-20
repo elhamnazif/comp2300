@@ -1,6 +1,7 @@
 package com.group8.comp2300.feature.auth.emailverification
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -12,11 +13,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.group8.comp2300.feature.auth.components.AuthBanner
-import com.group8.comp2300.feature.auth.components.AuthFormScaffold
-import com.group8.comp2300.feature.auth.components.AuthHeroSection
-import com.group8.comp2300.feature.auth.components.AuthLoadingButton
-import com.group8.comp2300.feature.auth.components.VerificationCodeField
+import com.group8.comp2300.feature.auth.components.*
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.MailOutlineW400Outlined
 import comp2300.i18n.generated.resources.*

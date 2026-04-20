@@ -1,0 +1,43 @@
+CREATE TABLE QuizOptionEnt (
+    id TEXT NOT NULL PRIMARY KEY,
+    question_id TEXT NOT NULL REFERENCES QuizQuestionEnt(id) ON DELETE CASCADE,
+    answer_text TEXT NOT NULL,
+    is_correct INTEGER NOT NULL DEFAULT 0,
+	option_order INTEGER NOT NULL,
+	CHECK (is_correct IN (0,1)),
+	UNIQUE (question_id, option_order)
+);
+
+getAllOptionsForQuestion:
+SELECT * FROM QuizOptionEnt
+WHERE question_id = :questionId
+ORDER BY option_order ASC;
+
+insertOption:
+INSERT INTO QuizOptionEnt (
+    id,
+    question_id,
+    answer_text,
+    is_correct,
+    option_order
+) VALUES (
+    :id,
+    :questionId,
+    :answerText,
+    :isCorrect,
+    :optionOrder
+);
+
+-- To validate an answer on the database side
+getCorrectOptionForQuestion:
+SELECT * FROM QuizOptionEnt
+WHERE question_id = :questionId AND is_correct = 1;
+
+updateOption:
+UPDATE QuizOptionEnt
+SET answer_text = :text, is_correct = :isCorrect
+WHERE id = :id;
+
+deleteOption:
+DELETE FROM QuizOptionEnt
+WHERE id = :id;

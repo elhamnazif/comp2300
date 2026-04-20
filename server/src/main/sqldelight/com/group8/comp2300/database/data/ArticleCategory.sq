@@ -1,0 +1,33 @@
+CREATE TABLE ArticleCategoryEnt (
+    content_category_id TEXT NOT NULL REFERENCES ContentCategoryEnt(id) ON DELETE CASCADE,
+    article_id TEXT NOT NULL REFERENCES ArticleEnt(id) ON DELETE CASCADE,
+    PRIMARY KEY (content_category_id, article_id) -- Enforces uniqueness
+);
+CREATE INDEX idx_article_category_article_id ON ArticleCategoryEnt(article_id);
+
+insert:
+INSERT OR REPLACE INTO ArticleCategoryEnt (
+    content_category_id,
+    article_id
+) VALUES (?, ?);
+
+getArticlesByCategory:
+SELECT DISTINCT a.* FROM ArticleEnt a
+INNER JOIN ArticleCategoryEnt ac ON a.id = ac.article_id
+WHERE ac.content_category_id = :categoryId
+ORDER BY a.published_date DESC;
+
+-- UI Tags for an article
+getCategoriesForArticle:
+SELECT c.* FROM ContentCategoryEnt c
+INNER JOIN ArticleCategoryEnt ac ON c.id = ac.content_category_id
+WHERE ac.article_id = :articleId;
+
+getArticleCountForCategory:
+SELECT COUNT(*)
+FROM ArticleCategoryEnt
+WHERE content_category_id = :categoryId;
+
+deleteCategoriesByArticleId:
+DELETE FROM ArticleCategoryEnt
+WHERE article_id = :articleId;

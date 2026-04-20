@@ -10,7 +10,7 @@ import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.security.AesGcmMedicalRecordCipher
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import io.ktor.client.request.*
-import io.ktor.client.statement.bodyAsBytes
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
