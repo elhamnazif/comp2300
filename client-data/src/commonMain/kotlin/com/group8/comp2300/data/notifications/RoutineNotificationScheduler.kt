@@ -1,5 +1,6 @@
 package com.group8.comp2300.data.notifications
 
+import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.domain.model.medical.Routine
@@ -48,6 +49,8 @@ class RoutineNotificationSchedulerImpl(
     private val routineOccurrenceOverrideLocal: RoutineOccurrenceOverrideLocalDataSource,
     private val registry: RoutineNotificationRegistry,
     private val platform: RoutineNotificationService,
+    private val privacySettingsDataSource: PrivacySettingsDataSource,
+    private val notificationContentFormatter: NotificationContentFormatter,
     private val clock: Clock = Clock.System,
     private val timeZone: TimeZone = TimeZone.currentSystemDefault(),
 ) : RoutineNotificationScheduler {
@@ -109,6 +112,7 @@ class RoutineNotificationSchedulerImpl(
     private fun planner(): RoutineNotificationPlanner = RoutineNotificationPlanner(
         nowMs = clock.now().toEpochMilliseconds(),
         timeZone = timeZone,
+        routineReminderContent = notificationContentFormatter.routineReminder(privacySettingsDataSource.state.value),
     )
 }
 
@@ -161,6 +165,7 @@ class RoutineNotificationRegistry(
 private class RoutineNotificationPlanner(
     private val nowMs: Long,
     private val timeZone: TimeZone,
+    private val routineReminderContent: NotificationContent,
     private val horizonDays: Int = 30,
 ) {
     fun planForRoutine(
@@ -228,8 +233,8 @@ private class RoutineNotificationPlanner(
                 id = "${routine.id}:$occurrenceTimeMs:$offsetMins",
                 routineId = routine.id,
                 fireAtMs = fireAtMs,
-                title = "Schedule reminder",
-                body = routine.name,
+                title = routineReminderContent.title,
+                body = routineReminderContent.body,
             )
         }
 }

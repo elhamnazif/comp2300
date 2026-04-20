@@ -26,11 +26,14 @@ import androidx.navigation3.ui.NavDisplay
 import com.group8.comp2300.app.navigation.*
 import com.group8.comp2300.core.security.pin.PinLockViewModel
 import com.group8.comp2300.core.security.pin.PinScreen
+import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.feature.auth.login.AuthViewModel
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
@@ -52,9 +55,11 @@ fun AppShell(
     pinLockViewModel: PinLockViewModel = koinViewModel(),
 ) {
     val notificationBootstrap: RoutineNotificationBootstrap = koinInject()
+    val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
     val session by authViewModel.session.collectAsState()
     val isPinLocked by pinLockViewModel.isLocked.collectAsState()
     val isPinSet by pinLockViewModel.isPinSet.collectAsState()
+    val privacySettings by privacySettingsDataSource.state.collectAsState()
 
     LaunchedEffect(isPinSet) {
         if (isPinSet != null) {
@@ -62,8 +67,12 @@ fun AppShell(
         }
     }
 
-    LaunchedEffect(Unit) {
-        notificationBootstrap.synchronize()
+    LaunchedEffect(notificationBootstrap) {
+        snapshotFlow { privacySettings.notificationPrivacyMode to privacySettings.notificationAlias }
+            .collectLatest {
+                delay(250)
+                notificationBootstrap.synchronize()
+            }
     }
 
     if (session is AuthSession.Restoring || isPinSet == null) {

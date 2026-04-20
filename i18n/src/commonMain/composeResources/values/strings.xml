@@ -106,7 +106,7 @@
     <string name="onboarding_confirm_pin_desc">Please re-enter your PIN to confirm.</string>
     <string name="onboarding_pin_mismatch">PINs do not match. Please try again.</string>
     <string name="pin_unlock_title">Enter your PIN</string>
-    <string name="pin_unlock_desc">Enter your PIN to unlock the app.</string>
+    <string name="pin_unlock_desc">Unlock with your PIN.</string>
     <string name="pin_biometric_prompt_title">Unlock Vita</string>
     <string name="pin_biometric_prompt_reason">Authenticate to access your health data</string>
     <string name="pin_biometric_failed">Biometric authentication failed</string>
@@ -604,7 +604,7 @@
     <string name="profile_notify_partners_desc">Send discreet SMS alerts via TellYourPartner.org</string>
     <string name="profile_settings_title">App Settings</string>
     <string name="profile_notifications_title">Notifications</string>
-    <string name="profile_notifications_desc">Discreet mode on</string>
+    <string name="profile_notifications_desc">Privacy-safe reminders</string>
     <string name="profile_privacy_security_title">Privacy &amp; Security</string>
     <string name="profile_biometrics_enabled">Biometrics enabled</string>
     <string name="profile_privacy_legalese_title">Privacy &amp; Legal</string>
@@ -668,6 +668,13 @@
     <string name="notifications_grayscale_desc">Desaturate the app so status differences are easier to perceive without relying on colour</string>
     <string name="notifications_discreet_mode_title">Discreet Mode</string>
     <string name="notifications_discreet_mode_desc">Hide sensitive information in notifications</string>
+    <string name="notifications_privacy_title">Notification Style</string>
+    <string name="notifications_privacy_desc">Choose neutral or alias-based wording</string>
+    <string name="notifications_privacy_neutral_label">Neutral</string>
+    <string name="notifications_privacy_alias_label">Alias-based</string>
+    <string name="notifications_alias_title">Notification Alias</string>
+    <string name="notifications_alias_desc">Used in alias-based alerts</string>
+    <string name="notifications_alias_placeholder">Alias</string>
     <string name="notifications_health_reminders_title">Health Reminders</string>
     <string name="notifications_appointment_reminders_title">Appointment Reminders</string>
     <string name="notifications_appointment_reminders_desc">Get notified 24 hours before scheduled appointments</string>
@@ -681,6 +688,7 @@
     <string name="notifications_product_deals_title">Product Deals</string>
     <string name="notifications_product_deals_desc">Special offers on protection and testing kits</string>
     <string name="notifications_discreet_mode_info">When enabled, notifications will not show specific details about appointments or test results. You'll receive a generic reminder to check the app.</string>
+    <string name="notifications_privacy_info">Notifications never show medical details.</string>
     <string name="notifications_grayscale_info">Grayscale mode is saved on this device and applies across the calendar, charts, and the rest of the app interface.</string>
 
     <!-- Accessibility -->

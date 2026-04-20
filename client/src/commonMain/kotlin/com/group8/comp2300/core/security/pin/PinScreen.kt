@@ -232,7 +232,7 @@ fun PinScreen(
                         },
                     )
 
-                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(20.dp))
 
                     AnimatedContent(
                         targetState = isConfirming,
@@ -262,7 +262,7 @@ fun PinScreen(
                         }
                     }
 
-                    Spacer(Modifier.height(32.dp))
+                    Spacer(Modifier.height(24.dp))
 
                     /* PIN dots */
                     Row(
@@ -365,16 +365,17 @@ fun PinScreen(
                     KeypadColumn()
                 }
             } else {
-                // Keep the keypad lower so the title/description block reads as visually centered.
-                Column(
+                Box(
                     modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Spacer(Modifier.weight(0.35f))
-                    PinInfoColumn()
-                    Spacer(Modifier.height(infoKeypadSpacing))
-                    KeypadColumn()
-                    Spacer(Modifier.weight(1f))
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        PinInfoColumn()
+                        Spacer(Modifier.height(infoKeypadSpacing))
+                        KeypadColumn()
+                    }
                 }
             }
 

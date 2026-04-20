@@ -1,24 +1,62 @@
 package com.group8.comp2300.feature.settings
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import com.group8.comp2300.core.ui.settings.SettingsDetailScaffold
+import com.group8.comp2300.core.ui.settings.SettingsChoiceOption
+import com.group8.comp2300.core.ui.settings.SettingsChoiceRow
 import com.group8.comp2300.core.ui.settings.SettingsInfoCard
 import com.group8.comp2300.core.ui.settings.SettingsSection
+import com.group8.comp2300.core.ui.settings.SettingsTextFieldRow
 import com.group8.comp2300.core.ui.settings.SettingsToggleRow
+import com.group8.comp2300.data.local.NotificationPrivacyMode
+import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @Composable
 fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
-    var discreetMode by remember { mutableStateOf(true) }
+    val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
+    val privacySettings by privacySettingsDataSource.state.collectAsState()
+    var notificationAliasDraft by rememberSaveable(privacySettings.notificationPrivacyMode) {
+        mutableStateOf(privacySettings.notificationAlias)
+    }
+    var isNotificationAliasFocused by remember { mutableStateOf(false) }
     var appointmentReminders by remember { mutableStateOf(true) }
     var testResults by remember { mutableStateOf(true) }
     var testReminders by remember { mutableStateOf(true) }
     var educationContent by remember { mutableStateOf(false) }
     var productDeals by remember { mutableStateOf(false) }
+
+    val commitNotificationAlias = {
+        if (notificationAliasDraft != privacySettings.notificationAlias) {
+            privacySettingsDataSource.setNotificationAlias(notificationAliasDraft)
+        }
+    }
+    val currentNotificationPrivacyMode by rememberUpdatedState(privacySettings.notificationPrivacyMode)
+    val currentNotificationAliasDraft by rememberUpdatedState(notificationAliasDraft)
+    val currentNotificationAlias by rememberUpdatedState(privacySettings.notificationAlias)
+
+    LaunchedEffect(privacySettings.notificationAlias, isNotificationAliasFocused) {
+        if (!isNotificationAliasFocused && notificationAliasDraft != privacySettings.notificationAlias) {
+            notificationAliasDraft = privacySettings.notificationAlias
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            if (
+                currentNotificationPrivacyMode == NotificationPrivacyMode.ALIAS_BASED &&
+                currentNotificationAliasDraft != currentNotificationAlias
+            ) {
+                privacySettingsDataSource.setNotificationAlias(currentNotificationAliasDraft)
+            }
+        }
+    }
 
     SettingsDetailScaffold(
         title = stringResource(Res.string.notifications_title),
@@ -27,15 +65,48 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
     ) {
         item {
             SettingsSection(title = stringResource(Res.string.notifications_general_title)) {
-                SettingsToggleRow(
+                SettingsChoiceRow(
                     icon = Icons.NotificationsW400Outlinedfill1,
-                    title = stringResource(Res.string.notifications_discreet_mode_title),
-                    description = stringResource(Res.string.notifications_discreet_mode_desc),
-                    checked = discreetMode,
+                    title = stringResource(Res.string.notifications_privacy_title),
+                    description = stringResource(Res.string.notifications_privacy_desc),
+                    options = listOf(
+                        SettingsChoiceOption(
+                            key = NotificationPrivacyMode.NEUTRAL.name,
+                            label = stringResource(Res.string.notifications_privacy_neutral_label),
+                        ),
+                        SettingsChoiceOption(
+                            key = NotificationPrivacyMode.ALIAS_BASED.name,
+                            label = stringResource(Res.string.notifications_privacy_alias_label),
+                        ),
+                    ),
+                    selectedKey = privacySettings.notificationPrivacyMode.name,
                     index = 0,
-                    total = 1,
-                    onCheckedChange = { discreetMode = it },
+                    total = if (privacySettings.notificationPrivacyMode == NotificationPrivacyMode.ALIAS_BASED) 2 else 1,
+                    onOptionSelected = { selectedMode ->
+                        privacySettingsDataSource.setNotificationPrivacyMode(
+                            NotificationPrivacyMode.entries.first { it.name == selectedMode },
+                        )
+                    },
                 )
+                if (privacySettings.notificationPrivacyMode == NotificationPrivacyMode.ALIAS_BASED) {
+                    SettingsTextFieldRow(
+                        icon = Icons.EditW400Outlinedfill1,
+                        title = stringResource(Res.string.notifications_alias_title),
+                        description = stringResource(Res.string.notifications_alias_desc),
+                        value = notificationAliasDraft,
+                        placeholder = stringResource(Res.string.notifications_alias_placeholder),
+                        index = 1,
+                        total = 2,
+                        onValueChange = { notificationAliasDraft = it },
+                        onFocusChanged = { isFocused ->
+                            if (isNotificationAliasFocused && !isFocused) {
+                                commitNotificationAlias()
+                            }
+                            isNotificationAliasFocused = isFocused
+                        },
+                        onValueCommit = commitNotificationAlias,
+                    )
+                }
             }
         }
         item {
@@ -93,8 +164,8 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
         }
         item {
             SettingsInfoCard(
-                title = stringResource(Res.string.notifications_discreet_mode_title),
-                description = stringResource(Res.string.notifications_discreet_mode_info),
+                title = stringResource(Res.string.notifications_privacy_title),
+                description = stringResource(Res.string.notifications_privacy_info),
             )
         }
     }

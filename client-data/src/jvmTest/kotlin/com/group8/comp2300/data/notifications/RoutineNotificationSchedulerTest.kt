@@ -1,5 +1,7 @@
 package com.group8.comp2300.data.notifications
 
+import com.group8.comp2300.data.local.NotificationPrivacyMode
+import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.repository.newDatabase
@@ -31,6 +33,36 @@ class RoutineNotificationSchedulerTest {
         assertEquals(62, fixture.platform.scheduled.size)
         assertTrue(fixture.platform.scheduled.any { it.id == "${routine.id}:${utcMs(2026, Month.MARCH, 17, 9, 0)}:0" })
         assertTrue(fixture.platform.scheduled.any { it.id == "${routine.id}:${utcMs(2026, Month.MARCH, 17, 9, 0)}:15" })
+    }
+
+    @Test
+    fun neutralPrivacyModeUsesGenericCopyWithoutRoutineName() = runTest {
+        val fixture = schedulerFixture(nowMs = utcMs(2026, Month.MARCH, 17, 8, 0))
+        val routine = fixture.dailyRoutine(name = "Morning meds")
+
+        fixture.scheduler.syncRoutine(routine)
+
+        assertTrue(fixture.platform.scheduled.isNotEmpty())
+        assertTrue(fixture.platform.scheduled.all { it.title == "Private reminder" })
+        assertTrue(fixture.platform.scheduled.all { it.body == "Open the app to check it." })
+        assertTrue(fixture.platform.scheduled.none { routine.name in it.title || routine.name in it.body })
+    }
+
+    @Test
+    fun aliasPrivacyModeUsesAliasAndStillOmitsRoutineName() = runTest {
+        val fixture = schedulerFixture(
+            nowMs = utcMs(2026, Month.MARCH, 17, 8, 0),
+            notificationPrivacyMode = NotificationPrivacyMode.ALIAS_BASED,
+            notificationAlias = "Care Buddy",
+        )
+        val routine = fixture.dailyRoutine(name = "Morning meds")
+
+        fixture.scheduler.syncRoutine(routine)
+
+        assertTrue(fixture.platform.scheduled.isNotEmpty())
+        assertTrue(fixture.platform.scheduled.all { it.title == "Reminder for Care Buddy" })
+        assertTrue(fixture.platform.scheduled.all { it.body == "Open the app to check it." })
+        assertTrue(fixture.platform.scheduled.none { routine.name in it.title || routine.name in it.body })
     }
 
     @Test
@@ -133,6 +165,7 @@ private class SchedulerFixture(
 ) {
     fun dailyRoutine(
         id: String = "routine-1",
+        name: String = "Morning meds",
         timesOfDayMs: List<Long> = listOf(9 * 60 * 60 * 1000L),
         reminderOffsetsMins: List<Int> = listOf(0),
         repeatType: RoutineRepeatType = RoutineRepeatType.DAILY,
@@ -143,7 +176,7 @@ private class SchedulerFixture(
     ): Routine = Routine(
         id = id,
         userId = "user-1",
-        name = "Morning meds",
+        name = name,
         timesOfDayMs = timesOfDayMs,
         repeatType = repeatType,
         daysOfWeek = daysOfWeek,
@@ -156,11 +189,19 @@ private class SchedulerFixture(
     )
 }
 
-private fun schedulerFixture(nowMs: Long): SchedulerFixture {
+private fun schedulerFixture(
+    nowMs: Long,
+    notificationPrivacyMode: NotificationPrivacyMode = NotificationPrivacyMode.NEUTRAL,
+    notificationAlias: String = "",
+): SchedulerFixture {
     val db = newDatabase()
     val routineLocal = RoutineLocalDataSource(db)
     val overrideLocal = RoutineOccurrenceOverrideLocalDataSource(db)
-    val registry = RoutineNotificationRegistry(Settings())
+    val settings = Settings()
+    val privacySettingsDataSource = PrivacySettingsDataSource(settings)
+    privacySettingsDataSource.setNotificationPrivacyMode(notificationPrivacyMode)
+    privacySettingsDataSource.setNotificationAlias(notificationAlias)
+    val registry = RoutineNotificationRegistry(settings)
     val platform = RecordingService()
     return SchedulerFixture(
         scheduler = RoutineNotificationSchedulerImpl(
@@ -168,6 +209,8 @@ private fun schedulerFixture(nowMs: Long): SchedulerFixture {
             routineOccurrenceOverrideLocal = overrideLocal,
             registry = registry,
             platform = platform,
+            privacySettingsDataSource = privacySettingsDataSource,
+            notificationContentFormatter = NotificationContentFormatter(),
             clock = FixedClock(nowMs),
             timeZone = TimeZone.UTC,
         ),
