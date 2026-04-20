@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.accessibility.IndicatorPattern
@@ -17,10 +18,7 @@ import com.group8.comp2300.core.ui.components.ActionEmptyStateCard
 import com.group8.comp2300.core.ui.components.EmptyStateMessage
 import com.group8.comp2300.core.ui.components.SectionHeader
 import com.group8.comp2300.domain.model.medical.*
-import com.group8.comp2300.feature.medical.shared.routines.formatTimeOfDayMs
-import com.group8.comp2300.feature.medical.shared.routines.weekdaySummary
-import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.EditW400Outlinedfill1
+import com.group8.comp2300.feature.medical.shared.routines.scheduleLinkSummary
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
@@ -154,24 +152,25 @@ private fun MedicationCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(medication.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Text("${medication.dosage} • ${medication.stockLabel()}", color = MaterialTheme.colorScheme.secondary)
+                Text(
+                    "${medication.dosage} • ${medication.stockLabel()}",
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
                 Text(
                     medicationScheduleLabel(linkedRoutines),
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium,
                 )
                 medication.instruction?.takeIf(String::isNotBlank)?.let {
                     Text(
                         it,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
-            Icon(
-                Icons.EditW400Outlinedfill1,
-                contentDescription = stringResource(Res.string.medical_medication_edit_desc),
-            )
         }
     }
 }
@@ -182,35 +181,7 @@ private fun medicationScheduleLabel(linkedRoutines: List<Routine>): String {
     if (linkedRoutines.size > 1) {
         return stringResource(Res.string.medical_medication_schedule_count, linkedRoutines.size)
     }
-
-    val routine = linkedRoutines.single()
-    val times = routine.timesOfDayMs.sorted().distinct()
-    val timeLabel = when (times.size) {
-        0 -> ""
-        1 -> stringResource(Res.string.medical_medication_schedule_at, formatTimeOfDayMs(times.single()))
-        else -> stringResource(Res.string.medical_medication_schedule_times, times.size)
-    }
-
-    return when (routine.repeatType) {
-        RoutineRepeatType.DAILY -> when (times.size) {
-            1 -> stringResource(Res.string.medical_medication_schedule_daily_at, formatTimeOfDayMs(times.single()))
-
-            else -> if (timeLabel.isBlank()) {
-                stringResource(Res.string.medical_routine_repeat_daily)
-            } else {
-                stringResource(Res.string.medical_medication_schedule_daily_multi, times.size)
-            }
-        }
-
-        RoutineRepeatType.WEEKLY -> {
-            val days = weekdaySummary(routine.daysOfWeek)
-            if (days.isBlank()) {
-                stringResource(Res.string.medical_medication_schedule_weekly_default, timeLabel)
-            } else {
-                "$days$timeLabel"
-            }
-        }
-    }
+    return scheduleLinkSummary(linkedRoutines.single())
 }
 
 internal data class MedicationColorOption(val hex: String, val pattern: IndicatorPattern)

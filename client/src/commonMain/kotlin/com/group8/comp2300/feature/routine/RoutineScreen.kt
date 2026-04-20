@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,13 +21,13 @@ import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.feature.medical.shared.routines.ReminderIndicator
 import com.group8.comp2300.feature.medical.shared.routines.ScheduleFormSheet
-import com.group8.comp2300.feature.medical.shared.routines.formatTimesSummary
-import com.group8.comp2300.feature.medical.shared.routines.weekdaySummary
+import com.group8.comp2300.feature.medical.shared.routines.scheduleLinkSummary
 import com.group8.comp2300.platform.notifications.NotificationPermissionResult
 import com.group8.comp2300.platform.notifications.rememberNotificationPermissionRequester
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
+import kotlinx.datetime.LocalDate
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -184,6 +183,7 @@ private fun RoutineCard(
     isArchived: Boolean = false,
 ) {
     val linked = medications.filter { it.id in routine.medicationIds }
+    val secondaryMeta = rememberRoutineMeta(routine = routine, linkedCount = linked.size, isArchived = isArchived)
     Card(
         onClick = onClick,
         colors = CardDefaults.cardColors(
@@ -219,47 +219,33 @@ private fun RoutineCard(
                 }
             }
             Text(
-                "${formatTimesSummary(routine.timesOfDayMs)} • ${routineRepeatSummary(routine)}",
-                color = MaterialTheme.colorScheme.secondary,
+                scheduleLinkSummary(routine),
+                color = MaterialTheme.colorScheme.onSurface,
             )
-            if (linked.isNotEmpty()) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    linked.take(3).forEach { medication ->
-                        Surface(
-                            color = MaterialTheme.colorScheme.surface,
-                            shape = RoundedCornerShape(999.dp),
-                        ) {
-                            Text(
-                                medication.name,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                                style = MaterialTheme.typography.labelMedium,
-                            )
-                        }
-                    }
-                    if (linked.size > 3) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surface,
-                            shape = RoundedCornerShape(999.dp),
-                        ) {
-                            Text(
-                                "+${linked.size - 3}",
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                    }
-                }
-            }
+            Text(
+                secondaryMeta,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+            )
         }
     }
 }
 
 @Composable
-private fun routineRepeatSummary(routine: Routine): String = when (routine.repeatType) {
-    com.group8.comp2300.domain.model.medical.RoutineRepeatType.DAILY -> stringResource(
-        Res.string.medical_routine_repeat_daily,
-    )
-
-    com.group8.comp2300.domain.model.medical.RoutineRepeatType.WEEKLY -> weekdaySummary(routine.daysOfWeek)
+private fun rememberRoutineMeta(routine: Routine, linkedCount: Int, isArchived: Boolean): String {
+    val medicationSummary = when (linkedCount) {
+        0 -> stringResource(Res.string.medical_routine_card_no_medications)
+        1 -> stringResource(Res.string.medical_routine_card_one_medication)
+        else -> stringResource(Res.string.medical_routine_card_many_medications, linkedCount)
+    }
+    val endDate = routine.endDate
+    val statusSummary = when {
+        isArchived -> stringResource(Res.string.medical_routine_card_archived)
+        endDate.isNullOrBlank() -> stringResource(Res.string.medical_routine_card_ongoing)
+        else -> stringResource(
+            Res.string.medical_routine_card_ends_on,
+            LocalDate.parse(endDate).toString(),
+        )
+    }
+    return "$medicationSummary • $statusSummary"
 }

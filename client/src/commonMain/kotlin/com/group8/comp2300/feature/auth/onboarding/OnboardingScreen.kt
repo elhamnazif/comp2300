@@ -55,151 +55,149 @@ fun OnboardingScreen(
     }
     val animatedProgress by animateFloatAsState(targetValue = targetProgress, label = "OnboardingProgress")
 
-    Column(
-        modifier =
-        modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface),
+    Surface(
+        modifier = modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
     ) {
-        // --- Header Area ---
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .height(64.dp)
-                .padding(horizontal = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            // Back Button
-            Box(Modifier.size(48.dp)) {
-                if (step in 1..<questionEndIndex) {
-                    IconButton(
-                        onClick = { step-- },
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        Icon(
-                            imageVector = Icons.ArrowBackW400Outlinedfill1,
-                            contentDescription = stringResource(Res.string.onboarding_back),
-                        )
-                    }
-                }
-            }
-
-            // Middle Area (Progress Bar & Step Label)
-            if (step in questionStartIndex until questionEndIndex) {
-                LinearProgressIndicator(
-                    progress = { animatedProgress },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 12.dp)
-                        .clip(RoundedCornerShape(4.dp)),
-                )
-
-                Text(
-                    text = "${step - questionStartIndex + 1}/${sampleOnboardingQuestions.size}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                )
-
-                // Skip Button (Right side of middle area or separate?)
-                // User said "put skip in top right", so it should be at the absolute end.
-                TextButton(
-                    onClick = {
-                        val questionIndex = step - questionStartIndex
-                        if (questionIndex in answers.indices) {
-                            answers[questionIndex] = null
+        Column(modifier = Modifier.fillMaxSize()) {
+            // --- Header Area ---
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .height(64.dp)
+                    .padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // Back Button
+                Box(Modifier.size(48.dp)) {
+                    if (step in 1..<questionEndIndex) {
+                        IconButton(
+                            onClick = { step-- },
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            Icon(
+                                imageVector = Icons.ArrowBackW400Outlinedfill1,
+                                contentDescription = stringResource(Res.string.onboarding_back),
+                            )
                         }
-                        step++
-                    },
-                ) {
-                    Text(stringResource(Res.string.onboarding_skip))
-                }
-            } else {
-                // Empty space if not in questionnaire
-                Spacer(Modifier.weight(1f))
-            }
-        }
-
-        // --- Main Content Area ---
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
-        ) {
-            AnimatedContent(
-                targetState = step,
-                transitionSpec = {
-                    if (targetState > initialState) {
-                        (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
-                            slideOutHorizontally { width -> -width } + fadeOut(),
-                        )
-                    } else {
-                        (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
-                            slideOutHorizontally { width -> width } + fadeOut(),
-                        )
                     }
-                },
-                label = "OnboardingStepTransition",
-                modifier = Modifier.fillMaxSize(),
-            ) { currentStep ->
-                when (currentStep) {
-                    0 -> WelcomeStep({ step++ })
+                }
 
-                    1 -> AuthChoiceStep(
-                        isGuest = isGuest,
-                        onRequireAuth = onRequireAuth,
-                        onNext = { step++ },
+                // Middle Area (Progress Bar & Step Label)
+                if (step in questionStartIndex until questionEndIndex) {
+                    LinearProgressIndicator(
+                        progress = { animatedProgress },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 12.dp)
+                            .clip(RoundedCornerShape(4.dp)),
                     )
 
-                    2 -> PinScreen(
-                        onComplete = { finalPin ->
-                            onPinCreated(finalPin)
-                            step++ // Moves to questionStartIndex (3)
+                    Text(
+                        text = "${step - questionStartIndex + 1}/${sampleOnboardingQuestions.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                    )
+
+                    TextButton(
+                        onClick = {
+                            val questionIndex = step - questionStartIndex
+                            if (questionIndex in answers.indices) {
+                                answers[questionIndex] = null
+                            }
+                            step++
                         },
-                    )
+                    ) {
+                        Text(stringResource(Res.string.onboarding_skip))
+                    }
+                } else {
+                    Spacer(Modifier.weight(1f))
+                }
+            }
 
-                    in questionStartIndex until questionEndIndex -> {
-                        val questionIndex = currentStep - questionStartIndex
-                        val question = sampleOnboardingQuestions[questionIndex]
-
-                        val questionText = when (question.id) {
-                            1 -> stringResource(Res.string.onboarding_q1_text)
-                            2 -> stringResource(Res.string.onboarding_q2_text)
-                            else -> question.text
-                        }
-
-                        val localizedOptions = when (question.id) {
-                            1 -> listOf(
-                                stringResource(Res.string.onboarding_q1_op1),
-                                stringResource(Res.string.onboarding_q1_op2),
-                                stringResource(Res.string.onboarding_q1_op3),
-                                stringResource(Res.string.onboarding_q1_op4),
+            // --- Main Content Area ---
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 24.dp, end = 24.dp, bottom = 24.dp),
+            ) {
+                AnimatedContent(
+                    targetState = step,
+                    transitionSpec = {
+                        if (targetState > initialState) {
+                            (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
+                                slideOutHorizontally { width -> -width } + fadeOut(),
                             )
-
-                            2 -> listOf(
-                                stringResource(Res.string.onboarding_q2_op1),
-                                stringResource(Res.string.onboarding_q2_op2),
-                                stringResource(Res.string.onboarding_q2_op3),
+                        } else {
+                            (slideInHorizontally { width -> -width } + fadeIn()).togetherWith(
+                                slideOutHorizontally { width -> width } + fadeOut(),
                             )
-
-                            else -> question.options
                         }
+                    },
+                    label = "OnboardingStepTransition",
+                    modifier = Modifier.fillMaxSize(),
+                ) { currentStep ->
+                    when (currentStep) {
+                        0 -> WelcomeStep({ step++ })
 
-                        QuestionStep(
-                            question = questionText,
-                            options = localizedOptions,
-                            onAnswerSelect = { index ->
-                                answers[questionIndex] = index
+                        1 -> AuthChoiceStep(
+                            isGuest = isGuest,
+                            onRequireAuth = onRequireAuth,
+                            onNext = { step++ },
+                        )
+
+                        2 -> PinScreen(
+                            onComplete = { finalPin ->
+                                onPinCreated(finalPin)
                                 step++
                             },
                         )
-                    }
 
-                    questionEndIndex -> ResultStep(
-                        riskScore = riskScore,
-                        onFinish = onFinish,
-                    )
+                        in questionStartIndex until questionEndIndex -> {
+                            val questionIndex = currentStep - questionStartIndex
+                            val question = sampleOnboardingQuestions[questionIndex]
+
+                            val questionText = when (question.id) {
+                                1 -> stringResource(Res.string.onboarding_q1_text)
+                                2 -> stringResource(Res.string.onboarding_q2_text)
+                                else -> question.text
+                            }
+
+                            val localizedOptions = when (question.id) {
+                                1 -> listOf(
+                                    stringResource(Res.string.onboarding_q1_op1),
+                                    stringResource(Res.string.onboarding_q1_op2),
+                                    stringResource(Res.string.onboarding_q1_op3),
+                                    stringResource(Res.string.onboarding_q1_op4),
+                                )
+
+                                2 -> listOf(
+                                    stringResource(Res.string.onboarding_q2_op1),
+                                    stringResource(Res.string.onboarding_q2_op2),
+                                    stringResource(Res.string.onboarding_q2_op3),
+                                )
+
+                                else -> question.options
+                            }
+
+                            QuestionStep(
+                                question = questionText,
+                                options = localizedOptions,
+                                onAnswerSelect = { index ->
+                                    answers[questionIndex] = index
+                                    step++
+                                },
+                            )
+                        }
+
+                        questionEndIndex -> ResultStep(
+                            riskScore = riskScore,
+                            onFinish = onFinish,
+                        )
+                    }
                 }
             }
         }
@@ -281,7 +279,7 @@ private fun OnboardingActionBlock(
         stringResource(body),
         textAlign = bodyTextAlign,
         style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.secondary,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier.padding(vertical = 16.dp),
     )
     Spacer(modifier = Modifier.height(32.dp))

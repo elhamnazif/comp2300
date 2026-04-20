@@ -202,7 +202,7 @@
     <string name="day_initial_sun">S</string>
 
     <!-- Medication Module -->
-    <string name="medical_medication_title">My Medicine Cabinet</string>
+    <string name="medical_medication_title">Medicines</string>
     <string name="medical_medication_add_desc">Add Medication</string>
     <string name="medical_medication_section_active">Active</string>
     <string name="medical_medication_section_archived">Archived</string>
@@ -244,9 +244,9 @@
     <string name="medical_medication_form_save_button">Save Changes</string>
     <string name="medical_medication_form_cancel_button">Cancel</string>
     <string name="medical_medication_empty_title">No medications yet</string>
-    <string name="medical_medication_empty_desc">Add a medication to start tracking doses and reminders.</string>
+    <string name="medical_medication_empty_desc">Add a medicine to start tracking doses and reminders.</string>
     <string name="medical_medication_empty_add_button">Add medication</string>
-    <string name="medical_medication_no_schedule">No schedule</string>
+    <string name="medical_medication_no_schedule">No schedule yet</string>
     <string name="medical_medication_schedule_count">%1$d schedules</string>
     <string name="medical_medication_schedule_daily_at">Daily at %1$s</string>
     <string name="medical_medication_schedule_daily_multi">Daily • %1$d times</string>
@@ -269,7 +269,11 @@
     <string name="medical_medication_schedule_remove_confirm_message">This unlinks this medicine from the schedule.</string>
     <string name="medical_medication_form_save_add_schedule">Save and add schedule</string>
     <string name="medical_medication_form_save_medication">Save medication</string>
+    <string name="medical_medication_form_save_with_schedule">Save medicine and schedule</string>
     <string name="medical_medication_form_update_medication">Update medication</string>
+    <string name="medical_medication_form_schedule_toggle">Add a schedule now</string>
+    <string name="medical_medication_form_schedule_default_name">Medication schedule</string>
+    <string name="medical_medication_form_archive_label">Archive medication</string>
     <string name="medical_medication_notification_disabled">Schedule saved, but notifications are disabled in system settings.</string>
 
     <!-- Self Diagnosis Module -->
@@ -323,6 +327,7 @@
     <string name="medical_routine_form_done">Done</string>
     <string name="medical_routine_form_change">Change</string>
     <string name="medical_routine_form_archive">Archive schedule</string>
+    <string name="medical_routine_form_no_medications">No medicines available.</string>
     <string name="medical_routine_delete_confirm_title">Delete schedule?</string>
     <string name="medical_routine_delete_confirm_message">This removes future reminders for it.</string>
     <string name="medical_routine_form_save_button">Save schedule</string>
@@ -330,6 +335,12 @@
     <string name="medical_routine_summary_no_reminders">No reminders</string>
     <string name="medical_routine_summary_reminder_prefix">Reminder %1$s</string>
     <string name="medical_routine_summary_on_days">On %1$s</string>
+    <string name="medical_routine_card_no_medications">No medicines</string>
+    <string name="medical_routine_card_one_medication">1 medicine</string>
+    <string name="medical_routine_card_many_medications">%1$d medicines</string>
+    <string name="medical_routine_card_ongoing">Ongoing</string>
+    <string name="medical_routine_card_ends_on">Ends %1$s</string>
+    <string name="medical_routine_card_archived">Archived</string>
     
     <!-- Calendar Module -->
     <string name="calendar_title">Your Schedule</string>

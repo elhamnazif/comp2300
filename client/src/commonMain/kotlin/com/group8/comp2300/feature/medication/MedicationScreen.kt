@@ -39,7 +39,7 @@ fun MedicationScreen(
     var editingMedication by remember { mutableStateOf<Medication?>(null) }
     var editingRoutine by remember { mutableStateOf<Routine?>(null) }
     var sheetStep by remember { mutableStateOf(MedicationSheetStep.FORM) }
-    var closeSheetAfterScheduleSave by remember { mutableStateOf(false) }
+    var pendingCreatedMedicationId by remember { mutableStateOf<String?>(null) }
     val notificationDisabledMessage = stringResource(Res.string.medical_medication_notification_disabled)
 
     ConsumeSnackbarMessage(
@@ -50,6 +50,14 @@ fun MedicationScreen(
 
     fun linkedRoutinesFor(medication: Medication): List<Routine> = state.routines.filter { routine ->
         routine.status == RoutineStatus.ACTIVE && medication.id in routine.medicationIds
+    }
+
+    fun resetSheetState() {
+        showSheet = false
+        editingMedication = null
+        editingRoutine = null
+        sheetStep = MedicationSheetStep.FORM
+        pendingCreatedMedicationId = null
     }
 
     Scaffold(
@@ -68,7 +76,7 @@ fun MedicationScreen(
                     editingMedication = null
                     editingRoutine = null
                     sheetStep = MedicationSheetStep.FORM
-                    closeSheetAfterScheduleSave = false
+                    pendingCreatedMedicationId = null
                     showSheet = true
                 },
             ) {
@@ -85,14 +93,14 @@ fun MedicationScreen(
                 editingMedication = null
                 editingRoutine = null
                 sheetStep = MedicationSheetStep.FORM
-                closeSheetAfterScheduleSave = false
+                pendingCreatedMedicationId = null
                 showSheet = true
             },
             onEditMedication = { medication ->
                 editingMedication = medication
                 editingRoutine = null
                 sheetStep = MedicationSheetStep.FORM
-                closeSheetAfterScheduleSave = false
+                pendingCreatedMedicationId = null
                 showSheet = true
             },
             modifier = Modifier.padding(innerPadding),
@@ -103,10 +111,7 @@ fun MedicationScreen(
         ModalBottomSheet(
             onDismissRequest = {
                 if (!state.isMutating) {
-                    showSheet = false
-                    editingRoutine = null
-                    sheetStep = MedicationSheetStep.FORM
-                    closeSheetAfterScheduleSave = false
+                    resetSheetState()
                 }
             },
             sheetState = sheetState,
@@ -119,59 +124,53 @@ fun MedicationScreen(
                         medicationToEdit = editingMedication,
                         linkedSchedules = linkedSchedules,
                         isMutating = state.isMutating,
-                        onSave = { request, id, addScheduleAfterSave ->
-                            viewModel.saveMedication(request, id) { savedMedication ->
-                                editingMedication = savedMedication
-                                when {
-                                    id != null -> {
-                                        showSheet = false
-                                        sheetStep = MedicationSheetStep.FORM
-                                        closeSheetAfterScheduleSave = false
-                                    }
+                        onSave = { medicationRequest, routineRequest ->
+                            val targetMedicationId = editingMedication?.id ?: pendingCreatedMedicationId
+                            viewModel.saveMedication(medicationRequest, targetMedicationId) { savedMedication ->
+                                if (routineRequest == null) {
+                                    resetSheetState()
+                                    return@saveMedication
+                                }
 
-                                    addScheduleAfterSave -> {
-                                        editingRoutine = null
-                                        sheetStep = MedicationSheetStep.SCHEDULE_FORM
-                                        closeSheetAfterScheduleSave = true
+                                pendingCreatedMedicationId = savedMedication.id
+                                coroutineScope.launch {
+                                    val requestWithMedication = routineRequest.copy(
+                                        medicationIds = listOf(savedMedication.id),
+                                    )
+                                    val permissionResult =
+                                        if (requestWithMedication.hasReminder &&
+                                            requestWithMedication.reminderOffsetsMins.isNotEmpty()
+                                        ) {
+                                            requestNotificationPermission()
+                                        } else {
+                                            NotificationPermissionResult.GRANTED
+                                        }
+                                    viewModel.saveRoutine(requestWithMedication) {
+                                        resetSheetState()
                                     }
-
-                                    else -> {
-                                        showSheet = false
-                                        sheetStep = MedicationSheetStep.FORM
-                                        closeSheetAfterScheduleSave = false
+                                    if (permissionResult != NotificationPermissionResult.GRANTED) {
+                                        snackbarHostState.showSnackbar(notificationDisabledMessage)
                                     }
                                 }
                             }
                         },
                         onDelete = {
                             viewModel.deleteMedication(it) {
-                                showSheet = false
-                                editingMedication = null
-                                editingRoutine = null
-                                sheetStep = MedicationSheetStep.FORM
-                                closeSheetAfterScheduleSave = false
+                                resetSheetState()
                             }
                         },
-                        onCancel = {
-                            showSheet = false
-                            editingMedication = null
-                            editingRoutine = null
-                            sheetStep = MedicationSheetStep.FORM
-                            closeSheetAfterScheduleSave = false
-                        },
+                        onCancel = ::resetSheetState,
                         onAddSchedule = editingMedication
                             ?.takeIf { it.status == MedicationStatus.ACTIVE }
                             ?.let {
                                 {
                                     editingRoutine = null
                                     sheetStep = MedicationSheetStep.SCHEDULE_FORM
-                                    closeSheetAfterScheduleSave = false
                                 }
                             },
                         onEditSchedule = { routine ->
                             editingRoutine = routine
                             sheetStep = MedicationSheetStep.SCHEDULE_FORM
-                            closeSheetAfterScheduleSave = false
                         },
                         onRemoveSchedule = { routine ->
                             editingMedication?.let { medication ->
@@ -188,11 +187,12 @@ fun MedicationScreen(
                         } else {
                             stringResource(Res.string.medical_routine_form_edit_title)
                         },
-                        subtitle = null,
+                        subtitle = medication.name,
                         routineToEdit = editingRoutine,
                         medications = state.medications.filter { it.status == MedicationStatus.ACTIVE },
                         initialSelectedMedicationIds = setOf(medication.id),
                         isMutating = state.isMutating,
+                        showMedicationSection = false,
                         onSave = { request, id ->
                             coroutineScope.launch {
                                 val permissionResult =
@@ -202,16 +202,8 @@ fun MedicationScreen(
                                         NotificationPermissionResult.GRANTED
                                     }
                                 viewModel.saveRoutine(request, id) {
-                                    if (closeSheetAfterScheduleSave) {
-                                        showSheet = false
-                                        editingMedication = null
-                                        editingRoutine = null
-                                        sheetStep = MedicationSheetStep.FORM
-                                        closeSheetAfterScheduleSave = false
-                                    } else {
-                                        editingRoutine = null
-                                        sheetStep = MedicationSheetStep.FORM
-                                    }
+                                    editingRoutine = null
+                                    sheetStep = MedicationSheetStep.FORM
                                 }
                                 if (permissionResult != NotificationPermissionResult.GRANTED) {
                                     snackbarHostState.showSnackbar(notificationDisabledMessage)
@@ -222,13 +214,11 @@ fun MedicationScreen(
                             viewModel.deleteRoutine(routineId) {
                                 editingRoutine = null
                                 sheetStep = MedicationSheetStep.FORM
-                                closeSheetAfterScheduleSave = false
                             }
                         },
                         onCancel = {
                             editingRoutine = null
                             sheetStep = MedicationSheetStep.FORM
-                            closeSheetAfterScheduleSave = false
                         },
                     )
                 }

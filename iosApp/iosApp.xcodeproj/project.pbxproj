@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		7248D2E65D5924459C697677 /* comp2300.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = comp2300.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7248D2E65D5924459C697677 /* Vita.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vita.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -50,7 +50,7 @@
 		07F170E53C2098AC3BA8EDEE /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7248D2E65D5924459C697677 /* comp2300.app */,
+				7248D2E65D5924459C697677 /* Vita.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = 7248D2E65D5924459C697677 /* comp2300.app */;
+			productReference = 7248D2E65D5924459C697677 /* Vita.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
