@@ -32,6 +32,7 @@ private enum class MedicationFormStep {
 fun MedicationFormSheet(
     medicationToEdit: Medication?,
     linkedSchedules: List<Routine>,
+    isMutating: Boolean,
     onSave: (MedicationCreateRequest, String?, Boolean) -> Unit,
     onDelete: (String) -> Unit,
     onCancel: () -> Unit,
@@ -46,7 +47,7 @@ fun MedicationFormSheet(
         mutableStateOf(medicationToEdit?.doseUnit ?: MedicationUnit.TABLET)
     }
     var customDoseUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.customDoseUnit ?: "") }
-    var stockAmount by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.stockAmount ?: "") }
+    var stockAmount by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.stockAmount ?: "0") }
     var stockUnit by remember(medicationToEdit?.id) {
         mutableStateOf(medicationToEdit?.stockUnit ?: MedicationUnit.TABLET)
     }
@@ -54,11 +55,13 @@ fun MedicationFormSheet(
     var instruction by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.instruction ?: "") }
     var status by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.status ?: MedicationStatus.ACTIVE) }
     var selectedColor by remember(medicationToEdit?.id) { mutableStateOf(parseColorHex(medicationToEdit?.colorHex)) }
+    var showDeleteConfirmation by remember(medicationToEdit?.id) { mutableStateOf(false) }
+    var scheduleToRemove by remember(medicationToEdit?.id) { mutableStateOf<Routine?>(null) }
 
     val canContinueBasics = name.isNotBlank() &&
         doseAmount.toDoubleOrNull()?.let { it > 0.0 } == true &&
         (doseUnit != MedicationUnit.OTHER || customDoseUnit.isNotBlank())
-    val canContinueStock = stockAmount.toDoubleOrNull()?.let { it > 0.0 } == true &&
+    val canContinueStock = stockAmount.toDoubleOrNull()?.let { it >= 0.0 } == true &&
         (stockUnit != MedicationUnit.OTHER || customStockUnit.isNotBlank())
     val canSave = canContinueBasics && canContinueStock
     val resolvedCustomDoseUnit = customDoseUnit.trim().takeIf(String::isNotBlank)
@@ -110,6 +113,7 @@ fun MedicationFormSheet(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(
+                enabled = !isMutating,
                 onClick = {
                     currentStep = when (currentStep) {
                         MedicationFormStep.BASICS -> {
@@ -135,7 +139,10 @@ fun MedicationFormSheet(
                 fontWeight = FontWeight.Bold,
             )
             if (medicationToEdit != null) {
-                IconButton(onClick = { onDelete(medicationToEdit.id) }) {
+                IconButton(
+                    enabled = !isMutating,
+                    onClick = { showDeleteConfirmation = true },
+                ) {
                     Icon(
                         Icons.DeleteW400Outlined,
                         contentDescription = stringResource(Res.string.medical_medication_delete_desc),
@@ -146,11 +153,6 @@ fun MedicationFormSheet(
                 Spacer(modifier = Modifier.size(48.dp))
             }
         }
-
-        MedicationStepHeader(
-            step = currentStep,
-            isEditing = medicationToEdit != null,
-        )
 
         Column(
             modifier = Modifier
@@ -224,6 +226,13 @@ fun MedicationFormSheet(
                 }
 
                 MedicationFormStep.REVIEW -> {
+                    if (medicationToEdit != null) {
+                        Text(
+                            stringResource(Res.string.medical_medication_form_edit_finish_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     val colorOption = medicationColorOption(selectedColor.toHexString())
                     SummaryPanel(
                         name = name,
@@ -238,9 +247,10 @@ fun MedicationFormSheet(
                         HorizontalDivider()
                         ScheduleSection(
                             linkedSchedules = linkedSchedules,
+                            isMutating = isMutating,
                             onAddSchedule = onAddSchedule,
                             onEditSchedule = onEditSchedule,
-                            onRemoveSchedule = onRemoveSchedule,
+                            onRemoveSchedule = { routine -> scheduleToRemove = routine },
                         )
                         HorizontalDivider()
                         Row(
@@ -255,6 +265,7 @@ fun MedicationFormSheet(
                             )
                             Switch(
                                 checked = status == MedicationStatus.ARCHIVED,
+                                enabled = !isMutating,
                                 onCheckedChange = { isArchived ->
                                     status = if (isArchived) MedicationStatus.ARCHIVED else MedicationStatus.ACTIVE
                                 },
@@ -272,54 +283,58 @@ fun MedicationFormSheet(
             canContinueBasics = canContinueBasics,
             canContinueStock = canContinueStock,
             canSave = canSave,
+            isMutating = isMutating,
             onContinueBasics = { currentStep = MedicationFormStep.STOCK },
             onContinueStock = { currentStep = MedicationFormStep.REVIEW },
             onSaveMedication = { save(addScheduleAfterSave = false) },
             onSaveAndAddSchedule = { save(addScheduleAfterSave = true) },
         )
     }
-}
 
-@Composable
-private fun MedicationStepHeader(step: MedicationFormStep, isEditing: Boolean) {
-    val stepNumber = when (step) {
-        MedicationFormStep.BASICS -> 1
-        MedicationFormStep.STOCK -> 2
-        MedicationFormStep.REVIEW -> 3
-    }
-    val progress = stepNumber / 3f
-    val description = when (step) {
-        MedicationFormStep.BASICS -> null
-
-        MedicationFormStep.STOCK -> null
-
-        MedicationFormStep.REVIEW -> if (isEditing) {
-            stringResource(Res.string.medical_medication_form_edit_finish_hint)
-        } else {
-            null
-        }
-    }
-
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(
-            stringResource(Res.string.medical_medication_form_step_counter, stepNumber),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
+    if (showDeleteConfirmation && medicationToEdit != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text(stringResource(Res.string.medical_medication_delete_confirm_title)) },
+            text = { Text(stringResource(Res.string.medical_medication_delete_confirm_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        onDelete(medicationToEdit.id)
+                    },
+                ) {
+                    Text(stringResource(Res.string.medical_medication_delete_desc))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text(stringResource(Res.string.common_cancel))
+                }
+            },
         )
-        LinearProgressIndicator(
-            progress = { progress },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(6.dp),
+    }
+
+    scheduleToRemove?.let { routine ->
+        AlertDialog(
+            onDismissRequest = { scheduleToRemove = null },
+            title = { Text(stringResource(Res.string.medical_medication_schedule_remove_confirm_title)) },
+            text = { Text(stringResource(Res.string.medical_medication_schedule_remove_confirm_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        scheduleToRemove = null
+                        onRemoveSchedule(routine)
+                    },
+                ) {
+                    Text(stringResource(Res.string.medical_medication_form_schedule_remove))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { scheduleToRemove = null }) {
+                    Text(stringResource(Res.string.common_cancel))
+                }
+            },
         )
-        description?.let {
-            Text(
-                it,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
     }
 }
 
@@ -423,6 +438,7 @@ private fun MedicationFormActions(
     canContinueBasics: Boolean,
     canContinueStock: Boolean,
     canSave: Boolean,
+    isMutating: Boolean,
     onContinueBasics: () -> Unit,
     onContinueStock: () -> Unit,
     onSaveMedication: () -> Unit,
@@ -433,7 +449,7 @@ private fun MedicationFormActions(
             MedicationFormStep.BASICS -> {
                 Button(
                     onClick = onContinueBasics,
-                    enabled = canContinueBasics,
+                    enabled = canContinueBasics && !isMutating,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(stringResource(Res.string.medical_medication_form_continue))
@@ -443,7 +459,7 @@ private fun MedicationFormActions(
             MedicationFormStep.STOCK -> {
                 Button(
                     onClick = onContinueStock,
-                    enabled = canContinueStock,
+                    enabled = canContinueStock && !isMutating,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(stringResource(Res.string.medical_medication_form_continue))
@@ -454,7 +470,7 @@ private fun MedicationFormActions(
                 if (isEditing) {
                     Button(
                         onClick = onSaveMedication,
-                        enabled = canSave,
+                        enabled = canSave && !isMutating,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(stringResource(Res.string.medical_medication_form_update_medication))
@@ -462,7 +478,7 @@ private fun MedicationFormActions(
                 } else {
                     Button(
                         onClick = onSaveAndAddSchedule,
-                        enabled = canSave,
+                        enabled = canSave && !isMutating,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(stringResource(Res.string.medical_medication_form_save_add_schedule))
@@ -473,7 +489,7 @@ private fun MedicationFormActions(
                     ) {
                         TextButton(
                             onClick = onSaveMedication,
-                            enabled = canSave,
+                            enabled = canSave && !isMutating,
                         ) {
                             Text(stringResource(Res.string.medical_medication_form_save_medication))
                         }
@@ -650,6 +666,7 @@ private fun SummaryMetric(label: String, value: String, modifier: Modifier = Mod
 @Composable
 private fun ScheduleSection(
     linkedSchedules: List<Routine>,
+    isMutating: Boolean,
     onAddSchedule: (() -> Unit)?,
     onEditSchedule: (Routine) -> Unit,
     onRemoveSchedule: (Routine) -> Unit,
@@ -665,7 +682,7 @@ private fun ScheduleSection(
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.SemiBold,
             )
-            TextButton(onClick = { onAddSchedule?.invoke() }, enabled = onAddSchedule != null) {
+            TextButton(onClick = { onAddSchedule?.invoke() }, enabled = onAddSchedule != null && !isMutating) {
                 Text(stringResource(Res.string.medical_medication_form_schedule_add))
             }
         }
@@ -690,10 +707,10 @@ private fun ScheduleSection(
                         )
                     }
                     Row {
-                        TextButton(onClick = { onEditSchedule(routine) }) {
+                        TextButton(onClick = { onEditSchedule(routine) }, enabled = !isMutating) {
                             Text(stringResource(Res.string.medical_medication_edit_desc))
                         }
-                        TextButton(onClick = { onRemoveSchedule(routine) }) {
+                        TextButton(onClick = { onRemoveSchedule(routine) }, enabled = !isMutating) {
                             Text(stringResource(Res.string.medical_medication_form_schedule_remove))
                         }
                     }

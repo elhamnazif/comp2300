@@ -39,6 +39,7 @@ fun MedicationScreen(
     var editingMedication by remember { mutableStateOf<Medication?>(null) }
     var editingRoutine by remember { mutableStateOf<Routine?>(null) }
     var sheetStep by remember { mutableStateOf(MedicationSheetStep.FORM) }
+    var closeSheetAfterScheduleSave by remember { mutableStateOf(false) }
     val notificationDisabledMessage = stringResource(Res.string.medical_medication_notification_disabled)
 
     ConsumeSnackbarMessage(
@@ -67,6 +68,7 @@ fun MedicationScreen(
                     editingMedication = null
                     editingRoutine = null
                     sheetStep = MedicationSheetStep.FORM
+                    closeSheetAfterScheduleSave = false
                     showSheet = true
                 },
             ) {
@@ -83,12 +85,14 @@ fun MedicationScreen(
                 editingMedication = null
                 editingRoutine = null
                 sheetStep = MedicationSheetStep.FORM
+                closeSheetAfterScheduleSave = false
                 showSheet = true
             },
             onEditMedication = { medication ->
                 editingMedication = medication
                 editingRoutine = null
                 sheetStep = MedicationSheetStep.FORM
+                closeSheetAfterScheduleSave = false
                 showSheet = true
             },
             modifier = Modifier.padding(innerPadding),
@@ -98,9 +102,12 @@ fun MedicationScreen(
     if (showSheet) {
         ModalBottomSheet(
             onDismissRequest = {
-                showSheet = false
-                editingRoutine = null
-                sheetStep = MedicationSheetStep.FORM
+                if (!state.isMutating) {
+                    showSheet = false
+                    editingRoutine = null
+                    sheetStep = MedicationSheetStep.FORM
+                    closeSheetAfterScheduleSave = false
+                }
             },
             sheetState = sheetState,
         ) {
@@ -111,6 +118,7 @@ fun MedicationScreen(
                     MedicationFormSheet(
                         medicationToEdit = editingMedication,
                         linkedSchedules = linkedSchedules,
+                        isMutating = state.isMutating,
                         onSave = { request, id, addScheduleAfterSave ->
                             viewModel.saveMedication(request, id) { savedMedication ->
                                 editingMedication = savedMedication
@@ -118,30 +126,38 @@ fun MedicationScreen(
                                     id != null -> {
                                         showSheet = false
                                         sheetStep = MedicationSheetStep.FORM
+                                        closeSheetAfterScheduleSave = false
                                     }
 
                                     addScheduleAfterSave -> {
                                         editingRoutine = null
                                         sheetStep = MedicationSheetStep.SCHEDULE_FORM
+                                        closeSheetAfterScheduleSave = true
                                     }
 
                                     else -> {
                                         showSheet = false
                                         sheetStep = MedicationSheetStep.FORM
+                                        closeSheetAfterScheduleSave = false
                                     }
                                 }
                             }
                         },
                         onDelete = {
-                            viewModel.deleteMedication(it)
-                            showSheet = false
-                            editingRoutine = null
-                            sheetStep = MedicationSheetStep.FORM
+                            viewModel.deleteMedication(it) {
+                                showSheet = false
+                                editingMedication = null
+                                editingRoutine = null
+                                sheetStep = MedicationSheetStep.FORM
+                                closeSheetAfterScheduleSave = false
+                            }
                         },
                         onCancel = {
                             showSheet = false
+                            editingMedication = null
                             editingRoutine = null
                             sheetStep = MedicationSheetStep.FORM
+                            closeSheetAfterScheduleSave = false
                         },
                         onAddSchedule = editingMedication
                             ?.takeIf { it.status == MedicationStatus.ACTIVE }
@@ -149,11 +165,13 @@ fun MedicationScreen(
                                 {
                                     editingRoutine = null
                                     sheetStep = MedicationSheetStep.SCHEDULE_FORM
+                                    closeSheetAfterScheduleSave = false
                                 }
                             },
                         onEditSchedule = { routine ->
                             editingRoutine = routine
                             sheetStep = MedicationSheetStep.SCHEDULE_FORM
+                            closeSheetAfterScheduleSave = false
                         },
                         onRemoveSchedule = { routine ->
                             editingMedication?.let { medication ->
@@ -174,6 +192,7 @@ fun MedicationScreen(
                         routineToEdit = editingRoutine,
                         medications = state.medications.filter { it.status == MedicationStatus.ACTIVE },
                         initialSelectedMedicationIds = setOf(medication.id),
+                        isMutating = state.isMutating,
                         onSave = { request, id ->
                             coroutineScope.launch {
                                 val permissionResult =
@@ -183,8 +202,16 @@ fun MedicationScreen(
                                         NotificationPermissionResult.GRANTED
                                     }
                                 viewModel.saveRoutine(request, id) {
-                                    editingRoutine = null
-                                    sheetStep = MedicationSheetStep.FORM
+                                    if (closeSheetAfterScheduleSave) {
+                                        showSheet = false
+                                        editingMedication = null
+                                        editingRoutine = null
+                                        sheetStep = MedicationSheetStep.FORM
+                                        closeSheetAfterScheduleSave = false
+                                    } else {
+                                        editingRoutine = null
+                                        sheetStep = MedicationSheetStep.FORM
+                                    }
                                 }
                                 if (permissionResult != NotificationPermissionResult.GRANTED) {
                                     snackbarHostState.showSnackbar(notificationDisabledMessage)
@@ -192,13 +219,16 @@ fun MedicationScreen(
                             }
                         },
                         onDelete = { routineId ->
-                            viewModel.deleteRoutine(routineId)
-                            editingRoutine = null
-                            sheetStep = MedicationSheetStep.FORM
+                            viewModel.deleteRoutine(routineId) {
+                                editingRoutine = null
+                                sheetStep = MedicationSheetStep.FORM
+                                closeSheetAfterScheduleSave = false
+                            }
                         },
                         onCancel = {
                             editingRoutine = null
                             sheetStep = MedicationSheetStep.FORM
+                            closeSheetAfterScheduleSave = false
                         },
                     )
                 }

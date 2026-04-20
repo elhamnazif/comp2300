@@ -224,7 +224,6 @@
     <string name="medical_medication_form_step_basics">Details</string>
     <string name="medical_medication_form_step_stock">Supply</string>
     <string name="medical_medication_form_step_review">Save</string>
-    <string name="medical_medication_form_step_counter">Step %1$d of 3</string>
     <string name="medical_medication_form_stock_title">How much do you currently have?</string>
     <string name="medical_medication_form_stock_question">Add the core medication details first. You can set up stock and schedule in the next steps.</string>
     <string name="medical_medication_form_summary_title">Ready to save this medication?</string>
@@ -264,6 +263,10 @@
     <string name="medical_medication_form_schedule_add">Add</string>
     <string name="medical_medication_form_schedule_none">No schedule</string>
     <string name="medical_medication_form_schedule_remove">Remove</string>
+    <string name="medical_medication_delete_confirm_title">Delete medication?</string>
+    <string name="medical_medication_delete_confirm_message">This removes it from your list.</string>
+    <string name="medical_medication_schedule_remove_confirm_title">Remove schedule?</string>
+    <string name="medical_medication_schedule_remove_confirm_message">This unlinks this medicine from the schedule.</string>
     <string name="medical_medication_form_save_add_schedule">Save and add schedule</string>
     <string name="medical_medication_form_save_medication">Save medication</string>
     <string name="medical_medication_form_update_medication">Update medication</string>
@@ -294,10 +297,12 @@
     <string name="medical_routine_empty_button">Create schedule</string>
     <string name="medical_routine_form_add_title">Add schedule</string>
     <string name="medical_routine_form_edit_title">Edit schedule</string>
-    <string name="medical_routine_form_step_counter">Step %1$d of 3</string>
     <string name="medical_routine_form_step_timing_title">When should this happen?</string>
     <string name="medical_routine_form_step_duration_title">How long should this continue?</string>
     <string name="medical_routine_form_step_reminders_title">How should we remind you?</string>
+    <string name="medical_routine_form_stage_timing">Timing</string>
+    <string name="medical_routine_form_stage_duration">Duration</string>
+    <string name="medical_routine_form_stage_reminders">Reminders</string>
     <string name="medical_routine_repeat_daily">Every day</string>
     <string name="medical_routine_notification_disabled">Schedule saved, but notifications are disabled in system settings.</string>
     <string name="medical_routine_form_name_label">Schedule name</string>
@@ -318,6 +323,8 @@
     <string name="medical_routine_form_done">Done</string>
     <string name="medical_routine_form_change">Change</string>
     <string name="medical_routine_form_archive">Archive schedule</string>
+    <string name="medical_routine_delete_confirm_title">Delete schedule?</string>
+    <string name="medical_routine_delete_confirm_message">This removes future reminders for it.</string>
     <string name="medical_routine_form_save_button">Save schedule</string>
     <string name="medical_routine_form_update_button">Update schedule</string>
     <string name="medical_routine_summary_no_reminders">No reminders</string>

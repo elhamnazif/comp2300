@@ -40,6 +40,7 @@ fun ScheduleFormSheet(
     routineToEdit: Routine?,
     medications: List<Medication>,
     initialSelectedMedicationIds: Set<String> = routineToEdit?.medicationIds?.toSet() ?: emptySet(),
+    isMutating: Boolean,
     onSave: (RoutineCreateRequest, String?) -> Unit,
     onDelete: ((String) -> Unit)? = null,
     onCancel: () -> Unit,
@@ -80,6 +81,7 @@ fun ScheduleFormSheet(
     var showMedicationPicker by remember(routineToEdit?.id, title, initialSelectedMedicationIds) {
         mutableStateOf(routineToEdit != null || initialSelectedMedicationIds.isEmpty())
     }
+    var showDeleteConfirmation by remember(routineToEdit?.id, title) { mutableStateOf(false) }
     val invalidEndDate = !ongoing && LocalDate.parse(endDate) < LocalDate.parse(startDate)
     val canContinueTiming = name.isNotBlank() &&
         timesOfDayMs.isNotEmpty() &&
@@ -113,6 +115,7 @@ fun ScheduleFormSheet(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(
+                enabled = !isMutating,
                 onClick = {
                     currentStep = when (currentStep) {
                         ScheduleFormStep.TIMING -> {
@@ -138,7 +141,10 @@ fun ScheduleFormSheet(
                 fontWeight = FontWeight.Bold,
             )
             if (routineToEdit != null && onDelete != null && currentStep == ScheduleFormStep.REMINDERS) {
-                IconButton(onClick = { onDelete(routineToEdit.id) }) {
+                IconButton(
+                    enabled = !isMutating,
+                    onClick = { showDeleteConfirmation = true },
+                ) {
                     Icon(
                         Icons.DeleteW400Outlined,
                         contentDescription = stringResource(Res.string.medical_routine_form_archive),
@@ -185,6 +191,7 @@ fun ScheduleFormSheet(
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     AssistChip(
+                                        enabled = !isMutating,
                                         onClick = {
                                             editingTimeIndex = index
                                             showTimePicker = true
@@ -197,7 +204,7 @@ fun ScheduleFormSheet(
                                             timesOfDayMs =
                                                 timesOfDayMs.toMutableList().apply { removeAt(index) }.sorted()
                                         },
-                                        enabled = timesOfDayMs.size > 1,
+                                        enabled = timesOfDayMs.size > 1 && !isMutating,
                                     ) {
                                         Icon(
                                             Icons.CloseW400Outlinedfill1,
@@ -210,6 +217,7 @@ fun ScheduleFormSheet(
                             }
                         }
                         FilledTonalButton(
+                            enabled = !isMutating,
                             onClick = {
                                 editingTimeIndex = null
                                 showTimePicker = true
@@ -225,11 +233,13 @@ fun ScheduleFormSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         FilterChip(
+                            enabled = !isMutating,
                             selected = repeatType == RoutineRepeatType.DAILY,
                             onClick = { repeatType = RoutineRepeatType.DAILY },
                             label = { Text(stringResource(Res.string.medical_routine_repeat_daily)) },
                         )
                         FilterChip(
+                            enabled = !isMutating,
                             selected = repeatType == RoutineRepeatType.WEEKLY,
                             onClick = { repeatType = RoutineRepeatType.WEEKLY },
                             label = { Text(stringResource(Res.string.medical_routine_repeat_specific_days)) },
@@ -243,6 +253,7 @@ fun ScheduleFormSheet(
                         ) {
                             weekdayLabels.forEachIndexed { index, day ->
                                 FilterChip(
+                                    enabled = !isMutating,
                                     selected = index in daysOfWeek,
                                     onClick = {
                                         daysOfWeek = daysOfWeek.toMutableSet().apply {
@@ -269,7 +280,7 @@ fun ScheduleFormSheet(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         Text(stringResource(Res.string.medical_routine_form_ongoing), fontWeight = FontWeight.SemiBold)
-                        Switch(checked = ongoing, onCheckedChange = { ongoing = it })
+                        Switch(checked = ongoing, onCheckedChange = { ongoing = it }, enabled = !isMutating)
                     }
                     if (!ongoing) {
                         DateValueField(
@@ -300,6 +311,7 @@ fun ScheduleFormSheet(
                         Switch(
                             checked = hasReminder,
                             onCheckedChange = { hasReminder = it },
+                            enabled = !isMutating,
                             modifier = Modifier.focusRequester(reminderFocusRequester),
                         )
                     }
@@ -310,6 +322,7 @@ fun ScheduleFormSheet(
                         ) {
                             ScheduleReminderOffsets.forEach { offset ->
                                 FilterChip(
+                                    enabled = !isMutating,
                                     selected = offset in offsets,
                                     onClick = {
                                         offsets = offsets.toMutableSet().apply {
@@ -341,7 +354,10 @@ fun ScheduleFormSheet(
                             fontWeight = FontWeight.SemiBold,
                         )
                         if (medications.size > 1) {
-                            TextButton(onClick = { showMedicationPicker = !showMedicationPicker }) {
+                            TextButton(
+                                onClick = { showMedicationPicker = !showMedicationPicker },
+                                enabled = !isMutating,
+                            ) {
                                 Text(
                                     if (showMedicationPicker) {
                                         stringResource(Res.string.medical_routine_form_done)
@@ -380,6 +396,7 @@ fun ScheduleFormSheet(
                                     ) {
                                         Checkbox(
                                             checked = medication.id in selectedMedicationIds,
+                                            enabled = !isMutating,
                                             onCheckedChange = { checked ->
                                                 selectedMedicationIds = selectedMedicationIds.toMutableSet().apply {
                                                     if (checked) add(medication.id) else remove(medication.id)
@@ -412,6 +429,7 @@ fun ScheduleFormSheet(
                             )
                             Switch(
                                 checked = status == RoutineStatus.ARCHIVED,
+                                enabled = !isMutating,
                                 onCheckedChange = { status = if (it) RoutineStatus.ARCHIVED else RoutineStatus.ACTIVE },
                             )
                         }
@@ -427,6 +445,7 @@ fun ScheduleFormSheet(
             canContinueTiming = canContinueTiming,
             canContinueDuration = canContinueDuration,
             canSave = canSave,
+            isMutating = isMutating,
             onContinueTiming = { currentStep = ScheduleFormStep.DURATION },
             onContinueDuration = { currentStep = ScheduleFormStep.REMINDERS },
             onSave = {
@@ -445,6 +464,29 @@ fun ScheduleFormSheet(
                     ),
                     routineToEdit?.id,
                 )
+            },
+        )
+    }
+
+    if (showDeleteConfirmation && routineToEdit != null && onDelete != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text(stringResource(Res.string.medical_routine_delete_confirm_title)) },
+            text = { Text(stringResource(Res.string.medical_routine_delete_confirm_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        onDelete(routineToEdit.id)
+                    },
+                ) {
+                    Text(stringResource(Res.string.medical_medication_delete_desc))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text(stringResource(Res.string.common_cancel))
+                }
             },
         )
     }
@@ -484,26 +526,35 @@ fun ScheduleFormSheet(
 
 @Composable
 private fun ScheduleStepHeader(step: ScheduleFormStep, subtitle: String?) {
-    val stepNumber = when (step) {
-        ScheduleFormStep.TIMING -> 1
-        ScheduleFormStep.DURATION -> 2
-        ScheduleFormStep.REMINDERS -> 3
-    }
-    val progress = stepNumber / 3f
-
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(
-            stringResource(Res.string.medical_routine_form_step_counter, stepNumber),
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
-        )
-        LinearProgressIndicator(
-            progress = { progress },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(6.dp),
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            RoutineStageLabel(
+                text = stringResource(Res.string.medical_routine_form_stage_timing),
+                isCurrent = step == ScheduleFormStep.TIMING,
+            )
+            Text(
+                "•",
+                color = MaterialTheme.colorScheme.outline,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            RoutineStageLabel(
+                text = stringResource(Res.string.medical_routine_form_stage_duration),
+                isCurrent = step == ScheduleFormStep.DURATION,
+            )
+            Text(
+                "•",
+                color = MaterialTheme.colorScheme.outline,
+                style = MaterialTheme.typography.labelLarge,
+            )
+            RoutineStageLabel(
+                text = stringResource(Res.string.medical_routine_form_stage_reminders),
+                isCurrent = step == ScheduleFormStep.REMINDERS,
+            )
+        }
         if (step == ScheduleFormStep.TIMING && !subtitle.isNullOrBlank()) {
             Text(
                 subtitle,
@@ -512,6 +563,20 @@ private fun ScheduleStepHeader(step: ScheduleFormStep, subtitle: String?) {
             )
         }
     }
+}
+
+@Composable
+private fun RoutineStageLabel(text: String, isCurrent: Boolean) {
+    Text(
+        text,
+        style = MaterialTheme.typography.labelLarge,
+        color = if (isCurrent) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        fontWeight = if (isCurrent) FontWeight.SemiBold else FontWeight.Medium,
+    )
 }
 
 @Composable
@@ -530,6 +595,7 @@ private fun ScheduleFormActions(
     canContinueTiming: Boolean,
     canContinueDuration: Boolean,
     canSave: Boolean,
+    isMutating: Boolean,
     onContinueTiming: () -> Unit,
     onContinueDuration: () -> Unit,
     onSave: () -> Unit,
@@ -538,7 +604,7 @@ private fun ScheduleFormActions(
         ScheduleFormStep.TIMING -> {
             Button(
                 onClick = onContinueTiming,
-                enabled = canContinueTiming,
+                enabled = canContinueTiming && !isMutating,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(Res.string.medical_medication_form_continue))
@@ -548,7 +614,7 @@ private fun ScheduleFormActions(
         ScheduleFormStep.DURATION -> {
             Button(
                 onClick = onContinueDuration,
-                enabled = canContinueDuration,
+                enabled = canContinueDuration && !isMutating,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(Res.string.medical_medication_form_continue))
@@ -558,7 +624,7 @@ private fun ScheduleFormActions(
         ScheduleFormStep.REMINDERS -> {
             Button(
                 onClick = onSave,
-                enabled = canSave,
+                enabled = canSave && !isMutating,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(

@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 
 data class MedicationUiState(
     val isLoading: Boolean = false,
+    val isMutating: Boolean = false,
     val medications: List<Medication> = emptyList(),
     val routines: List<Routine> = emptyList(),
     val linkedRoutineCounts: Map<String, Int> = emptyMap(),
@@ -47,31 +48,32 @@ class MedicationViewModel(
 
     fun saveMedication(request: MedicationCreateRequest, id: String? = null, onSuccess: (Medication) -> Unit = {}) {
         viewModelScope.launch {
-            state.update { it.copy(error = null) }
+            state.update { it.copy(error = null, isMutating = true) }
             runCatching {
                 val savedMedication = medicationRepository.saveMedication(request = request, id = id)
                 refreshState()
                 savedMedication
             }.onSuccess {
-                state.update { current -> current.copy(error = null) }
+                state.update { current -> current.copy(error = null, isMutating = false) }
                 onSuccess(it)
             }.onFailure { error ->
-                state.update { it.copy(error = error.message ?: "Failed to save medication") }
+                state.update { it.copy(isMutating = false, error = error.message ?: "Failed to save medication") }
             }
         }
     }
 
-    fun deleteMedication(id: String) {
+    fun deleteMedication(id: String, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            state.update { it.copy(error = null) }
+            state.update { it.copy(error = null, isMutating = true) }
             runCatching {
                 removeMedicationFromAllRoutines(id)
                 medicationRepository.deleteMedication(id)
                 refreshState()
             }.onSuccess {
-                state.update { current -> current.copy(error = null) }
+                state.update { current -> current.copy(error = null, isMutating = false) }
+                onSuccess()
             }.onFailure { error ->
-                state.update { it.copy(error = error.message ?: "Failed to delete medication") }
+                state.update { it.copy(isMutating = false, error = error.message ?: "Failed to delete medication") }
             }
         }
     }
@@ -107,20 +109,22 @@ class MedicationViewModel(
 
     fun saveRoutine(request: RoutineCreateRequest, id: String? = null, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            state.update { it.copy(error = null) }
+            state.update { it.copy(error = null, isMutating = true) }
             runCatching {
                 routineRepository.saveRoutine(request = request, id = id)
                 refreshState()
-                onSuccess()
             }.onFailure { error ->
-                state.update { it.copy(error = error.message ?: "Failed to create routine") }
+                state.update { it.copy(isMutating = false, error = error.message ?: "Failed to create routine") }
+            }.onSuccess {
+                state.update { current -> current.copy(error = null, isMutating = false) }
+                onSuccess()
             }
         }
     }
 
-    fun unlinkMedicationFromRoutine(medicationId: String, routineId: String) {
+    fun unlinkMedicationFromRoutine(medicationId: String, routineId: String, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            state.update { it.copy(error = null) }
+            state.update { it.copy(error = null, isMutating = true) }
             runCatching {
                 val routine = routineRepository.getRoutines().firstOrNull { it.id == routineId }
                     ?: error("Schedule not found")
@@ -131,20 +135,26 @@ class MedicationViewModel(
                     id = routine.id,
                 )
                 refreshState()
+            }.onSuccess {
+                state.update { current -> current.copy(error = null, isMutating = false) }
+                onSuccess()
             }.onFailure { error ->
-                state.update { it.copy(error = error.message ?: "Failed to remove schedule link") }
+                state.update { it.copy(isMutating = false, error = error.message ?: "Failed to remove schedule link") }
             }
         }
     }
 
-    fun deleteRoutine(id: String) {
+    fun deleteRoutine(id: String, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            state.update { it.copy(error = null) }
+            state.update { it.copy(error = null, isMutating = true) }
             runCatching {
                 routineRepository.deleteRoutine(id)
                 refreshState()
+            }.onSuccess {
+                state.update { current -> current.copy(error = null, isMutating = false) }
+                onSuccess()
             }.onFailure { error ->
-                state.update { it.copy(error = error.message ?: "Failed to delete schedule") }
+                state.update { it.copy(isMutating = false, error = error.message ?: "Failed to delete schedule") }
             }
         }
     }

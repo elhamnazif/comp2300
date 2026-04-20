@@ -133,7 +133,14 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
     }
 
     if (showSheet) {
-        ModalBottomSheet(onDismissRequest = { showSheet = false }, sheetState = sheetState) {
+        ModalBottomSheet(
+            onDismissRequest = {
+                if (!state.isMutating) {
+                    showSheet = false
+                }
+            },
+            sheetState = sheetState,
+        ) {
             ScheduleFormSheet(
                 title = if (editingRoutine == null) {
                     stringResource(Res.string.medical_routine_form_add_title)
@@ -142,6 +149,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                 },
                 routineToEdit = editingRoutine,
                 medications = state.medications.filter { it.status == MedicationStatus.ACTIVE },
+                isMutating = state.isMutating,
                 onSave = { request, id ->
                     coroutineScope.launch {
                         val permissionResult = if (request.hasReminder && request.reminderOffsetsMins.isNotEmpty()) {
@@ -149,16 +157,18 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                         } else {
                             NotificationPermissionResult.GRANTED
                         }
-                        viewModel.saveRoutine(request, id)
+                        viewModel.saveRoutine(request, id) {
+                            showSheet = false
+                        }
                         if (permissionResult != NotificationPermissionResult.GRANTED) {
                             snackbarHostState.showSnackbar(notificationDisabledMessage)
                         }
                     }
-                    showSheet = false
                 },
                 onDelete = { routineId ->
-                    viewModel.deleteRoutine(routineId)
-                    showSheet = false
+                    viewModel.deleteRoutine(routineId) {
+                        showSheet = false
+                    }
                 },
                 onCancel = { showSheet = false },
             )

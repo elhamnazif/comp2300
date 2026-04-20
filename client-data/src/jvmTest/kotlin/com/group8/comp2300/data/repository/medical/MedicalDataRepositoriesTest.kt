@@ -76,6 +76,29 @@ class MedicalDataRepositoriesTest {
     }
 
     @Test
+    fun medicationSaveKeepsZeroStockAmount() = runTest {
+        val db = newDatabase()
+        val repository = MedicationDataRepositoryImpl(
+            authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
+            medicationLocal = MedicationLocalDataSource(db),
+            queuedWriteDispatcher = dispatcher(db, OutboxDataSource(db)),
+        )
+
+        val savedMedication = repository.saveMedication(
+            MedicationCreateRequest(
+                name = "Vitamin D",
+                doseAmount = "1",
+                doseUnit = "TABLET",
+                stockAmount = "0",
+                stockUnit = "TABLET",
+            ),
+        )
+
+        assertEquals("0", savedMedication.stockAmount)
+        assertEquals("0", MedicationLocalDataSource(db).getAll().single().stockAmount)
+    }
+
+    @Test
     fun guestRoutineSaveQueuesPendingWriteAndSyncsNotifications() = runTest {
         val db = newDatabase()
         val outbox = OutboxDataSource(db)

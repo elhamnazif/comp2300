@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 
 data class RoutineUiState(
     val isLoading: Boolean = false,
+    val isMutating: Boolean = false,
     val routines: List<Routine> = emptyList(),
     val medications: List<Medication> = emptyList(),
     val error: String? = null,
@@ -53,30 +54,32 @@ class RoutineViewModel(
         }
     }
 
-    fun saveRoutine(request: RoutineCreateRequest, id: String? = null) {
+    fun saveRoutine(request: RoutineCreateRequest, id: String? = null, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            state.update { it.copy(error = null) }
+            state.update { it.copy(error = null, isMutating = true) }
             runCatching {
                 routineRepository.saveRoutine(request, id)
                 routineRepository.getRoutines()
             }.onSuccess { routines ->
-                state.update { it.copy(routines = routines) }
+                state.update { it.copy(routines = routines, isMutating = false) }
+                onSuccess()
             }.onFailure { error ->
-                state.update { it.copy(error = error.message ?: "Failed to save routine") }
+                state.update { it.copy(isMutating = false, error = error.message ?: "Failed to save routine") }
             }
         }
     }
 
-    fun deleteRoutine(id: String) {
+    fun deleteRoutine(id: String, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
-            state.update { it.copy(error = null) }
+            state.update { it.copy(error = null, isMutating = true) }
             runCatching {
                 routineRepository.deleteRoutine(id)
                 routineRepository.getRoutines()
             }.onSuccess { routines ->
-                state.update { it.copy(routines = routines) }
+                state.update { it.copy(routines = routines, isMutating = false) }
+                onSuccess()
             }.onFailure { error ->
-                state.update { it.copy(error = error.message ?: "Failed to delete routine") }
+                state.update { it.copy(isMutating = false, error = error.message ?: "Failed to delete routine") }
             }
         }
     }
