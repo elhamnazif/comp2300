@@ -35,8 +35,8 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.koinInject
-import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.navigation3.koinEntryProvider
 
 private val mainTabs =
     listOf(
@@ -104,16 +104,44 @@ private fun AppLoadingState(modifier: Modifier = Modifier) {
 
 @Composable
 private fun AppNavigationShell(navigator: Navigator, modifier: Modifier = Modifier) {
-    val currentScreen = navigator.currentScreen
-    val showNavBar = currentScreen in mainTabs.map(MainTab::screen)
+    val windowAdaptiveInfo = currentWindowAdaptiveInfo()
+    val directive =
+        remember(windowAdaptiveInfo) {
+            calculatePaneScaffoldDirective(windowAdaptiveInfo)
+                .copy(horizontalPartitionSpacerSize = 0.dp)
+        }
+    val supportingPaneStrategy =
+        rememberListDetailSceneStrategy<Any>(
+            backNavigationBehavior = BackNavigationBehavior.PopUntilCurrentDestinationChange,
+            directive = directive,
+        )
+    CompositionLocalProvider(LocalNavigator provides navigator) {
+        NavDisplay(
+            modifier = modifier.fillMaxSize(),
+            backStack = navigator.backStack,
+            sceneStrategies = listOf(supportingPaneStrategy),
+            onBack = navigator::goBack,
+            transitionSpec = { pushAnimation },
+            popTransitionSpec = { popAnimation },
+            predictivePopTransitionSpec = { popAnimation },
+            entryDecorators =
+            listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+                rememberViewModelStoreNavEntryDecorator(),
+            ),
+            entryProvider = koinEntryProvider(),
+        )
+    }
+}
+
+@Composable
+fun MainShellScreen(navigator: Navigator = LocalNavigator.current) {
+    val selectedTab = navigator.currentTab ?: Screen.Home
     val navigationSuiteScaffoldState = rememberNavigationSuiteScaffoldState()
     val windowAdaptiveInfo = currentWindowAdaptiveInfo()
-    val layoutType =
-        if (showNavBar) {
-            NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
-        } else {
-            NavigationSuiteType.None
-        }
+    val shellBackStack = navigator.mainShellBackStack
+    val navigationSuiteType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
+    val useRootOverlayForShellChildren = navigationSuiteType == NavigationSuiteType.NavigationBar
     val directive =
         remember(windowAdaptiveInfo) {
             calculatePaneScaffoldDirective(windowAdaptiveInfo)
@@ -125,22 +153,20 @@ private fun AppNavigationShell(navigator: Navigator, modifier: Modifier = Modifi
             directive = directive,
         )
 
-    CompositionLocalProvider(LocalNavigator provides navigator) {
+    CompositionLocalProvider(LocalUseRootOverlayForShellChildren provides useRootOverlayForShellChildren) {
         NavigationSuiteScaffold(
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             navigationSuiteItems = {
-                if (showNavBar) {
-                    mainTabs.forEach { tab ->
-                        item(
-                            icon = { Icon(tab.icon, tab.label) },
-                            label = { Text(tab.label) },
-                            selected = currentScreen == tab.screen,
-                            onClick = { navigator.clearAndGoTo(tab.screen) },
-                        )
-                    }
+                mainTabs.forEach { tab ->
+                    item(
+                        icon = { Icon(tab.icon, tab.label) },
+                        label = { Text(tab.label) },
+                        selected = selectedTab == tab.screen,
+                        onClick = { navigator.navigate(tab.screen) },
+                    )
                 }
             },
-            layoutType = layoutType,
+            layoutType = navigationSuiteType,
             state = navigationSuiteScaffoldState,
         ) {
             Scaffold(
@@ -148,9 +174,9 @@ private fun AppNavigationShell(navigator: Navigator, modifier: Modifier = Modifi
                 contentColor = MaterialTheme.colorScheme.onBackground,
             ) { _ ->
                 NavDisplay(
-                    backStack = navigator.backStack,
+                    backStack = shellBackStack,
                     sceneStrategies = listOf(supportingPaneStrategy),
-                    onBack = navigator::goBack,
+                    onBack = navigator::goBackWithinShell,
                     transitionSpec = { pushAnimation },
                     popTransitionSpec = { popAnimation },
                     predictivePopTransitionSpec = { popAnimation },

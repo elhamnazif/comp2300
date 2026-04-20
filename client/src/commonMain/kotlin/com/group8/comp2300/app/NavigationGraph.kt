@@ -16,6 +16,7 @@ import org.koin.dsl.module
 
 val navigationGraphModule = module {
     includes(
+        mainShellGraphModule,
         authGraphModule,
         homeGraphModule,
         profileGraphModule,

@@ -6,6 +6,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface Screen : NavKey {
+    // Root App Shell
+    @Serializable
+    data object MainShell : Screen
+
     // Top Level Tabs
     @Serializable
     data object Home : Screen
@@ -106,3 +110,14 @@ sealed interface Screen : NavKey {
     @Serializable
     data object GuestSignIn : Screen
 }
+
+val mainTabScreens: List<Screen> =
+    listOf(
+        Screen.Home,
+        Screen.Booking,
+        Screen.Calendar,
+        Screen.Education,
+        Screen.Profile,
+    )
+
+fun Screen.isMainTab(): Boolean = this in mainTabScreens

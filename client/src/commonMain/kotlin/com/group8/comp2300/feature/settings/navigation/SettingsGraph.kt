@@ -2,6 +2,7 @@ package com.group8.comp2300.feature.settings.navigation
 
 import androidx.compose.runtime.*
 import com.group8.comp2300.app.navigation.LocalNavigator
+import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.feature.settings.*
@@ -11,7 +12,7 @@ import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
 val settingsGraphModule = module {
-    navigation<Screen.PrivacySecurity> {
+    navigation<Screen.PrivacySecurity>(metadata = overlayNavigationMetadata()) {
         val navigator = LocalNavigator.current
         val pinDataSource = koinInject<PinDataSource>()
         val scope = rememberCoroutineScope()
@@ -31,28 +32,28 @@ val settingsGraphModule = module {
         )
     }
 
-    navigation<Screen.Notifications> {
+    navigation<Screen.Notifications>(metadata = overlayNavigationMetadata()) {
         val navigator = LocalNavigator.current
         NotificationsScreen(
             onBack = navigator::goBack,
         )
     }
 
-    navigation<Screen.Accessibility> {
+    navigation<Screen.Accessibility>(metadata = overlayNavigationMetadata()) {
         val navigator = LocalNavigator.current
         AccessibilityScreen(
             onBack = navigator::goBack,
         )
     }
 
-    navigation<Screen.HelpSupport> {
+    navigation<Screen.HelpSupport>(metadata = overlayNavigationMetadata()) {
         val navigator = LocalNavigator.current
         HelpSupportScreen(
             onBack = navigator::goBack,
         )
     }
 
-    navigation<Screen.PrivacyLegalese> {
+    navigation<Screen.PrivacyLegalese>(metadata = overlayNavigationMetadata()) {
         val navigator = LocalNavigator.current
         PrivacyLegaleseScreen(
             onBack = navigator::goBack,

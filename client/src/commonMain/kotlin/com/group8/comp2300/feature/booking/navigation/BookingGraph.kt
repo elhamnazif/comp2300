@@ -5,6 +5,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.app.navigation.LocalNavigator
+import com.group8.comp2300.app.navigation.LocalUseRootOverlayForShellChildren
+import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
@@ -17,6 +19,7 @@ import org.koin.dsl.navigation3.navigation
 val bookingGraphModule = module {
     navigation<Screen.Booking>(metadata = ListDetailSceneStrategy.listPane()) {
         val navigator = LocalNavigator.current
+        val useRootOverlayForShellChildren = LocalUseRootOverlayForShellChildren.current
         val viewModel = koinViewModel<BookingViewModel>()
         val authRepository = koinInject<AuthRepository>()
         val session by authRepository.session.collectAsState()
@@ -36,26 +39,33 @@ val bookingGraphModule = module {
             onTagToggle = viewModel::toggleTag,
             onMapModeChange = viewModel::setMapMode,
             onRefresh = viewModel::loadClinics,
-            onClinicClick = { clinicId -> navigator.navigate(Screen.ClinicDetail(clinicId)) },
+            onClinicClick = { clinicId ->
+                val destination = Screen.ClinicDetail(clinicId)
+                if (useRootOverlayForShellChildren) navigator.navigate(destination) else navigator.navigateWithinShell(destination)
+            },
             onClinicSelect = viewModel::selectClinic,
-            onViewBookings = { navigator.navigate(Screen.BookingHistory()) },
+            onViewBookings = {
+                val destination = Screen.BookingHistory()
+                if (useRootOverlayForShellChildren) navigator.navigate(destination) else navigator.navigateWithinShell(destination)
+            },
         )
     }
 
-    navigation<Screen.ClinicDetail>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+    navigation<Screen.ClinicDetail>(metadata = overlayNavigationMetadata(ListDetailSceneStrategy.detailPane())) { route ->
         val navigator = LocalNavigator.current
+        val useRootOverlayForShellChildren = LocalUseRootOverlayForShellChildren.current
 
         BookingDetailsScreen(
             clinicId = route.clinicId,
             rescheduleAppointment = route.rescheduleAppointment,
-            onBack = navigator::goBack,
+            onBack = if (useRootOverlayForShellChildren) navigator::goBack else navigator::goBackWithinShell,
             onContinueToConfirmation = { clinicId, slotId, rescheduleAppointment ->
                 navigator.navigate(Screen.BookingConfirmation(clinicId, slotId, rescheduleAppointment))
             },
         )
     }
 
-    navigation<Screen.BookingHistory>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+    navigation<Screen.BookingHistory>(metadata = overlayNavigationMetadata()) { route ->
         val navigator = LocalNavigator.current
         val authRepository = koinInject<AuthRepository>()
         val session by authRepository.session.collectAsState()
@@ -83,7 +93,7 @@ val bookingGraphModule = module {
         )
     }
 
-    navigation<Screen.BookingConfirmation>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+    navigation<Screen.BookingConfirmation>(metadata = overlayNavigationMetadata()) { route ->
         val navigator = LocalNavigator.current
         val authRepository = koinInject<AuthRepository>()
         val session by authRepository.session.collectAsState()
@@ -116,7 +126,7 @@ val bookingGraphModule = module {
         )
     }
 
-    navigation<Screen.BookingSuccess>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+    navigation<Screen.BookingSuccess>(metadata = overlayNavigationMetadata()) { route ->
         val navigator = LocalNavigator.current
         val viewModel = koinViewModel<BookingViewModel>()
 

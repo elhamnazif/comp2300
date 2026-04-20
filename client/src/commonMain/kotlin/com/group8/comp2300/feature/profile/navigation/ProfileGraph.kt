@@ -3,6 +3,7 @@ package com.group8.comp2300.feature.profile.navigation
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.app.navigation.LocalNavigator
+import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
@@ -31,7 +32,7 @@ val profileGraphModule = module {
         )
     }
 
-    navigation<Screen.GuestSignIn> {
+    navigation<Screen.GuestSignIn>(metadata = overlayNavigationMetadata()) {
         val navigator = LocalNavigator.current
         GuestSignInScreen(
             onRequireAuth = { navigator.requireAuth() },
