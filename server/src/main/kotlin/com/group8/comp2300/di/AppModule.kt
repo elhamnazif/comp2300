@@ -39,9 +39,11 @@ import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
 import com.group8.comp2300.security.MedicalRecordCipher
 import com.group8.comp2300.security.MedicalRecordEncryptionConfig
+import com.group8.comp2300.service.appointment.AppointmentService
 import com.group8.comp2300.service.auth.AuthService
 import com.group8.comp2300.service.email.EmailService
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
+import com.group8.comp2300.service.medication.MedicationService
 import org.koin.dsl.module
 
 val serverModule = module {
@@ -94,4 +96,20 @@ val serverModule = module {
         )
     }
     single { MedicalRecordService(repository = get(), medicalRecordCipher = get()) }
+    single {
+        AppointmentService(
+            appointmentRepository = get(),
+            appointmentSlotRepository = get(),
+            clinicRepository = get(),
+            database = get()
+        )
+    }
+    single {
+        MedicationService(
+            medicationRepository = get(),
+            routineRepository = get(),
+            routineOccurrenceOverrideRepository = get(),
+            medicationLogRepository = get()
+        )
+    }
 }
