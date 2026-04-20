@@ -126,8 +126,13 @@ CREATE TABLE MedicationEntity (
     userId TEXT NOT NULL,
     med_name TEXT NOT NULL,
     dosage TEXT NOT NULL,
+    dose_amount TEXT,
+    dose_unit TEXT,
+    custom_dose_unit TEXT,
     quantity TEXT NOT NULL,
-    frequency TEXT NOT NULL,
+    stock_amount TEXT,
+    stock_unit TEXT,
+    custom_stock_unit TEXT,
     instruction TEXT,
     color_hex TEXT,
     start_date TEXT NOT NULL,
@@ -150,8 +155,13 @@ INSERT OR REPLACE INTO MedicationEntity (
     userId,
     med_name,
     dosage,
+    dose_amount,
+    dose_unit,
+    custom_dose_unit,
     quantity,
-    frequency,
+    stock_amount,
+    stock_unit,
+    custom_stock_unit,
     instruction,
     color_hex,
     start_date,
@@ -159,7 +169,7 @@ INSERT OR REPLACE INTO MedicationEntity (
     has_reminder,
     status
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteAllMedications:
 DELETE FROM MedicationEntity;

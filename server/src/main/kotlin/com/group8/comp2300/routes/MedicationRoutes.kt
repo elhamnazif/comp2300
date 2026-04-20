@@ -2,12 +2,12 @@ package com.group8.comp2300.routes
 
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationFrequency
 import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
 import com.group8.comp2300.domain.model.medical.MedicationStatus
+import com.group8.comp2300.domain.model.medical.MedicationUnit
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
@@ -305,12 +305,34 @@ private suspend fun io.ktor.server.application.ApplicationCall.toMedication(
         respond(HttpStatusCode.BadRequest, mapOf("error" to "Medication name is required"))
         return null
     }
-    if (request.dosage.isBlank()) {
-        respond(HttpStatusCode.BadRequest, mapOf("error" to "Dosage is required"))
+    val doseAmount = request.doseAmount.trim()
+    val doseAmountValue = doseAmount.toDoubleOrNull()
+    if (doseAmountValue == null || doseAmountValue <= 0.0) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Dose amount must be a positive number"))
         return null
     }
-    val frequency = runCatching { MedicationFrequency.valueOf(request.frequency) }.getOrElse {
-        respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid medication type"))
+    val doseUnit = runCatching { MedicationUnit.valueOf(request.doseUnit) }.getOrElse {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid dose unit"))
+        return null
+    }
+    val customDoseUnit = request.customDoseUnit?.trim()?.takeIf(String::isNotBlank)
+    if (doseUnit == MedicationUnit.OTHER && customDoseUnit == null) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Custom dose unit is required"))
+        return null
+    }
+    val stockAmount = request.stockAmount.trim()
+    val stockAmountValue = stockAmount.toDoubleOrNull()
+    if (stockAmountValue == null || stockAmountValue <= 0.0) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Stock amount must be a positive number"))
+        return null
+    }
+    val stockUnit = runCatching { MedicationUnit.valueOf(request.stockUnit) }.getOrElse {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Invalid stock unit"))
+        return null
+    }
+    val customStockUnit = request.customStockUnit?.trim()?.takeIf(String::isNotBlank)
+    if (stockUnit == MedicationUnit.OTHER && customStockUnit == null) {
+        respond(HttpStatusCode.BadRequest, mapOf("error" to "Custom stock unit is required"))
         return null
     }
     val status = runCatching { MedicationStatus.valueOf(request.status) }.getOrElse {
@@ -321,9 +343,12 @@ private suspend fun io.ktor.server.application.ApplicationCall.toMedication(
         id = id,
         userId = userId,
         name = request.name.trim(),
-        dosage = request.dosage.trim(),
-        quantity = request.quantity.trim(),
-        frequency = frequency,
+        doseAmount = doseAmount,
+        doseUnit = doseUnit,
+        customDoseUnit = customDoseUnit.takeIf { doseUnit == MedicationUnit.OTHER },
+        stockAmount = stockAmount,
+        stockUnit = stockUnit,
+        customStockUnit = customStockUnit.takeIf { stockUnit == MedicationUnit.OTHER },
         instruction = request.instruction?.trim()?.takeIf(String::isNotEmpty),
         colorHex = request.colorHex ?: Medication.PRESET_COLORS.random(),
         status = status,

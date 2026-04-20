@@ -63,9 +63,10 @@ class MedicalDataRepositoriesTest {
         repository.saveMedication(
             MedicationCreateRequest(
                 name = "Vitamin D",
-                dosage = "1 tablet",
-                quantity = "1000 IU",
-                frequency = "DAILY",
+                doseAmount = "1",
+                doseUnit = "TABLET",
+                stockAmount = "30",
+                stockUnit = "TABLET",
             ),
         )
 

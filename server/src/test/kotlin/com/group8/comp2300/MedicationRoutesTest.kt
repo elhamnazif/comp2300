@@ -46,9 +46,10 @@ class MedicationRoutesTest {
             setBody(
                 MedicationCreateRequest(
                     name = "Vitamin D",
-                    dosage = "1 tablet",
-                    quantity = "1000 IU",
-                    frequency = MedicationFrequency.DAILY.name,
+                    doseAmount = "1",
+                    doseUnit = MedicationUnit.TABLET.name,
+                    stockAmount = "30",
+                    stockUnit = MedicationUnit.TABLET.name,
                 ),
             )
         }
@@ -57,6 +58,134 @@ class MedicationRoutesTest {
         val medication = response.body<Medication>()
         assertEquals("med-1", medication.id)
         assertEquals("Vitamin D", medication.name)
+        assertEquals("1", medication.doseAmount)
+        assertEquals(MedicationUnit.TABLET, medication.doseUnit)
+        assertEquals("30", medication.stockAmount)
+        assertEquals(MedicationUnit.TABLET, medication.stockUnit)
+    }
+
+    @Test
+    fun upsertMedicationWithCustomUnitReturnsCreated() = testApplication {
+        val (_, _, _, token, _) = configureMedicationTestModuleWithUser()
+        val client = jsonClient()
+
+        val response = client.put("/api/medications/med-custom") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            header(HttpHeaders.ContentType, "application/json")
+            setBody(
+                MedicationCreateRequest(
+                    name = "Topical gel",
+                    doseAmount = "1",
+                    doseUnit = MedicationUnit.OTHER.name,
+                    customDoseUnit = "application",
+                    stockAmount = "2",
+                    stockUnit = MedicationUnit.OTHER.name,
+                    customStockUnit = "tubes",
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.Created, response.status)
+        val medication = response.body<Medication>()
+        assertEquals("1", medication.doseAmount)
+        assertEquals(MedicationUnit.OTHER, medication.doseUnit)
+        assertEquals("application", medication.customDoseUnit)
+        assertEquals("2", medication.stockAmount)
+        assertEquals(MedicationUnit.OTHER, medication.stockUnit)
+        assertEquals("tubes", medication.customStockUnit)
+    }
+
+    @Test
+    fun upsertMedicationRejectsInvalidDoseAmount() = testApplication {
+        val (_, _, _, token, _) = configureMedicationTestModuleWithUser()
+        val client = jsonClient()
+
+        val response = client.put("/api/medications/med-invalid-dose") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            header(HttpHeaders.ContentType, "application/json")
+            setBody(
+                MedicationCreateRequest(
+                    name = "Vitamin D",
+                    doseAmount = "0",
+                    doseUnit = MedicationUnit.TABLET.name,
+                    stockAmount = "30",
+                    stockUnit = MedicationUnit.TABLET.name,
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("Dose amount"))
+    }
+
+    @Test
+    fun upsertMedicationRejectsMissingCustomDoseUnit() = testApplication {
+        val (_, _, _, token, _) = configureMedicationTestModuleWithUser()
+        val client = jsonClient()
+
+        val response = client.put("/api/medications/med-other-dose") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            header(HttpHeaders.ContentType, "application/json")
+            setBody(
+                MedicationCreateRequest(
+                    name = "Topical gel",
+                    doseAmount = "1",
+                    doseUnit = MedicationUnit.OTHER.name,
+                    stockAmount = "3",
+                    stockUnit = MedicationUnit.TABLET.name,
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("Custom dose unit"))
+    }
+
+    @Test
+    fun upsertMedicationRejectsInvalidStockAmount() = testApplication {
+        val (_, _, _, token, _) = configureMedicationTestModuleWithUser()
+        val client = jsonClient()
+
+        val response = client.put("/api/medications/med-invalid") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            header(HttpHeaders.ContentType, "application/json")
+            setBody(
+                MedicationCreateRequest(
+                    name = "Vitamin D",
+                    doseAmount = "1",
+                    doseUnit = MedicationUnit.TABLET.name,
+                    stockAmount = "0",
+                    stockUnit = MedicationUnit.TABLET.name,
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("Stock amount"))
+    }
+
+    @Test
+    fun upsertMedicationRejectsMissingCustomUnit() = testApplication {
+        val (_, _, _, token, _) = configureMedicationTestModuleWithUser()
+        val client = jsonClient()
+
+        val response = client.put("/api/medications/med-other") {
+            header(HttpHeaders.Authorization, "Bearer $token")
+            header(HttpHeaders.ContentType, "application/json")
+            setBody(
+                MedicationCreateRequest(
+                    name = "Custom supply",
+                    doseAmount = "1",
+                    doseUnit = MedicationUnit.OTHER.name,
+                    customDoseUnit = "scoop",
+                    stockAmount = "3",
+                    stockUnit = MedicationUnit.OTHER.name,
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertTrue(response.bodyAsText().contains("Custom stock unit"))
     }
 
     @Test
@@ -69,9 +198,10 @@ class MedicationRoutesTest {
                 id = "med-1",
                 userId = userId,
                 name = "PrEP",
-                dosage = "1 tablet",
-                quantity = "30 tablets",
-                frequency = MedicationFrequency.DAILY,
+                doseAmount = "1",
+                doseUnit = MedicationUnit.TABLET,
+                stockAmount = "30",
+                stockUnit = MedicationUnit.TABLET,
                 instruction = null,
                 colorHex = "#42A5F5",
             ),
@@ -113,9 +243,10 @@ class MedicationRoutesTest {
                 id = "med-1",
                 userId = userId,
                 name = "PrEP",
-                dosage = "1 tablet",
-                quantity = "30 tablets",
-                frequency = MedicationFrequency.DAILY,
+                doseAmount = "1",
+                doseUnit = MedicationUnit.TABLET,
+                stockAmount = "30",
+                stockUnit = MedicationUnit.TABLET,
                 instruction = null,
                 colorHex = "#42A5F5",
             ),
@@ -180,9 +311,10 @@ class MedicationRoutesTest {
                 id = "med-1",
                 userId = userId,
                 name = "Vitamin D",
-                dosage = "1 tablet",
-                quantity = "1000 IU",
-                frequency = MedicationFrequency.DAILY,
+                doseAmount = "1",
+                doseUnit = MedicationUnit.TABLET,
+                stockAmount = "30",
+                stockUnit = MedicationUnit.TABLET,
                 instruction = null,
                 colorHex = "#42A5F5",
             ),
@@ -221,7 +353,7 @@ class MedicationRoutesTest {
     }
 
     @Test
-    fun upsertRoutineAllowsLegacyOnDemandMedicationLinks() = testApplication {
+    fun upsertRoutineAllowsUnscheduledMedicationLinks() = testApplication {
         val (medicationRepository, _, _, token, userId) = configureMedicationTestModuleWithUser()
         val client = jsonClient()
 
@@ -230,9 +362,10 @@ class MedicationRoutesTest {
                 id = "med-ondemand",
                 userId = userId,
                 name = "Pain relief",
-                dosage = "1 capsule",
-                quantity = "20 capsules",
-                frequency = MedicationFrequency.ON_DEMAND,
+                doseAmount = "1",
+                doseUnit = MedicationUnit.CAPSULE,
+                stockAmount = "20",
+                stockUnit = MedicationUnit.CAPSULE,
                 instruction = null,
                 colorHex = "#42A5F5",
             ),
@@ -265,9 +398,10 @@ class MedicationRoutesTest {
                 id = "med-1",
                 userId = userId,
                 name = "Pain relief",
-                dosage = "1 capsule",
-                quantity = "20 capsules",
-                frequency = MedicationFrequency.ON_DEMAND,
+                doseAmount = "1",
+                doseUnit = MedicationUnit.CAPSULE,
+                stockAmount = "20",
+                stockUnit = MedicationUnit.CAPSULE,
                 instruction = null,
                 colorHex = "#42A5F5",
             ),
