@@ -8,7 +8,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.format.DateFormatter
@@ -52,9 +54,9 @@ fun CalendarScreen(
     }
 
     ConsumeSnackbarMessage(
-        message = state.error,
+        message = state.snackbarMessage,
         snackbarHostState = snackbarHostState,
-        onConsumed = viewModel::dismissError,
+        onConsumed = viewModel::dismissSnackbarMessage,
     )
 
     val selectedDate = selectedDateForEntry?.date ?: today
@@ -75,11 +77,16 @@ fun CalendarScreen(
             }
         }
     }
-    val agendaVisibleDays = remember(state.agendaDays, agendaAppointmentsByDate) {
-        state.agendaDays.filter { day -> hasAgendaContent(day, agendaAppointmentsByDate[day.date].orEmpty()) }
-    }
     val agendaEndDate = remember(selectedDate) { selectedDate.plus(6, DateTimeUnit.DAY) }
     var expandedRoutineKeys by remember { mutableStateOf(emptySet<String>()) }
+    val hasUsableContent = remember(state.selectedDate, state.overview, state.agendaDays, state.appointments, state.medications) {
+        state.selectedDate.isNotBlank() ||
+            state.overview.isNotEmpty() ||
+            state.agendaDays.isNotEmpty() ||
+            state.appointments.isNotEmpty() ||
+            state.medications.isNotEmpty()
+    }
+    val showBlockingState = !hasUsableContent && (state.isLoading || state.screenError != null)
 
     val onToggleRoutineExpansion: (String) -> Unit = { routineKey ->
         expandedRoutineKeys = expandedRoutineKeys.toMutableSet().apply {
@@ -123,191 +130,232 @@ fun CalendarScreen(
             AppTopBar(title = { Text(stringResource(Res.string.calendar_title), fontWeight = FontWeight.Bold) })
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                selectedDateForEntry =
-                    CalendarDay(
-                        selectedDate.day,
-                        selectedDate,
-                        AdherenceStatus.NONE,
-                        isToday = selectedDate == today,
-                        isCurrentMonth = true,
+            if (!showBlockingState) {
+                FloatingActionButton(onClick = {
+                    selectedDateForEntry =
+                        CalendarDay(
+                            selectedDate.day,
+                            selectedDate,
+                            AdherenceStatus.NONE,
+                            isToday = selectedDate == today,
+                            isCurrentMonth = true,
+                        )
+                    entryDate = selectedDate
+                    val now = Clock.System.now().toLocalDateTime(timeZone)
+                    entryTime = now.hour to now.minute
+                    sheetUiState = CalendarSheetState.Menu
+                }) {
+                    Icon(
+                        Icons.AddW400Outlinedfill1,
+                        contentDescription = stringResource(Res.string.calendar_add_entry_desc),
                     )
-                entryDate = selectedDate
-                val now = Clock.System.now().toLocalDateTime(timeZone)
-                entryTime = now.hour to now.minute
-                sheetUiState = CalendarSheetState.Menu
-            }) {
-                Icon(
-                    Icons.AddW400Outlinedfill1,
-                    contentDescription = stringResource(Res.string.calendar_add_entry_desc),
-                )
+                }
             }
         },
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).background(MaterialTheme.colorScheme.surface),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-        ) {
-            item {
-                CalendarViewModeSwitch(
-                    viewMode = viewMode,
-                    onSelect = { viewMode = it },
-                )
+        if (showBlockingState) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (state.isLoading) {
+                    CalendarLoadingState()
+                } else {
+                    CalendarErrorState(
+                        message = state.screenError.orEmpty(),
+                        onRetry = viewModel::retryCurrentSelection,
+                    )
+                }
             }
-
-            if (viewMode == CalendarViewMode.CALENDAR) {
-                item {
-                    CalendarCard(
-                        baseDate = today,
-                        overview = state.overview,
-                        selectedDate = selectedDateForEntry,
-                        onDayClick = { day ->
-                            selectedDateForEntry = day
-                            entryDate = day.date
-                            viewModel.loadAgendaForDate(day.date.toString())
-                        },
-                        onMonthChange = viewModel::loadOverviewForMonth,
-                    )
-                }
-
-                item {
-                    CalendarDayHeader(
-                        date = selectedDate,
-                        agenda = state.routineAgenda,
-                        extraLogCount = state.manualLogs.size,
-                        appointmentCount = selectedAppointments.size,
-                        moodCount = state.dayMoodEntries.size,
-                    )
-                }
-
-                if (state.dayMoodEntries.isNotEmpty()) {
-                    item {
-                        DailyMoodSummaryCard(moods = state.dayMoodEntries)
-                    }
-                }
-
-                if (state.monthMoodSummary.isNotEmpty()) {
-                    item {
-                        MonthlyMoodChart(moodCounts = state.monthMoodSummary)
-                    }
-                }
-
-                item {
-                    Text(
-                        stringResource(Res.string.calendar_scheduled_doses),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                }
-
-                if (state.routineAgenda.isEmpty()) {
-                    item {
-                        EmptyStateMessage(stringResource(Res.string.calendar_no_scheduled_doses_day))
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(innerPadding).background(MaterialTheme.colorScheme.surface),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                if (state.isLoading) {
+                    item("calendar_loading_banner") {
+                        CalendarLoadingBanner()
                     }
                 } else {
-                    items(
-                        items = state.routineAgenda,
-                        key = { "${it.routineId}:${it.occurrenceTimeMs}" },
-                    ) { routine ->
-                        val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
-                        RoutineAgendaCard(
-                            routine = routine,
-                            isExpanded = routineKey in expandedRoutineKeys,
-                            onToggleExpansion = { onToggleRoutineExpansion(routineKey) },
-                            onLogMedication = { medicationId, status ->
-                                onLogMedication(routine, medicationId, status)
+                    state.screenError?.let { screenError ->
+                        item("calendar_error_banner") {
+                            CalendarErrorBanner(
+                                message = screenError,
+                                onRetry = viewModel::retryCurrentSelection,
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    CalendarViewModeSwitch(
+                        viewMode = viewMode,
+                        onSelect = { viewMode = it },
+                    )
+                }
+
+                if (viewMode == CalendarViewMode.CALENDAR) {
+                    item {
+                        CalendarCard(
+                            baseDate = today,
+                            overview = state.overview,
+                            selectedDate = selectedDateForEntry,
+                            onDayClick = { day ->
+                                selectedDateForEntry = day
+                                entryDate = day.date
+                                viewModel.loadAgendaForDate(day.date.toString())
                             },
-                            onLogAll = { status -> onLogAll(routine, status) },
-                            onMoveDose = { onMoveDose(routine) },
+                            onMonthChange = viewModel::loadOverviewForMonth,
                         )
                     }
-                }
 
-                if (state.manualLogs.isNotEmpty()) {
+                    item {
+                        CalendarDayHeader(
+                            date = selectedDate,
+                            agenda = state.routineAgenda,
+                            extraLogCount = state.manualLogs.size,
+                            appointmentCount = selectedAppointments.size,
+                            moodCount = state.dayMoodEntries.size,
+                        )
+                    }
+
                     item {
                         Text(
-                            stringResource(Res.string.calendar_extra_logs),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            stringResource(Res.string.calendar_scheduled_doses),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
                         )
                     }
-                    items(
-                        items = state.manualLogs,
-                        key = { it.id.ifBlank { "manual:${it.medicationTime}" } },
-                    ) { log ->
-                        ManualLogCard(log = log)
-                    }
-                }
 
-                item {
+                    if (state.routineAgenda.isEmpty()) {
+                        item {
+                            EmptyStateMessage(stringResource(Res.string.calendar_no_scheduled_doses_day))
+                        }
+                    } else {
+                        items(
+                            items = state.routineAgenda,
+                            key = { "${it.routineId}:${it.occurrenceTimeMs}" },
+                        ) { routine ->
+                            val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
+                            RoutineAgendaCard(
+                                routine = routine,
+                                isExpanded = routineKey in expandedRoutineKeys,
+                                onToggleExpansion = { onToggleRoutineExpansion(routineKey) },
+                                onLogMedication = { medicationId, status ->
+                                    onLogMedication(routine, medicationId, status)
+                                },
+                                onLogAll = { status -> onLogAll(routine, status) },
+                                onMoveDose = { onMoveDose(routine) },
+                            )
+                        }
+                    }
+
                     if (selectedAppointments.isNotEmpty()) {
-                        Text(
-                            stringResource(Res.string.calendar_appointments),
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        item {
+                            Text(
+                                stringResource(Res.string.calendar_appointments),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                        items(
+                            items = selectedAppointments,
+                            key = { it.id.ifBlank { "appt:${it.appointmentTime}" } },
+                        ) { appointment ->
+                            AppointmentCard(
+                                appointment = appointment,
+                                onClick = { sheetUiState = CalendarSheetState.AppointmentDetails(appointment) },
+                            )
+                        }
                     }
-                }
-                items(
-                    items = selectedAppointments,
-                    key = { it.id.ifBlank { "appt:${it.appointmentTime}" } },
-                ) { appointment ->
-                    AppointmentCard(
-                        appointment = appointment,
-                        onClick = { sheetUiState = CalendarSheetState.AppointmentDetails(appointment) },
-                    )
-                }
-            } else {
-                item {
-                    AgendaRangeHeader(
-                        startDate = selectedDate,
-                        endDate = agendaEndDate,
-                        onPrevious = {
-                            val previousStart = selectedDate.minus(7, DateTimeUnit.DAY)
-                            selectedDateForEntry = CalendarDay(
-                                day = previousStart.day,
-                                date = previousStart,
-                                status = AdherenceStatus.NONE,
-                                isToday = previousStart == today,
-                                isCurrentMonth = true,
-                            )
-                            entryDate = previousStart
-                            viewModel.loadAgendaForDate(previousStart.toString())
-                        },
-                        onToday = {
-                            selectedDateForEntry = CalendarDay(
-                                day = today.day,
-                                date = today,
-                                status = AdherenceStatus.NONE,
-                                isToday = true,
-                                isCurrentMonth = true,
-                            )
-                            entryDate = today
-                            viewModel.loadAgendaForDate(today.toString())
-                        },
-                        onNext = {
-                            val nextStart = selectedDate.plus(7, DateTimeUnit.DAY)
-                            selectedDateForEntry = CalendarDay(
-                                day = nextStart.day,
-                                date = nextStart,
-                                status = AdherenceStatus.NONE,
-                                isToday = nextStart == today,
-                                isCurrentMonth = true,
-                            )
-                            entryDate = nextStart
-                            viewModel.loadAgendaForDate(nextStart.toString())
-                        },
-                    )
-                }
 
-                if (agendaVisibleDays.isEmpty()) {
-                    item {
-                        AgendaEmptyState()
+                    if (state.manualLogs.isNotEmpty()) {
+                        item {
+                            Text(
+                                stringResource(Res.string.calendar_extra_logs),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                        items(
+                            items = state.manualLogs,
+                            key = { it.id.ifBlank { "manual:${it.medicationTime}" } },
+                        ) { log ->
+                            ManualLogCard(log = log)
+                        }
+                    }
+
+                    if (state.dayMoodEntries.isNotEmpty() || state.monthMoodSummary.isNotEmpty()) {
+                        item {
+                            Text(
+                                stringResource(Res.string.calendar_mood_section_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                        }
+                    }
+
+                    if (state.dayMoodEntries.isNotEmpty()) {
+                        item {
+                            DailyMoodSummaryCard(moods = state.dayMoodEntries)
+                        }
+                    }
+
+                    if (state.monthMoodSummary.isNotEmpty()) {
+                        item {
+                            MonthlyMoodChart(moodCounts = state.monthMoodSummary)
+                        }
                     }
                 } else {
+                    item {
+                        AgendaRangeHeader(
+                            startDate = selectedDate,
+                            endDate = agendaEndDate,
+                            onPrevious = {
+                                val previousStart = selectedDate.minus(7, DateTimeUnit.DAY)
+                                selectedDateForEntry = CalendarDay(
+                                    day = previousStart.day,
+                                    date = previousStart,
+                                    status = AdherenceStatus.NONE,
+                                    isToday = previousStart == today,
+                                    isCurrentMonth = true,
+                                )
+                                entryDate = previousStart
+                                viewModel.loadAgendaForDate(previousStart.toString())
+                            },
+                            onToday = {
+                                selectedDateForEntry = CalendarDay(
+                                    day = today.day,
+                                    date = today,
+                                    status = AdherenceStatus.NONE,
+                                    isToday = true,
+                                    isCurrentMonth = true,
+                                )
+                                entryDate = today
+                                viewModel.loadAgendaForDate(today.toString())
+                            },
+                            onNext = {
+                                val nextStart = selectedDate.plus(7, DateTimeUnit.DAY)
+                                selectedDateForEntry = CalendarDay(
+                                    day = nextStart.day,
+                                    date = nextStart,
+                                    status = AdherenceStatus.NONE,
+                                    isToday = nextStart == today,
+                                    isCurrentMonth = true,
+                                )
+                                entryDate = nextStart
+                                viewModel.loadAgendaForDate(nextStart.toString())
+                            },
+                        )
+                    }
+
                     items(
-                        items = agendaVisibleDays,
+                        items = state.agendaDays,
                         key = { it.date.toString() },
                     ) { day ->
                         AgendaDaySection(
@@ -324,9 +372,23 @@ fun CalendarScreen(
                         )
                     }
                 }
-            }
 
-            item { Spacer(Modifier.height(72.dp)) }
+                item { Spacer(Modifier.height(72.dp)) }
+            }
+        }
+    }
+
+    LaunchedEffect(state.completedSheetMutationCount) {
+        if (state.completedSheetMutationCount > 0) {
+            when (sheetUiState) {
+                CalendarSheetState.FormMedication,
+                CalendarSheetState.FormMood,
+                is CalendarSheetState.FormReschedule,
+                is CalendarSheetState.ResolveMedication,
+                -> sheetUiState = CalendarSheetState.Hidden
+
+                else -> Unit
+            }
         }
     }
 
@@ -354,6 +416,7 @@ fun CalendarScreen(
                 ) {
                     ManualMedicationLogForm(
                         medications = activeMedications,
+                        isSaving = state.isSheetMutationInFlight,
                         onSave = { medicationId, status ->
                             val timestampMs = entryDateTimeToEpochMs(entryDate, entryTime, timeZone)
                             val baseRequest = MedicationLogRequest(
@@ -368,8 +431,8 @@ fun CalendarScreen(
                                 if (candidates.isEmpty()) {
                                     viewModel.logMedication(
                                         baseRequest.copy(linkMode = MedicationLogLinkMode.EXTRA_DOSE),
+                                        fromSheet = true,
                                     )
-                                    sheetUiState = CalendarSheetState.Hidden
                                 } else {
                                     sheetUiState = CalendarSheetState.ResolveMedication(
                                         pendingLog = baseRequest,
@@ -391,7 +454,7 @@ fun CalendarScreen(
                     entryTime = entryTime,
                     onDateChange = { entryDate = it },
                     onTimeChange = { h, m -> entryTime = h to m },
-                    onBack = { sheetUiState = CalendarSheetState.Menu },
+                    onBack = { sheetUiState = CalendarSheetState.Hidden },
                 ) {
                     val originalOccurrence = Instant.fromEpochMilliseconds(activeSheet.routine.originalOccurrenceTimeMs)
                         .toLocalDateTime(timeZone)
@@ -419,10 +482,11 @@ fun CalendarScreen(
                                     rescheduledOccurrenceTimeMs =
                                     targetDateTime.toInstant(timeZone).toEpochMilliseconds(),
                                 ),
+                                fromSheet = true,
                             )
-                            sheetUiState = CalendarSheetState.Hidden
                         },
                         modifier = Modifier.fillMaxWidth(),
+                        enabled = !state.isSheetMutationInFlight,
                     ) {
                         Text(stringResource(Res.string.calendar_save_moved_dose))
                     }
@@ -441,15 +505,16 @@ fun CalendarScreen(
                                 occurrenceTimeMs = candidate.occurrenceTimeMs,
                                 linkMode = MedicationLogLinkMode.ATTACH_TO_OCCURRENCE,
                             ),
+                            fromSheet = true,
                         )
-                        sheetUiState = CalendarSheetState.Hidden
                     },
                     onLogExtraDose = {
                         viewModel.logMedication(
                             activeSheet.pendingLog.copy(linkMode = MedicationLogLinkMode.EXTRA_DOSE),
+                            fromSheet = true,
                         )
-                        sheetUiState = CalendarSheetState.Hidden
                     },
+                    isSaving = state.isSheetMutationInFlight,
                 )
 
                 CalendarSheetState.FormMood -> WrapperFormLayout(
@@ -460,10 +525,16 @@ fun CalendarScreen(
                     onTimeChange = { h, m -> entryTime = h to m },
                     onBack = { sheetUiState = CalendarSheetState.Menu },
                 ) {
-                    MoodEntryForm { score, notes ->
+                    MoodEntryForm(isSaving = state.isSheetMutationInFlight) { score, notes ->
                         val timestampMs = entryDateTimeToEpochMs(entryDate, entryTime, timeZone)
-                        viewModel.logMood(score, emptyList(), emptyList(), notes, timestampMs)
-                        sheetUiState = CalendarSheetState.Hidden
+                        viewModel.logMood(
+                            score = score,
+                            tags = emptyList(),
+                            symptoms = emptyList(),
+                            notes = notes,
+                            timestampMs = timestampMs,
+                            fromSheet = true,
+                        )
                     }
                 }
 
@@ -476,6 +547,86 @@ fun CalendarScreen(
                         },
                         onClose = { sheetUiState = CalendarSheetState.Hidden },
                     )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CalendarLoadingState() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        CircularProgressIndicator()
+        Text(
+            text = stringResource(Res.string.calendar_loading),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun CalendarLoadingBanner() {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = MaterialTheme.shapes.large,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(18.dp),
+                strokeWidth = 2.dp,
+            )
+            Text(
+                text = stringResource(Res.string.calendar_updating),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+@Composable
+private fun CalendarErrorState(message: String, onRetry: () -> Unit) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+            textAlign = TextAlign.Center,
+        )
+        TextButton(onClick = onRetry) {
+            Text(stringResource(Res.string.calendar_retry))
+        }
+    }
+}
+
+@Composable
+private fun CalendarErrorBanner(message: String, onRetry: () -> Unit) {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        shape = MaterialTheme.shapes.large,
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = message,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            TextButton(onClick = onRetry) {
+                Text(stringResource(Res.string.calendar_retry))
             }
         }
     }

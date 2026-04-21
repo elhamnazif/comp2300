@@ -105,6 +105,7 @@
     <string name="onboarding_confirm_pin_title">Confirm your Privacy PIN</string>
     <string name="onboarding_confirm_pin_desc">Please re-enter your PIN to confirm.</string>
     <string name="onboarding_pin_mismatch">PINs do not match. Please try again.</string>
+    <string name="onboarding_skip_pin">Skip for now</string>
     <string name="pin_unlock_title">Enter your PIN</string>
     <string name="pin_unlock_desc">Unlock with your PIN.</string>
     <string name="pin_biometric_prompt_title">Unlock Vita</string>
@@ -375,9 +376,14 @@
     <string name="calendar_agenda_empty">Nothing scheduled in the next 7 days.</string>
     <string name="calendar_agenda_window_previous_desc">Previous 7 days</string>
     <string name="calendar_agenda_window_forward_desc">Next 7 days</string>
+    <string name="calendar_agenda_range_context">7-day agenda starting %1$s</string>
+    <string name="calendar_agenda_day_empty">Nothing scheduled for this day.</string>
     <string name="calendar_agenda_scheduled_one">1 scheduled dose</string>
     <string name="calendar_agenda_scheduled_many">%1$d scheduled doses</string>
     <string name="calendar_today_button">Today</string>
+    <string name="calendar_loading">Loading your schedule…</string>
+    <string name="calendar_updating">Updating schedule…</string>
+    <string name="calendar_retry">Retry</string>
     
     <!-- Add Entry Menu -->
     <string name="calendar_menu_title">What would you like to add?</string>
@@ -649,6 +655,8 @@
     <string name="profile_notifications_desc">Privacy-safe reminders</string>
     <string name="profile_privacy_security_title">Privacy &amp; Security</string>
     <string name="profile_biometrics_enabled">Biometrics enabled</string>
+    <string name="profile_pin_enabled">PIN enabled</string>
+    <string name="profile_app_lock_off">App lock off</string>
     <string name="profile_privacy_legalese_title">Privacy &amp; Legal</string>
     <string name="profile_privacy_legalese_desc">Terms, privacy policy</string>
     <string name="profile_accessibility_title">Accessibility</string>
@@ -744,7 +752,7 @@
     <string name="privacy_security_title">Privacy &amp; Security</string>
     <string name="privacy_security_settings_title">Security Settings</string>
     <string name="privacy_security_biometrics_title">Biometric Authentication</string>
-    <string name="privacy_security_biometrics_desc">Use fingerprint or face recognition to secure your data</string>
+    <string name="privacy_security_biometrics_desc">Use fingerprint or face unlock</string>
     <string name="privacy_security_encryption_title">Data Encryption</string>
     <string name="privacy_security_encryption_desc">Encrypt all health records stored on device</string>
     <string name="privacy_security_privacy_settings_title">Privacy Settings</string>
@@ -755,13 +763,13 @@
     <string name="privacy_security_share_data_title">Share Data for Research</string>
     <string name="privacy_security_share_data_desc">Allow anonymized data to be used in medical studies</string>
     <string name="privacy_security_change_pin_title">Change Privacy PIN</string>
-    <string name="privacy_security_pin_toggle_title">Privacy PIN</string>
-    <string name="privacy_security_pin_toggle_desc_enabled">PIN protection is active</string>
-    <string name="privacy_security_pin_toggle_desc_disabled">Require a PIN to open the app</string>
+    <string name="privacy_security_pin_toggle_title">App Lock</string>
+    <string name="privacy_security_pin_toggle_desc_enabled">PIN or biometrics required</string>
+    <string name="privacy_security_pin_toggle_desc_disabled">Open the app without a lock</string>
     <string name="privacy_security_verify_pin_title">Enter Current PIN</string>
     <string name="privacy_security_verify_pin_desc">Verify your current PIN to continue.</string>
     <string name="privacy_security_verify_disable_title">Enter Your PIN</string>
-    <string name="privacy_security_verify_disable_desc">Verify your PIN to disable PIN protection.</string>
+    <string name="privacy_security_verify_disable_desc">Verify your PIN to turn off App Lock.</string>
     <string name="privacy_security_incorrect_pin">Incorrect PIN. Please try again.</string>
     <string name="privacy_security_info_title">Your Privacy Matters</string>
     <string name="privacy_security_info_body">All your health data is encrypted and stored securely. We will never share your personal information without your explicit consent.</string>

@@ -13,7 +13,10 @@ import kotlin.time.Clock
 
 internal data class CalendarUiState(
     val isLoading: Boolean = false,
-    val error: String? = null,
+    val screenError: String? = null,
+    val snackbarMessage: String? = null,
+    val isSheetMutationInFlight: Boolean = false,
+    val completedSheetMutationCount: Int = 0,
     val appointments: List<Appointment> = emptyList(),
     val overview: List<CalendarOverviewResponse> = emptyList(),
     val medications: List<Medication> = emptyList(),
@@ -43,33 +46,38 @@ class CalendarViewModel(
 
     private fun loadInitialData(dateStringOverride: String? = null) {
         viewModelScope.launch {
-            state.update { it.copy(isLoading = true, error = null) }
+            state.update { it.copy(isLoading = true, screenError = null) }
             try {
                 syncCoordinator.refreshAuthenticatedData()
-                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-                val year = now.year
-                val month = now.month.number
+                val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
                 val todayDateString = "${now.year}-${now.month.number.toString().padStart(
                     2,
                     '0',
                 )}-${now.day.toString().padStart(2, '0')}"
                 val dateString = dateStringOverride ?: state.value.selectedDate.ifBlank { todayDateString }
+                val selectedDate = LocalDate.parse(dateString)
                 val agendaDays = loadAgendaDays(dateString)
+                val dayMoodEntries = moodRepository.getMoodsForDate(dateString)
+                val monthMoodSummary = moodRepository.getMoodsForMonth(selectedDate.year, selectedDate.month.number)
+                    .groupingBy { it.moodType }
+                    .eachCount()
 
                 state.update {
                     it.copy(
                         isLoading = false,
-                        overview = calendarRepository.getCalendarOverview(year, month),
+                        overview = calendarRepository.getCalendarOverview(selectedDate.year, selectedDate.month.number),
                         appointments = appointmentRepository.getAppointments(),
                         medications = medicationRepository.getMedications(),
                         selectedDate = dateString,
                         routineAgenda = medicationLogRepository.getRoutineAgenda(dateString),
                         manualLogs = medicationLogRepository.getManualMedicationLogs(dateString),
                         agendaDays = agendaDays,
+                        dayMoodEntries = dayMoodEntries,
+                        monthMoodSummary = monthMoodSummary,
                     )
                 }
             } catch (e: Exception) {
-                state.update { it.copy(isLoading = false, error = e.message ?: "Failed to load calendar data") }
+                state.update { it.copy(isLoading = false, screenError = e.errorMessage("Failed to load calendar data")) }
             }
         }
     }
@@ -89,7 +97,7 @@ class CalendarViewModel(
                     )
                 }
             } catch (e: Exception) {
-                state.update { it.copy(error = e.message) }
+                state.update { it.copy(snackbarMessage = e.errorMessage("Failed to load schedule")) }
             }
         }
     }
@@ -103,7 +111,11 @@ class CalendarViewModel(
                         .eachCount()
                     state.update { state -> state.copy(overview = overview, monthMoodSummary = moodCounts) }
                 }
-                .onFailure { error -> state.update { state -> state.copy(error = error.message) } }
+                .onFailure { error ->
+                    state.update { state ->
+                        state.copy(snackbarMessage = error.errorMessage("Failed to load calendar month"))
+                    }
+                }
         }
     }
 
@@ -112,17 +124,30 @@ class CalendarViewModel(
             runCatching { medicationRepository.saveMedication(request) }
                 .onSuccess { loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank)) }
                 .onFailure { error ->
-                    state.update { state -> state.copy(error = error.errorMessage("Failed to save medication")) }
+                    state.update { currentState ->
+                        currentState.copy(snackbarMessage = error.errorMessage("Failed to save medication"))
+                    }
                 }
         }
     }
 
-    fun logMedication(request: MedicationLogRequest) {
+    fun logMedication(request: MedicationLogRequest, fromSheet: Boolean = false) {
+        if (fromSheet && !beginSheetMutation()) return
         viewModelScope.launch {
             runCatching { medicationLogRepository.logMedication(request) }
-                .onSuccess { loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank)) }
+                .onSuccess {
+                    if (fromSheet) {
+                        finishSheetMutationSuccess()
+                    }
+                    loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank))
+                }
                 .onFailure { error ->
-                    state.update { state -> state.copy(error = error.errorMessage("Failed to log medication")) }
+                    val message = error.errorMessage("Failed to log medication")
+                    if (fromSheet) {
+                        finishSheetMutationFailure(message)
+                    } else {
+                        state.update { state -> state.copy(snackbarMessage = message) }
+                    }
                 }
         }
     }
@@ -140,22 +165,43 @@ class CalendarViewModel(
                 )
             }.onSuccess(onLoaded)
                 .onFailure { error ->
-                    state.update { state -> state.copy(error = error.errorMessage("Failed to load matching doses")) }
+                    state.update { currentState ->
+                        currentState.copy(snackbarMessage = error.errorMessage("Failed to load matching doses"))
+                    }
                 }
         }
     }
 
-    fun rescheduleRoutineOccurrence(request: RoutineOccurrenceOverrideRequest) {
+    fun rescheduleRoutineOccurrence(request: RoutineOccurrenceOverrideRequest, fromSheet: Boolean = false) {
+        if (fromSheet && !beginSheetMutation()) return
         viewModelScope.launch {
             runCatching { medicationLogRepository.rescheduleRoutineOccurrence(request) }
-                .onSuccess { loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank)) }
+                .onSuccess {
+                    if (fromSheet) {
+                        finishSheetMutationSuccess()
+                    }
+                    loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank))
+                }
                 .onFailure { error ->
-                    state.update { state -> state.copy(error = error.errorMessage("Failed to move scheduled dose")) }
+                    val message = error.errorMessage("Failed to move scheduled dose")
+                    if (fromSheet) {
+                        finishSheetMutationFailure(message)
+                    } else {
+                        state.update { state -> state.copy(snackbarMessage = message) }
+                    }
                 }
         }
     }
 
-    fun logMood(score: Int, tags: List<String>, symptoms: List<String>, notes: String, timestampMs: Long? = null) {
+    fun logMood(
+        score: Int,
+        tags: List<String>,
+        symptoms: List<String>,
+        notes: String,
+        timestampMs: Long? = null,
+        fromSheet: Boolean = false,
+    ) {
+        if (fromSheet && !beginSheetMutation()) return
         viewModelScope.launch {
             runCatching {
                 moodRepository.logMood(
@@ -168,6 +214,9 @@ class CalendarViewModel(
                     ),
                 )
             }.onSuccess {
+                if (fromSheet) {
+                    finishSheetMutationSuccess()
+                }
                 val currentDate = state.value.selectedDate
                 if (currentDate.isNotBlank()) {
                     loadAgendaForDate(currentDate)
@@ -175,13 +224,22 @@ class CalendarViewModel(
                     loadInitialData()
                 }
             }.onFailure { error ->
-                state.update { state -> state.copy(error = error.errorMessage("Failed to log mood")) }
+                val message = error.errorMessage("Failed to log mood")
+                if (fromSheet) {
+                    finishSheetMutationFailure(message)
+                } else {
+                    state.update { state -> state.copy(snackbarMessage = message) }
+                }
             }
         }
     }
 
-    fun dismissError() {
-        state.update { it.copy(error = null) }
+    fun retryCurrentSelection() {
+        loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank))
+    }
+
+    fun dismissSnackbarMessage() {
+        state.update { it.copy(snackbarMessage = null) }
     }
 
     private suspend fun loadAgendaDays(startDateString: String): List<CalendarAgendaDay> {
@@ -206,6 +264,30 @@ class CalendarViewModel(
                 )
                 current = current.plus(1, DateTimeUnit.DAY)
             }
+        }
+    }
+
+    private fun beginSheetMutation(): Boolean {
+        if (state.value.isSheetMutationInFlight) return false
+        state.update { it.copy(isSheetMutationInFlight = true) }
+        return true
+    }
+
+    private fun finishSheetMutationSuccess() {
+        state.update {
+            it.copy(
+                isSheetMutationInFlight = false,
+                completedSheetMutationCount = it.completedSheetMutationCount + 1,
+            )
+        }
+    }
+
+    private fun finishSheetMutationFailure(message: String) {
+        state.update {
+            it.copy(
+                isSheetMutationInFlight = false,
+                snackbarMessage = message,
+            )
         }
     }
 }

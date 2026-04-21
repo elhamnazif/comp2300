@@ -30,6 +30,7 @@ import kotlin.time.Instant
 @Composable
 internal fun ManualMedicationLogForm(
     medications: List<Medication>,
+    isSaving: Boolean,
     onSave: (String, MedicationLogStatus) -> Unit,
     onOpenMedicationCabinet: () -> Unit,
 ) {
@@ -49,6 +50,7 @@ internal fun ManualMedicationLogForm(
                 listOf(MedicationLogStatus.TAKEN, MedicationLogStatus.SKIPPED).forEach { status ->
                     FilterChip(
                         selected = selectedStatus == status,
+                        enabled = !isSaving,
                         onClick = { selectedStatus = status },
                         label = { Text(status.displayName) },
                     )
@@ -56,13 +58,17 @@ internal fun ManualMedicationLogForm(
             }
             Button(
                 onClick = { onSave(selectedMedId, selectedStatus) },
-                enabled = selectedMedId.isNotBlank(),
+                enabled = selectedMedId.isNotBlank() && !isSaving,
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(Res.string.calendar_save_log))
             }
         }
-        TextButton(onClick = onOpenMedicationCabinet, modifier = Modifier.fillMaxWidth()) {
+        TextButton(
+            onClick = onOpenMedicationCabinet,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isSaving,
+        ) {
             Text(stringResource(Res.string.calendar_manage_medications))
         }
     }
@@ -75,10 +81,11 @@ internal fun ResolveMedicationLogSheet(
     onBack: () -> Unit,
     onAttach: (MedicationOccurrenceCandidate) -> Unit,
     onLogExtraDose: () -> Unit,
+    isSaving: Boolean,
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) {
+            IconButton(onClick = onBack, enabled = !isSaving) {
                 Icon(Icons.ArrowBackW400Outlinedfill1, contentDescription = stringResource(Res.string.common_back_desc))
             }
             Text(
@@ -109,13 +116,21 @@ internal fun ResolveMedicationLogSheet(
                         ),
                         color = MaterialTheme.colorScheme.secondary,
                     )
-                    Button(onClick = { onAttach(candidate) }, modifier = Modifier.fillMaxWidth()) {
+                    Button(
+                        onClick = { onAttach(candidate) },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !isSaving,
+                    ) {
                         Text(stringResource(Res.string.calendar_count_toward_schedule))
                     }
                 }
             }
         }
-        OutlinedButton(onClick = onLogExtraDose, modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = onLogExtraDose,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isSaving,
+        ) {
             Text(stringResource(Res.string.calendar_save_as_extra_log))
         }
     }
@@ -197,7 +212,7 @@ internal fun WrapperFormLayout(
 }
 
 @Composable
-internal fun MoodEntryForm(onSave: (Int, String) -> Unit) {
+internal fun MoodEntryForm(isSaving: Boolean, onSave: (Int, String) -> Unit) {
     var moodScore by remember { mutableIntStateOf(3) }
     var notes by remember { mutableStateOf("") }
 
@@ -255,6 +270,7 @@ internal fun MoodEntryForm(onSave: (Int, String) -> Unit) {
         Button(
             onClick = { onSave(moodScore, notes) },
             modifier = Modifier.fillMaxWidth(),
+            enabled = !isSaving,
         ) {
             Text(stringResource(Res.string.form_mood_log_button))
         }

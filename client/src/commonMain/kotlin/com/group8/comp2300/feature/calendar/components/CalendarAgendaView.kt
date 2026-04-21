@@ -61,13 +61,13 @@ internal fun AgendaRangeHeader(
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
+    Surface(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = MaterialTheme.shapes.large,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onPrevious) {
@@ -76,11 +76,27 @@ internal fun AgendaRangeHeader(
                     contentDescription = stringResource(Res.string.calendar_agenda_window_previous_desc),
                 )
             }
-            Text(
-                "${DateFormatter.formatDayMonthYear(startDate)} - ${DateFormatter.formatDayMonthYear(endDate)}",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    stringResource(
+                        Res.string.calendar_agenda_range_context,
+                        DateFormatter.formatDayMonthYear(startDate),
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    "${DateFormatter.formatDayMonthYear(startDate)} - ${DateFormatter.formatDayMonthYear(endDate)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            TextButton(onClick = onToday) {
+                Text(stringResource(Res.string.calendar_today_button))
+            }
             IconButton(onClick = onNext) {
                 Icon(
                     Icons.ArrowBackW400Outlinedfill1,
@@ -89,11 +105,6 @@ internal fun AgendaRangeHeader(
                 )
             }
         }
-        FilterChip(
-            selected = false,
-            onClick = onToday,
-            label = { Text(stringResource(Res.string.calendar_today_button)) },
-        )
     }
 }
 
@@ -152,40 +163,59 @@ internal fun AgendaDaySection(
             }
         }
 
-        day.routineAgenda.forEach { routine ->
-            val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
-            RoutineAgendaCard(
-                routine = routine,
-                isExpanded = routineKey in expandedRoutineKeys,
-                onToggleExpansion = { onToggleRoutineExpansion(routineKey) },
-                onLogMedication = { medicationId, status -> onLogMedication(routine, medicationId, status) },
-                onLogAll = { status -> onLogAll(routine, status) },
-                onMoveDose = { onMoveDose(routine) },
+        if (!hasAgendaContent(day, appointments)) {
+            Text(
+                stringResource(Res.string.calendar_agenda_day_empty),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
+        } else {
+            if (day.routineAgenda.isNotEmpty()) {
+                Text(
+                    stringResource(Res.string.calendar_scheduled_doses),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                day.routineAgenda.forEach { routine ->
+                    val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
+                    RoutineAgendaCard(
+                        routine = routine,
+                        isExpanded = routineKey in expandedRoutineKeys,
+                        onToggleExpansion = { onToggleRoutineExpansion(routineKey) },
+                        onLogMedication = { medicationId, status -> onLogMedication(routine, medicationId, status) },
+                        onLogAll = { status -> onLogAll(routine, status) },
+                        onMoveDose = { onMoveDose(routine) },
+                    )
+                }
+            }
 
-        day.manualLogs.forEach { log ->
-            ManualLogCard(log)
-        }
+            if (day.manualLogs.isNotEmpty()) {
+                Text(
+                    stringResource(Res.string.calendar_extra_logs),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                day.manualLogs.forEach { log ->
+                    ManualLogCard(log)
+                }
+            }
 
-        appointments.forEach { appointment ->
-            AppointmentCard(
-                appointment = appointment,
-                onClick = { onAppointmentClick(appointment) },
-            )
+            if (appointments.isNotEmpty()) {
+                Text(
+                    stringResource(Res.string.calendar_appointments),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                appointments.forEach { appointment ->
+                    AppointmentCard(
+                        appointment = appointment,
+                        onClick = { onAppointmentClick(appointment) },
+                    )
+                }
+            }
         }
     }
 }
 
 internal fun hasAgendaContent(day: CalendarAgendaDay, appointments: List<Appointment>): Boolean =
     day.routineAgenda.isNotEmpty() || day.manualLogs.isNotEmpty() || appointments.isNotEmpty()
-
-@Composable
-internal fun AgendaEmptyState(modifier: Modifier = Modifier) {
-    Text(
-        text = stringResource(Res.string.calendar_agenda_empty),
-        modifier = modifier.padding(vertical = 24.dp),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-}
