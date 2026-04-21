@@ -1,12 +1,15 @@
 package com.group8.comp2300.feature.education
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,12 +18,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
-import com.group8.comp2300.core.ui.components.ScreenHeader
 import com.group8.comp2300.domain.model.content.ContentTopic
 import com.group8.comp2300.domain.model.education.ArticleSummary
 import com.group8.comp2300.domain.model.education.Category
@@ -37,6 +40,7 @@ import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EducationScreen(
     categories: List<Category>,
@@ -58,55 +62,67 @@ fun EducationScreen(
     val featuredVisible = featuredArticle != null && selectedCategoryId == null && searchQuery.isBlank()
     val progressVisible =
         stats.totalPerfectScores > 0 || stats.averageTimeSpentSeconds > 0.0 || earnedBadges.isNotEmpty()
+    val focusManager = LocalFocusManager.current
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface),
-    ) {
-        ScreenHeader(
-            horizontalPadding = 16.dp,
-            topPadding = 8.dp,
+    Scaffold(modifier = modifier) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            SearchBar(
-                query = searchQuery,
-                onQueryChange = onSearchQueryChange,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-
-        when {
-            isLoading -> {
-                ScreenStatePanel(
-                    title = stringResource(Res.string.education_library_loading),
-                    actionLabel = null,
-                    onAction = null,
-                ) {
-                    CircularProgressIndicator()
-                }
+            item {
+                EducationTitleRow()
             }
 
-            isError -> {
-                ScreenStatePanel(
-                    title = stringResource(Res.string.education_library_loading_error),
-                    actionLabel = stringResource(Res.string.education_library_retry),
-                    onAction = onRetry,
-                )
-            }
-
-            else -> {
-                LazyColumn(
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+            stickyHeader {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface),
                 ) {
-                    item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        SearchBar(
+                            query = searchQuery,
+                            onQueryChange = onSearchQueryChange,
+                            onSearchImeAction = { focusManager.clearFocus() },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                         CategoryRow(
                             categories = categories,
                             selectedCategoryId = selectedCategoryId,
                             onCategorySelect = onCategorySelect,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
+                }
+            }
 
+            when {
+                isLoading -> {
+                    item {
+                        LoadingPanel(
+                            title = stringResource(Res.string.education_library_loading),
+                        )
+                    }
+                }
+
+                isError -> {
+                    item {
+                        ErrorPanel(
+                            title = stringResource(Res.string.education_library_loading_error),
+                            actionLabel = stringResource(Res.string.education_library_retry),
+                            onAction = onRetry,
+                        )
+                    }
+                }
+
+                else -> {
                     if (featuredVisible) {
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -161,6 +177,21 @@ fun EducationScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun EducationTitleRow(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = "Education",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold,
+        )
     }
 }
 
@@ -299,8 +330,16 @@ private fun ProgressSummaryMetric(metric: ProgressMetric, modifier: Modifier = M
 }
 
 @Composable
-private fun CategoryRow(categories: List<Category>, selectedCategoryId: String?, onCategorySelect: (String?) -> Unit) {
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+private fun CategoryRow(
+    categories: List<Category>,
+    selectedCategoryId: String?,
+    onCategorySelect: (String?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
         item {
             FilterChip(
                 selected = selectedCategoryId == null,
@@ -345,38 +384,6 @@ private fun CategoryRow(categories: List<Category>, selectedCategoryId: String?,
 }
 
 @Composable
-private fun ScreenStatePanel(
-    title: String,
-    actionLabel: String?,
-    onAction: (() -> Unit)?,
-    modifier: Modifier = Modifier,
-    leading: @Composable (() -> Unit)? = null,
-) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            leading?.invoke()
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (actionLabel != null && onAction != null) {
-                Button(onClick = onAction) {
-                    Text(actionLabel)
-                }
-            }
-        }
-    }
-}
-
-@Composable
 private fun EmptyStateCard(text: String) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -393,50 +400,108 @@ private fun EmptyStateCard(text: String) {
 }
 
 @Composable
-fun SearchBar(query: String, onQueryChange: (String) -> Unit, modifier: Modifier = Modifier) {
+private fun LoadingPanel(title: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 48.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        CircularProgressIndicator()
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun ErrorPanel(
+    title: String,
+    actionLabel: String,
+    onAction: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Button(onClick = onAction) {
+            Text(actionLabel)
+        }
+    }
+}
+
+@Composable
+fun SearchBar(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearchImeAction: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Surface(
-        shape = RoundedCornerShape(24.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
-        modifier = modifier.height(56.dp),
+        modifier = modifier,
+        shape = RoundedCornerShape(30.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        shadowElevation = 2.dp,
     ) {
         Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .padding(horizontal = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 16.dp),
         ) {
-            Icon(
-                imageVector = Icons.SearchW400Outlinedfill1,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Spacer(Modifier.size(12.dp))
-            BasicTextField(
+            TextField(
                 value = query,
                 onValueChange = onQueryChange,
-                singleLine = true,
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.onSurface),
-                modifier = Modifier.weight(1f),
-                decorationBox = { innerTextField ->
-                    Box {
-                        if (query.isEmpty()) {
-                            Text(
-                                text = stringResource(Res.string.education_search_placeholder),
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        innerTextField()
-                    }
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = {
+                    Text(
+                        text = stringResource(Res.string.education_search_placeholder),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 },
-            )
-
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
+                leadingIcon = {
                     Icon(
-                        imageVector = Icons.CloseW400Outlinedfill1,
-                        contentDescription = stringResource(Res.string.education_search_clear_desc),
+                        imageVector = Icons.SearchW400Outlinedfill1,
+                        contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                }
-            }
+                },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.CloseW400Outlinedfill1,
+                                contentDescription = stringResource(Res.string.education_search_clear_desc),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { onSearchImeAction() }),
+            )
         }
     }
 }

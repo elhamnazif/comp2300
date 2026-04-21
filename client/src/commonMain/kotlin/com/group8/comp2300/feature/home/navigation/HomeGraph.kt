@@ -13,8 +13,6 @@ val homeGraphModule = module {
         val useRootOverlayForShellChildren = LocalUseRootOverlayForShellChildren.current
         HomeScreen(
             onNavigateToShop = { navigator.navigate(Screen.Shop) },
-            onNavigateToCalendar = { navigator.navigate(Screen.Calendar) },
-            onNavigateToEducation = { navigator.navigate(Screen.Education) },
             onNavigateToMedication = { navigator.navigate(Screen.Medication) },
             onNavigateToRoutines = { navigator.navigate(Screen.Routines) },
             onNavigateToChatbot = {
@@ -28,7 +26,6 @@ val homeGraphModule = module {
                 }
             },
             onNavigateToSymptomChecker = { navigator.navigate(Screen.SelfDiagnosis) },
-            onNavigateToClinicMap = { navigator.navigate(Screen.Booking) },
         )
     }
 }

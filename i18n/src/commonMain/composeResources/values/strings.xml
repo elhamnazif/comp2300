@@ -132,17 +132,24 @@
     <string name="onboarding_q2_op3">Never</string>
 
     <!-- Home Module -->
+    <string name="home_header_title">Home</string>
+    <string name="home_header_subtitle">What do you need today?</string>
     <string name="home_daily_insight_content">Did you know? PrEP is over 99% effective at preventing HIV when taken daily.</string>
     <string name="home_toggle_privacy_desc">Toggle Privacy</string>
     <string name="home_protected_label">Protected</string>
     <string name="home_streak_label_format">%1$d Day Streak</string>
     <string name="home_daily_insight_title">Daily Insight</string>
     <string name="home_menu_medication_cabinet">Medication\nCabinet</string>
+    <string name="home_medication_description">Medicines and supply</string>
     <string name="home_menu_shop">Shop</string>
-    <string name="home_menu_history">History</string>
+    <string name="home_shop_description">Essentials and supplies</string>
     <string name="home_menu_symptom_check">Symptom Check</string>
-    <string name="home_menu_find_clinic">Find Clinic</string>
+    <string name="home_symptom_description">See what to do next</string>
     <string name="home_menu_chatbot">Ask Vita</string>
+    <string name="home_chatbot_description">Questions, app help, and basics</string>
+    <string name="home_menu_schedules">Schedules</string>
+    <string name="home_schedules_description">Routines and reminders</string>
+    <string name="home_quick_access_title">Quick access</string>
     <string name="home_menu_partner_notify">Partner Notify</string>
 
     <!-- Chatbot -->

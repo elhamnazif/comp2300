@@ -186,27 +186,29 @@ private fun BookingListMode(
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface),
                 ) {
-                    BookingModeSearchBar(
-                        searchQuery = searchQuery,
-                        onSearchQueryChange = onSearchQueryChange,
-                        onModeToggle = { onMapModeChange(true) },
-                        toggleIcon = Icons.LocationOnW400Outlinedfill1,
-                        toggleContentDescription = "Map",
-                        onSearchImeAction = { focusManager.clearFocus() },
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 4.dp),
-                    )
-                }
-            }
-
-            if (availableTags.isNotEmpty()) {
-                item {
-                    TagFilterRow(
-                        availableTags = availableTags,
-                        selectedTag = selectedTag,
-                        onTagToggle = onTagToggle,
-                    )
+                            .padding(bottom = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        BookingModeSearchBar(
+                            searchQuery = searchQuery,
+                            onSearchQueryChange = onSearchQueryChange,
+                            onModeToggle = { onMapModeChange(true) },
+                            toggleIcon = Icons.LocationOnW400Outlinedfill1,
+                            toggleContentDescription = "Map",
+                            onSearchImeAction = { focusManager.clearFocus() },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        if (availableTags.isNotEmpty()) {
+                            TagFilterRow(
+                                availableTags = availableTags,
+                                selectedTag = selectedTag,
+                                onTagToggle = onTagToggle,
+                            )
+                        }
+                    }
                 }
             }
 
