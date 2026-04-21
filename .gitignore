@@ -25,4 +25,5 @@ kls_database.db
 .env
 maplibre-cache
 uploads/
+**/detekt-baseline.xml
 !uploads/.gitkeep
