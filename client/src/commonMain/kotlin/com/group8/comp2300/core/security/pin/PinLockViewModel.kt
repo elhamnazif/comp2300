@@ -2,34 +2,48 @@ package com.group8.comp2300.core.security.pin
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.data.local.PinRateLimiter
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class PinLockViewModel(private val pinDataSource: PinDataSource, private val rateLimiter: PinRateLimiter) :
-    ViewModel() {
+class PinLockViewModel(
+    private val pinDataSource: PinDataSource,
+    private val rateLimiter: PinRateLimiter,
+    localAuthSettingsDataSource: LocalAuthSettingsDataSource,
+) : ViewModel() {
 
     val isLocked: StateFlow<Boolean>
         field = MutableStateFlow(true)
-
-    /** null = not yet checked, true = PIN exists, false = no PIN set */
-    val isPinSet: StateFlow<Boolean?>
-        field = MutableStateFlow(null)
 
     val error: StateFlow<String?>
         field = MutableStateFlow(null)
 
     init {
         viewModelScope.launch {
-            val hasPin = pinDataSource.isPinSet()
-            isPinSet.value = hasPin
-            if (!hasPin) {
-                isLocked.value = false
-            } else if (rateLimiter.isLockedOut()) {
-                startLockoutTicker()
+            var initialized = false
+            combine(pinDataSource.pinSet, localAuthSettingsDataSource.state) { hasPin, localAuthSettings ->
+                hasPin && localAuthSettings.appLockEnabled
+            }.collect { shouldRequireLock ->
+                when {
+                    !shouldRequireLock -> {
+                        rateLimiter.resetAttempts()
+                        error.value = null
+                        isLocked.value = false
+                    }
+
+                    !initialized -> {
+                        isLocked.value = true
+                        if (rateLimiter.isLockedOut()) {
+                            startLockoutTicker()
+                        }
+                    }
+                }
+                initialized = true
             }
         }
     }

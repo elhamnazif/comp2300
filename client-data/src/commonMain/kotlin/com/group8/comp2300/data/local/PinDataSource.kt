@@ -4,9 +4,13 @@ import com.group8.comp2300.data.database.AppDatabase
 import com.group8.comp2300.util.CurrentPinHashVersion
 import com.group8.comp2300.util.hashPinSecure
 import com.group8.comp2300.util.verifyPinHash
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlin.time.Clock
 
 class PinDataSource(private val database: AppDatabase) {
+    val pinSet: StateFlow<Boolean>
+        field: MutableStateFlow<Boolean> = MutableStateFlow(hasStoredPin())
 
     fun savePin(pin: String) {
         val result = hashPinSecure(pin)
@@ -18,6 +22,7 @@ class PinDataSource(private val database: AppDatabase) {
             pinIterations = result.iterations.toLong(),
             pinVersion = result.version.toLong(),
         )
+        pinSet.value = true
     }
 
     fun verifyPin(pin: String): Boolean {
@@ -35,9 +40,10 @@ class PinDataSource(private val database: AppDatabase) {
         return matches
     }
 
-    fun isPinSet(): Boolean = database.appDatabaseQueries.selectPin().executeAsOneOrNull() != null
-
     fun clearPin() {
         database.appDatabaseQueries.deletePin()
+        pinSet.value = false
     }
+
+    private fun hasStoredPin(): Boolean = database.appDatabaseQueries.selectPin().executeAsOneOrNull() != null
 }

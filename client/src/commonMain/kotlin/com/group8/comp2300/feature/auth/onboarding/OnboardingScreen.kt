@@ -154,6 +154,8 @@ fun OnboardingScreen(
                                 onPinCreated(finalPin)
                                 step++
                             },
+                            footerActionLabel = stringResource(Res.string.onboarding_skip_pin),
+                            onFooterAction = { step++ },
                         )
 
                         in questionStartIndex until questionEndIndex -> {

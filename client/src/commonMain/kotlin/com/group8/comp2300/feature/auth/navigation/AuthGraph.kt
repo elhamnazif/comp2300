@@ -3,6 +3,7 @@ package com.group8.comp2300.feature.auth.navigation
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.data.local.PinDataSource
@@ -23,14 +24,24 @@ val authGraphModule = module {
     navigation<Screen.Onboarding> {
         val navigator = LocalNavigator.current
         val authRepository = koinInject<AuthRepository>()
+        val localAuthSettingsDataSource = koinInject<LocalAuthSettingsDataSource>()
         val pinDataSource = koinInject<PinDataSource>()
         val session by authRepository.session.collectAsState()
         val scope = rememberCoroutineScope()
         OnboardingScreen(
-            onFinish = { navigator.clearAndGoTo(Screen.Home) },
+            onFinish = {
+                localAuthSettingsDataSource.markOnboardingCompleted()
+                navigator.clearAndGoTo(Screen.Home)
+            },
             isGuest = session !is AuthSession.SignedIn,
             onRequireAuth = { navigator.requireAuth(Screen.Home) },
-            onPinCreated = { pin -> scope.launch { pinDataSource.savePin(pin) } },
+            onPinCreated = { pin ->
+                scope.launch {
+                    pinDataSource.savePin(pin)
+                    localAuthSettingsDataSource.setAppLockEnabled(true)
+                    localAuthSettingsDataSource.setBiometricUnlockEnabled(true)
+                }
+            },
         )
     }
 

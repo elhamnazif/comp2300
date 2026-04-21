@@ -6,6 +6,7 @@ import com.group8.comp2300.data.database.DatabaseDriverFactory
 import com.group8.comp2300.data.database.createDatabase
 import com.group8.comp2300.data.local.AccessibilitySettingsDataSource
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
+import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.MoodLocalDataSource
@@ -133,6 +134,7 @@ val coreModule = module {
     single { PersonalDataCleaner(get()) }
     single { Settings() }
     single { AccessibilitySettingsDataSource(get()) }
+    single { LocalAuthSettingsDataSource(get(), get()) }
     single { PrivacySettingsDataSource(get()) }
     single { OfflineMapSettingsDataSource(get()) }
     single { NotificationContentFormatter() }

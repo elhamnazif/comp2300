@@ -24,6 +24,8 @@ import org.koin.compose.viewmodel.koinViewModel
 fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
     onNavigateToGuestSignIn: () -> Unit = {},
+    appLockEnabled: Boolean = false,
+    biometricUnlockEnabled: Boolean = false,
     onNavigateToMedicalRecords: () -> Unit = {},
     onNavigateToPrivacySecurity: () -> Unit = {},
     onNavigateToAccessibility: () -> Unit = {},
@@ -89,6 +91,8 @@ fun ProfileScreen(
             item {
                 ProfileSettingsSections(
                     isSignedIn = uiState.userName.isNotEmpty(),
+                    appLockEnabled = appLockEnabled,
+                    biometricUnlockEnabled = biometricUnlockEnabled,
                     onNavigateToMedicalRecords = onNavigateToMedicalRecords,
                     onNavigateToPrivacySecurity = onNavigateToPrivacySecurity,
                     onNavigateToAccessibility = onNavigateToAccessibility,

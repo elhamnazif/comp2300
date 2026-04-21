@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import com.group8.comp2300.core.security.pin.PinScreen
 import com.group8.comp2300.core.ui.settings.*
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
+import com.group8.comp2300.platform.biometrics.isBiometricAvailable
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
@@ -20,15 +21,16 @@ private enum class PinStep { VerifyOld, SetNew }
 @Composable
 fun PrivacySecurityScreen(
     onBack: () -> Unit,
-    isPinEnabled: Boolean,
+    appLockEnabled: Boolean,
+    biometricsEnabled: Boolean,
     onVerifyPin: suspend (String) -> Boolean,
     onSavePin: (String) -> Unit,
-    onClearPin: () -> Unit,
+    onDisableAppLock: () -> Unit,
+    onBiometricsEnabledChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
     val privacySettings by privacySettingsDataSource.state.collectAsState()
-    var biometricsEnabled by remember { mutableStateOf(true) }
     var dataEncryptionEnabled by remember { mutableStateOf(true) }
     var anonymousReporting by remember { mutableStateOf(false) }
     var shareDataForResearch by remember { mutableStateOf(false) }
@@ -38,6 +40,7 @@ fun PrivacySecurityScreen(
     var pinErrorMessage by remember { mutableStateOf<String?>(null) }
     var pinTogglePending by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val biometricsAvailable = isBiometricAvailable()
 
     val incorrectPinText = stringResource(Res.string.privacy_security_incorrect_pin)
 
@@ -64,7 +67,7 @@ fun PrivacySecurityScreen(
                 onComplete = { pin ->
                     scope.launch {
                         if (onVerifyPin(pin)) {
-                            onClearPin()
+                            onDisableAppLock()
                             pinFlow = PinFlow.None
                         } else {
                             pinErrorMessage = incorrectPinText
@@ -131,31 +134,35 @@ fun PrivacySecurityScreen(
         modifier = modifier,
     ) {
         item {
-            val effectivePinEnabled = isPinEnabled || pinTogglePending
-            val total = if (isPinEnabled) 4 else 3
+            val effectiveAppLockEnabled = appLockEnabled || pinTogglePending
+            val total = when {
+                effectiveAppLockEnabled && biometricsAvailable -> 4
+                effectiveAppLockEnabled -> 3
+                else -> 2
+            }
 
             SettingsSection(title = stringResource(Res.string.privacy_security_settings_title)) {
                 SettingsToggleRow(
                     icon = Icons.LockW400Outlinedfill1,
                     title = stringResource(Res.string.privacy_security_pin_toggle_title),
-                    description = if (effectivePinEnabled) {
+                    description = if (effectiveAppLockEnabled) {
                         stringResource(Res.string.privacy_security_pin_toggle_desc_enabled)
                     } else {
                         stringResource(Res.string.privacy_security_pin_toggle_desc_disabled)
                     },
-                    checked = effectivePinEnabled,
+                    checked = effectiveAppLockEnabled,
                     index = 0,
                     total = total,
                     onCheckedChange = { enable ->
-                        if (enable && !isPinEnabled) {
+                        if (enable && !appLockEnabled) {
                             pinTogglePending = true
                             pinFlow = PinFlow.SetupNew
-                        } else if (!enable && isPinEnabled) {
+                        } else if (!enable && appLockEnabled) {
                             pinFlow = PinFlow.VerifyThenClear
                         }
                     },
                 )
-                if (isPinEnabled) {
+                if (appLockEnabled) {
                     SettingsNavigationRow(
                         icon = Icons.LockW400Outlinedfill1,
                         title = stringResource(Res.string.privacy_security_change_pin_title),
@@ -175,21 +182,23 @@ fun PrivacySecurityScreen(
                         },
                     )
                 }
-                SettingsToggleRow(
-                    icon = Icons.FingerprintW400Outlinedfill1,
-                    title = stringResource(Res.string.privacy_security_biometrics_title),
-                    description = stringResource(Res.string.privacy_security_biometrics_desc),
-                    checked = biometricsEnabled,
-                    index = if (isPinEnabled) 2 else 1,
-                    total = total,
-                    onCheckedChange = { biometricsEnabled = it },
-                )
+                if (appLockEnabled && biometricsAvailable) {
+                    SettingsToggleRow(
+                        icon = Icons.FingerprintW400Outlinedfill1,
+                        title = stringResource(Res.string.privacy_security_biometrics_title),
+                        description = stringResource(Res.string.privacy_security_biometrics_desc),
+                        checked = biometricsEnabled,
+                        index = 2,
+                        total = total,
+                        onCheckedChange = onBiometricsEnabledChange,
+                    )
+                }
                 SettingsToggleRow(
                     icon = Icons.ShieldW400Outlinedfill1,
                     title = stringResource(Res.string.privacy_security_encryption_title),
                     description = stringResource(Res.string.privacy_security_encryption_desc),
                     checked = dataEncryptionEnabled,
-                    index = if (isPinEnabled) 3 else 2,
+                    index = total - 1,
                     total = total,
                     onCheckedChange = { dataEncryptionEnabled = it },
                 )

@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.settings.SettingsNavigationRow
 import com.group8.comp2300.core.ui.settings.SettingsSection
+import com.group8.comp2300.platform.biometrics.isBiometricAvailable
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
@@ -15,6 +16,8 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 internal fun ProfileSettingsSections(
     isSignedIn: Boolean,
+    appLockEnabled: Boolean,
+    biometricUnlockEnabled: Boolean,
     onNavigateToMedicalRecords: () -> Unit,
     onNavigateToPrivacySecurity: () -> Unit,
     onNavigateToAccessibility: () -> Unit,
@@ -24,6 +27,12 @@ internal fun ProfileSettingsSections(
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val privacySecurityDescription = when {
+        !appLockEnabled -> stringResource(Res.string.profile_app_lock_off)
+        biometricUnlockEnabled && isBiometricAvailable() -> stringResource(Res.string.profile_biometrics_enabled)
+        else -> stringResource(Res.string.profile_pin_enabled)
+    }
+
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SettingsSection {
             SettingsNavigationRow(
@@ -37,7 +46,7 @@ internal fun ProfileSettingsSections(
             SettingsNavigationRow(
                 icon = Icons.LockW400Outlinedfill1,
                 title = stringResource(Res.string.profile_privacy_security_title),
-                description = stringResource(Res.string.profile_biometrics_enabled),
+                description = privacySecurityDescription,
                 index = 1,
                 total = 3,
                 onClick = onNavigateToPrivacySecurity,

@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.app.navigation.overlayNavigationMetadata
+import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.feature.profile.GuestSignInScreen
@@ -17,10 +18,14 @@ val profileGraphModule = module {
     navigation<Screen.Profile> {
         val navigator = LocalNavigator.current
         val authRepository = koinInject<AuthRepository>()
+        val localAuthSettingsDataSource = koinInject<LocalAuthSettingsDataSource>()
         val session by authRepository.session.collectAsState()
+        val localAuthSettings by localAuthSettingsDataSource.state.collectAsState()
         val isSignedIn = session is AuthSession.SignedIn
         ProfileScreen(
             onNavigateToGuestSignIn = { navigator.navigate(Screen.GuestSignIn) },
+            appLockEnabled = localAuthSettings.appLockEnabled,
+            biometricUnlockEnabled = localAuthSettings.biometricUnlockEnabled,
             onNavigateToMedicalRecords = {
                 if (isSignedIn) navigator.navigate(Screen.MedicalRecords) else navigator.requireAuth(Screen.Profile)
             },

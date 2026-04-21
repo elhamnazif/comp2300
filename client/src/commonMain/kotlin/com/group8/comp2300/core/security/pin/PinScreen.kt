@@ -45,6 +45,8 @@ fun PinScreen(
     onErrorMessageCleared: () -> Unit = {},
     onDismiss: (() -> Unit)? = null,
     onBiometricSuccess: (() -> Unit)? = null,
+    footerActionLabel: String? = null,
+    onFooterAction: (() -> Unit)? = null,
 ) {
     var pin by remember { mutableStateOf("") }
     var savedPin by remember { mutableStateOf<CharArray?>(null) }
@@ -411,6 +413,20 @@ fun PinScreen(
                     onAuthenticationNotSet = {
                         LaunchedEffect(Unit) { biometricTriggered = false }
                     },
+                )
+            }
+        }
+
+        if (footerActionLabel != null && onFooterAction != null) {
+            TextButton(
+                onClick = onFooterAction,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp),
+            ) {
+                Text(
+                    text = footerActionLabel,
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }

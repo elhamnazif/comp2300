@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.app.navigation.overlayNavigationMetadata
+import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.feature.settings.*
 import kotlinx.coroutines.launch
@@ -14,21 +15,31 @@ import org.koin.dsl.navigation3.navigation
 val settingsGraphModule = module {
     navigation<Screen.PrivacySecurity>(metadata = overlayNavigationMetadata()) {
         val navigator = LocalNavigator.current
+        val localAuthSettingsDataSource = koinInject<LocalAuthSettingsDataSource>()
         val pinDataSource = koinInject<PinDataSource>()
+        val localAuthSettings by localAuthSettingsDataSource.state.collectAsState()
         val scope = rememberCoroutineScope()
-        var isPinEnabled by remember { mutableStateOf(pinDataSource.isPinSet()) }
+        val isPinEnabled by pinDataSource.pinSet.collectAsState()
         PrivacySecurityScreen(
             onBack = navigator::goBack,
-            isPinEnabled = isPinEnabled,
+            appLockEnabled = localAuthSettings.appLockEnabled,
+            biometricsEnabled = localAuthSettings.biometricUnlockEnabled,
             onVerifyPin = { pin -> pinDataSource.verifyPin(pin) },
             onSavePin = { pin ->
-                scope.launch { pinDataSource.savePin(pin) }
-                isPinEnabled = true
+                scope.launch {
+                    pinDataSource.savePin(pin)
+                    localAuthSettingsDataSource.setAppLockEnabled(true)
+                    localAuthSettingsDataSource.setBiometricUnlockEnabled(true)
+                }
             },
-            onClearPin = {
-                scope.launch { pinDataSource.clearPin() }
-                isPinEnabled = false
+            onDisableAppLock = {
+                scope.launch {
+                    pinDataSource.clearPin()
+                    localAuthSettingsDataSource.setAppLockEnabled(false)
+                    localAuthSettingsDataSource.setBiometricUnlockEnabled(false)
+                }
             },
+            onBiometricsEnabledChange = localAuthSettingsDataSource::setBiometricUnlockEnabled,
         )
     }
 

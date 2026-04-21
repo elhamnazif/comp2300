@@ -28,6 +28,8 @@ import androidx.navigation3.ui.NavDisplay
 import com.group8.comp2300.app.navigation.*
 import com.group8.comp2300.core.security.pin.PinLockViewModel
 import com.group8.comp2300.core.security.pin.PinScreen
+import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
+import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
 import com.group8.comp2300.domain.model.session.AuthSession
@@ -57,16 +59,17 @@ fun AppShell(
     pinLockViewModel: PinLockViewModel = koinViewModel(),
 ) {
     val notificationBootstrap: RoutineNotificationBootstrap = koinInject()
+    val localAuthSettingsDataSource: LocalAuthSettingsDataSource = koinInject()
+    val pinDataSource: PinDataSource = koinInject()
     val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
     val session by authViewModel.session.collectAsState()
+    val localAuthSettings by localAuthSettingsDataSource.state.collectAsState()
+    val hasPin by pinDataSource.pinSet.collectAsState()
     val isPinLocked by pinLockViewModel.isLocked.collectAsState()
-    val isPinSet by pinLockViewModel.isPinSet.collectAsState()
     val privacySettings by privacySettingsDataSource.state.collectAsState()
 
-    LaunchedEffect(isPinSet) {
-        if (isPinSet != null) {
-            navigator.setStartDestination(if (isPinSet == true) Screen.Home else Screen.Onboarding)
-        }
+    LaunchedEffect(localAuthSettings.onboardingCompleted) {
+        navigator.setStartDestination(if (localAuthSettings.onboardingCompleted) Screen.Home else Screen.Onboarding)
     }
 
     LaunchedEffect(notificationBootstrap) {
@@ -77,7 +80,7 @@ fun AppShell(
             }
     }
 
-    if (session is AuthSession.Restoring || isPinSet == null) {
+    if (session is AuthSession.Restoring) {
         AppLoadingState(modifier)
         return
     }
@@ -85,11 +88,15 @@ fun AppShell(
     Box(modifier = modifier.fillMaxSize()) {
         AppNavigationShell(navigator = navigator)
         PinLockOverlay(
-            visible = isPinLocked,
+            visible = localAuthSettings.appLockEnabled && hasPin && isPinLocked,
             errorMessage = pinLockViewModel.error.collectAsState().value,
             onComplete = pinLockViewModel::onPinEntered,
             onErrorMessageCleared = pinLockViewModel::clearError,
-            onBiometricSuccess = pinLockViewModel::onBiometricUnlock,
+            onBiometricSuccess = if (localAuthSettings.appLockEnabled && localAuthSettings.biometricUnlockEnabled) {
+                pinLockViewModel::onBiometricUnlock
+            } else {
+                null
+            },
         )
     }
 }
@@ -236,7 +243,7 @@ private fun PinLockOverlay(
     errorMessage: String?,
     onComplete: (String) -> Unit,
     onErrorMessageCleared: () -> Unit,
-    onBiometricSuccess: () -> Unit,
+    onBiometricSuccess: (() -> Unit)?,
 ) {
     AnimatedVisibility(
         visible = visible,
