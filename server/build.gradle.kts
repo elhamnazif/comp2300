@@ -95,6 +95,7 @@ tasks.withType<Test>().configureEach {
 
 tasks.named<JavaExec>("run") {
     val dotEnvFile = project.file(".env")
+    val dotEnvRelativePath = project.relativePath(dotEnvFile)
     val dotEnvValues = loadDotEnv(dotEnvFile)
     val effectiveDotEnvValues = dotEnvValues.filterKeys { key -> System.getenv(key) == null }
 
@@ -105,7 +106,7 @@ tasks.named<JavaExec>("run") {
     doFirst {
         if (dotEnvValues.isNotEmpty()) {
             logger.lifecycle(
-                "Loaded ${dotEnvValues.size} values from ${project.relativePath(dotEnvFile)}. " +
+                "Loaded ${dotEnvValues.size} values from $dotEnvRelativePath. " +
                     "Existing shell environment variables take precedence.",
             )
         }

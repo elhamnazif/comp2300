@@ -3,6 +3,7 @@ package com.group8.comp2300.app
 import com.group8.comp2300.feature.auth.navigation.authGraphModule
 import com.group8.comp2300.feature.booking.navigation.bookingGraphModule
 import com.group8.comp2300.feature.calendar.navigation.calendarGraphModule
+import com.group8.comp2300.feature.chatbot.navigation.chatbotGraphModule
 import com.group8.comp2300.feature.education.navigation.educationGraphModule
 import com.group8.comp2300.feature.home.navigation.homeGraphModule
 import com.group8.comp2300.feature.medication.navigation.medicationGraphModule
@@ -21,6 +22,7 @@ val navigationGraphModule = module {
         homeGraphModule,
         profileGraphModule,
         calendarGraphModule,
+        chatbotGraphModule,
         medicationGraphModule,
         routineGraphModule,
         selfDiagnosisGraphModule,

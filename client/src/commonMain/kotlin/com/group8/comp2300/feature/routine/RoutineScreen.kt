@@ -27,8 +27,8 @@ import com.group8.comp2300.platform.notifications.rememberNotificationPermission
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
-import kotlinx.datetime.LocalDate
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -241,7 +241,9 @@ private fun rememberRoutineMeta(routine: Routine, linkedCount: Int, isArchived: 
     val endDate = routine.endDate
     val statusSummary = when {
         isArchived -> stringResource(Res.string.medical_routine_card_archived)
+
         endDate.isNullOrBlank() -> stringResource(Res.string.medical_routine_card_ongoing)
+
         else -> stringResource(
             Res.string.medical_routine_card_ends_on,
             LocalDate.parse(endDate).toString(),

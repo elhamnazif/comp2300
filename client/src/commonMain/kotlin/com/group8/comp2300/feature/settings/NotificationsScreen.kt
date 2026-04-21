@@ -3,9 +3,9 @@ package com.group8.comp2300.feature.settings
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import com.group8.comp2300.core.ui.settings.SettingsDetailScaffold
 import com.group8.comp2300.core.ui.settings.SettingsChoiceOption
 import com.group8.comp2300.core.ui.settings.SettingsChoiceRow
+import com.group8.comp2300.core.ui.settings.SettingsDetailScaffold
 import com.group8.comp2300.core.ui.settings.SettingsInfoCard
 import com.group8.comp2300.core.ui.settings.SettingsSection
 import com.group8.comp2300.core.ui.settings.SettingsTextFieldRow
@@ -81,7 +81,13 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                     ),
                     selectedKey = privacySettings.notificationPrivacyMode.name,
                     index = 0,
-                    total = if (privacySettings.notificationPrivacyMode == NotificationPrivacyMode.ALIAS_BASED) 2 else 1,
+                    total = if (privacySettings.notificationPrivacyMode ==
+                        NotificationPrivacyMode.ALIAS_BASED
+                    ) {
+                        2
+                    } else {
+                        1
+                    },
                     onOptionSelected = { selectedMode ->
                         privacySettingsDataSource.setNotificationPrivacyMode(
                             NotificationPrivacyMode.entries.first { it.name == selectedMode },

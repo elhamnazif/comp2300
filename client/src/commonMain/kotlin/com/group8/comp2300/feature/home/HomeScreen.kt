@@ -29,6 +29,7 @@ fun HomeScreen(
     onNavigateToCalendar: () -> Unit,
     onNavigateToMedication: () -> Unit,
     onNavigateToRoutines: () -> Unit,
+    onNavigateToChatbot: () -> Unit,
     modifier: Modifier = Modifier,
     onNavigateToSymptomChecker: () -> Unit = {},
     onNavigateToClinicMap: () -> Unit = {},
@@ -311,6 +312,19 @@ fun HomeScreen(
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
                 onClick = onNavigateToRoutines,
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Row(modifier = Modifier.fillMaxWidth()) {
+            SmartActionButton(
+                icon = Icons.SupportAgentW400Outlinedfill1,
+                label = stringResource(Res.string.home_menu_chatbot),
+                containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                contentColor = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxWidth(),
+                onClick = onNavigateToChatbot,
             )
         }
 

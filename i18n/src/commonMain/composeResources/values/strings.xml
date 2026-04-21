@@ -142,7 +142,21 @@
     <string name="home_menu_history">History</string>
     <string name="home_menu_symptom_check">Symptom Check</string>
     <string name="home_menu_find_clinic">Find Clinic</string>
+    <string name="home_menu_chatbot">Ask Vita</string>
     <string name="home_menu_partner_notify">Partner Notify</string>
+
+    <!-- Chatbot -->
+    <string name="chatbot_title">Chat with Vita</string>
+    <string name="chatbot_clear_desc">Clear chat</string>
+    <string name="chatbot_empty_title">Ask Vita</string>
+    <string name="chatbot_empty_body">Support, app help, and general sexual health education.</string>
+    <string name="chatbot_empty_prompt_booking">How do I book a test?</string>
+    <string name="chatbot_empty_prompt_tracking">How do I track medicine?</string>
+    <string name="chatbot_empty_prompt_help">What can Vita help with?</string>
+    <string name="chatbot_input_placeholder">Type a message</string>
+    <string name="chatbot_loading_reply">Vita is replying</string>
+    <string name="chatbot_retry">Retry</string>
+    <string name="chatbot_send_desc">Send</string>
 
     <!-- Medical Module -->
     <string name="medical_lab_results_title">Lab Results</string>
@@ -528,6 +542,7 @@
 
     <!-- Education Module -->
     <string name="education_search_placeholder">Search topics, e.g., 'PrEP'</string>
+    <string name="education_search_clear_desc">Clear search</string>
     <string name="education_category_all">All</string>
     <string name="education_topic_contraception">Contraception</string>
     <string name="education_topic_sti_prevention">STI Prevention</string>
@@ -539,6 +554,8 @@
     <string name="education_search_results">Search Results</string>
     <string name="education_featured_title">Featured Insight</string>
     <string name="education_latest_updates">Latest Updates</string>
+    <string name="education_results_count_single">%1$d article</string>
+    <string name="education_results_count_multiple">%1$d articles</string>
     <string name="education_library_format">%1$s Library</string>
     <string name="education_library_loading">Loading articles…</string>
     <string name="education_library_empty">No articles match this filter yet.</string>

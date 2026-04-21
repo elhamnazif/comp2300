@@ -1,9 +1,9 @@
 package com.group8.comp2300.app.navigation
 
 import androidx.lifecycle.SavedStateHandle
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlinx.serialization.json.Json
 
 class RealNavigatorTest {
 

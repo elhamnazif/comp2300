@@ -403,7 +403,13 @@ private fun MedicationColorPicker(selectedColor: Color, onColorSelected: (Color)
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh, CircleShape)
                         .border(
                             width = if (selectedColor == color) 2.dp else 0.dp,
-                            color = if (selectedColor == color) MaterialTheme.colorScheme.primary else Color.Transparent,
+                            color = if (selectedColor ==
+                                color
+                            ) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                Color.Transparent
+                            },
                             shape = CircleShape,
                         )
                         .padding(4.dp)

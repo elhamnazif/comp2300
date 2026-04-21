@@ -20,8 +20,8 @@ import com.group8.comp2300.data.local.ReminderLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.local.SessionDataSource
-import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
 import com.group8.comp2300.data.notifications.NotificationContentFormatter
+import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
 import com.group8.comp2300.data.notifications.RoutineNotificationRegistry
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.notifications.RoutineNotificationSchedulerImpl
@@ -46,6 +46,7 @@ import com.group8.comp2300.data.remote.TokenProvider
 import com.group8.comp2300.data.remote.createHttpClient
 import com.group8.comp2300.data.remote.tokenProviderDelegate
 import com.group8.comp2300.data.repository.AuthRepositoryImpl
+import com.group8.comp2300.data.repository.ChatbotRepositoryImpl
 import com.group8.comp2300.data.repository.EducationRepositoryImpl
 import com.group8.comp2300.data.repository.ReminderRepositoryImpl
 import com.group8.comp2300.data.repository.RemoteClinicRepository
@@ -58,6 +59,7 @@ import com.group8.comp2300.data.repository.medical.MedicationLogDataRepositoryIm
 import com.group8.comp2300.data.repository.medical.MoodDataRepositoryImpl
 import com.group8.comp2300.data.repository.medical.RoutineDataRepositoryImpl
 import com.group8.comp2300.domain.repository.AuthRepository
+import com.group8.comp2300.domain.repository.ChatbotRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.EducationRepository
 import com.group8.comp2300.domain.repository.ReminderRepository
@@ -169,6 +171,7 @@ val coreModule = module {
     single<CalendarDataRepository> { CalendarDataRepositoryImpl(get(), get(), get(), get(), get()) }
     single<MedicalRecordDataRepository> { MedicalRecordDataRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get()) }
+    single<ChatbotRepository> { ChatbotRepositoryImpl(get()) }
     single<ClinicRepository> { RemoteClinicRepository(get()) }
     single<EducationRepository> { EducationRepositoryImpl(get()) }
     single<ReminderRepository> { ReminderRepositoryImpl(get()) }

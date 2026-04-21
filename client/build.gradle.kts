@@ -195,6 +195,7 @@ symbolCraft {
         "location_on",
         // Dates & Time
         "date_range",
+        "support_agent",
         // Security & Account
         "lock",
         "account_box",

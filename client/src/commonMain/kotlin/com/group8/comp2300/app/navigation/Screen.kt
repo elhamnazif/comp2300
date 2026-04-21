@@ -105,6 +105,9 @@ sealed interface Screen : NavKey {
     data object HelpSupport : Screen
 
     @Serializable
+    data object Chatbot : Screen
+
+    @Serializable
     data object PrivacyLegalese : Screen
 
     @Serializable

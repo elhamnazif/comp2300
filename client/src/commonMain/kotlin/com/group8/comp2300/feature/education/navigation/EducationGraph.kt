@@ -5,8 +5,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.LocalUseRootOverlayForShellChildren
-import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.app.navigation.Screen
+import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.feature.education.ArticleDetailScreen
 import com.group8.comp2300.feature.education.EducationScreen
 import com.group8.comp2300.feature.education.EducationViewModel
@@ -35,7 +35,13 @@ val educationGraphModule = module {
             isError = uiState.isError,
             onArticleClick = { id ->
                 val destination = Screen.ArticleDetail(id)
-                if (useRootOverlayForShellChildren) navigator.navigate(destination) else navigator.navigateWithinShell(destination)
+                if (useRootOverlayForShellChildren) {
+                    navigator.navigate(
+                        destination,
+                    )
+                } else {
+                    navigator.navigateWithinShell(destination)
+                }
             },
             onCategorySelect = viewModel::selectCategory,
             onSearchQueryChange = viewModel::searchArticles,
@@ -43,7 +49,9 @@ val educationGraphModule = module {
         )
     }
 
-    navigation<Screen.ArticleDetail>(metadata = overlayNavigationMetadata(ListDetailSceneStrategy.detailPane())) { route ->
+    navigation<Screen.ArticleDetail>(
+        metadata = overlayNavigationMetadata(ListDetailSceneStrategy.detailPane()),
+    ) { route ->
         val navigator = LocalNavigator.current
         val useRootOverlayForShellChildren = LocalUseRootOverlayForShellChildren.current
         val viewModel =

@@ -1,6 +1,7 @@
 package com.group8.comp2300.di
 
 import com.group8.comp2300.config.CareCatalogSeeder
+import com.group8.comp2300.config.ChatbotConfig
 import com.group8.comp2300.config.DevSeeder
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.config.ResendConfig
@@ -13,6 +14,9 @@ import com.group8.comp2300.mapper.CategoryMapper
 import com.group8.comp2300.security.*
 import com.group8.comp2300.service.appointment.AppointmentService
 import com.group8.comp2300.service.auth.AuthService
+import com.group8.comp2300.service.chatbot.ChatbotProviderClient
+import com.group8.comp2300.service.chatbot.ChatbotService
+import com.group8.comp2300.service.chatbot.GoogleChatbotProviderClient
 import com.group8.comp2300.service.content.*
 import com.group8.comp2300.service.email.EmailService
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
@@ -67,6 +71,8 @@ val serverModule = module {
 
     // Email
     single { EmailService(ResendConfig.apiKey, ResendConfig.fromEmail, ResendConfig.appName) }
+    single { ChatbotConfig }
+    single<ChatbotProviderClient> { GoogleChatbotProviderClient(get()) }
 
     // Services
     single {
@@ -110,6 +116,7 @@ val serverModule = module {
             articleMapper = get(),
         )
     }
+    single { ChatbotService(providerClient = get(), articleRepository = get()) }
     single { QuizService(get()) }
     single { UserBadgeService(badgeRepo = get(), userBadgeRepo = get(), quizRepo = get()) }
     single { UserQuizService(userQuizRepository = get(), badgeService = get(), quizRepository = get()) }

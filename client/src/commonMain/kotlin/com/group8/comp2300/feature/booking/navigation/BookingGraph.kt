@@ -6,8 +6,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.LocalUseRootOverlayForShellChildren
-import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.app.navigation.Screen
+import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.feature.booking.*
@@ -41,17 +41,31 @@ val bookingGraphModule = module {
             onRefresh = viewModel::loadClinics,
             onClinicClick = { clinicId ->
                 val destination = Screen.ClinicDetail(clinicId)
-                if (useRootOverlayForShellChildren) navigator.navigate(destination) else navigator.navigateWithinShell(destination)
+                if (useRootOverlayForShellChildren) {
+                    navigator.navigate(
+                        destination,
+                    )
+                } else {
+                    navigator.navigateWithinShell(destination)
+                }
             },
             onClinicSelect = viewModel::selectClinic,
             onViewBookings = {
                 val destination = Screen.BookingHistory()
-                if (useRootOverlayForShellChildren) navigator.navigate(destination) else navigator.navigateWithinShell(destination)
+                if (useRootOverlayForShellChildren) {
+                    navigator.navigate(
+                        destination,
+                    )
+                } else {
+                    navigator.navigateWithinShell(destination)
+                }
             },
         )
     }
 
-    navigation<Screen.ClinicDetail>(metadata = overlayNavigationMetadata(ListDetailSceneStrategy.detailPane())) { route ->
+    navigation<Screen.ClinicDetail>(
+        metadata = overlayNavigationMetadata(ListDetailSceneStrategy.detailPane()),
+    ) { route ->
         val navigator = LocalNavigator.current
         val useRootOverlayForShellChildren = LocalUseRootOverlayForShellChildren.current
 

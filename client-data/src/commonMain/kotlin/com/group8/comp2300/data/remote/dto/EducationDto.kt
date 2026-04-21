@@ -57,11 +57,7 @@ data class QuizAttemptDto(
 )
 
 @Serializable
-data class QuizSubmissionRequestDto(
-    val startedAt: Long,
-    val submittedAt: Long,
-    val answers: List<UserQuizAnswerInput>,
-)
+data class QuizSubmissionRequestDto(val startedAt: Long, val submittedAt: Long, val answers: List<UserQuizAnswerInput>)
 
 @Serializable
 data class QuizSubmissionResultDto(val attempt: QuizAttemptDto, val newlyAwardedBadges: List<String>)

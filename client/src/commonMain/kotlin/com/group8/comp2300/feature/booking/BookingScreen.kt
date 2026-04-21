@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -27,11 +28,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.core.format.DateFormatter
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 @Composable
 fun BookingScreen(
@@ -148,8 +156,8 @@ private fun BookingListMode(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(paddingValues),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             item {
                 Row(
@@ -178,87 +186,17 @@ private fun BookingListMode(
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface),
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(0.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Surface(
-                            modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(
-                                topStart = 28.dp,
-                                bottomStart = 28.dp,
-                                topEnd = 0.dp,
-                                bottomEnd = 0.dp,
-                            ),
-                            shadowElevation = 2.dp,
-                            color = MaterialTheme.colorScheme.surface,
-                        ) {
-                            TextField(
-                                value = searchQuery,
-                                onValueChange = onSearchQueryChange,
-                                modifier = Modifier.fillMaxWidth(),
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(Res.string.medical_booking_search_placeholder),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                },
-                                leadingIcon = {
-                                    androidx.compose.material3.Icon(
-                                        imageVector = Icons.SearchW400Outlinedfill1,
-                                        contentDescription = stringResource(Res.string.medical_booking_search_desc),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (searchQuery.isNotEmpty()) {
-                                        IconButton(onClick = { onSearchQueryChange("") }) {
-                                            androidx.compose.material3.Icon(
-                                                imageVector = Icons.CloseW400Outlinedfill1,
-                                                contentDescription = stringResource(
-                                                    Res.string.medical_booking_search_desc,
-                                                ),
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                        }
-                                    }
-                                },
-                                singleLine = true,
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                ),
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                                keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-                            )
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(
-                                topStart = 0.dp,
-                                bottomStart = 0.dp,
-                                topEnd = 28.dp,
-                                bottomEnd = 28.dp,
-                            ),
-                            shadowElevation = 2.dp,
-                            color = MaterialTheme.colorScheme.surface,
-                        ) {
-                            IconButton(
-                                onClick = { onMapModeChange(true) },
-                                modifier = Modifier.padding(horizontal = 2.dp),
-                            ) {
-                                androidx.compose.material3.Icon(
-                                    imageVector = Icons.LocationOnW400Outlinedfill1,
-                                    contentDescription = "Map",
-                                    tint = MaterialTheme.colorScheme.onSurface,
-                                )
-                            }
-                        }
-                    }
+                    BookingModeSearchBar(
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = onSearchQueryChange,
+                        onModeToggle = { onMapModeChange(true) },
+                        toggleIcon = Icons.LocationOnW400Outlinedfill1,
+                        toggleContentDescription = "Map",
+                        onSearchImeAction = { focusManager.clearFocus() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 4.dp),
+                    )
                 }
             }
 
@@ -292,8 +230,10 @@ private fun BookingListMode(
                 items(filteredClinics, key = { it.id }) { clinic ->
                     ClinicListCard(
                         clinic = clinic,
-                        onSelect = { onClinicSelect(clinic) },
-                        onViewAvailability = { onClinicClick(clinic.id) },
+                        onClick = {
+                            onClinicSelect(clinic)
+                            onClinicClick(clinic.id)
+                        },
                     )
                 }
             }
@@ -346,17 +286,6 @@ private fun BookingMapMode(
                     )
                 }
 
-                if (availableTags.isNotEmpty()) {
-                    item {
-                        TagFilterRow(
-                            availableTags = availableTags,
-                            selectedTag = selectedTag,
-                            onTagToggle = onTagToggle,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        )
-                    }
-                }
-
                 if (isLoading) {
                     item {
                         Box(
@@ -404,97 +333,27 @@ private fun BookingMapMode(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                if (isSignedIn) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                    ) {
-                        TextButton(onClick = onViewBookings) {
-                            Text("My bookings")
-                        }
-                    }
-                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Surface(
+                    BookingModeSearchBar(
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = onSearchQueryChange,
+                        onModeToggle = { onMapModeChange(false) },
+                        toggleIcon = Icons.FormatListBulletedW400Outlinedfill1,
+                        toggleContentDescription = "List",
+                        onSearchImeAction = { focusManager.clearFocus() },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(28.dp),
-                        shadowElevation = 4.dp,
-                        color = MaterialTheme.colorScheme.surface,
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            TextField(
-                                value = searchQuery,
-                                onValueChange = onSearchQueryChange,
-                                modifier = Modifier.weight(1f),
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(Res.string.medical_booking_search_placeholder),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                },
-                                leadingIcon = {
-                                    androidx.compose.material3.Icon(
-                                        imageVector = Icons.SearchW400Outlinedfill1,
-                                        contentDescription = stringResource(Res.string.medical_booking_search_desc),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                },
-                                trailingIcon = {
-                                    if (searchQuery.isNotEmpty()) {
-                                        IconButton(onClick = { onSearchQueryChange("") }) {
-                                            androidx.compose.material3.Icon(
-                                                imageVector = Icons.CloseW400Outlinedfill1,
-                                                contentDescription = stringResource(
-                                                    Res.string.medical_booking_search_desc,
-                                                ),
-                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            )
-                                        }
-                                    }
-                                },
-                                singleLine = true,
-                                colors = TextFieldDefaults.colors(
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
-                                    focusedIndicatorColor = Color.Transparent,
-                                    unfocusedIndicatorColor = Color.Transparent,
-                                ),
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                                keyboardActions = KeyboardActions(onSearch = { focusManager.clearFocus() }),
-                            )
+                    )
+                }
 
-                            Box(
-                                modifier = Modifier
-                                    .height(28.dp)
-                                    .width(1.dp)
-                                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
-                            )
-
-                            Surface(
-                                modifier = Modifier.padding(6.dp),
-                                shape = RoundedCornerShape(18.dp),
-                                color = Color.Transparent,
-                            ) {
-                                IconButton(
-                                    onClick = { onMapModeChange(false) },
-                                    modifier = Modifier.padding(horizontal = 2.dp),
-                                ) {
-                                    androidx.compose.material3.Icon(
-                                        imageVector = Icons.FormatListBulletedW400Outlinedfill1,
-                                        contentDescription = "List",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-                        }
-                    }
+                if (availableTags.isNotEmpty()) {
+                    TagFilterRow(
+                        availableTags = availableTags,
+                        selectedTag = selectedTag,
+                        onTagToggle = onTagToggle,
+                    )
                 }
 
                 if (searchQuery.isNotEmpty()) {
@@ -544,6 +403,91 @@ private fun BookingMapMode(
 }
 
 @Composable
+private fun BookingModeSearchBar(
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    onModeToggle: () -> Unit,
+    toggleIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    toggleContentDescription: String,
+    onSearchImeAction: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(30.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        shadowElevation = 2.dp,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .padding(horizontal = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            TextField(
+                value = searchQuery,
+                onValueChange = onSearchQueryChange,
+                modifier = Modifier.weight(1f),
+                placeholder = {
+                    Text(
+                        text = stringResource(Res.string.medical_booking_search_placeholder),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
+                leadingIcon = {
+                    androidx.compose.material3.Icon(
+                        imageVector = Icons.SearchW400Outlinedfill1,
+                        contentDescription = stringResource(Res.string.medical_booking_search_desc),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { onSearchQueryChange("") }) {
+                            androidx.compose.material3.Icon(
+                                imageVector = Icons.CloseW400Outlinedfill1,
+                                contentDescription = stringResource(Res.string.medical_booking_search_desc),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { onSearchImeAction() }),
+            )
+
+            Box(
+                modifier = Modifier
+                    .height(28.dp)
+                    .width(1.dp)
+                    .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+            )
+
+            IconButton(
+                onClick = onModeToggle,
+                modifier = Modifier.padding(start = 10.dp),
+            ) {
+                androidx.compose.material3.Icon(
+                    imageVector = toggleIcon,
+                    contentDescription = toggleContentDescription,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun TagFilterRow(
     availableTags: List<String>,
     selectedTag: String?,
@@ -557,15 +501,24 @@ private fun TagFilterRow(
         item {
             AssistChip(
                 onClick = { onTagToggle(null) },
-                label = { Text("All") },
+                modifier = Modifier.height(40.dp),
+                label = { Text("All", style = MaterialTheme.typography.labelLarge) },
                 colors = chipColors(selectedTag == null),
+                border = chipBorder(selectedTag == null),
             )
         }
         items(availableTags) { tag ->
             AssistChip(
                 onClick = { onTagToggle(tag) },
-                label = { Text(tag.replaceFirstChar(Char::uppercase)) },
+                modifier = Modifier.height(40.dp),
+                label = {
+                    Text(
+                        tag.replaceFirstChar(Char::uppercase),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
+                },
                 colors = chipColors(selectedTag == tag),
+                border = chipBorder(selectedTag == tag),
             )
         }
     }
@@ -708,123 +661,105 @@ internal fun ClinicCompactRow(
 }
 
 @Composable
-private fun ClinicListCard(clinic: Clinic, onSelect: () -> Unit, onViewAvailability: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onSelect),
-        shape = MaterialTheme.shapes.extraLarge,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+private fun ClinicListCard(clinic: Clinic, onClick: () -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
+            Surface(
+                modifier = Modifier.size(width = 84.dp, height = 76.dp),
+                color = MaterialTheme.colorScheme.surfaceContainerLow,
+                shape = MaterialTheme.shapes.large,
             ) {
                 ClinicImage(
                     clinic = clinic,
                     modifier = Modifier.fillMaxSize(),
                     contentDescription = clinic.name,
                 )
+            }
 
-                Surface(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(14.dp),
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.94f),
-                    shape = MaterialTheme.shapes.large,
-                ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Text(
+                    text = clinic.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                Text(
+                    text = clinicListSlotLabel(clinic.nextAvailableSlot),
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+
+                clinicListMetadata(clinic)?.let { metadata ->
                     Text(
-                        text = clinic.formattedDistance,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.SemiBold,
+                        text = metadata,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
 
-            Column(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top,
-                ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                    ) {
-                        Text(
-                            text = clinic.name,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        clinic.address?.takeIf(String::isNotBlank)?.let {
-                            Text(
-                                text = it,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
-                }
-
-                if (clinic.tags.isNotEmpty()) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        clinic.tags.take(3).forEach { tag ->
-                            Surface(
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                shape = MaterialTheme.shapes.large,
-                            ) {
-                                Text(
-                                    text = tag.replaceFirstChar(Char::uppercase),
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                            }
-                        }
-                    }
-                }
-
-                Text(
-                    text = "Next: ${slotSummary(clinic.nextAvailableSlot)}",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                androidx.compose.material3.Icon(
+                    imageVector = Icons.ArrowForwardW400Outlinedfill1,
+                    contentDescription = stringResource(Res.string.medical_booking_view_details_desc),
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(8.dp).size(20.dp),
                 )
-
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                ) {
-                    clinic.phone?.takeIf(String::isNotBlank)?.let {
-                        Text(
-                            text = it,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    Button(
-                        onClick = onViewAvailability,
-                        shape = MaterialTheme.shapes.large,
-                        modifier = Modifier.align(Alignment.End),
-                    ) {
-                        Text("View availability")
-                    }
-                }
             }
         }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
     }
 }
+
+private fun clinicListMetadata(clinic: Clinic): String? {
+    val tagText = clinic.tags.firstUsefulTag()
+    val locationText = clinic.formattedDistance.takeIf(String::isNotBlank)
+        ?: clinic.address?.takeIf(String::isNotBlank).orEmpty()
+    return listOfNotNull(tagText, locationText.takeIf(String::isNotBlank)).joinToString(" • ").ifBlank { null }
+}
+
+private fun clinicListSlotLabel(timestamp: Long): String {
+    val timeZone = TimeZone.currentSystemDefault()
+    val slot = Instant.fromEpochMilliseconds(timestamp).toLocalDateTime(timeZone)
+    val today = Clock.System.now().toLocalDateTime(timeZone).date
+    val tomorrow = today.plus(1, DateTimeUnit.DAY)
+    val dayLabel = when (slot.date) {
+        today -> "Today"
+        tomorrow -> "Tomorrow"
+        else -> shortDayName(slot.date.dayOfWeek.name)
+    }
+    return "$dayLabel, ${DateFormatter.formatTime(slot.hour, slot.minute)}"
+}
+
+private fun List<String>.firstUsefulTag(): String? = firstOrNull { it.lowercase() != "general" }
+    ?.replaceFirstChar(Char::uppercase)
+    ?: firstOrNull()?.replaceFirstChar(Char::uppercase)
+
+private fun shortDayName(dayName: String): String = dayName
+    .lowercase()
+    .replaceFirstChar(Char::uppercase)
+    .take(3)
 
 @Composable
 internal fun EmptyPanel(title: String, body: String) {
@@ -846,5 +781,18 @@ private fun chipColors(selected: Boolean) = if (selected) {
         labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
     )
 } else {
-    AssistChipDefaults.assistChipColors()
+    AssistChipDefaults.assistChipColors(
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        labelColor = MaterialTheme.colorScheme.onSurface,
+    )
 }
+
+@Composable
+private fun chipBorder(selected: Boolean): BorderStroke = BorderStroke(
+    1.dp,
+    if (selected) {
+        MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
+    } else {
+        MaterialTheme.colorScheme.outlineVariant
+    },
+)

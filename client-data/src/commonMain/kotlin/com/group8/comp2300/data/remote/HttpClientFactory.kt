@@ -98,7 +98,8 @@ fun createHttpClient(): HttpClient = HttpClient {
                         BearerTokens(accessToken = response.accessToken, refreshToken = response.refreshToken)
                     } catch (e: Exception) {
                         // Refresh failed - clear tokens so user must re-login
-                        logger.w(e) { "Token refresh failed, clearing tokens" }
+                        val reason = if (e.isTimeoutLike()) "timeout" else "error"
+                        logger.w(e) { "Token refresh failed due to $reason, clearing tokens. ${e.toLogSummary()}" }
                         tokenProviderDelegate.clearTokens()
                         null
                     }
@@ -158,4 +159,20 @@ private fun defaultErrorMessage(status: HttpStatusCode): String = when (status) 
     HttpStatusCode.NotFound -> "Requested resource was not found"
     HttpStatusCode.Conflict -> "Request conflicts with current data"
     else -> "Request failed (${status.value})"
+}
+
+internal fun Throwable.isTimeoutLike(): Boolean = generateSequence(this) { it.cause }
+    .any { throwable ->
+        val name = throwable::class.simpleName.orEmpty()
+        val message = throwable.message.orEmpty()
+        name.contains("Timeout", ignoreCase = true) ||
+            message.contains("timeout", ignoreCase = true) ||
+            message.contains("timed out", ignoreCase = true)
+    }
+
+internal fun Throwable.toLogSummary(): String {
+    val rootCause = generateSequence(this) { it.cause }.last()
+    val rootName = rootCause::class.simpleName ?: "UnknownError"
+    val rootMessage = rootCause.message?.trim().orEmpty().ifBlank { "no message" }
+    return "rootCause=$rootName message=$rootMessage"
 }

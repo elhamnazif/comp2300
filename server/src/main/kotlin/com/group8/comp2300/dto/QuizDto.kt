@@ -22,11 +22,7 @@ data class QuizResponse(val id: String, val title: String, val questions: List<Q
 data class UserQuizAnswerInput(val questionId: String, val selectedOptionId: String)
 
 @Serializable
-data class QuizSubmissionRequest(
-    val startedAt: Long,
-    val submittedAt: Long,
-    val answers: List<UserQuizAnswerInput>,
-)
+data class QuizSubmissionRequest(val startedAt: Long, val submittedAt: Long, val answers: List<UserQuizAnswerInput>)
 
 @Serializable
 data class QuizSubmissionResult(val attempt: QuizAttempt, val newlyAwardedBadges: List<String>)

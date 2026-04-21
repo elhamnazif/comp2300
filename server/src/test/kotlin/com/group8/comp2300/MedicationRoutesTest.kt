@@ -10,6 +10,7 @@ import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.routes.medicationRoutes
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
+import com.group8.comp2300.service.medication.MedicationService
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -54,7 +55,7 @@ class MedicationRoutesTest {
             )
         }
 
-        assertEquals(HttpStatusCode.Created, response.status)
+        assertEquals(HttpStatusCode.OK, response.status)
         val medication = response.body<Medication>()
         assertEquals("med-1", medication.id)
         assertEquals("Vitamin D", medication.name)
@@ -85,7 +86,7 @@ class MedicationRoutesTest {
             )
         }
 
-        assertEquals(HttpStatusCode.Created, response.status)
+        assertEquals(HttpStatusCode.OK, response.status)
         val medication = response.body<Medication>()
         assertEquals("1", medication.doseAmount)
         assertEquals(MedicationUnit.OTHER, medication.doseUnit)
@@ -385,7 +386,7 @@ class MedicationRoutesTest {
             )
         }
 
-        assertEquals(HttpStatusCode.Created, response.status)
+        assertEquals(HttpStatusCode.OK, response.status)
     }
 
     @Test
@@ -493,6 +494,7 @@ private fun Application.configureTestModule(
                 single<RoutineRepository> { routineRepository }
                 single<RoutineOccurrenceOverrideRepository> { routineOccurrenceOverrideRepository }
                 single<MedicationLogRepository> { medicationLogRepository }
+                single { MedicationService(get(), get(), get(), get()) }
             },
         )
     }

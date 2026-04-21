@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.group8.comp2300.app.navigation.*
@@ -35,8 +37,8 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
 import org.koin.compose.navigation3.koinEntryProvider
+import org.koin.compose.viewmodel.koinViewModel
 
 private val mainTabs =
     listOf(
@@ -111,7 +113,7 @@ private fun AppNavigationShell(navigator: Navigator, modifier: Modifier = Modifi
                 .copy(horizontalPartitionSpacerSize = 0.dp)
         }
     val supportingPaneStrategy =
-        rememberListDetailSceneStrategy<Any>(
+        rememberListDetailSceneStrategy<Screen>(
             backNavigationBehavior = BackNavigationBehavior.PopUntilCurrentDestinationChange,
             directive = directive,
         )
@@ -148,10 +150,12 @@ fun MainShellScreen(navigator: Navigator = LocalNavigator.current) {
                 .copy(horizontalPartitionSpacerSize = 0.dp)
         }
     val supportingPaneStrategy =
-        rememberListDetailSceneStrategy<Any>(
+        rememberListDetailSceneStrategy<Screen>(
             backNavigationBehavior = BackNavigationBehavior.PopUntilCurrentDestinationChange,
             directive = directive,
         )
+    val entryProvider = koinEntryProvider<Screen>()
+    val mobileTabEntries = rememberMainTabEntries(entryProvider)
 
     CompositionLocalProvider(LocalUseRootOverlayForShellChildren provides useRootOverlayForShellChildren) {
         NavigationSuiteScaffold(
@@ -173,24 +177,58 @@ fun MainShellScreen(navigator: Navigator = LocalNavigator.current) {
                 containerColor = androidx.compose.ui.graphics.Color.Transparent,
                 contentColor = MaterialTheme.colorScheme.onBackground,
             ) { _ ->
-                NavDisplay(
-                    backStack = shellBackStack,
-                    sceneStrategies = listOf(supportingPaneStrategy),
-                    onBack = navigator::goBackWithinShell,
-                    transitionSpec = { pushAnimation },
-                    popTransitionSpec = { popAnimation },
-                    predictivePopTransitionSpec = { popAnimation },
+                if (useRootOverlayForShellChildren) {
+                    NavDisplay(
+                        entries = requireNotNull(mobileTabEntries[selectedTab]),
+                        sceneStrategies = listOf(supportingPaneStrategy),
+                        onBack = navigator::goBackWithinShell,
+                        transitionSpec = { pushAnimation },
+                        popTransitionSpec = { popAnimation },
+                        predictivePopTransitionSpec = { popAnimation },
+                    )
+                } else {
+                    NavDisplay(
+                        backStack = shellBackStack,
+                        sceneStrategies = listOf(supportingPaneStrategy),
+                        onBack = navigator::goBackWithinShell,
+                        transitionSpec = { pushAnimation },
+                        popTransitionSpec = { popAnimation },
+                        predictivePopTransitionSpec = { popAnimation },
+                        entryDecorators =
+                        listOf(
+                            rememberSaveableStateHolderNavEntryDecorator(),
+                            rememberViewModelStoreNavEntryDecorator(),
+                        ),
+                        entryProvider = entryProvider,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun rememberMainTabEntries(entryProvider: (Screen) -> NavEntry<Screen>): Map<Screen, List<NavEntry<Screen>>> =
+    buildMap {
+        mainTabs.forEach { tab ->
+            val tabBackStack = remember(tab.screen) { listOf(tab.screen) }
+
+            // Keep each tab's state and ViewModel store separate while exposing only the selected
+            // tab to the mobile shell NavDisplay, so predictive back exits the app from tab roots.
+            val entries =
+                rememberDecoratedNavEntries(
+                    backStack = tabBackStack,
                     entryDecorators =
                     listOf(
                         rememberSaveableStateHolderNavEntryDecorator(),
                         rememberViewModelStoreNavEntryDecorator(),
                     ),
-                    entryProvider = koinEntryProvider(),
+                    entryProvider = entryProvider,
                 )
-            }
+
+            put(tab.screen, entries)
         }
     }
-}
 
 @Composable
 private fun PinLockOverlay(

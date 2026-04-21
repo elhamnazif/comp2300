@@ -29,7 +29,10 @@ class ClinicFilterService {
 
         return clinic.name.contains(query, ignoreCase = true) ||
             clinic.address?.contains(query, ignoreCase = true) == true ||
-            clinic.tags.any { it.contains(query, ignoreCase = true) }
+            clinic.tags.any { it.contains(query, ignoreCase = true) } ||
+            clinic.serviceTypes.any { serviceType ->
+                serviceType.name.replace('_', ' ').contains(query, ignoreCase = true)
+            }
     }
 
     private fun matchesStructuredFilters(clinic: Clinic, filters: ClinicFilters): Boolean {

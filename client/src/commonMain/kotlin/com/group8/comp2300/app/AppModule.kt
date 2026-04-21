@@ -4,6 +4,7 @@ import com.group8.comp2300.core.security.pin.pinModule
 import com.group8.comp2300.feature.auth.authModule
 import com.group8.comp2300.feature.booking.bookingModule
 import com.group8.comp2300.feature.calendar.calendarModule
+import com.group8.comp2300.feature.chatbot.chatbotModule
 import com.group8.comp2300.feature.education.educationModule
 import com.group8.comp2300.feature.medication.medicationModule
 import com.group8.comp2300.feature.profile.profileModule
@@ -21,6 +22,7 @@ val appModule = module {
         authModule,
         bookingModule,
         calendarModule,
+        chatbotModule,
         educationModule,
         medicationModule,
         profileModule,

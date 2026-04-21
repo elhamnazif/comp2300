@@ -10,6 +10,7 @@ import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.routes.appointmentRoutes
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
+import com.group8.comp2300.service.appointment.AppointmentService
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -182,6 +183,7 @@ private fun ApplicationTestBuilder.configureAppointmentTestModuleWithUser(): App
         single<ClinicTagRepository> { clinicTagRepository }
         single<ClinicRepository> { clinicRepository }
         single<UserRepository> { userRepository }
+        single { AppointmentService(get(), get(), get(), get()) }
     }
 
     val userId = "user_appt_${java.util.UUID.randomUUID()}"

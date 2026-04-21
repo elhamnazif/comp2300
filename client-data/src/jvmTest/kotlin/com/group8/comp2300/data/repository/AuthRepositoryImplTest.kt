@@ -30,6 +30,10 @@ import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.data.remote.dto.UserQuizStatsDto
 import com.group8.comp2300.data.repository.medical.TestSyncCoordinator
+import com.group8.comp2300.domain.model.chatbot.ChatbotMessage
+import com.group8.comp2300.domain.model.chatbot.ChatbotRequest
+import com.group8.comp2300.domain.model.chatbot.ChatbotResponse
+import com.group8.comp2300.domain.model.chatbot.ChatbotRole
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentSlot
 import com.group8.comp2300.domain.model.medical.Clinic
@@ -282,6 +286,12 @@ internal open class FakeApiService(
     var appointments: MutableList<Appointment> = mutableListOf(),
 ) : ApiService {
     override suspend fun getHealth(): Map<String, String> = emptyMap()
+    override suspend fun sendChatbotMessage(request: ChatbotRequest): ChatbotResponse = ChatbotResponse(
+        message = ChatbotMessage(
+            role = ChatbotRole.ASSISTANT,
+            content = "ok",
+        ),
+    )
     override suspend fun getProducts() = emptyList<com.group8.comp2300.data.remote.dto.ProductDto>()
     override suspend fun getProduct(id: String) = error("unused")
     override suspend fun login(request: LoginRequest): AuthResponse = AuthResponse(profileUser, "access", "refresh")

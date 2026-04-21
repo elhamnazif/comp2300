@@ -541,6 +541,8 @@ private class BookingApiStub : ApiService {
     private val appointments = linkedMapOf<String, Appointment>()
 
     override suspend fun getHealth(): Map<String, String> = emptyMap()
+    override suspend fun sendChatbotMessage(request: com.group8.comp2300.domain.model.chatbot.ChatbotRequest) =
+        error("unused")
     override suspend fun getProducts() = emptyList<com.group8.comp2300.data.remote.dto.ProductDto>()
     override suspend fun getProduct(id: String) = error("unused")
     override suspend fun login(request: com.group8.comp2300.data.remote.dto.LoginRequest) = error("unused")

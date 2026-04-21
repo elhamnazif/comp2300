@@ -1,5 +1,6 @@
 package com.group8.comp2300.feature.medical.shared.routines
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -9,10 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,11 +68,11 @@ import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
 internal val scheduleReminderOffsets = listOf(0, 5, 10, 15, 30, 60)
-private const val defaultRoutineTimeMs = 9 * 60 * 60 * 1000L
+private const val DefaultRoutineTimeMs = 9 * 60 * 60 * 1000L
 
 data class RoutineDraft(
     val name: String = "",
-    val timesOfDayMs: List<Long> = listOf(defaultRoutineTimeMs),
+    val timesOfDayMs: List<Long> = listOf(DefaultRoutineTimeMs),
     val repeatType: RoutineRepeatType = RoutineRepeatType.DAILY,
     val daysOfWeek: Set<Int> = emptySet(),
     val startDate: String,
@@ -83,19 +83,16 @@ data class RoutineDraft(
     val status: RoutineStatus = RoutineStatus.ACTIVE,
 )
 
-fun defaultRoutineDraft(
-    today: LocalDate,
-    medicationIds: Set<String> = emptySet(),
-    name: String = "",
-): RoutineDraft = RoutineDraft(
-    name = name,
-    startDate = today.toString(),
-    medicationIds = medicationIds,
-)
+fun defaultRoutineDraft(today: LocalDate, medicationIds: Set<String> = emptySet(), name: String = ""): RoutineDraft =
+    RoutineDraft(
+        name = name,
+        startDate = today.toString(),
+        medicationIds = medicationIds,
+    )
 
 fun Routine.toDraft(): RoutineDraft = RoutineDraft(
     name = name,
-    timesOfDayMs = timesOfDayMs.sorted().distinct().ifEmpty { listOf(defaultRoutineTimeMs) },
+    timesOfDayMs = timesOfDayMs.sorted().distinct().ifEmpty { listOf(DefaultRoutineTimeMs) },
     repeatType = repeatType,
     daysOfWeek = daysOfWeek.toSet(),
     startDate = startDate,
@@ -106,11 +103,7 @@ fun Routine.toDraft(): RoutineDraft = RoutineDraft(
     status = status,
 )
 
-fun canSaveRoutineDraft(
-    draft: RoutineDraft,
-    requireName: Boolean,
-    requireMedicationSelection: Boolean,
-): Boolean {
+fun canSaveRoutineDraft(draft: RoutineDraft, requireName: Boolean, requireMedicationSelection: Boolean): Boolean {
     val hasName = !requireName || draft.name.isNotBlank()
     val hasTimes = draft.timesOfDayMs.isNotEmpty()
     val hasDays = draft.repeatType != RoutineRepeatType.WEEKLY || draft.daysOfWeek.isNotEmpty()
@@ -194,7 +187,9 @@ fun RoutineFieldsSection(
                             onClick = {
                                 onDraftChange(
                                     draft.copy(
-                                        timesOfDayMs = draft.timesOfDayMs.toMutableList().apply { removeAt(index) }.sorted(),
+                                        timesOfDayMs = draft.timesOfDayMs.toMutableList().apply {
+                                            removeAt(index)
+                                        }.sorted(),
                                     ),
                                 )
                             },
@@ -317,7 +312,12 @@ fun RoutineFieldsSection(
                 onCheckedChange = { enabled ->
                     onDraftChange(
                         if (enabled) {
-                            draft.copy(hasReminder = true, reminderOffsetsMins = draft.reminderOffsetsMins.ifEmpty { setOf(0) })
+                            draft.copy(
+                                hasReminder = true,
+                                reminderOffsetsMins = draft.reminderOffsetsMins.ifEmpty {
+                                    setOf(0)
+                                },
+                            )
                         } else {
                             draft.copy(hasReminder = false, reminderOffsetsMins = emptySet())
                         },
@@ -464,7 +464,13 @@ fun RoutineFieldsSection(
     }
 
     activeDatePicker?.let { target ->
-        val currentDate = if (target == "start") LocalDate.parse(draft.startDate) else LocalDate.parse(draft.endDate ?: draft.startDate)
+        val currentDate = if (target ==
+            "start"
+        ) {
+            LocalDate.parse(draft.startDate)
+        } else {
+            LocalDate.parse(draft.endDate ?: draft.startDate)
+        }
         DatePickerSheet(
             initialDate = currentDate,
             onDismiss = { activeDatePicker = null },
@@ -486,9 +492,10 @@ fun RoutineFieldsSection(
 
     if (showTimePicker) {
         TimePickerSheet(
-            initialTimeMs = editingTimeIndex?.let { index -> draft.timesOfDayMs.getOrElse(index) { defaultRoutineTimeMs } }
+            initialTimeMs =
+            editingTimeIndex?.let { index -> draft.timesOfDayMs.getOrElse(index) { DefaultRoutineTimeMs } }
                 ?: draft.timesOfDayMs.lastOrNull()
-                ?: defaultRoutineTimeMs,
+                ?: DefaultRoutineTimeMs,
             onDismiss = { showTimePicker = false },
             onConfirm = { selectedTime ->
                 val updatedTimes = draft.timesOfDayMs.toMutableList()

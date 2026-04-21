@@ -20,6 +20,8 @@ import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
 import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
 import com.group8.comp2300.data.remote.dto.TokenResponse
 import com.group8.comp2300.data.remote.dto.UserQuizStatsDto
+import com.group8.comp2300.domain.model.chatbot.ChatbotRequest
+import com.group8.comp2300.domain.model.chatbot.ChatbotResponse
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentSlot
 import com.group8.comp2300.domain.model.medical.Clinic
@@ -40,6 +42,7 @@ import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.timeout
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.formData
@@ -49,8 +52,10 @@ import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
+import io.ktor.http.contentType
 import io.ktor.serialization.JsonConvertException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -58,6 +63,8 @@ import kotlinx.serialization.json.jsonPrimitive
 
 interface ApiService {
     suspend fun getHealth(): Map<String, String>
+
+    suspend fun sendChatbotMessage(request: ChatbotRequest): ChatbotResponse
 
     suspend fun getProducts(): List<ProductDto>
 
@@ -149,8 +156,20 @@ interface ApiService {
     suspend fun getEducationEarnedBadges(): List<EarnedBadgeDto>
 }
 
+private const val CHATBOT_REQUEST_TIMEOUT_MS = 100_000L
+private const val CHATBOT_SOCKET_TIMEOUT_MS = 100_000L
+
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun getHealth(): Map<String, String> = client.get("/api/health").body()
+
+    override suspend fun sendChatbotMessage(request: ChatbotRequest): ChatbotResponse = client.post("/api/chatbot") {
+        contentType(ContentType.Application.Json)
+        timeout {
+            requestTimeoutMillis = CHATBOT_REQUEST_TIMEOUT_MS
+            socketTimeoutMillis = CHATBOT_SOCKET_TIMEOUT_MS
+        }
+        setBody(request)
+    }.body()
 
     override suspend fun getProducts(): List<ProductDto> = client.get("/api/products").body()
 

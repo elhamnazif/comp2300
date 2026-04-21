@@ -88,6 +88,7 @@ fun Application.module() {
         quizRoutes()
 
         authenticate("auth-jwt", optional = devBypass) {
+            chatbotRoutes()
             appointmentRoutes()
             badgeRoutes()
             medicationRoutes()

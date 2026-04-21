@@ -2,8 +2,8 @@ package com.group8.comp2300.feature.settings.navigation
 
 import androidx.compose.runtime.*
 import com.group8.comp2300.app.navigation.LocalNavigator
-import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.app.navigation.Screen
+import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.feature.settings.*
 import kotlinx.coroutines.launch
