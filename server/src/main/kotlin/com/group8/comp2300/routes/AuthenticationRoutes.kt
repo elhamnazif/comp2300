@@ -2,11 +2,15 @@ package com.group8.comp2300.routes
 
 import com.group8.comp2300.dto.*
 import com.group8.comp2300.service.auth.AuthService
+import com.group8.comp2300.service.auth.ProfileImageStorage
 import io.ktor.http.*
+import io.ktor.http.content.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.utils.io.*
+import java.io.ByteArrayOutputStream
 
 private const val DUPLICATE_ACCOUNT_MESSAGE = "An account with this email already exists"
 private const val FORGOT_PASSWORD_RESPONSE_MESSAGE =
@@ -119,16 +123,80 @@ fun Route.authRoutes(authService: AuthService) {
             }
         }
 
-        post("/api/auth/complete-profile") {
+        put("/api/auth/profile") {
             withUserId { userId ->
-                val request = call.receive<CompleteProfileRequest>()
+                val request = call.receive<UpdateProfileRequest>()
                 call.respondResult(
-                    result = authService.completeProfile(userId, request),
+                    result = authService.updateProfile(userId, request),
                     onFailure = { error ->
                         respondExpectedFailure(
                             error = error,
                             expectedStatus = HttpStatusCode.BadRequest,
-                            defaultMessage = "Profile completion failed",
+                            defaultMessage = "Profile update failed",
+                        )
+                    },
+                )
+            }
+        }
+
+        put("/api/auth/profile/photo") {
+            withUserId { userId ->
+                val uploadPayload = runCatching {
+                    val multipart = call.receiveMultipart()
+                    var fileName: String? = null
+                    var fileBytes: ByteArray? = null
+
+                    multipart.forEachPart { part ->
+                        when (part) {
+                            is PartData.FileItem -> {
+                                if (fileBytes == null) {
+                                    fileName = part.originalFileName ?: "profile-photo"
+                                    fileBytes = part.readBytesWithLimit(ProfileImageStorage.MAX_FILE_SIZE_BYTES)
+                                }
+                            }
+
+                            else -> Unit
+                        }
+                        part.dispose()
+                    }
+
+                    fileBytes?.let { bytes ->
+                        fileName.orEmpty() to bytes
+                    } ?: throw IllegalArgumentException("No profile photo provided")
+                }.getOrElse { error ->
+                    return@withUserId call.respondExpectedFailure(
+                        error = error,
+                        expectedStatus = HttpStatusCode.BadRequest,
+                        defaultMessage = "Profile photo upload failed",
+                    )
+                }
+
+                call.respondResult(
+                    result = authService.uploadProfilePhoto(
+                        userId = userId,
+                        fileName = uploadPayload.first,
+                        fileBytes = uploadPayload.second,
+                    ),
+                    onFailure = { error ->
+                        respondExpectedFailure(
+                            error = error,
+                            expectedStatus = HttpStatusCode.BadRequest,
+                            defaultMessage = "Profile photo upload failed",
+                        )
+                    },
+                )
+            }
+        }
+
+        delete("/api/auth/profile/photo") {
+            withUserId { userId ->
+                call.respondResult(
+                    result = authService.removeProfilePhoto(userId),
+                    onFailure = { error ->
+                        respondExpectedFailure(
+                            error = error,
+                            expectedStatus = HttpStatusCode.BadRequest,
+                            defaultMessage = "Profile photo removal failed",
                         )
                     },
                 )
@@ -191,4 +259,23 @@ private suspend fun io.ktor.server.application.ApplicationCall.respondExpectedFa
 
 private suspend fun io.ktor.server.application.ApplicationCall.respondError(status: HttpStatusCode, message: String) {
     respond(status, mapOf("error" to message))
+}
+
+private suspend fun PartData.FileItem.readBytesWithLimit(maxBytes: Int): ByteArray {
+    val channel = provider()
+    val output = ByteArrayOutputStream()
+    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+    var totalBytes = 0
+
+    while (true) {
+        val bytesRead = channel.readAvailable(buffer, 0, buffer.size)
+        if (bytesRead == -1) break
+        if (bytesRead == 0) continue
+
+        totalBytes += bytesRead
+        require(totalBytes <= maxBytes) { ProfileImageStorage.FILE_TOO_LARGE_MESSAGE }
+        output.write(buffer, 0, bytesRead)
+    }
+
+    return output.toByteArray()
 }

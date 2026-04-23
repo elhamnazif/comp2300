@@ -1,6 +1,5 @@
 package com.group8.comp2300.feature.auth
 
-import com.group8.comp2300.feature.auth.completeprofile.CompleteProfileViewModel
 import com.group8.comp2300.feature.auth.emailverification.EmailVerificationViewModel
 import com.group8.comp2300.feature.auth.forgotpassword.ForgotPasswordViewModel
 import com.group8.comp2300.feature.auth.login.AuthViewModel
@@ -21,12 +20,6 @@ val authModule = module {
         EmailVerificationViewModel(
             activateAccountUseCase = get(),
             resendVerificationEmailUseCase = get(),
-            initialEmail = params.get(),
-        )
-    }
-    viewModel { params ->
-        CompleteProfileViewModel(
-            completeProfileUseCase = get(),
             initialEmail = params.get(),
         )
     }

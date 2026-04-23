@@ -32,7 +32,12 @@ UPDATE UserEntity SET isActivated = 1 WHERE id = ?;
 
 updateProfile:
 UPDATE UserEntity
-SET firstName = ?, lastName = ?, dateOfBirth = ?, gender = ?, sexualOrientation = ?
+SET firstName = ?, lastName = ?, phone = ?, dateOfBirth = ?, gender = ?, sexualOrientation = ?
+WHERE id = ?;
+
+updateProfileImageUrl:
+UPDATE UserEntity
+SET profileImageUrl = ?
 WHERE id = ?;
 
 deleteUnactivatedAccounts:

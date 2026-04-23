@@ -2,6 +2,7 @@ package com.group8.comp2300.app.navigation
 
 import androidx.lifecycle.SavedStateHandle
 import com.group8.comp2300.domain.model.session.AuthSession
+import com.group8.comp2300.domain.model.user.UpdateProfileInput
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -273,13 +274,11 @@ private class FakeAuthRepository(initialSession: AuthSession = AuthSession.Signe
 
     override suspend fun preregister(email: String, password: String) = error("Not used in test")
 
-    override suspend fun completeProfile(
-        firstName: String,
-        lastName: String,
-        gender: com.group8.comp2300.domain.model.user.Gender,
-        sexualOrientation: com.group8.comp2300.domain.model.user.SexualOrientation,
-        dateOfBirth: LocalDate?,
-    ) = error("Not used in test")
+    override suspend fun updateProfile(input: UpdateProfileInput) = error("Not used in test")
+
+    override suspend fun uploadProfilePhoto(fileBytes: ByteArray, fileName: String) = error("Not used in test")
+
+    override suspend fun removeProfilePhoto() = error("Not used in test")
 
     override suspend fun activateAccount(token: String) = error("Not used in test")
 

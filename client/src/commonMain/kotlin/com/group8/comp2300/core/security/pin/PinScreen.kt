@@ -43,6 +43,7 @@ fun PinScreen(
     title: String? = null,
     description: String? = null,
     errorMessage: String? = null,
+    inputEnabled: Boolean = true,
     onErrorMessageCleared: () -> Unit = {},
     onDismiss: (() -> Unit)? = null,
     onBiometricSuccess: (() -> Unit)? = null,
@@ -54,6 +55,7 @@ fun PinScreen(
     var isConfirming by remember { mutableStateOf(false) }
     var internalError: String? by remember { mutableStateOf(null) }
     var shakeTrigger by remember { mutableIntStateOf(0) }
+    var previousExternalError by remember { mutableStateOf<String?>(null) }
 
     val haptic = LocalHapticFeedback.current
     val shakeOffset = remember { Animatable(0f) }
@@ -89,7 +91,9 @@ fun PinScreen(
 
     // Shake on external error
     LaunchedEffect(errorMessage) {
-        if (errorMessage != null) {
+        val shouldShake = errorMessage != null && previousExternalError == null
+        previousExternalError = errorMessage
+        if (shouldShake) {
             shakeTrigger++
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
         }
@@ -113,6 +117,7 @@ fun PinScreen(
 
     // All state transitions happen synchronously in handleKey — no LaunchedEffect(pin)
     fun handleKey(key: String) {
+        if (!inputEnabled) return
         haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
 
         // Any keypress while error is showing: clear error, reset, then process the key
@@ -331,7 +336,7 @@ fun PinScreen(
                                         KeyPadButton(
                                             text = "",
                                             onClick = { biometricTriggered = true },
-                                            enabled = biometricAvailable,
+                                            enabled = biometricAvailable && inputEnabled,
                                             accent = true,
                                             contentDescription = biometricDescription,
                                             icon = {
@@ -352,6 +357,7 @@ fun PinScreen(
                                 KeyPadButton(
                                     text = label,
                                     onClick = { handleKey(label) },
+                                    enabled = inputEnabled,
                                     size = buttonSize,
                                 )
                             }

@@ -11,6 +11,7 @@ import com.group8.comp2300.security.*
 import com.group8.comp2300.service.appointment.AppointmentService
 import com.group8.comp2300.service.auth.AuthService
 import com.group8.comp2300.service.auth.InMemoryVerificationRequestThrottle
+import com.group8.comp2300.service.auth.ProfileImageStorage
 import com.group8.comp2300.service.auth.VerificationRequestThrottle
 import com.group8.comp2300.service.chatbot.ChatbotProviderClient
 import com.group8.comp2300.service.chatbot.ChatbotService
@@ -74,6 +75,7 @@ val serverModule = module {
     single { ChatbotConfig }
     single<ChatbotProviderClient> { GoogleChatbotProviderClient(get()) }
     single<VerificationRequestThrottle> { InMemoryVerificationRequestThrottle() }
+    single { ProfileImageStorage() }
 
     // Services
     single {
@@ -84,6 +86,7 @@ val serverModule = module {
             jwtService = get(),
             emailService = if (ResendConfig.isConfigured) get<EmailService>() else null,
             verificationRequestThrottle = get(),
+            profileImageStorage = get(),
         )
     }
     single { MedicalRecordService(repository = get(), medicalRecordCipher = get()) }

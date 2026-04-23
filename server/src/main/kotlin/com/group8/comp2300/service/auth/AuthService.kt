@@ -26,6 +26,7 @@ class AuthService(
     private val jwtService: JwtService,
     private val emailService: EmailService?,
     private val verificationRequestThrottle: VerificationRequestThrottle,
+    private val profileImageStorage: ProfileImageStorage,
 ) {
     private val passwordHasher = PasswordHasher
     private val secureRandom = SecureRandom()
@@ -280,7 +281,7 @@ class AuthService(
         }
     }
 
-    fun completeProfile(userId: String, request: CompleteProfileRequest): Result<User> {
+    fun updateProfile(userId: String, request: UpdateProfileRequest): Result<User> {
         if (request.firstName.isBlank() || request.lastName.isBlank()) {
             return Result.failure(IllegalArgumentException("First name and last name are required"))
         }
@@ -290,7 +291,7 @@ class AuthService(
 
         if (!userRepository.isActivated(userId)) {
             return Result.failure(
-                IllegalArgumentException("Please activate your account before completing your profile"),
+                IllegalArgumentException("Please activate your account before updating your profile"),
             )
         }
 
@@ -299,6 +300,7 @@ class AuthService(
                 userId = userId,
                 firstName = request.firstName,
                 lastName = request.lastName,
+                phone = request.phone?.trim().takeUnless { it.isNullOrEmpty() },
                 dateOfBirth = request.dateOfBirth,
                 gender = request.gender,
                 sexualOrientation = request.sexualOrientation,
@@ -309,6 +311,76 @@ class AuthService(
                 ?: Result.failure(IllegalStateException("Failed to retrieve updated user"))
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    fun uploadProfilePhoto(userId: String, fileName: String, fileBytes: ByteArray): Result<User> {
+        val user = userRepository.findById(userId)
+            ?: return Result.failure(IllegalArgumentException("User not found"))
+
+        if (!userRepository.isActivated(userId)) {
+            return Result.failure(IllegalArgumentException("Please activate your account before updating your profile"))
+        }
+
+        val previousImageUrl = user.profileImageUrl
+        return profileImageStorage.save(userId, fileName, fileBytes).fold(
+            onSuccess = { imageUrl -> persistProfilePhoto(userId, imageUrl, previousImageUrl) },
+            onFailure = { error -> Result.failure(error) },
+        )
+    }
+
+    fun removeProfilePhoto(userId: String): Result<User> {
+        val user = userRepository.findById(userId)
+            ?: return Result.failure(IllegalArgumentException("User not found"))
+
+        if (!userRepository.isActivated(userId)) {
+            return Result.failure(IllegalArgumentException("Please activate your account before updating your profile"))
+        }
+
+        return persistProfilePhoto(userId, imageUrl = null, previousImageUrl = user.profileImageUrl)
+    }
+
+    private fun persistProfilePhoto(userId: String, imageUrl: String?, previousImageUrl: String?): Result<User> {
+        val persistResult = runCatching {
+            userRepository.updateProfileImageUrl(userId, imageUrl)
+        }
+        if (persistResult.isFailure) {
+            imageUrl?.let(::cleanupStagedProfilePhoto)
+            return Result.failure(persistResult.exceptionOrNull()!!)
+        }
+
+        val updatedUser = userRepository.findById(userId)
+        if (updatedUser == null) {
+            rollbackProfilePhotoUpdate(userId, previousImageUrl, imageUrl)
+            return Result.failure(IllegalStateException("Failed to retrieve updated user"))
+        }
+
+        if (previousImageUrl != imageUrl) {
+            runCatching {
+                profileImageStorage.deleteByUrl(previousImageUrl)
+            }.onFailure { error ->
+                log.warn("Failed to delete previous profile photo for {}", userId, error)
+            }
+        }
+
+        return Result.success(updatedUser)
+    }
+
+    private fun rollbackProfilePhotoUpdate(userId: String, previousImageUrl: String?, stagedImageUrl: String?) {
+        runCatching {
+            userRepository.updateProfileImageUrl(userId, previousImageUrl)
+        }.onFailure { error ->
+            log.warn("Failed to rollback profile photo update for {}", userId, error)
+        }
+
+        stagedImageUrl?.let(::cleanupStagedProfilePhoto)
+    }
+
+    private fun cleanupStagedProfilePhoto(imageUrl: String) {
+        runCatching {
+            profileImageStorage.deleteByUrl(imageUrl)
+        }.onFailure { error ->
+            log.warn("Failed to clean up staged profile photo {}", imageUrl, error)
         }
     }
 

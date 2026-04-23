@@ -21,6 +21,7 @@ import kotlinx.serialization.json.Json
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import java.io.File
 
 fun main() {
     embeddedServer(Netty, port = Environment.port, host = "0.0.0.0", module = Application::module).start(wait = true)
@@ -80,6 +81,7 @@ fun Application.module() {
         get("/") { call.respondText("Ktor: ready") }
 
         get("/api/health") { call.respond(mapOf("status" to "OK")) }
+        staticFiles("/images/profile", File("profile-images"))
         staticResources("/images", "images")
 
         authRoutes(get())

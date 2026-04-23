@@ -31,9 +31,6 @@ fun PrivacySecurityScreen(
 ) {
     val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
     val privacySettings by privacySettingsDataSource.state.collectAsState()
-    var dataEncryptionEnabled by remember { mutableStateOf(true) }
-    var anonymousReporting by remember { mutableStateOf(false) }
-    var shareDataForResearch by remember { mutableStateOf(false) }
 
     var pinFlow by remember { mutableStateOf(PinFlow.None) }
     var pinStep by remember { mutableStateOf(PinStep.VerifyOld) }
@@ -136,9 +133,9 @@ fun PrivacySecurityScreen(
         item {
             val effectiveAppLockEnabled = appLockEnabled || pinTogglePending
             val total = when {
-                effectiveAppLockEnabled && biometricsAvailable -> 4
-                effectiveAppLockEnabled -> 3
-                else -> 2
+                effectiveAppLockEnabled && biometricsAvailable -> 3
+                effectiveAppLockEnabled -> 2
+                else -> 1
             }
 
             SettingsSection(title = stringResource(Res.string.privacy_security_settings_title)) {
@@ -193,15 +190,6 @@ fun PrivacySecurityScreen(
                         onCheckedChange = onBiometricsEnabledChange,
                     )
                 }
-                SettingsToggleRow(
-                    icon = Icons.ShieldW400Outlinedfill1,
-                    title = stringResource(Res.string.privacy_security_encryption_title),
-                    description = stringResource(Res.string.privacy_security_encryption_desc),
-                    checked = dataEncryptionEnabled,
-                    index = total - 1,
-                    total = total,
-                    onCheckedChange = { dataEncryptionEnabled = it },
-                )
             }
         }
         item {
@@ -212,26 +200,8 @@ fun PrivacySecurityScreen(
                     description = stringResource(Res.string.privacy_security_background_blur_desc),
                     checked = privacySettings.blurAppWhenBackgrounded,
                     index = 0,
-                    total = 3,
+                    total = 1,
                     onCheckedChange = privacySettingsDataSource::setBlurAppWhenBackgrounded,
-                )
-                SettingsToggleRow(
-                    icon = Icons.InfoW400Outlinedfill1,
-                    title = stringResource(Res.string.privacy_security_anonymous_reporting_title),
-                    description = stringResource(Res.string.privacy_security_anonymous_reporting_desc),
-                    checked = anonymousReporting,
-                    index = 1,
-                    total = 3,
-                    onCheckedChange = { anonymousReporting = it },
-                )
-                SettingsToggleRow(
-                    icon = Icons.SendW400Outlinedfill1,
-                    title = stringResource(Res.string.privacy_security_share_data_title),
-                    description = stringResource(Res.string.privacy_security_share_data_desc),
-                    checked = shareDataForResearch,
-                    index = 2,
-                    total = 3,
-                    onCheckedChange = { shareDataForResearch = it },
                 )
             }
         }

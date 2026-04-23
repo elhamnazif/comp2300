@@ -1,7 +1,6 @@
 package com.group8.comp2300.feature.profile
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -21,11 +20,16 @@ import org.jetbrains.compose.resources.stringResource
 fun ProfileOverviewSection(
     state: ProfileViewModel.State,
     onNavigateToGuestSignIn: () -> Unit,
+    onNavigateToEditProfile: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ScreenHeader(horizontalPadding = 0.dp, topPadding = 16.dp) {
         Column(modifier.padding(horizontal = 16.dp)) {
-            Header(state, onNavigateToGuestSignIn = onNavigateToGuestSignIn)
+            Header(
+                state,
+                onNavigateToGuestSignIn = onNavigateToGuestSignIn,
+                onNavigateToEditProfile = onNavigateToEditProfile,
+            )
             Spacer(Modifier.height(24.dp))
             Text(
                 stringResource(Res.string.profile_settings_title),
@@ -133,8 +137,12 @@ private fun FeatureCard(icon: ImageVector, title: String, description: String, m
 }
 
 @Composable
-private fun Header(state: ProfileViewModel.State, onNavigateToGuestSignIn: () -> Unit) {
-    if (!state.isLoading && state.userName.isEmpty()) {
+private fun Header(
+    state: ProfileViewModel.State,
+    onNavigateToGuestSignIn: () -> Unit,
+    onNavigateToEditProfile: () -> Unit,
+) {
+    if (!state.isLoading && !state.isSignedIn) {
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
             shape = RoundedCornerShape(28.dp),
@@ -145,7 +153,10 @@ private fun Header(state: ProfileViewModel.State, onNavigateToGuestSignIn: () ->
                 Modifier.padding(16.dp).fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Avatar(stringResource(Res.string.profile_default_user_initials))
+                ProfileAvatar(
+                    initials = stringResource(Res.string.profile_default_user_initials),
+                    imageModel = null,
+                )
                 Spacer(Modifier.size(16.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
@@ -168,34 +179,33 @@ private fun Header(state: ProfileViewModel.State, onNavigateToGuestSignIn: () ->
             }
         }
     } else {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Avatar(
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ProfileAvatar(
                 state.userInitials.ifEmpty {
                     stringResource(Res.string.profile_default_user_initials)
                 },
+                imageModel = state.profileImageUrl,
                 isLoading = state.isLoading,
             )
             Spacer(Modifier.size(16.dp))
-            UserInfo(state.userName, state.memberSince, isLoading = state.isLoading)
-        }
-    }
-}
-
-@Composable
-private fun Avatar(initials: String, modifier: Modifier = Modifier, isLoading: Boolean = false) {
-    Surface(
-        shape = CircleShape,
-        color = MaterialTheme.colorScheme.primaryContainer,
-        modifier =
-        modifier.size(80.dp).then(if (isLoading && initials.isEmpty()) Modifier.shimmerEffect() else Modifier),
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            if (!isLoading || initials.isNotEmpty()) {
-                Text(
-                    initials,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                )
+            UserInfo(
+                name = state.userName,
+                memberSince = state.memberSince,
+                isLoading = state.isLoading,
+                modifier = Modifier.weight(1f),
+            )
+            if (state.isSignedIn) {
+                TextButton(onClick = onNavigateToEditProfile) {
+                    Icon(
+                        imageVector = Icons.EditW400Outlinedfill1,
+                        contentDescription = null,
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(Res.string.profile_edit_label))
+                }
             }
         }
     }

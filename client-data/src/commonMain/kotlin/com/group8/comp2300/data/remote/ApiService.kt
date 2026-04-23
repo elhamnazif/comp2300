@@ -48,7 +48,11 @@ interface ApiService {
 
     suspend fun preregister(request: PreregisterRequest): PreregisterResponse
 
-    suspend fun completeProfile(request: CompleteProfileRequest): User
+    suspend fun updateProfile(request: UpdateProfileRequest): User
+
+    suspend fun uploadProfilePhoto(fileBytes: ByteArray, fileName: String): User
+
+    suspend fun removeProfilePhoto(): User
 
     suspend fun resendVerificationEmail(email: String): MessageResponse
 
@@ -172,8 +176,26 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun preregister(request: PreregisterRequest): PreregisterResponse =
         client.post("/api/auth/preregister") { setBody(request) }.body()
 
-    override suspend fun completeProfile(request: CompleteProfileRequest): User =
-        client.post("/api/auth/complete-profile") { setBody(request) }.body()
+    override suspend fun updateProfile(request: UpdateProfileRequest): User =
+        client.put("/api/auth/profile") { setBody(request) }.body()
+
+    override suspend fun uploadProfilePhoto(fileBytes: ByteArray, fileName: String): User =
+        client.submitFormWithBinaryData(
+            url = "/api/auth/profile/photo",
+            formData = formData {
+                append(
+                    "file",
+                    fileBytes,
+                    Headers.build {
+                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                    },
+                )
+            },
+        ) {
+            method = HttpMethod.Put
+        }.body()
+
+    override suspend fun removeProfilePhoto(): User = client.delete("/api/auth/profile/photo").body()
 
     override suspend fun resendVerificationEmail(email: String): MessageResponse =
         client.post("/api/auth/resend-verification") {

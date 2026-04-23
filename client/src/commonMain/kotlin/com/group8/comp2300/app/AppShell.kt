@@ -69,6 +69,7 @@ fun AppShell(
     val localAuthSettings by localAuthSettingsDataSource.state.collectAsState()
     val hasPin by pinDataSource.pinSet.collectAsState()
     val isPinLocked by pinLockViewModel.isLocked.collectAsState()
+    val isPinInputLocked by pinLockViewModel.isInputLocked.collectAsState()
     val privacySettings by privacySettingsDataSource.state.collectAsState()
 
     LaunchedEffect(localAuthSettings.onboardingCompleted) {
@@ -93,6 +94,7 @@ fun AppShell(
         PinLockOverlay(
             visible = localAuthSettings.appLockEnabled && hasPin && isPinLocked,
             errorMessage = pinLockViewModel.error.collectAsState().value,
+            inputEnabled = !isPinInputLocked,
             onComplete = pinLockViewModel::onPinEntered,
             onErrorMessageCleared = pinLockViewModel::clearError,
             onBiometricSuccess = if (localAuthSettings.appLockEnabled && localAuthSettings.biometricUnlockEnabled) {
@@ -254,6 +256,7 @@ private fun rememberMainTabEntries(entryProvider: (Screen) -> NavEntry<Screen>):
 private fun PinLockOverlay(
     visible: Boolean,
     errorMessage: String?,
+    inputEnabled: Boolean,
     onComplete: (String) -> Unit,
     onErrorMessageCleared: () -> Unit,
     onBiometricSuccess: (() -> Unit)?,
@@ -269,13 +272,14 @@ private fun PinLockOverlay(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.surface,
         ) {
-            PinScreen(
-                onComplete = onComplete,
-                isSetup = false,
-                errorMessage = errorMessage,
-                onErrorMessageCleared = onErrorMessageCleared,
-                onBiometricSuccess = onBiometricSuccess,
-            )
+                PinScreen(
+                    onComplete = onComplete,
+                    isSetup = false,
+                    errorMessage = errorMessage,
+                    inputEnabled = inputEnabled,
+                    onErrorMessageCleared = onErrorMessageCleared,
+                    onBiometricSuccess = onBiometricSuccess,
+                )
         }
     }
 }

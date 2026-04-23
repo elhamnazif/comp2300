@@ -5,10 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.data.local.PinRateLimiter
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.seconds
 
@@ -24,6 +26,11 @@ class PinLockViewModel(
     val error: StateFlow<String?>
         field = MutableStateFlow(null)
 
+    val isInputLocked: StateFlow<Boolean>
+        field = MutableStateFlow(false)
+
+    private var lockoutTickerJob: Job? = null
+
     init {
         viewModelScope.launch {
             var initialized = false
@@ -32,8 +39,10 @@ class PinLockViewModel(
             }.collect { shouldRequireLock ->
                 when {
                     !shouldRequireLock -> {
+                        lockoutTickerJob?.cancel()
                         rateLimiter.resetAttempts()
                         error.value = null
+                        isInputLocked.value = false
                         isLocked.value = false
                     }
 
@@ -41,6 +50,8 @@ class PinLockViewModel(
                         isLocked.value = true
                         if (rateLimiter.isLockedOut()) {
                             startLockoutTicker()
+                        } else {
+                            isInputLocked.value = false
                         }
                     }
                 }
@@ -56,14 +67,19 @@ class PinLockViewModel(
         }
         viewModelScope.launch {
             if (pinDataSource.verifyPin(pin)) {
+                lockoutTickerJob?.cancel()
                 rateLimiter.resetAttempts()
+                error.value = null
+                isInputLocked.value = false
                 isLocked.value = false
             } else {
                 rateLimiter.recordFailedAttempt()
                 if (rateLimiter.isLockedOut()) {
                     startLockoutTicker()
+                } else {
+                    isInputLocked.value = false
+                    error.value = "Incorrect PIN"
                 }
-                error.value = "Incorrect PIN"
             }
         }
     }
@@ -73,7 +89,10 @@ class PinLockViewModel(
     }
 
     fun onBiometricUnlock() {
+        lockoutTickerJob?.cancel()
         rateLimiter.resetAttempts()
+        error.value = null
+        isInputLocked.value = false
         isLocked.value = false
     }
 
@@ -92,11 +111,14 @@ class PinLockViewModel(
     }
 
     private fun startLockoutTicker() {
-        viewModelScope.launch {
+        if (lockoutTickerJob?.isActive == true) return
+        lockoutTickerJob = viewModelScope.launch {
+            isInputLocked.value = true
             while (rateLimiter.isLockedOut()) {
                 updateLockoutError()
                 delay(1.seconds)
             }
+            isInputLocked.value = false
             error.value = null
         }
     }

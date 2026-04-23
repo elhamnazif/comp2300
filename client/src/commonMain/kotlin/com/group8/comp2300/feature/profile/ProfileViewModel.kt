@@ -30,9 +30,11 @@ class ProfileViewModel(private val authRepository: AuthRepository) : ViewModel()
 
                 val baseState = State(
                     isLoading = true,
+                    isSignedIn = true,
                     userInitials = initials,
                     userName = "$firstName $lastName".trim(),
                     memberSince = user.createdAt.let { DateFormatter.formatMonthDayYearSuspend(it) },
+                    profileImageUrl = user.profileImageUrl,
                 )
                 emit(baseState)
 
@@ -60,8 +62,10 @@ class ProfileViewModel(private val authRepository: AuthRepository) : ViewModel()
     @Immutable
     data class State(
         val isLoading: Boolean = false,
+        val isSignedIn: Boolean = false,
         val userInitials: String = "",
         val userName: String = "",
         val memberSince: String = "",
+        val profileImageUrl: String? = null,
     )
 }

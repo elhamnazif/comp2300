@@ -18,6 +18,7 @@ import com.group8.comp2300.domain.model.shop.Order
 import com.group8.comp2300.domain.model.shop.PlaceOrderRequest
 import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
+import com.group8.comp2300.domain.model.user.UpdateProfileInput
 import com.group8.comp2300.domain.model.user.User
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -236,6 +237,87 @@ class AuthRepositoryImplTest {
         repository.awaitInitialRestore()
         assertFalse((repository.session.value as AuthSession.SignedIn).isStale)
     }
+
+    @Test
+    fun updateProfileRefreshesSignedInSession() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val repository = AuthRepositoryImpl(
+            apiService = FakeApiService(),
+            tokenManager = TokenManagerImpl(sessionDataSource),
+            personalDataCleaner = PersonalDataCleaner(db),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
+            sessionDataSource = sessionDataSource,
+        )
+
+        repository.awaitInitialRestore()
+        repository.login("user@example.com", "pw")
+
+        val result = repository.updateProfile(
+            UpdateProfileInput(
+                firstName = "Updated",
+                lastName = "Name",
+                phone = "12345678",
+            ),
+        )
+
+        assertTrue(result.isSuccess)
+        val session = repository.session.value as AuthSession.SignedIn
+        assertEquals("Updated", session.user.firstName)
+        assertEquals("Name", session.user.lastName)
+        assertEquals("12345678", session.user.phone)
+    }
+
+    @Test
+    fun uploadProfilePhotoRefreshesSignedInSession() = runTest {
+        val db = newDatabase()
+        val repository = AuthRepositoryImpl(
+            apiService = FakeApiService(),
+            tokenManager = TokenManagerImpl(SessionDataSource(db)),
+            personalDataCleaner = PersonalDataCleaner(db),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
+            sessionDataSource = SessionDataSource(db),
+        )
+
+        repository.awaitInitialRestore()
+        repository.login("user@example.com", "pw")
+
+        val result = repository.uploadProfilePhoto("image".encodeToByteArray(), "avatar.png")
+
+        assertTrue(result.isSuccess)
+        val session = repository.session.value as AuthSession.SignedIn
+        assertEquals("/images/profile/avatar.png", session.user.profileImageUrl)
+    }
+
+    @Test
+    fun removeProfilePhotoRefreshesSignedInSession() = runTest {
+        val db = newDatabase()
+        val apiService = FakeApiService(
+            profileUser = User(
+                id = "user-1",
+                email = "user@example.com",
+                firstName = "Test",
+                lastName = "User",
+                profileImageUrl = "/images/profile/avatar.png",
+            ),
+        )
+        val repository = AuthRepositoryImpl(
+            apiService = apiService,
+            tokenManager = TokenManagerImpl(SessionDataSource(db)),
+            personalDataCleaner = PersonalDataCleaner(db),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
+            sessionDataSource = SessionDataSource(db),
+        )
+
+        repository.awaitInitialRestore()
+        repository.login("user@example.com", "pw")
+
+        val result = repository.removeProfilePhoto()
+
+        assertTrue(result.isSuccess)
+        val session = repository.session.value as AuthSession.SignedIn
+        assertNull(session.user.profileImageUrl)
+    }
 }
 
 internal fun newDatabase(): AppDatabase {
@@ -303,7 +385,26 @@ internal open class FakeApiService(
     override suspend fun preregister(request: PreregisterRequest): PreregisterResponse =
         PreregisterResponse(request.email, "ok")
 
-    override suspend fun completeProfile(request: CompleteProfileRequest): User = profileUser
+    override suspend fun updateProfile(request: UpdateProfileRequest): User {
+        profileUser = profileUser.copy(
+            firstName = request.firstName,
+            lastName = request.lastName,
+            phone = request.phone,
+            gender = request.gender?.let(Gender::valueOf),
+            sexualOrientation = request.sexualOrientation?.let(SexualOrientation::valueOf),
+        )
+        return profileUser
+    }
+
+    override suspend fun uploadProfilePhoto(fileBytes: ByteArray, fileName: String): User {
+        profileUser = profileUser.copy(profileImageUrl = "/images/profile/$fileName")
+        return profileUser
+    }
+
+    override suspend fun removeProfilePhoto(): User {
+        profileUser = profileUser.copy(profileImageUrl = null)
+        return profileUser
+    }
 
     override suspend fun resendVerificationEmail(email: String): MessageResponse = MessageResponse("ok")
 

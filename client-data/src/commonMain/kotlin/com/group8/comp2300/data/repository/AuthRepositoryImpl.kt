@@ -8,12 +8,11 @@ import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.offline.isRetryable
 import com.group8.comp2300.data.remote.ApiException
 import com.group8.comp2300.data.remote.ApiService
-import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
 import com.group8.comp2300.data.remote.dto.LoginRequest
 import com.group8.comp2300.data.remote.dto.PreregisterRequest
+import com.group8.comp2300.data.remote.dto.UpdateProfileRequest
 import com.group8.comp2300.domain.model.session.AuthSession
-import com.group8.comp2300.domain.model.user.Gender
-import com.group8.comp2300.domain.model.user.SexualOrientation
+import com.group8.comp2300.domain.model.user.UpdateProfileInput
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
@@ -22,8 +21,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.datetime.LocalDate
-
 class AuthRepositoryImpl(
     private val apiService: ApiService,
     private val tokenManager: TokenManager,
@@ -58,22 +55,29 @@ class AuthRepositoryImpl(
         apiService.preregister(PreregisterRequest(email, password)).email
     }
 
-    override suspend fun completeProfile(
-        firstName: String,
-        lastName: String,
-        gender: Gender,
-        sexualOrientation: SexualOrientation,
-        dateOfBirth: LocalDate?,
-    ): Result<User> = runCatching {
-        val user = apiService.completeProfile(
-            CompleteProfileRequest(
-                firstName = firstName,
-                lastName = lastName,
-                dateOfBirth = dateOfBirth.toEpochMilliseconds(),
-                gender = gender.name,
-                sexualOrientation = sexualOrientation.name,
+    override suspend fun updateProfile(input: UpdateProfileInput): Result<User> = runCatching {
+        val user = apiService.updateProfile(
+            UpdateProfileRequest(
+                firstName = input.firstName,
+                lastName = input.lastName,
+                phone = input.phone,
+                dateOfBirth = input.dateOfBirth.toEpochMilliseconds(),
+                gender = input.gender?.name,
+                sexualOrientation = input.sexualOrientation?.name,
             ),
         )
+        _session.value = AuthSession.SignedIn(user)
+        user
+    }
+
+    override suspend fun uploadProfilePhoto(fileBytes: ByteArray, fileName: String): Result<User> = runCatching {
+        val user = apiService.uploadProfilePhoto(fileBytes = fileBytes, fileName = fileName)
+        _session.value = AuthSession.SignedIn(user)
+        user
+    }
+
+    override suspend fun removeProfilePhoto(): Result<User> = runCatching {
+        val user = apiService.removeProfilePhoto()
         _session.value = AuthSession.SignedIn(user)
         user
     }

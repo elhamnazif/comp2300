@@ -32,6 +32,9 @@ sealed interface Screen : NavKey {
     @Serializable
     data object Profile : Screen
 
+    @Serializable
+    data object EditProfile : Screen
+
     // Auth & Onboarding
     @Serializable
     data object Onboarding : Screen
@@ -143,6 +146,7 @@ fun Screen.isMainTab(): Boolean = this in mainTabScreens
 fun Screen.requiresAuthentication(): Boolean = when (this) {
     Screen.Chatbot,
     Screen.Checkout,
+    Screen.EditProfile,
     Screen.MedicalRecords,
     is Screen.BookingHistory,
     -> true

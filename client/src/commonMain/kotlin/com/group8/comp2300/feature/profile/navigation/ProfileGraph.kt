@@ -8,6 +8,7 @@ import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
+import com.group8.comp2300.feature.profile.EditProfileScreen
 import com.group8.comp2300.feature.profile.GuestSignInScreen
 import com.group8.comp2300.feature.profile.ProfileScreen
 import org.koin.compose.koinInject
@@ -24,6 +25,7 @@ val profileGraphModule = module {
         val isSignedIn = session is AuthSession.SignedIn
         ProfileScreen(
             onNavigateToGuestSignIn = { navigator.navigate(Screen.GuestSignIn) },
+            onNavigateToEditProfile = { navigator.navigate(Screen.EditProfile) },
             appLockEnabled = localAuthSettings.appLockEnabled,
             biometricUnlockEnabled = localAuthSettings.biometricUnlockEnabled,
             onNavigateToMedicalRecords = {
@@ -42,6 +44,14 @@ val profileGraphModule = module {
         val navigator = LocalNavigator.current
         GuestSignInScreen(
             onRequireAuth = { navigator.requireAuth() },
+        )
+    }
+
+    navigation<Screen.EditProfile>(metadata = overlayNavigationMetadata()) {
+        val navigator = LocalNavigator.current
+        EditProfileScreen(
+            onSaved = { navigator.goBack() },
+            onBack = { navigator.goBack() },
         )
     }
 }

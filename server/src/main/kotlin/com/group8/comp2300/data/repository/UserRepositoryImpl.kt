@@ -71,6 +71,7 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
         userId: String,
         firstName: String,
         lastName: String,
+        phone: String?,
         dateOfBirth: Long?,
         gender: String?,
         sexualOrientation: String?,
@@ -78,11 +79,16 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
         database.userQueries.updateProfile(
             firstName = firstName,
             lastName = lastName,
+            phone = phone,
             dateOfBirth = dateOfBirth,
             gender = gender,
             sexualOrientation = sexualOrientation,
             id = userId,
         )
+    }
+
+    override fun updateProfileImageUrl(userId: String, profileImageUrl: String?) {
+        database.userQueries.updateProfileImageUrl(profileImageUrl, userId)
     }
 
     override fun deleteUnactivatedAccounts(cutoffMillis: Long) {

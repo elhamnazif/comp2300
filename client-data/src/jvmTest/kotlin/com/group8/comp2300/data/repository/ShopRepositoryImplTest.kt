@@ -227,14 +227,9 @@ private class MutableSessionAuthRepository(initialSession: AuthSession) : AuthRe
 
     override suspend fun login(email: String, password: String) = error("unused")
     override suspend fun preregister(email: String, password: String) = error("unused")
-    override suspend fun completeProfile(
-        firstName: String,
-        lastName: String,
-        gender: com.group8.comp2300.domain.model.user.Gender,
-        sexualOrientation: com.group8.comp2300.domain.model.user.SexualOrientation,
-        dateOfBirth: kotlinx.datetime.LocalDate?,
-    ) = error("unused")
-
+    override suspend fun updateProfile(input: com.group8.comp2300.domain.model.user.UpdateProfileInput) = error("unused")
+    override suspend fun uploadProfilePhoto(fileBytes: ByteArray, fileName: String) = error("unused")
+    override suspend fun removeProfilePhoto() = error("unused")
     override suspend fun activateAccount(token: String) = error("unused")
     override suspend fun forgotPassword(email: String) = error("unused")
     override suspend fun resendVerificationEmail(email: String) = error("unused")

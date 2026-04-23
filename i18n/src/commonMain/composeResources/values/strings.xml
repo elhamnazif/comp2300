@@ -22,6 +22,7 @@
     <string name="auth_privacy_policy">Privacy Policy</string>
     <string name="auth_first_name_label">First Name</string>
     <string name="auth_last_name_label">Last Name</string>
+    <string name="auth_phone_label">Phone</string>
     <string name="auth_dob_label">Date of Birth</string>
     <string name="auth_optional_info">Optional Information</string>
     <string name="auth_gender_label">Gender</string>
@@ -685,6 +686,10 @@
     <string name="profile_default_user_initials">JP</string>
     <string name="profile_member_since_format">Member since %1$s</string>
     <string name="profile_edit_label">Edit Profile</string>
+    <string name="profile_edit_desc">Keep your details up to date.</string>
+    <string name="profile_change_photo">Change photo</string>
+    <string name="profile_remove_photo">Remove photo</string>
+    <string name="profile_save_button">Save Changes</string>
     <string name="profile_sign_in_card_desc">Sign in to track lab results, book screenings, and more</string>
     <string name="profile_sign_in_label">Sign In / Sign Up</string>
     <string name="profile_why_account_title">Why Create an Account?</string>

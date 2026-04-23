@@ -31,9 +31,10 @@ data class PreregisterRequest(val email: String, val password: String)
 data class PreregisterResponse(val email: String, val message: String)
 
 @Serializable
-data class CompleteProfileRequest(
+data class UpdateProfileRequest(
     val firstName: String,
     val lastName: String,
+    val phone: String? = null,
     val dateOfBirth: Long? = null,
     val gender: String? = null,
     val sexualOrientation: String? = null,

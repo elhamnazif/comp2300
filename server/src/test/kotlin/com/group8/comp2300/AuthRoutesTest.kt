@@ -6,7 +6,6 @@ import com.group8.comp2300.data.repository.UserRepositoryImpl
 import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.dto.ActivateRequest
 import com.group8.comp2300.dto.AuthResponse
-import com.group8.comp2300.dto.CompleteProfileRequest
 import com.group8.comp2300.dto.ForgotPasswordRequest
 import com.group8.comp2300.dto.LoginRequest
 import com.group8.comp2300.dto.MessageResponse
@@ -16,22 +15,29 @@ import com.group8.comp2300.dto.RefreshTokenRequest
 import com.group8.comp2300.dto.ResendVerificationRequest
 import com.group8.comp2300.dto.ResetPasswordRequest
 import com.group8.comp2300.dto.TokenResponse
+import com.group8.comp2300.dto.UpdateProfileRequest
 import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.routes.authRoutes
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
 import com.group8.comp2300.service.auth.AuthService
 import com.group8.comp2300.service.auth.InMemoryVerificationRequestThrottle
+import com.group8.comp2300.service.auth.ProfileImageStorage
 import com.group8.comp2300.service.auth.VerificationRequestThrottle
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
@@ -47,9 +53,12 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
@@ -345,20 +354,20 @@ class AuthRoutesTest {
     }
 
     @Test
-    fun completeProfileRequiresAuthentication() = testApplication {
+    fun updateProfileRequiresAuthentication() = testApplication {
         configureAuthTestModule()
         val client = jsonClient()
 
-        val response = client.post("/api/auth/complete-profile") {
+        val response = client.put("/api/auth/profile") {
             contentType(ContentType.Application.Json)
-            setBody(CompleteProfileRequest(firstName = "Complete", lastName = "Profile"))
+            setBody(UpdateProfileRequest(firstName = "Complete", lastName = "Profile"))
         }
 
         assertEquals(HttpStatusCode.Unauthorized, response.status)
     }
 
     @Test
-    fun completeProfileWithValidDataReturnsUpdatedUser() = testApplication {
+    fun updateProfileWithValidDataReturnsUpdatedUser() = testApplication {
         val fixture = configureAuthTestModule()
         val client = jsonClient()
 
@@ -369,20 +378,27 @@ class AuthRoutesTest {
             password = "Password1",
         )
 
-        val completeResponse = client.post("/api/auth/complete-profile") {
+        val completeResponse = client.put("/api/auth/profile") {
             contentType(ContentType.Application.Json)
             header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
-            setBody(CompleteProfileRequest(firstName = "Updated", lastName = "ProfileName"))
+            setBody(
+                UpdateProfileRequest(
+                    firstName = "Updated",
+                    lastName = "ProfileName",
+                    phone = "12345678",
+                ),
+            )
         }
 
         assertEquals(HttpStatusCode.OK, completeResponse.status, completeResponse.bodyAsText())
         val updatedUser = completeResponse.body<com.group8.comp2300.domain.model.user.User>()
         assertEquals("Updated", updatedUser.firstName)
         assertEquals("ProfileName", updatedUser.lastName)
+        assertEquals("12345678", updatedUser.phone)
     }
 
     @Test
-    fun completeProfileWithBlankNamesReturnsBadRequest() = testApplication {
+    fun updateProfileWithBlankNamesReturnsBadRequest() = testApplication {
         val fixture = configureAuthTestModule()
         val client = jsonClient()
 
@@ -393,10 +409,10 @@ class AuthRoutesTest {
             password = "Password1",
         )
 
-        val response = client.post("/api/auth/complete-profile") {
+        val response = client.put("/api/auth/profile") {
             contentType(ContentType.Application.Json)
             header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
-            setBody(CompleteProfileRequest(firstName = "", lastName = ""))
+            setBody(UpdateProfileRequest(firstName = "", lastName = ""))
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -404,6 +420,193 @@ class AuthRoutesTest {
             "First name and last name are required",
             response.body<ErrorResponse>().error,
         )
+    }
+
+    @Test
+    fun profilePhotoRequiresAuthentication() = testApplication {
+        configureAuthTestModule()
+        val client = jsonClient()
+
+        val response = client.submitFormWithBinaryData(
+            url = "/api/auth/profile/photo",
+            formData = formData {
+                append(
+                    "file",
+                    "image".encodeToByteArray(),
+                    Headers.build {
+                        append(HttpHeaders.ContentDisposition, "filename=\"avatar.png\"")
+                    },
+                )
+            },
+        ) {
+            method = io.ktor.http.HttpMethod.Put
+        }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun uploadProfilePhotoStoresUrlAndRemovesOldFile() = testApplication {
+        val fixture = configureAuthTestModule()
+        val client = jsonClient()
+
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = fixture.userRepository,
+            email = "photo.user@example.com",
+            password = "Password1",
+        )
+
+        val firstResponse = client.submitFormWithBinaryData(
+            url = "/api/auth/profile/photo",
+            formData = formData {
+                append(
+                    "file",
+                    "first-image".encodeToByteArray(),
+                    Headers.build {
+                        append(HttpHeaders.ContentDisposition, "filename=\"avatar.png\"")
+                    },
+                )
+            },
+        ) {
+            method = io.ktor.http.HttpMethod.Put
+            header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
+        }
+
+        assertEquals(HttpStatusCode.OK, firstResponse.status, firstResponse.bodyAsText())
+        val firstUser = firstResponse.body<com.group8.comp2300.domain.model.user.User>()
+        assertTrue(firstUser.profileImageUrl?.startsWith("/images/profile/") == true)
+        val firstFiles = fixture.profileImageDirectory.listFiles().orEmpty()
+        assertEquals(1, firstFiles.size)
+
+        val secondResponse = client.submitFormWithBinaryData(
+            url = "/api/auth/profile/photo",
+            formData = formData {
+                append(
+                    "file",
+                    "second-image".encodeToByteArray(),
+                    Headers.build {
+                        append(HttpHeaders.ContentDisposition, "filename=\"avatar.webp\"")
+                    },
+                )
+            },
+        ) {
+            method = io.ktor.http.HttpMethod.Put
+            header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
+        }
+
+        assertEquals(HttpStatusCode.OK, secondResponse.status, secondResponse.bodyAsText())
+        val secondUser = secondResponse.body<com.group8.comp2300.domain.model.user.User>()
+        assertTrue(secondUser.profileImageUrl?.endsWith(".webp") == true)
+        val secondFiles = fixture.profileImageDirectory.listFiles().orEmpty()
+        assertEquals(1, secondFiles.size)
+        assertFalse(secondFiles.single().name == firstFiles.single().name)
+    }
+
+    @Test
+    fun deleteProfilePhotoClearsDbStateAndStoredFile() = testApplication {
+        val fixture = configureAuthTestModule()
+        val client = jsonClient()
+
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = fixture.userRepository,
+            email = "remove.photo@example.com",
+            password = "Password1",
+        )
+
+        client.submitFormWithBinaryData(
+            url = "/api/auth/profile/photo",
+            formData = formData {
+                append(
+                    "file",
+                    "image".encodeToByteArray(),
+                    Headers.build {
+                        append(HttpHeaders.ContentDisposition, "filename=\"avatar.png\"")
+                    },
+                )
+            },
+        ) {
+            method = io.ktor.http.HttpMethod.Put
+            header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
+        }
+
+        assertEquals(1, fixture.profileImageDirectory.listFiles().orEmpty().size)
+
+        val response = client.delete("/api/auth/profile/photo") {
+            header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
+        }
+
+        assertEquals(HttpStatusCode.OK, response.status, response.bodyAsText())
+        val updatedUser = response.body<com.group8.comp2300.domain.model.user.User>()
+        assertNull(updatedUser.profileImageUrl)
+        assertTrue(fixture.profileImageDirectory.listFiles().orEmpty().isEmpty())
+    }
+
+    @Test
+    fun invalidProfilePhotoTypeReturnsBadRequest() = testApplication {
+        val fixture = configureAuthTestModule()
+        val client = jsonClient()
+
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = fixture.userRepository,
+            email = "bad.photo@example.com",
+            password = "Password1",
+        )
+
+        val response = client.submitFormWithBinaryData(
+            url = "/api/auth/profile/photo",
+            formData = formData {
+                append(
+                    "file",
+                    "image".encodeToByteArray(),
+                    Headers.build {
+                        append(HttpHeaders.ContentDisposition, "filename=\"avatar.gif\"")
+                    },
+                )
+            },
+        ) {
+            method = io.ktor.http.HttpMethod.Put
+            header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("Profile photo must be JPG, PNG, or WebP", response.body<ErrorResponse>().error)
+        assertTrue(fixture.profileImageDirectory.listFiles().orEmpty().isEmpty())
+    }
+
+    @Test
+    fun oversizedProfilePhotoReturnsBadRequest() = testApplication {
+        val fixture = configureAuthTestModule()
+        val client = jsonClient()
+
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = fixture.userRepository,
+            email = "large.photo@example.com",
+            password = "Password1",
+        )
+
+        val response = client.submitFormWithBinaryData(
+            url = "/api/auth/profile/photo",
+            formData = formData {
+                append(
+                    "file",
+                    ByteArray(5 * 1024 * 1024 + 1),
+                    Headers.build {
+                        append(HttpHeaders.ContentDisposition, "filename=\"avatar.png\"")
+                    },
+                )
+            },
+        ) {
+            method = io.ktor.http.HttpMethod.Put
+            header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
+        }
+
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("Profile photo must be 5 MB or smaller", response.body<ErrorResponse>().error)
+        assertTrue(fixture.profileImageDirectory.listFiles().orEmpty().isEmpty())
     }
 
     @Test
@@ -526,6 +729,7 @@ class AuthRoutesTest {
 private data class AuthTestFixture(
     val userRepository: UserRepository,
     val verificationThrottle: VerificationRequestThrottle,
+    val profileImageDirectory: java.io.File,
 )
 
 private fun ApplicationTestBuilder.configureAuthTestModule(): AuthTestFixture {
@@ -533,6 +737,8 @@ private fun ApplicationTestBuilder.configureAuthTestModule(): AuthTestFixture {
     val jwtService = testJwtService()
     val userRepository = UserRepositoryImpl(database)
     val verificationThrottle = InMemoryVerificationRequestThrottle()
+    val profileImageDirectory = createTempDirectory("auth-routes-profile-images").toFile()
+    val profileImageStorage = ProfileImageStorage(profileImageDirectory.path)
     val refreshTokenRepository = RefreshTokenRepositoryImpl(
         database = database,
         refreshTokenExpiration = jwtService.refreshTokenExpiration,
@@ -546,6 +752,7 @@ private fun ApplicationTestBuilder.configureAuthTestModule(): AuthTestFixture {
             jwtService = jwtService,
             emailService = null,
             verificationRequestThrottle = verificationThrottle,
+            profileImageStorage = profileImageStorage,
         )
 
     application {
@@ -555,6 +762,7 @@ private fun ApplicationTestBuilder.configureAuthTestModule(): AuthTestFixture {
     return AuthTestFixture(
         userRepository = userRepository,
         verificationThrottle = verificationThrottle,
+        profileImageDirectory = profileImageDirectory,
     )
 }
 

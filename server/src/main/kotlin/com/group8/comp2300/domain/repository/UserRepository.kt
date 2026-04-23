@@ -26,10 +26,13 @@ interface UserRepository {
         userId: String,
         firstName: String,
         lastName: String,
+        phone: String?,
         dateOfBirth: Long?,
         gender: String?,
         sexualOrientation: String?,
     )
+
+    fun updateProfileImageUrl(userId: String, profileImageUrl: String?)
 
     /**
      * Deletes unactivated accounts created before the given cutoff timestamp.
