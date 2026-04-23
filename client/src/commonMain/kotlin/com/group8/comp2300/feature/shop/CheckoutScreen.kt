@@ -12,6 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.util.formatCurrency
 import com.group8.comp2300.core.ui.components.AppTopBar
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -117,7 +118,7 @@ fun CheckoutScreen(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
                                     Text("${line.quantity} x ${line.product?.name ?: stringResource(Res.string.shop_unavailable_item)}")
-                                    Text(formatShopCurrency(line.lineTotal))
+                                    Text(formatCurrency(line.lineTotal))
                                 }
                             }
                             Row(
@@ -130,7 +131,7 @@ fun CheckoutScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                                 Text(
-                                    formatShopCurrency(state.cartSubtotal),
+                                    formatCurrency(state.cartSubtotal),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                 )

@@ -62,6 +62,11 @@ object DateFormatter {
         return formatDayMonthYear(date)
     }
 
+    fun formatTime(timestampMs: Long): String {
+        val localDateTime = Instant.fromEpochMilliseconds(timestampMs).toLocalDateTime(TimeZone.currentSystemDefault())
+        return formatTime(hour = localDateTime.hour, minute = localDateTime.minute)
+    }
+
     /**
      * Formats a time to "H:MM AM/PM" (e.g., "09:00 AM").
      */

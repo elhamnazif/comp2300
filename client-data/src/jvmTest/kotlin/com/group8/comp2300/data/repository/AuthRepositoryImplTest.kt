@@ -79,11 +79,12 @@ class AuthRepositoryImplTest {
         val repository = AuthRepositoryImpl(
             apiService = apiService,
             tokenManager = tokenManager,
+            sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
             syncCoordinator = syncCoordinator,
         )
 
-        waitForSession(repository)
+        repository.awaitInitialRestore()
         val result = repository.login("user@example.com", "pw")
 
         assertTrue(result.isSuccess)
@@ -119,11 +120,12 @@ class AuthRepositoryImplTest {
         val repository = AuthRepositoryImpl(
             apiService = FakeApiService(),
             tokenManager = tokenManager,
+            sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
             syncCoordinator = syncCoordinator,
         )
 
-        waitForSession(repository)
+        repository.awaitInitialRestore()
 
         val session = repository.session.value
         assertIs<AuthSession.SignedIn>(session)
@@ -161,11 +163,12 @@ class AuthRepositoryImplTest {
                 override suspend fun getProfile(): User = throw Exception("offline")
             },
             tokenManager = tokenManager,
+            sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
             syncCoordinator = TestSyncCoordinator(),
         )
 
-        waitForSession(repository)
+        repository.awaitInitialRestore()
 
         val session = repository.session.value
         assertIs<AuthSession.SignedIn>(session)
@@ -201,11 +204,12 @@ class AuthRepositoryImplTest {
                 override suspend fun getProfile(): User = throw ApiException(401, "Authentication failed")
             },
             tokenManager = tokenManager,
+            sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
             syncCoordinator = TestSyncCoordinator(),
         )
 
-        waitForSession(repository)
+        repository.awaitInitialRestore()
 
         assertIs<AuthSession.SignedOut>(repository.session.value)
         assertNull(tokenManager.getUserId())
@@ -221,11 +225,12 @@ class AuthRepositoryImplTest {
         val repository = AuthRepositoryImpl(
             apiService = FakeApiService(),
             tokenManager = tokenManager,
+            sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
             syncCoordinator = TestSyncCoordinator(),
         )
 
-        waitForSession(repository)
+        repository.awaitInitialRestore()
         repository.login("user@example.com", "pw")
         MedicationLocalDataSource(db).insert(sampleMedication())
         OutboxDataSource(db).enqueue(
@@ -243,11 +248,37 @@ class AuthRepositoryImplTest {
         assertTrue(OutboxDataSource(db).getAll().isEmpty())
     }
 
-    private suspend fun waitForSession(repository: AuthRepositoryImpl) {
-        val deadline = Clock.System.now() + 2.seconds
-        while (repository.session.value is AuthSession.Restoring && Clock.System.now() < deadline) {
-            delay(10)
-        }
+    @Test
+    fun cachedSessionIsAvailableBeforeBackgroundRestoreFinishes() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val tokenManager = TokenManagerImpl(sessionDataSource)
+        tokenManager.saveTokens(
+            userId = "user-1",
+            accessToken = "access",
+            refreshToken = "refresh",
+            expiresAt = Clock.System.now().toEpochMilliseconds() - 1,
+        )
+        val repository = AuthRepositoryImpl(
+            apiService = object : FakeApiService() {
+                override suspend fun getProfile(): User {
+                    delay(250)
+                    return super.getProfile()
+                }
+            },
+            tokenManager = tokenManager,
+            sessionDataSource = sessionDataSource,
+            personalDataCleaner = PersonalDataCleaner(db),
+            syncCoordinator = TestSyncCoordinator(),
+        )
+
+        val immediateSession = repository.session.value
+        assertIs<AuthSession.SignedIn>(immediateSession)
+        assertEquals("user-1", immediateSession.user.id)
+        assertTrue(immediateSession.isStale)
+
+        repository.awaitInitialRestore()
+        assertFalse((repository.session.value as AuthSession.SignedIn).isStale)
     }
 }
 

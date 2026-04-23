@@ -12,7 +12,7 @@ class SessionDataSource(private val database: AppDatabase) {
         )
     }
 
-    suspend fun getSession(): Session? =
+    fun currentSession(): Session? =
         database.appDatabaseQueries.selectSession().executeAsOneOrNull()?.let { sessionEntity ->
             Session(
                 userId = sessionEntity.userId,
@@ -21,6 +21,8 @@ class SessionDataSource(private val database: AppDatabase) {
                 expiresAt = sessionEntity.expiresAt,
             )
         }
+
+    suspend fun getSession(): Session? = currentSession()
 
     suspend fun clearSession() {
         database.appDatabaseQueries.deleteSession()

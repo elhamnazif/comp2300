@@ -10,10 +10,7 @@ data class LocalAuthSettings(
     val onboardingCompleted: Boolean = false,
 )
 
-class LocalAuthSettingsDataSource(
-    private val settings: Settings,
-    pinDataSource: PinDataSource,
-) {
+class LocalAuthSettingsDataSource(private val settings: Settings, pinDataSource: PinDataSource) {
     val state: StateFlow<LocalAuthSettings>
         field: MutableStateFlow<LocalAuthSettings> = MutableStateFlow(loadSettings(pinDataSource))
 

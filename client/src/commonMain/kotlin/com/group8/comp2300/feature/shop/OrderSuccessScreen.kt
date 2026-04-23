@@ -8,6 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.util.formatCurrency
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.CheckCircleW400Outlinedfill1
@@ -56,7 +57,7 @@ fun OrderSuccessScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
-                            "${stringResource(Res.string.shop_order_success_total)} ${formatShopCurrency(total)}",
+                            "${stringResource(Res.string.shop_order_success_total)} ${formatCurrency(total)}",
                             style = MaterialTheme.typography.titleMedium,
                         )
                     }

@@ -250,24 +250,21 @@ private class MutableSessionAuthRepository(initialSession: AuthSession) : AuthRe
     override suspend fun logout() = Unit
 }
 
-private class ShopApiStub(
-    private val products: List<Product>,
-    private val failOnPlaceOrder: Boolean = false,
-) : FakeApiService() {
+private class ShopApiStub(private val products: List<Product>, private val failOnPlaceOrder: Boolean = false) :
+    FakeApiService() {
     var lastPlacedOrderRequest: PlaceOrderRequest? = null
 
-    override suspend fun getProducts(): List<com.group8.comp2300.data.remote.dto.ProductDto> =
-        products.map { product ->
-            com.group8.comp2300.data.remote.dto.ProductDto(
-                id = product.id,
-                name = product.name,
-                description = product.description,
-                price = product.price,
-                category = product.category.name,
-                insuranceCovered = product.insuranceCovered,
-                imageUrl = product.imageUrl,
-            )
-        }
+    override suspend fun getProducts(): List<com.group8.comp2300.data.remote.dto.ProductDto> = products.map { product ->
+        com.group8.comp2300.data.remote.dto.ProductDto(
+            id = product.id,
+            name = product.name,
+            description = product.description,
+            price = product.price,
+            category = product.category.name,
+            insuranceCovered = product.insuranceCovered,
+            imageUrl = product.imageUrl,
+        )
+    }
 
     override suspend fun getProduct(id: String): com.group8.comp2300.data.remote.dto.ProductDto =
         getProducts().first { it.id == id }
@@ -299,11 +296,7 @@ private fun signedInSession(userId: String): AuthSession = AuthSession.SignedIn(
     ),
 )
 
-private fun sampleProduct(
-    id: String = "product-1",
-    price: Double = 24.5,
-    insuranceCovered: Boolean = false,
-) = Product(
+private fun sampleProduct(id: String = "product-1", price: Double = 24.5, insuranceCovered: Boolean = false) = Product(
     id = id,
     name = "PrEP Refill",
     description = "3-month supply",

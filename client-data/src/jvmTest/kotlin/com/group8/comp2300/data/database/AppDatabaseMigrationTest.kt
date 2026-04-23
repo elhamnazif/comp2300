@@ -26,7 +26,11 @@ class AppDatabaseMigrationTest {
 
         ensureCartTable(driver)
 
-        driver.execute(null, "INSERT INTO CartEntity (userId, productId, quantity, priceAtAdd) VALUES (?, ?, ?, ?)", 4) {
+        driver.execute(
+            null,
+            "INSERT INTO CartEntity (userId, productId, quantity, priceAtAdd) VALUES (?, ?, ?, ?)",
+            4,
+        ) {
             bindString(0, "user-1")
             bindString(1, "product-1")
             bindLong(2, 2)

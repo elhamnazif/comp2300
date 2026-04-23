@@ -1,7 +1,7 @@
 package com.group8.comp2300.domain.model.shop
 
 import kotlinx.serialization.Serializable
-import net.sergeych.sprintf.format
+import com.group8.comp2300.util.formatCurrency
 
 @Serializable
 data class Product(
@@ -18,5 +18,5 @@ data class Product(
 
     /** Formatted price for display */
     val formattedPrice: String
-        get() = "$%.2f".format(price)
+        get() = formatCurrency(price)
 }

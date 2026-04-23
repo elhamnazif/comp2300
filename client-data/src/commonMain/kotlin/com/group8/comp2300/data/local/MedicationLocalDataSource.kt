@@ -4,10 +4,9 @@ import com.group8.comp2300.data.database.AppDatabase
 import com.group8.comp2300.data.database.MedicationEntity
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationStatus
+import com.group8.comp2300.domain.model.medical.formatMedicationAmount
 import com.group8.comp2300.domain.model.medical.MedicationUnit
-import com.group8.comp2300.domain.model.medical.formatMedicationStock
 import com.group8.comp2300.domain.model.medical.parseLegacyMedicationAmount
-import com.group8.comp2300.domain.model.medical.parseLegacyMedicationStock
 
 class MedicationLocalDataSource(private val database: AppDatabase) {
     fun getAll(): List<Medication> = database.appDatabaseQueries.selectAllMedications()
@@ -27,7 +26,11 @@ class MedicationLocalDataSource(private val database: AppDatabase) {
             dose_amount = medication.doseAmount,
             dose_unit = medication.doseUnit.name,
             custom_dose_unit = medication.customDoseUnit,
-            quantity = formatMedicationStock(medication.stockAmount, medication.stockUnit, medication.customStockUnit),
+            quantity = formatMedicationAmount(
+                amount = medication.stockAmount,
+                unit = medication.stockUnit,
+                customUnit = medication.customStockUnit,
+            ),
             stock_amount = medication.stockAmount,
             stock_unit = medication.stockUnit.name,
             custom_stock_unit = medication.customStockUnit,
@@ -59,7 +62,7 @@ class MedicationLocalDataSource(private val database: AppDatabase) {
         val legacyDose = parseLegacyMedicationAmount(entity.dosage)
         val parsedDoseUnit = entity.dose_unit?.let { runCatching { MedicationUnit.valueOf(it) }.getOrNull() }
         val doseUnitValue = parsedDoseUnit ?: legacyDose.unit
-        val legacyStock = parseLegacyMedicationStock(entity.quantity)
+        val legacyStock = parseLegacyMedicationAmount(entity.quantity)
         val parsedStockUnit = entity.stock_unit?.let { runCatching { MedicationUnit.valueOf(it) }.getOrNull() }
         val stockUnitValue = parsedStockUnit ?: legacyStock.unit
 

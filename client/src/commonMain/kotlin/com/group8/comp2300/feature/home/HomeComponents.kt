@@ -248,7 +248,7 @@ internal fun TodaySummaryCard(
             ) {
                 TodayMetricCell(
                     label = stringResource(Res.string.home_today_next_appointment),
-                    value = summary.nextAppointment?.let { formatTimestampTime(it.appointmentTime) } ?: "--",
+                    value = summary.nextAppointment?.let { DateFormatter.formatTime(it.appointmentTime) } ?: "--",
                     supporting = summary.nextAppointment?.title,
                 )
                 TodayMetricDivider()
@@ -564,7 +564,7 @@ private fun InboxRow(item: HomeInboxItem, onClick: () -> Unit) {
 
         is HomeInboxItem.AppointmentUpdate -> stringResource(
             Res.string.home_inbox_item_appointment_body,
-            formatTimestampTime(item.timestampMs),
+            DateFormatter.formatTime(item.timestampMs),
         )
     }
 
@@ -700,9 +700,4 @@ private fun homeAccentColor(): Color = when (LocalAppearanceThemeMode.current) {
 private fun homeAccentContainerColor(): Color = when (LocalAppearanceThemeMode.current) {
     AppearanceThemeMode.MINT -> HomeMintAccentContainer
     AppearanceThemeMode.WALLPAPER -> MaterialTheme.colorScheme.primaryContainer
-}
-
-private fun formatTimestampTime(timestampMs: Long): String {
-    val localDateTime = kotlin.time.Instant.fromEpochMilliseconds(timestampMs).toLocalDateTime(TimeZone.currentSystemDefault())
-    return DateFormatter.formatTime(hour = localDateTime.hour, minute = localDateTime.minute)
 }

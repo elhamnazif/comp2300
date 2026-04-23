@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.group8.comp2300.util.formatCurrency
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.domain.model.shop.CartLine
 import comp2300.i18n.generated.resources.*
@@ -61,7 +62,7 @@ fun CartScreen(
                                 style = MaterialTheme.typography.titleMedium,
                             )
                             Text(
-                                formatShopCurrency(state.cartSubtotal),
+                                formatCurrency(state.cartSubtotal),
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                             )
@@ -186,7 +187,7 @@ private fun CartLineItem(
                     OutlinedButton(onClick = onIncrement, enabled = line.product != null) { Text("+") }
                 }
                 Text(
-                    formatShopCurrency(line.lineTotal),
+                    formatCurrency(line.lineTotal),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                 )
@@ -197,7 +198,7 @@ private fun CartLineItem(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    formatShopCurrency(line.priceAtAdd),
+                    formatCurrency(line.priceAtAdd),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 TextButton(onClick = onRemove) {

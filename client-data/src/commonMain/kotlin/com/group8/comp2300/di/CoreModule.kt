@@ -176,7 +176,7 @@ val coreModule = module {
     single<MoodDataRepository> { MoodDataRepositoryImpl(get(), get(), get()) }
     single<CalendarDataRepository> { CalendarDataRepositoryImpl(get(), get(), get(), get(), get()) }
     single<MedicalRecordDataRepository> { MedicalRecordDataRepositoryImpl(get()) }
-    single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get()) }
+    single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get(), get()) }
     single<ChatbotRepository> { ChatbotRepositoryImpl(get()) }
     single<ClinicRepository> { RemoteClinicRepository(get()) }
     single<EducationRepository> { EducationRepositoryImpl(get()) }

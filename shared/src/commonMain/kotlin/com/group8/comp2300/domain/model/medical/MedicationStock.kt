@@ -70,12 +70,6 @@ fun formatMedicationAmount(amount: String, unit: MedicationUnit, customUnit: Str
     return "$normalizedAmount $unitLabel"
 }
 
-fun parseLegacyMedicationStock(legacyQuantity: String?): ParsedMedicationAmount =
-    parseLegacyMedicationAmount(legacyQuantity)
-
-fun formatMedicationStock(stockAmount: String, stockUnit: MedicationUnit, customStockUnit: String? = null): String =
-    formatMedicationAmount(stockAmount, stockUnit, customStockUnit)
-
 fun Medication.stockLabel(): String = formatMedicationAmount(stockAmount, stockUnit, customStockUnit)
 
 fun Medication.doseLabel(): String = formatMedicationAmount(doseAmount, doseUnit, customDoseUnit)

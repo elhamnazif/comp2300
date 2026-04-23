@@ -2,6 +2,7 @@ package com.group8.comp2300.data.repository
 
 import co.touchlab.kermit.Logger
 import com.group8.comp2300.data.auth.TokenManager
+import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.auth.extractJwtExpiration
 import com.group8.comp2300.data.local.PersonalDataCleaner
 import com.group8.comp2300.data.offline.isRetryable
@@ -21,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,17 +32,26 @@ import kotlinx.datetime.LocalDate
 class AuthRepositoryImpl(
     private val apiService: ApiService,
     private val tokenManager: TokenManager,
+    private val sessionDataSource: SessionDataSource,
     private val personalDataCleaner: PersonalDataCleaner,
     private val syncCoordinator: SyncCoordinator,
 ) : AuthRepository {
     private val repositoryScope = CoroutineScope(Dispatchers.IO + Job())
     private val logger = Logger.withTag("AuthRepository")
+    private val initialRestoreCompleted = CompletableDeferred<Unit>()
+    private val cachedUserId = sessionDataSource.currentSession()?.userId
 
-    private val _session = MutableStateFlow<AuthSession>(AuthSession.Restoring)
+    private val _session = MutableStateFlow<AuthSession>(
+        cachedUserId?.let { AuthSession.SignedIn(staleUser(it), isStale = true) } ?: AuthSession.SignedOut,
+    )
     override val session: StateFlow<AuthSession> = _session.asStateFlow()
 
     init {
-        tryRestoreSession()
+        if (cachedUserId == null) {
+            initialRestoreCompleted.complete(Unit)
+        } else {
+            tryRestoreSession(cachedUserId)
+        }
     }
 
     override suspend fun login(email: String, password: String): Result<User> = runCatching {
@@ -107,14 +118,12 @@ class AuthRepositoryImpl(
         }
     }
 
-    private fun tryRestoreSession() {
-        repositoryScope.launch {
-            val storedUserId = tokenManager.getUserId()
-            if (storedUserId.isNullOrBlank()) {
-                _session.value = AuthSession.SignedOut
-                return@launch
-            }
+    internal suspend fun awaitInitialRestore() {
+        initialRestoreCompleted.await()
+    }
 
+    private fun tryRestoreSession(storedUserId: String) {
+        repositoryScope.launch {
             try {
                 val user = apiService.getProfile()
                 synchronizeAuthenticatedData(user)
@@ -128,6 +137,8 @@ class AuthRepositoryImpl(
                     personalDataCleaner.clearAllPersonalData()
                     _session.value = AuthSession.SignedOut
                 }
+            } finally {
+                initialRestoreCompleted.complete(Unit)
             }
         }
     }

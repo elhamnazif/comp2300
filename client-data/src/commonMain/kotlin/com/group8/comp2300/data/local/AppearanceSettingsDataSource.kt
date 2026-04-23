@@ -9,9 +9,7 @@ enum class AppearanceThemeMode {
     WALLPAPER,
 }
 
-data class AppearanceSettings(
-    val themeMode: AppearanceThemeMode = AppearanceThemeMode.WALLPAPER,
-)
+data class AppearanceSettings(val themeMode: AppearanceThemeMode = AppearanceThemeMode.WALLPAPER)
 
 class AppearanceSettingsDataSource(private val settings: Settings) {
     val state: StateFlow<AppearanceSettings>
