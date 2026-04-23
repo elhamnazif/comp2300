@@ -1,6 +1,5 @@
 package com.group8.comp2300.data.auth
 
-import com.group8.comp2300.data.local.Session
 import com.group8.comp2300.data.local.SessionDataSource
 import kotlin.time.Clock
 

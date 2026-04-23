@@ -13,53 +13,9 @@ enum class MedicationUnit(val displayName: String) {
     MG("mg"),
     OTHER("Other"),
     ;
-
-    companion object {
-        fun fromLegacyLabel(label: String): MedicationUnit? = when (label.trim().lowercase()) {
-            "tablet", "tablets", "tab", "tabs" -> TABLET
-            "capsule", "capsules", "cap", "caps" -> CAPSULE
-            "pill", "pills" -> PILL
-            "puff", "puffs" -> PUFF
-            "patch", "patches" -> PATCH
-            "ml", "milliliter", "milliliters", "millilitre", "millilitres" -> ML
-            "mg", "milligram", "milligrams" -> MG
-            else -> null
-        }
-    }
 }
 
 typealias MedicationStockUnit = MedicationUnit
-
-data class ParsedMedicationAmount(val amount: String, val unit: MedicationUnit, val customUnit: String? = null)
-
-fun parseLegacyMedicationAmount(legacyValue: String?): ParsedMedicationAmount {
-    val trimmed = legacyValue?.trim().orEmpty()
-    if (trimmed.isBlank()) {
-        return ParsedMedicationAmount(
-            amount = "1",
-            unit = MedicationUnit.OTHER,
-            customUnit = "unit",
-        )
-    }
-
-    val match = Regex("""^(\d+(?:\.\d+)?)\s+(.+)$""").matchEntire(trimmed)
-    if (match != null) {
-        val amount = match.groupValues[1]
-        val rawUnit = match.groupValues[2].trim()
-        val parsedUnit = MedicationUnit.fromLegacyLabel(rawUnit) ?: MedicationUnit.OTHER
-        return ParsedMedicationAmount(
-            amount = amount,
-            unit = parsedUnit,
-            customUnit = rawUnit.takeIf { parsedUnit == MedicationUnit.OTHER },
-        )
-    }
-
-    return ParsedMedicationAmount(
-        amount = "1",
-        unit = MedicationUnit.OTHER,
-        customUnit = trimmed,
-    )
-}
 
 fun formatMedicationAmount(amount: String, unit: MedicationUnit, customUnit: String? = null): String {
     val normalizedAmount = amount.trim().ifBlank { "1" }

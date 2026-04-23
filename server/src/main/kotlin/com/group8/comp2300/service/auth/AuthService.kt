@@ -31,64 +31,6 @@ class AuthService(
 
     private val log = LoggerFactory.getLogger(javaClass)
 
-    suspend fun register(request: RegisterRequest): Result<AuthResponse> {
-        val validationResult = validateRegisterRequest(request)
-        if (validationResult is ValidationResult.Invalid) {
-            return Result.failure(IllegalArgumentException(validationResult.message))
-        }
-
-        // Check if verified account exists
-        if (userRepository.existsByEmailAndActivated(request.email)) {
-            return Result.failure(IllegalArgumentException("An account with this email already exists"))
-        }
-
-        // Delete any existing unverified account with this email
-        userRepository.findByEmailAndNotActivated(request.email)?.let { unverifiedUser ->
-            passwordResetTokenRepository.deleteByUserId(unverifiedUser.id)
-            userRepository.deleteById(unverifiedUser.id)
-            userRepository.clearVerificationRequest(request.email)
-        }
-
-        return try {
-            val passwordHash = passwordHasher.hash(request.password)
-            val userId = generateUserId()
-
-            userRepository.insert(
-                id = userId,
-                email = request.email,
-                passwordHash = passwordHash,
-                firstName = request.firstName,
-                lastName = request.lastName,
-                phone = request.phone,
-                dateOfBirth = request.dateOfBirth,
-                gender = request.gender,
-                sexualOrientation = request.sexualOrientation,
-                preferredLanguage = "en",
-            )
-
-            val user = userRepository.findById(userId)
-                ?: return Result.failure(IllegalStateException("Failed to retrieve newly created user"))
-
-            // Send activation email
-            sendActivationEmail(userId, request.email)
-
-            val tokens = generateTokenPair(userId)
-
-            Result.success(
-                AuthResponse(
-                    user = user,
-                    accessToken = tokens.accessToken,
-                    refreshToken = tokens.refreshToken,
-                ),
-            )
-        } catch (e: Exception) {
-            if (e.isDuplicateEmailViolation()) {
-                return Result.failure(IllegalArgumentException("An account with this email already exists"))
-            }
-            Result.failure(e)
-        }
-    }
-
     fun login(request: LoginRequest): Result<AuthResponse> = try {
         val user = userRepository.findByEmail(request.email)
             ?: return Result.failure(IllegalArgumentException("Invalid email or password"))
@@ -444,30 +386,6 @@ class AuthService(
         val unactivatedCutoff = Clock.System.now() - UNACTIVATED_ACCOUNT_MAX_AGE
         userRepository.deleteUnactivatedAccounts(unactivatedCutoff.toEpochMilliseconds())
         passwordResetTokenRepository.deleteExpired(Clock.System.now().toEpochMilliseconds())
-    }
-
-    private fun validateRegisterRequest(request: RegisterRequest): ValidationResult {
-        val passwordResult = Validation.validatePassword(request.password)
-        when {
-            request.email.isBlank() || !Validation.isValidEmail(request.email) ->
-                return ValidationResult.Invalid("Invalid email format")
-
-            passwordResult == PasswordValidationResult.TooShort ->
-                return ValidationResult.Invalid("Password must be at least 8 characters")
-
-            passwordResult == PasswordValidationResult.MissingDigit ->
-                return ValidationResult.Invalid("Password must contain at least one number")
-
-            passwordResult == PasswordValidationResult.MissingLetter ->
-                return ValidationResult.Invalid("Password must contain at least one letter")
-
-            passwordResult == PasswordValidationResult.TooLong ->
-                return ValidationResult.Invalid("Password must be 72 bytes or fewer")
-
-            request.firstName.isBlank() || request.lastName.isBlank() ->
-                return ValidationResult.Invalid("Name fields cannot be blank")
-        }
-        return ValidationResult.Valid
     }
 
     private fun Throwable.isDuplicateEmailViolation(): Boolean {

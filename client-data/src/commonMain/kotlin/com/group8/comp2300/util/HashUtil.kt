@@ -2,24 +2,22 @@ package com.group8.comp2300.util
 
 import kotlin.random.Random
 
-const val CurrentPinHashVersion = 2
-const val CurrentPinHashIterations = 100_000
+const val PinHashIterations = 100_000
 private const val SaltSize = 16
 
 data class PinHashResult(
     val hash: String,
     val salt: String,
     val iterations: Int,
-    val version: Int = CurrentPinHashVersion,
 )
 
 /** Hash a PIN with PBKDF2-HMAC-SHA256 and a per-entry random salt. */
 fun hashPinSecure(pin: String, salt: ByteArray = Random.nextBytes(SaltSize)): PinHashResult {
-    val hashBytes = pbkdf2HmacSha256(pin.encodeToByteArray(), salt, CurrentPinHashIterations)
+    val hashBytes = pbkdf2HmacSha256(pin.encodeToByteArray(), salt, PinHashIterations)
     return PinHashResult(
         hash = hashBytes.toHexString(),
         salt = salt.toHexString(),
-        iterations = CurrentPinHashIterations,
+        iterations = PinHashIterations,
     )
 }
 
@@ -29,14 +27,7 @@ fun verifyPinHash(
     storedHash: String,
     salt: String,
     iterations: Int,
-    version: Int = CurrentPinHashVersion,
 ): Boolean {
-    if (version <= 1) {
-        // Legacy rows predate versioned PIN hashing. Accept only direct matches so
-        // the caller can transparently migrate a successful unlock to the current format.
-        return constantTimeEquals(pin, storedHash)
-    }
-
     if (iterations <= 0 || !salt.isHexEncoded() || !storedHash.isHexEncoded()) {
         return false
     }

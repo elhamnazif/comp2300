@@ -127,13 +127,11 @@ CREATE TABLE MedicationEntity (
     id TEXT NOT NULL PRIMARY KEY,
     userId TEXT NOT NULL,
     med_name TEXT NOT NULL,
-    dosage TEXT NOT NULL,
-    dose_amount TEXT,
-    dose_unit TEXT,
+    dose_amount TEXT NOT NULL,
+    dose_unit TEXT NOT NULL,
     custom_dose_unit TEXT,
-    quantity TEXT NOT NULL,
-    stock_amount TEXT,
-    stock_unit TEXT,
+    stock_amount TEXT NOT NULL,
+    stock_unit TEXT NOT NULL,
     custom_stock_unit TEXT,
     instruction TEXT,
     color_hex TEXT,
@@ -156,11 +154,9 @@ INSERT OR REPLACE INTO MedicationEntity (
     id,
     userId,
     med_name,
-    dosage,
     dose_amount,
     dose_unit,
     custom_dose_unit,
-    quantity,
     stock_amount,
     stock_unit,
     custom_stock_unit,
@@ -171,7 +167,7 @@ INSERT OR REPLACE INTO MedicationEntity (
     has_reminder,
     status
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteAllMedications:
 DELETE FROM MedicationEntity;
@@ -454,16 +450,15 @@ CREATE TABLE PinEntity (
     pinHash TEXT NOT NULL,
     createdAt INTEGER NOT NULL,
     pinSalt TEXT NOT NULL DEFAULT '',
-    pinIterations INTEGER NOT NULL DEFAULT 100000,
-    pinVersion INTEGER NOT NULL DEFAULT 2
+    pinIterations INTEGER NOT NULL DEFAULT 100000
 );
 
 selectPin:
 SELECT * FROM PinEntity LIMIT 1;
 
 upsertPin:
-INSERT OR REPLACE INTO PinEntity (id, pinHash, createdAt, pinSalt, pinIterations, pinVersion)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO PinEntity (id, pinHash, createdAt, pinSalt, pinIterations)
+VALUES (?, ?, ?, ?, ?);
 
 deletePin:
 DELETE FROM PinEntity;

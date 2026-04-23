@@ -6,21 +6,11 @@ import com.group8.comp2300.data.mapper.toDomain
 import com.group8.comp2300.data.offline.cacheFirstRead
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.domain.model.session.AuthSession
-import com.group8.comp2300.domain.model.shop.Cart
-import com.group8.comp2300.domain.model.shop.CartDetails
-import com.group8.comp2300.domain.model.shop.CartItem
-import com.group8.comp2300.domain.model.shop.CartLine
-import com.group8.comp2300.domain.model.shop.Order
-import com.group8.comp2300.domain.model.shop.Product
-import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.domain.model.shop.*
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.ShopRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 

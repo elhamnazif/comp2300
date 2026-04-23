@@ -16,9 +16,6 @@ data class TokenResponse(val accessToken: String, val refreshToken: String)
 data class RefreshTokenRequest(val refreshToken: String)
 
 @Serializable
-data class ActivateRequest(val token: String)
-
-@Serializable
 data class ForgotPasswordRequest(val email: String)
 
 @Serializable

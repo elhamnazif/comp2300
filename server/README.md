@@ -179,7 +179,6 @@ For local development without Resend, you can:
 - `GET /api/health` - Health check
 
 ### Authentication
-- `POST /api/auth/register` - Deprecated compatibility endpoint for older clients; the current app uses preregister instead
 - `POST /api/auth/preregister` - Start registration with email/password (sends verification email)
 - `GET /api/auth/activate?token=...` - Activate account via email link
 - `POST /api/auth/activate` - Activate account with token in body

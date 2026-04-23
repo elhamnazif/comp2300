@@ -13,18 +13,6 @@ private const val FORGOT_PASSWORD_RESPONSE_MESSAGE =
     "If an account with that email exists, a password reset link has been sent"
 
 fun Route.authRoutes(authService: AuthService) {
-    // Compatibility endpoint for legacy clients. The current app flow uses preregister -> activate -> complete-profile.
-    post("/api/auth/register") {
-        val request = call.receive<RegisterRequest>()
-        call.respondResult(
-            result = authService.register(request),
-            successStatus = HttpStatusCode.Created,
-            onFailure = { error ->
-                respondConflictAwareFailure(error, "Registration failed")
-            },
-        )
-    }
-
     post("/api/auth/login") {
         val request = call.receive<LoginRequest>()
         call.respondResult(

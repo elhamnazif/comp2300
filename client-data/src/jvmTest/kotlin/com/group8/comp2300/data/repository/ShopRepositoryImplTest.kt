@@ -3,11 +3,7 @@ package com.group8.comp2300.data.repository
 import com.group8.comp2300.data.local.CartLocalDataSource
 import com.group8.comp2300.data.local.ProductLocalDataSource
 import com.group8.comp2300.domain.model.session.AuthSession
-import com.group8.comp2300.domain.model.shop.Order
-import com.group8.comp2300.domain.model.shop.OrderStatus
-import com.group8.comp2300.domain.model.shop.PlaceOrderRequest
-import com.group8.comp2300.domain.model.shop.Product
-import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.domain.model.shop.*
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,11 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ShopRepositoryImplTest {

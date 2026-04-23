@@ -28,11 +28,9 @@ class MedicationRepositoryImpl(private val database: ServerDatabase) : Medicatio
             id = medication.id,
             user_id = medication.userId,
             med_name = medication.name,
-            dosage = medication.dosage,
             dose_amount = medication.doseAmount,
             dose_unit = medication.doseUnit.name,
             custom_dose_unit = medication.customDoseUnit,
-            quantity = formatMedicationAmount(medication.stockAmount, medication.stockUnit, medication.customStockUnit),
             stock_amount = medication.stockAmount,
             stock_unit = medication.stockUnit.name,
             custom_stock_unit = medication.customStockUnit,
@@ -48,11 +46,9 @@ class MedicationRepositoryImpl(private val database: ServerDatabase) : Medicatio
     override fun update(medication: Medication) {
         database.medicationQueries.updateMedById(
             med_name = medication.name,
-            dosage = medication.dosage,
             dose_amount = medication.doseAmount,
             dose_unit = medication.doseUnit.name,
             custom_dose_unit = medication.customDoseUnit,
-            quantity = formatMedicationAmount(medication.stockAmount, medication.stockUnit, medication.customStockUnit),
             stock_amount = medication.stockAmount,
             stock_unit = medication.stockUnit.name,
             custom_stock_unit = medication.customStockUnit,
@@ -71,34 +67,17 @@ class MedicationRepositoryImpl(private val database: ServerDatabase) : Medicatio
     }
 }
 
-private fun MedicationEntity.toDomain(): Medication {
-    val legacyDose = parseLegacyMedicationAmount(dosage)
-    val parsedDoseUnit = dose_unit?.let { runCatching { MedicationUnit.valueOf(it) }.getOrNull() }
-    val doseUnitValue = parsedDoseUnit ?: legacyDose.unit
-    val legacyStock = parseLegacyMedicationAmount(quantity)
-    val parsedStockUnit = stock_unit?.let { runCatching { MedicationUnit.valueOf(it) }.getOrNull() }
-    val stockUnitValue = parsedStockUnit ?: legacyStock.unit
-
-    return Medication(
-        id = id,
-        userId = user_id,
-        name = med_name,
-        doseAmount = dose_amount?.trim().takeUnless { it.isNullOrBlank() } ?: legacyDose.amount,
-        doseUnit = doseUnitValue,
-        customDoseUnit = when (doseUnitValue) {
-            MedicationUnit.OTHER -> custom_dose_unit?.trim().takeUnless { it.isNullOrBlank() } ?: legacyDose.customUnit
-            else -> null
-        },
-        stockAmount = stock_amount?.trim().takeUnless { it.isNullOrBlank() } ?: legacyStock.amount,
-        stockUnit = stockUnitValue,
-        customStockUnit = when (stockUnitValue) {
-            MedicationUnit.OTHER -> custom_stock_unit?.trim().takeUnless { it.isNullOrBlank() }
-                ?: legacyStock.customUnit
-
-            else -> null
-        },
-        instruction = instruction,
-        colorHex = color_hex,
-        status = MedicationStatus.valueOf(status),
-    )
-}
+private fun MedicationEntity.toDomain(): Medication = Medication(
+    id = id,
+    userId = user_id,
+    name = med_name,
+    doseAmount = dose_amount,
+    doseUnit = MedicationUnit.valueOf(dose_unit),
+    customDoseUnit = custom_dose_unit?.trim()?.takeIf(String::isNotBlank),
+    stockAmount = stock_amount,
+    stockUnit = MedicationUnit.valueOf(stock_unit),
+    customStockUnit = custom_stock_unit?.trim()?.takeIf(String::isNotBlank),
+    instruction = instruction,
+    colorHex = color_hex,
+    status = MedicationStatus.valueOf(status),
+)

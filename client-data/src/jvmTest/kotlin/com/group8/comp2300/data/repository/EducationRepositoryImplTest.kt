@@ -1,16 +1,6 @@
 package com.group8.comp2300.data.repository
 
-import com.group8.comp2300.data.remote.dto.ArticleDetailDto
-import com.group8.comp2300.data.remote.dto.ArticleSummaryDto
-import com.group8.comp2300.data.remote.dto.CategoryDto
-import com.group8.comp2300.data.remote.dto.EarnedBadgeDto
-import com.group8.comp2300.data.remote.dto.OptionDto
-import com.group8.comp2300.data.remote.dto.QuestionDto
-import com.group8.comp2300.data.remote.dto.QuizAttemptDto
-import com.group8.comp2300.data.remote.dto.QuizDto
-import com.group8.comp2300.data.remote.dto.QuizSubmissionRequestDto
-import com.group8.comp2300.data.remote.dto.QuizSubmissionResultDto
-import com.group8.comp2300.data.remote.dto.UserQuizStatsDto
+import com.group8.comp2300.data.remote.dto.*
 import com.group8.comp2300.domain.model.education.UserQuizAnswerInput
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

@@ -2,11 +2,7 @@ package com.group8.comp2300.data.local
 
 import com.group8.comp2300.data.database.AppDatabase
 import com.group8.comp2300.data.database.RoutineEntity
-import com.group8.comp2300.domain.model.medical.Routine
-import com.group8.comp2300.domain.model.medical.RoutineRepeatType
-import com.group8.comp2300.domain.model.medical.RoutineStatus
-import com.group8.comp2300.domain.model.medical.normalized
-import com.group8.comp2300.domain.model.medical.sortedByRoutineTime
+import com.group8.comp2300.domain.model.medical.*
 
 class RoutineLocalDataSource(private val database: AppDatabase) {
     fun getAll(): List<Routine> = database.appDatabaseQueries.selectAllRoutines()

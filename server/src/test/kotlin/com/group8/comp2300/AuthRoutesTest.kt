@@ -4,207 +4,69 @@ import com.group8.comp2300.data.repository.PasswordResetTokenRepositoryImpl
 import com.group8.comp2300.data.repository.RefreshTokenRepositoryImpl
 import com.group8.comp2300.data.repository.UserRepositoryImpl
 import com.group8.comp2300.domain.repository.UserRepository
-import com.group8.comp2300.dto.*
+import com.group8.comp2300.dto.ActivateRequest
+import com.group8.comp2300.dto.AuthResponse
+import com.group8.comp2300.dto.CompleteProfileRequest
+import com.group8.comp2300.dto.ForgotPasswordRequest
+import com.group8.comp2300.dto.LoginRequest
+import com.group8.comp2300.dto.MessageResponse
+import com.group8.comp2300.dto.PreregisterRequest
+import com.group8.comp2300.dto.PreregisterResponse
+import com.group8.comp2300.dto.RefreshTokenRequest
+import com.group8.comp2300.dto.ResendVerificationRequest
+import com.group8.comp2300.dto.ResetPasswordRequest
+import com.group8.comp2300.dto.TokenResponse
 import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.routes.authRoutes
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
 import com.group8.comp2300.service.auth.AuthService
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.routing.*
-import io.ktor.server.testing.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.routing.routing
+import io.ktor.server.testing.ApplicationTestBuilder
+import io.ktor.server.testing.testApplication
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class AuthRoutesTest {
-    @Test
-    fun registerReturnsCreatedAndAuthPayload() = testApplication {
-        configureAuthTestModule()
-        val client = jsonClient()
-
-        val response = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "new.user@example.com",
-                    password = "Password1",
-                    firstName = "New",
-                    lastName = "User",
-                ),
-            )
-        }
-
-        assertEquals(HttpStatusCode.Created, response.status, response.bodyAsText())
-        val payload = response.body<AuthResponse>()
-        assertEquals("new.user@example.com", payload.user.email)
-        assertTrue(payload.accessToken.isNotBlank())
-        assertTrue(payload.refreshToken.isNotBlank())
-    }
-
-    @Test
-    fun registerWithInvalidEmailReturnsSpecificError() = testApplication {
-        configureAuthTestModule()
-        val client = jsonClient()
-
-        val response = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "invalid-email",
-                    password = "Password1",
-                    firstName = "Invalid",
-                    lastName = "Email",
-                ),
-            )
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertEquals("Invalid email format", response.body<ErrorResponse>().error)
-    }
-
-    @Test
-    fun registerWithPasswordOverBcryptLimitReturnsSpecificError() = testApplication {
-        configureAuthTestModule()
-        val client = jsonClient()
-
-        val response = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "long.password@example.com",
-                    password = "${"a".repeat(79)}1",
-                    firstName = "Long",
-                    lastName = "Password",
-                ),
-            )
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertEquals("Password must be 72 bytes or fewer", response.body<ErrorResponse>().error)
-    }
-
-    @Test
-    fun registerDuplicateEmailReturnsConflictAndMessage() = testApplication {
-        val userRepo = configureAuthTestModule()
-        val client = jsonClient()
-
-        val request =
-            RegisterRequest(
-                email = "dupe@example.com",
-                password = "Password1",
-                firstName = "Dupe",
-                lastName = "User",
-            )
-
-        val firstResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }
-        assertEquals(HttpStatusCode.Created, firstResponse.status)
-
-        // Activate the user so they count as a verified account
-        val authResponse = firstResponse.body<AuthResponse>()
-        userRepo.activateUser(authResponse.user.id)
-
-        val secondResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }
-
-        assertEquals(HttpStatusCode.Conflict, secondResponse.status)
-        assertEquals(
-            "An account with this email already exists",
-            secondResponse.body<ErrorResponse>().error,
-        )
-    }
-
-    @Test
-    fun registerWithUnverifiedEmailSucceeds() = testApplication {
-        configureAuthTestModule()
-        val client = jsonClient()
-
-        val email = "unverified.reregister@example.com"
-
-        // First registration - don't verify
-        val firstResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = email,
-                    password = "Password1",
-                    firstName = "First",
-                    lastName = "Attempt",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, firstResponse.status)
-
-        // Second registration with same email but different details - should succeed
-        // because the first account was never verified
-        val secondResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = email,
-                    password = "NewPassword1",
-                    firstName = "Second",
-                    lastName = "Attempt",
-                ),
-            )
-        }
-
-        assertEquals(HttpStatusCode.Created, secondResponse.status, secondResponse.bodyAsText())
-        val authResponse = secondResponse.body<AuthResponse>()
-        assertEquals(email, authResponse.user.email)
-        assertEquals("Second", authResponse.user.firstName)
-    }
-
     @Test
     fun loginWithValidCredentialsReturnsSuccess() = testApplication {
         val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        val email = "login.user@example.com"
-        val password = "Password1"
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = userRepo,
+            email = "login.user@example.com",
+            password = "Password1",
+        )
 
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = email,
-                    password = password,
-                    firstName = "Login",
-                    lastName = "User",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
-        val registered = registerResponse.body<AuthResponse>()
-        userRepo.activateUser(registered.user.id)
-
-        val loginResponse = client.post("/api/auth/login") {
-            contentType(ContentType.Application.Json)
-            setBody(LoginRequest(email = email, password = password))
-        }
-
-        assertEquals(HttpStatusCode.OK, loginResponse.status, loginResponse.bodyAsText())
-        val payload = loginResponse.body<AuthResponse>()
-        assertEquals(email, payload.user.email)
-        assertTrue(payload.accessToken.isNotBlank())
-        assertTrue(payload.refreshToken.isNotBlank())
+        assertEquals("login.user@example.com", authResponse.user.email)
+        assertTrue(authResponse.accessToken.isNotBlank())
+        assertTrue(authResponse.refreshToken.isNotBlank())
     }
 
     @Test
@@ -212,25 +74,16 @@ class AuthRoutesTest {
         configureAuthTestModule()
         val client = jsonClient()
 
-        val email = "wrong.password@example.com"
+        val preregisterResponse = client.preregister(
+            email = "wrong.password@example.com",
+            password = "Password1",
+        )
+        assertEquals(HttpStatusCode.OK, preregisterResponse.status)
 
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = email,
-                    password = "Password1",
-                    firstName = "Wrong",
-                    lastName = "Password",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
-
-        val loginResponse = client.post("/api/auth/login") {
-            contentType(ContentType.Application.Json)
-            setBody(LoginRequest(email = email, password = "WrongPassword1"))
-        }
+        val loginResponse = client.login(
+            email = "wrong.password@example.com",
+            password = "WrongPassword1",
+        )
 
         assertEquals(HttpStatusCode.Unauthorized, loginResponse.status)
         assertEquals("Invalid email or password", loginResponse.body<ErrorResponse>().error)
@@ -238,22 +91,15 @@ class AuthRoutesTest {
 
     @Test
     fun refreshWithValidTokenReturnsNewTokenPair() = testApplication {
-        configureAuthTestModule()
+        val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "refresh.user@example.com",
-                    password = "Password1",
-                    firstName = "Refresh",
-                    lastName = "User",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
-        val authResponse = registerResponse.body<AuthResponse>()
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = userRepo,
+            email = "refresh.user@example.com",
+            password = "Password1",
+        )
 
         val refreshResponse = client.post("/api/auth/refresh") {
             contentType(ContentType.Application.Json)
@@ -268,23 +114,15 @@ class AuthRoutesTest {
 
     @Test
     fun profileEndpointReturnsUserForValidAccessToken() = testApplication {
-        configureAuthTestModule()
+        val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "profile.user@example.com",
-                    password = "Password1",
-                    firstName = "Profile",
-                    lastName = "User",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
-        val authResponse = registerResponse.body<AuthResponse>()
-        assertNotNull(authResponse.accessToken)
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = userRepo,
+            email = "profile.user@example.com",
+            password = "Password1",
+        )
 
         val profileResponse = client.get("/api/auth/profile") {
             header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
@@ -295,34 +133,21 @@ class AuthRoutesTest {
         assertEquals("profile.user@example.com", profile.email)
     }
 
-    // ============== Account Activation Tests ==============
-
     @Test
     fun loginWithInactiveAccountReturnsUnauthorized() = testApplication {
         configureAuthTestModule()
         val client = jsonClient()
 
-        val email = "inactive.user@example.com"
-        val password = "Password1"
+        val preregisterResponse = client.preregister(
+            email = "inactive.user@example.com",
+            password = "Password1",
+        )
+        assertEquals(HttpStatusCode.OK, preregisterResponse.status)
 
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = email,
-                    password = password,
-                    firstName = "Inactive",
-                    lastName = "User",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
-
-        // Try to login without activating account
-        val loginResponse = client.post("/api/auth/login") {
-            contentType(ContentType.Application.Json)
-            setBody(LoginRequest(email = email, password = password))
-        }
+        val loginResponse = client.login(
+            email = "inactive.user@example.com",
+            password = "Password1",
+        )
 
         assertEquals(HttpStatusCode.Unauthorized, loginResponse.status)
         assertEquals(
@@ -356,8 +181,6 @@ class AuthRoutesTest {
         assertEquals("Invalid or expired activation token", response.body<ErrorResponse>().error)
     }
 
-    // ============== Forgot Password Tests ==============
-
     @Test
     fun forgotPasswordReturnsSuccessEvenForNonExistentEmail() = testApplication {
         configureAuthTestModule()
@@ -368,7 +191,6 @@ class AuthRoutesTest {
             setBody(ForgotPasswordRequest(email = "nonexistent@example.com"))
         }
 
-        // Returns success to prevent email enumeration
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             "If an account with that email exists, a password reset link has been sent",
@@ -378,21 +200,15 @@ class AuthRoutesTest {
 
     @Test
     fun forgotPasswordReturnsSuccessForExistingEmail() = testApplication {
-        configureAuthTestModule()
+        val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        // Register a user first
-        client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "forgot.password@example.com",
-                    password = "Password1",
-                    firstName = "Forgot",
-                    lastName = "Password",
-                ),
-            )
-        }
+        val preregisterResponse = client.preregister(
+            email = "forgot.password@example.com",
+            password = "Password1",
+        )
+        assertEquals(HttpStatusCode.OK, preregisterResponse.status)
+        userRepo.clearVerificationRequest("forgot.password@example.com")
 
         val response = client.post("/api/auth/forgot-password") {
             contentType(ContentType.Application.Json)
@@ -406,8 +222,6 @@ class AuthRoutesTest {
         )
     }
 
-    // ============== Reset Password Tests ==============
-
     @Test
     fun resetPasswordWithInvalidTokenReturnsBadRequest() = testApplication {
         configureAuthTestModule()
@@ -415,12 +229,7 @@ class AuthRoutesTest {
 
         val response = client.post("/api/auth/reset-password") {
             contentType(ContentType.Application.Json)
-            setBody(
-                ResetPasswordRequest(
-                    token = "invalid-token",
-                    newPassword = "NewPassword1",
-                ),
-            )
+            setBody(ResetPasswordRequest(token = "invalid-token", newPassword = "NewPassword1"))
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -434,38 +243,22 @@ class AuthRoutesTest {
 
         val response = client.post("/api/auth/reset-password") {
             contentType(ContentType.Application.Json)
-            setBody(
-                ResetPasswordRequest(
-                    token = "some-token",
-                    newPassword = "weak",
-                ),
-            )
+            setBody(ResetPasswordRequest(token = "some-token", newPassword = "weak"))
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
-        val error = response.body<ErrorResponse>().error
-        assertTrue(
-            error.contains("Password"),
-            "Expected password validation error but got: $error",
-        )
+        assertTrue(response.body<ErrorResponse>().error.contains("Password"))
     }
-
-    // ============== Preregister Tests ==============
 
     @Test
     fun preregisterReturnsSuccessWithValidData() = testApplication {
         configureAuthTestModule()
         val client = jsonClient()
 
-        val response = client.post("/api/auth/preregister") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                PreregisterRequest(
-                    email = "preregister@example.com",
-                    password = "Password1",
-                ),
-            )
-        }
+        val response = client.preregister(
+            email = "preregister@example.com",
+            password = "Password1",
+        )
 
         assertEquals(HttpStatusCode.OK, response.status, response.bodyAsText())
         val payload = response.body<PreregisterResponse>()
@@ -478,15 +271,10 @@ class AuthRoutesTest {
         configureAuthTestModule()
         val client = jsonClient()
 
-        val response = client.post("/api/auth/preregister") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                PreregisterRequest(
-                    email = "invalid-email",
-                    password = "Password1",
-                ),
-            )
-        }
+        val response = client.preregister(
+            email = "invalid-email",
+            password = "Password1",
+        )
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
         assertEquals("Invalid email format", response.body<ErrorResponse>().error)
@@ -497,19 +285,13 @@ class AuthRoutesTest {
         configureAuthTestModule()
         val client = jsonClient()
 
-        val response = client.post("/api/auth/preregister") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                PreregisterRequest(
-                    email = "weak.password@example.com",
-                    password = "weak",
-                ),
-            )
-        }
+        val response = client.preregister(
+            email = "weak.password@example.com",
+            password = "weak",
+        )
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
-        val error = response.body<ErrorResponse>().error
-        assertTrue(error.contains("Password"))
+        assertTrue(response.body<ErrorResponse>().error.contains("Password"))
     }
 
     @Test
@@ -517,26 +299,20 @@ class AuthRoutesTest {
         val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        val request = PreregisterRequest(
+        val firstResponse = client.preregister(
             email = "preregister.dupe@example.com",
             password = "Password1",
         )
-
-        val firstResponse = client.post("/api/auth/preregister") {
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }
         assertEquals(HttpStatusCode.OK, firstResponse.status)
 
-        // Activate the user so they count as a verified account
         val user = userRepo.findByEmail("preregister.dupe@example.com")
         assertNotNull(user)
         userRepo.activateUser(user.id)
 
-        val secondResponse = client.post("/api/auth/preregister") {
-            contentType(ContentType.Application.Json)
-            setBody(request)
-        }
+        val secondResponse = client.preregister(
+            email = "preregister.dupe@example.com",
+            password = "Password1",
+        )
 
         assertEquals(HttpStatusCode.Conflict, secondResponse.status)
         assertEquals(
@@ -550,38 +326,21 @@ class AuthRoutesTest {
         configureAuthTestModule()
         val client = jsonClient()
 
-        val email = "preregister.unverified@example.com"
-
-        // First preregistration - don't verify
-        val firstResponse = client.post("/api/auth/preregister") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                PreregisterRequest(
-                    email = email,
-                    password = "Password1",
-                ),
-            )
-        }
+        val firstResponse = client.preregister(
+            email = "preregister.unverified@example.com",
+            password = "Password1",
+        )
         assertEquals(HttpStatusCode.OK, firstResponse.status)
 
-        // Second preregistration with same email - should succeed
-        // because the first account was never verified
-        val secondResponse = client.post("/api/auth/preregister") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                PreregisterRequest(
-                    email = email,
-                    password = "NewPassword1",
-                ),
-            )
-        }
+        val secondResponse = client.preregister(
+            email = "preregister.unverified@example.com",
+            password = "NewPassword1",
+        )
 
         assertEquals(HttpStatusCode.OK, secondResponse.status, secondResponse.bodyAsText())
         val response = secondResponse.body<PreregisterResponse>()
-        assertEquals(email, response.email)
+        assertEquals("preregister.unverified@example.com", response.email)
     }
-
-    // ============== Complete Profile Tests ==============
 
     @Test
     fun completeProfileRequiresAuthentication() = testApplication {
@@ -590,12 +349,7 @@ class AuthRoutesTest {
 
         val response = client.post("/api/auth/complete-profile") {
             contentType(ContentType.Application.Json)
-            setBody(
-                CompleteProfileRequest(
-                    firstName = "Complete",
-                    lastName = "Profile",
-                ),
-            )
+            setBody(CompleteProfileRequest(firstName = "Complete", lastName = "Profile"))
         }
 
         assertEquals(HttpStatusCode.Unauthorized, response.status)
@@ -606,47 +360,17 @@ class AuthRoutesTest {
         val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        // First preregister
-        val preregisterResponse = client.post("/api/auth/preregister") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                PreregisterRequest(
-                    email = "complete.profile@example.com",
-                    password = "Password1",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.OK, preregisterResponse.status)
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = userRepo,
+            email = "complete.profile@example.com",
+            password = "Password1",
+        )
 
-        // Get tokens by logging in - but user is not activated, so we need to use the tokens from register
-        // Actually, let's use register to get tokens for a complete profile test
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "complete.profile2@example.com",
-                    password = "Password1",
-                    firstName = "Initial",
-                    lastName = "Name",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
-        val authResponse = registerResponse.body<AuthResponse>()
-
-        // Activate the user account before completing profile
-        userRepo.activateUser(authResponse.user.id)
-
-        // Complete the profile
         val completeResponse = client.post("/api/auth/complete-profile") {
             contentType(ContentType.Application.Json)
             header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
-            setBody(
-                CompleteProfileRequest(
-                    firstName = "Updated",
-                    lastName = "ProfileName",
-                ),
-            )
+            setBody(CompleteProfileRequest(firstName = "Updated", lastName = "ProfileName"))
         }
 
         assertEquals(HttpStatusCode.OK, completeResponse.status, completeResponse.bodyAsText())
@@ -657,32 +381,20 @@ class AuthRoutesTest {
 
     @Test
     fun completeProfileWithBlankNamesReturnsBadRequest() = testApplication {
-        configureAuthTestModule()
+        val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "blank.names@example.com",
-                    password = "Password1",
-                    firstName = "Test",
-                    lastName = "User",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
-        val authResponse = registerResponse.body<AuthResponse>()
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = userRepo,
+            email = "blank.names@example.com",
+            password = "Password1",
+        )
 
         val response = client.post("/api/auth/complete-profile") {
             contentType(ContentType.Application.Json)
             header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
-            setBody(
-                CompleteProfileRequest(
-                    firstName = "",
-                    lastName = "",
-                ),
-            )
+            setBody(CompleteProfileRequest(firstName = "", lastName = ""))
         }
 
         assertEquals(HttpStatusCode.BadRequest, response.status)
@@ -691,8 +403,6 @@ class AuthRoutesTest {
             response.body<ErrorResponse>().error,
         )
     }
-
-    // ============== Logout Tests ==============
 
     @Test
     fun logoutRequiresAuthentication() = testApplication {
@@ -706,31 +416,21 @@ class AuthRoutesTest {
 
     @Test
     fun logoutRevokesRefreshTokens() = testApplication {
-        configureAuthTestModule()
+        val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        // Register and get tokens
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "logout.user@example.com",
-                    password = "Password1",
-                    firstName = "Logout",
-                    lastName = "User",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
-        val authResponse = registerResponse.body<AuthResponse>()
+        val authResponse = createActivatedSession(
+            client = client,
+            userRepo = userRepo,
+            email = "logout.user@example.com",
+            password = "Password1",
+        )
 
-        // Logout
         val logoutResponse = client.post("/api/auth/logout") {
             header(HttpHeaders.Authorization, "Bearer ${authResponse.accessToken}")
         }
         assertEquals(HttpStatusCode.OK, logoutResponse.status)
 
-        // Try to use the old refresh token - should fail
         val refreshResponse = client.post("/api/auth/refresh") {
             contentType(ContentType.Application.Json)
             setBody(RefreshTokenRequest(authResponse.refreshToken))
@@ -738,26 +438,17 @@ class AuthRoutesTest {
         assertEquals(HttpStatusCode.Unauthorized, refreshResponse.status)
     }
 
-    // ============== Resend Verification Email Tests ==============
-
     @Test
     fun resendVerificationReturnsSuccessForExistingInactiveUser() = testApplication {
-        configureAuthTestModule()
+        val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        // Register a user (inactive by default, doesn't record verification request)
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "resend.inactive@example.com",
-                    password = "Password1",
-                    firstName = "Resend",
-                    lastName = "Inactive",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
+        val preregisterResponse = client.preregister(
+            email = "resend.inactive@example.com",
+            password = "Password1",
+        )
+        assertEquals(HttpStatusCode.OK, preregisterResponse.status)
+        userRepo.clearVerificationRequest("resend.inactive@example.com")
 
         val response = client.post("/api/auth/resend-verification") {
             contentType(ContentType.Application.Json)
@@ -773,13 +464,11 @@ class AuthRoutesTest {
         configureAuthTestModule()
         val client = jsonClient()
 
-        // Request resend for email that doesn't exist
         val response = client.post("/api/auth/resend-verification") {
             contentType(ContentType.Application.Json)
             setBody(ResendVerificationRequest(email = "nonexistent.resend@example.com"))
         }
 
-        // Returns success to prevent email enumeration
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals("Verification email sent", response.body<MessageResponse>().message)
     }
@@ -789,21 +478,15 @@ class AuthRoutesTest {
         val userRepo = configureAuthTestModule()
         val client = jsonClient()
 
-        // Register and activate a user
-        val registerResponse = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "resend.activated@example.com",
-                    password = "Password1",
-                    firstName = "Resend",
-                    lastName = "Activated",
-                ),
-            )
-        }
-        assertEquals(HttpStatusCode.Created, registerResponse.status)
-        val authResponse = registerResponse.body<AuthResponse>()
-        userRepo.activateUser(authResponse.user.id)
+        val preregisterResponse = client.preregister(
+            email = "resend.activated@example.com",
+            password = "Password1",
+        )
+        assertEquals(HttpStatusCode.OK, preregisterResponse.status)
+        val user = userRepo.findByEmail("resend.activated@example.com")
+        assertNotNull(user)
+        userRepo.activateUser(user.id)
+        userRepo.clearVerificationRequest("resend.activated@example.com")
 
         val response = client.post("/api/auth/resend-verification") {
             contentType(ContentType.Application.Json)
@@ -819,19 +502,12 @@ class AuthRoutesTest {
         configureAuthTestModule()
         val client = jsonClient()
 
-        // Preregister records a verification request for rate limiting
-        val preregisterResponse = client.post("/api/auth/preregister") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                PreregisterRequest(
-                    email = "resend.ratelimited@example.com",
-                    password = "Password1",
-                ),
-            )
-        }
+        val preregisterResponse = client.preregister(
+            email = "resend.ratelimited@example.com",
+            password = "Password1",
+        )
         assertEquals(HttpStatusCode.OK, preregisterResponse.status)
 
-        // Immediate resend should be rate limited
         val response = client.post("/api/auth/resend-verification") {
             contentType(ContentType.Application.Json)
             setBody(ResendVerificationRequest(email = "resend.ratelimited@example.com"))
@@ -842,71 +518,6 @@ class AuthRoutesTest {
             "Please wait before requesting another verification email",
             response.body<ErrorResponse>().error,
         )
-    }
-
-    // ============== Password Validation Tests ==============
-
-    @Test
-    fun registerWithPasswordMissingDigitReturnsBadRequest() = testApplication {
-        configureAuthTestModule()
-        val client = jsonClient()
-
-        val response = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "no.digit@example.com",
-                    password = "PasswordWithoutDigit",
-                    firstName = "No",
-                    lastName = "Digit",
-                ),
-            )
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertEquals("Password must contain at least one number", response.body<ErrorResponse>().error)
-    }
-
-    @Test
-    fun registerWithPasswordMissingLetterReturnsBadRequest() = testApplication {
-        configureAuthTestModule()
-        val client = jsonClient()
-
-        val response = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "no.letter@example.com",
-                    password = "12345678",
-                    firstName = "No",
-                    lastName = "Letter",
-                ),
-            )
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertEquals("Password must contain at least one letter", response.body<ErrorResponse>().error)
-    }
-
-    @Test
-    fun registerWithShortPasswordReturnsBadRequest() = testApplication {
-        configureAuthTestModule()
-        val client = jsonClient()
-
-        val response = client.post("/api/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody(
-                RegisterRequest(
-                    email = "short.password@example.com",
-                    password = "Short1",
-                    firstName = "Short",
-                    lastName = "Password",
-                ),
-            )
-        }
-
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-        assertEquals("Password must be at least 8 characters", response.body<ErrorResponse>().error)
     }
 }
 
@@ -976,6 +587,36 @@ private fun testJwtService(): JwtService = JwtServiceImpl(
     issuer = "http://localhost/test",
     audience = "http://localhost/test",
 )
+
+private suspend fun HttpClient.preregister(email: String, password: String): HttpResponse =
+    post("/api/auth/preregister") {
+        contentType(ContentType.Application.Json)
+        setBody(PreregisterRequest(email = email, password = password))
+    }
+
+private suspend fun HttpClient.login(email: String, password: String): HttpResponse =
+    post("/api/auth/login") {
+        contentType(ContentType.Application.Json)
+        setBody(LoginRequest(email = email, password = password))
+    }
+
+private suspend fun createActivatedSession(
+    client: HttpClient,
+    userRepo: UserRepository,
+    email: String,
+    password: String,
+): AuthResponse {
+    val preregisterResponse = client.preregister(email = email, password = password)
+    assertEquals(HttpStatusCode.OK, preregisterResponse.status, preregisterResponse.bodyAsText())
+
+    val user = userRepo.findByEmail(email)
+    assertNotNull(user)
+    userRepo.activateUser(user.id)
+
+    val loginResponse = client.login(email = email, password = password)
+    assertEquals(HttpStatusCode.OK, loginResponse.status, loginResponse.bodyAsText())
+    return loginResponse.body()
+}
 
 @Serializable
 private data class ErrorResponse(val error: String)

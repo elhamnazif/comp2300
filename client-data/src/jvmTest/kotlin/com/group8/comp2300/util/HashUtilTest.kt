@@ -15,20 +15,18 @@ class HashUtilTest {
                 storedHash = result.hash,
                 salt = result.salt,
                 iterations = result.iterations,
-                version = result.version,
             ),
         )
     }
 
     @Test
-    fun verifyPinHashAcceptsLegacyPlaintextRows() {
-        assertTrue(
+    fun verifyPinHashRejectsMalformedRows() {
+        assertFalse(
             verifyPinHash(
                 pin = "1234",
                 storedHash = "1234",
                 salt = "",
                 iterations = 0,
-                version = 1,
             ),
         )
     }
@@ -39,9 +37,8 @@ class HashUtilTest {
             verifyPinHash(
                 pin = "1234",
                 storedHash = "abcd",
-                salt = "legacy",
+                salt = "invalid",
                 iterations = 0,
-                version = CurrentPinHashVersion,
             ),
         )
     }

@@ -2,10 +2,6 @@ package com.group8.comp2300.domain.model.medical
 
 import kotlinx.serialization.Serializable
 
-/**
- * Medication model for tracking user medications. Note: colorHex is used instead of Compose Color
- * for server compatibility.
- */
 @Serializable
 data class Medication(
     val id: String,

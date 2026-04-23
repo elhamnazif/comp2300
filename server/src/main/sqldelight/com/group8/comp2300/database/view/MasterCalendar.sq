@@ -13,7 +13,22 @@ UNION ALL
 SELECT
     l.id AS event_id, m.user_id, 'MEDICATION' AS event_type,
     m.med_name AS display_title,
-    m.dosage || ' Pill(s)' AS subtitle,
+    trim(
+        m.dose_amount || ' ' ||
+        COALESCE(
+            NULLIF(m.custom_dose_unit, ''),
+            CASE m.dose_unit
+                WHEN 'TABLET' THEN 'tablets'
+                WHEN 'CAPSULE' THEN 'capsules'
+                WHEN 'PILL' THEN 'pills'
+                WHEN 'PUFF' THEN 'puffs'
+                WHEN 'PATCH' THEN 'patches'
+                WHEN 'ML' THEN 'mL'
+                WHEN 'MG' THEN 'mg'
+                ELSE lower(replace(m.dose_unit, '_', ' '))
+            END
+        )
+    ) AS subtitle,
     l.medication_time AS event_time,
     l.status AS event_status
 FROM MedicationLogEnt l

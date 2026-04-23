@@ -1,64 +1,20 @@
 package com.group8.comp2300.data.remote
 
-import com.group8.comp2300.data.remote.dto.ArticleDetailDto
-import com.group8.comp2300.data.remote.dto.ArticleSummaryDto
-import com.group8.comp2300.data.remote.dto.AuthResponse
-import com.group8.comp2300.data.remote.dto.CategoryDto
-import com.group8.comp2300.data.remote.dto.CompleteProfileRequest
-import com.group8.comp2300.data.remote.dto.EarnedBadgeDto
-import com.group8.comp2300.data.remote.dto.ForgotPasswordRequest
-import com.group8.comp2300.data.remote.dto.LoginRequest
-import com.group8.comp2300.data.remote.dto.MessageResponse
-import com.group8.comp2300.data.remote.dto.PreregisterRequest
-import com.group8.comp2300.data.remote.dto.PreregisterResponse
-import com.group8.comp2300.data.remote.dto.ProductDto
-import com.group8.comp2300.data.remote.dto.QuizDto
-import com.group8.comp2300.data.remote.dto.QuizSubmissionRequestDto
-import com.group8.comp2300.data.remote.dto.QuizSubmissionResultDto
-import com.group8.comp2300.data.remote.dto.RefreshTokenRequest
-import com.group8.comp2300.data.remote.dto.ResendVerificationRequest
-import com.group8.comp2300.data.remote.dto.ResetPasswordRequest
-import com.group8.comp2300.data.remote.dto.TokenResponse
-import com.group8.comp2300.data.remote.dto.UserQuizStatsDto
+import com.group8.comp2300.data.remote.dto.*
 import com.group8.comp2300.domain.model.chatbot.ChatbotRequest
 import com.group8.comp2300.domain.model.chatbot.ChatbotResponse
-import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.AppointmentSlot
-import com.group8.comp2300.domain.model.medical.Clinic
-import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
-import com.group8.comp2300.domain.model.medical.MedicalRecordCategory
-import com.group8.comp2300.domain.model.medical.MedicalRecordResponse
-import com.group8.comp2300.domain.model.medical.Medication
-import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationLog
-import com.group8.comp2300.domain.model.medical.MedicationLogRequest
-import com.group8.comp2300.domain.model.medical.Mood
-import com.group8.comp2300.domain.model.medical.MoodEntryRequest
-import com.group8.comp2300.domain.model.medical.Routine
-import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
-import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.model.shop.Order
 import com.group8.comp2300.domain.model.shop.PlaceOrderRequest
 import com.group8.comp2300.domain.model.user.User
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.plugins.ResponseException
-import io.ktor.client.plugins.timeout
-import io.ktor.client.request.delete
-import io.ktor.client.request.forms.formData
-import io.ktor.client.request.forms.submitFormWithBinaryData
-import io.ktor.client.request.get
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
-import io.ktor.http.contentType
-import io.ktor.serialization.JsonConvertException
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.*
+import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -330,7 +286,7 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
      * Catches JsonConvertException when server returns an error response like {"error": "..."}
      * instead of the expected AuthResponse format.
      */
-    private suspend fun handleAuthResponse(response: io.ktor.client.statement.HttpResponse): AuthResponse = try {
+    private suspend fun handleAuthResponse(response: HttpResponse): AuthResponse = try {
         response.body()
     } catch (e: JsonConvertException) {
         // Extract the actual error message from the response body
