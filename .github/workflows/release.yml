@@ -1,0 +1,70 @@
+name: Release Android APK
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096M -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true"
+
+jobs:
+  release-android:
+    name: Build And Publish APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gradle setup
+        uses: ./.github/actions/gradle-setup
+
+      - name: Prepare release metadata
+        id: metadata
+        env:
+          INPUT_TAG: ${{ github.ref_name }}
+          INPUT_VERSION_CODE: ${{ github.run_number }}
+        shell: bash
+        run: |
+          version_name="${INPUT_TAG#v}"
+          release_name="Vita $version_name"
+
+          release_notes_file="$RUNNER_TEMP/release-notes.md"
+          {
+            printf 'Android APK release for %s\n\n' "$version_name"
+            printf 'Tag: `%s`\n' "$INPUT_TAG"
+            printf 'Built from commit `%s`.\n' "${GITHUB_SHA}"
+          } > "$release_notes_file"
+
+          {
+            printf 'tag=%s\n' "$INPUT_TAG"
+            printf 'version_name=%s\n' "$version_name"
+            printf 'version_code=%s\n' "$INPUT_VERSION_CODE"
+            printf 'release_name=%s\n' "$release_name"
+            printf 'release_notes_file=%s\n' "$release_notes_file"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build Android release APK
+        run: >
+          ./gradlew :androidApp:assembleRelease
+          -PVITA_RELEASE_VERSION_NAME=${{ steps.metadata.outputs.version_name }}
+          -PVITA_RELEASE_VERSION_CODE=${{ steps.metadata.outputs.version_code }}
+
+      - name: Upload Android release APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-apk-${{ steps.metadata.outputs.tag }}
+          path: androidApp/build/outputs/apk/release/*.apk
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.metadata.outputs.tag }}
+          name: ${{ steps.metadata.outputs.release_name }}
+          body_path: ${{ steps.metadata.outputs.release_notes_file }}
+          target_commitish: ${{ github.sha }}
+          files: androidApp/build/outputs/apk/release/*.apk

@@ -1,6 +1,13 @@
 import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
+fun Project.gradleStringProperty(name: String): String? =
+    providers.gradleProperty(name).orNull?.takeIf { it.isNotBlank() }
+        ?: System.getenv(name)?.takeIf { it.isNotBlank() }
+
+fun Project.gradleIntProperty(name: String, defaultValue: Int): Int =
+    gradleStringProperty(name)?.toIntOrNull() ?: defaultValue
+
 plugins {
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.android)
@@ -69,8 +76,8 @@ android {
         targetSdk = 36
 
         applicationId = "com.group8.comp2300.androidApp"
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = gradleIntProperty("VITA_RELEASE_VERSION_CODE", 1)
+        versionName = gradleStringProperty("VITA_RELEASE_VERSION_NAME") ?: "1.0.0"
     }
 
     compileOptions {
@@ -81,6 +88,7 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
