@@ -170,7 +170,7 @@ internal fun buildHomeInboxItems(
     }
 
     return items.sortedWith(
-        compareBy<HomeInboxItem>(
+        compareBy(
             ::homeInboxGroupRank,
             ::homeInboxKindRank,
             HomeInboxItem::timestampMs,

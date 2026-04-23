@@ -21,10 +21,6 @@ data class CalendarDay(
     val isCurrentMonth: Boolean,
 )
 
-data class Doctor(val name: String)
-
-val sampleDoctors = com.group8.comp2300.mock.sampleCalendarDoctors.map { Doctor(it.name) }
-
 fun generateCalendarDays(year: Int, month: Month, overviewMap: Map<String, String> = emptyMap()): List<CalendarDay> {
     val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
     val firstOfMonth = LocalDate(year, month, 1)
@@ -61,23 +57,6 @@ fun generateCalendarDays(year: Int, month: Month, overviewMap: Map<String, Strin
 }
 
 object FormConstants {
-    @Composable
-    fun commonMeds() = listOf(
-        stringResource(Res.string.medication_prep),
-        stringResource(Res.string.medication_truvada),
-        stringResource(Res.string.medication_descovy),
-        stringResource(Res.string.medication_doxypep),
-        stringResource(Res.string.medication_multivitamin),
-    )
-
-    @Composable
-    fun apptTypes() = listOf(
-        stringResource(Res.string.appt_type_consultation),
-        stringResource(Res.string.appt_type_labwork),
-        stringResource(Res.string.appt_type_followup),
-    )
-
-    val Dosages = listOf(1, 2, 3)
     val MoodEmojis = listOf("😢", "😕", "😐", "🙂", "🤩")
 
     @Composable
@@ -87,16 +66,5 @@ object FormConstants {
         stringResource(Res.string.form_mood_neutral),
         stringResource(Res.string.form_mood_happy),
         stringResource(Res.string.form_mood_great),
-    )
-
-    @Composable
-    fun moodTags() = listOf(
-        stringResource(Res.string.form_mood_tag_anxious),
-        stringResource(Res.string.form_mood_tag_calm),
-        stringResource(Res.string.form_mood_tag_irritable),
-        stringResource(Res.string.form_mood_tag_energetic),
-        stringResource(Res.string.form_mood_tag_tired),
-        stringResource(Res.string.form_mood_tag_stressed),
-        stringResource(Res.string.form_mood_tag_focused),
     )
 }

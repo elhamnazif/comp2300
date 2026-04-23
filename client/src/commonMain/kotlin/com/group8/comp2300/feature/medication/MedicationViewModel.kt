@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
+import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
 import com.group8.comp2300.domain.repository.medical.RoutineDataRepository
-import com.group8.comp2300.domain.repository.medical.SyncCoordinator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -23,7 +23,7 @@ data class MedicationUiState(
 class MedicationViewModel(
     private val medicationRepository: MedicationDataRepository,
     private val routineRepository: RoutineDataRepository,
-    private val syncCoordinator: SyncCoordinator,
+    private val syncCoordinator: OfflineSyncCoordinator,
 ) : ViewModel() {
     val state: StateFlow<MedicationUiState>
         field: MutableStateFlow<MedicationUiState> = MutableStateFlow(MedicationUiState(isLoading = true))
@@ -36,7 +36,7 @@ class MedicationViewModel(
         viewModelScope.launch {
             state.update { it.copy(isLoading = true, error = null) }
             runCatching {
-                syncCoordinator.refreshAuthenticatedData()
+                syncCoordinator.refreshCaches()
                 refreshState()
             }.onSuccess {
                 state.update { current -> current.copy(isLoading = false) }
@@ -74,35 +74,6 @@ class MedicationViewModel(
                 onSuccess()
             }.onFailure { error ->
                 state.update { it.copy(isMutating = false, error = error.message ?: "Failed to delete medication") }
-            }
-        }
-    }
-
-    fun updateRoutineLinks(medicationId: String, selectedRoutineIds: Set<String>) {
-        viewModelScope.launch {
-            state.update { it.copy(error = null) }
-            runCatching {
-                val routines = routineRepository.getRoutines()
-                routines.forEach { routine ->
-                    val currentlyLinked = medicationId in routine.medicationIds
-                    val shouldBeLinked = routine.id in selectedRoutineIds
-                    if (currentlyLinked != shouldBeLinked) {
-                        routineRepository.saveRoutine(
-                            request = routine.toRequest(
-                                medicationIds =
-                                if (shouldBeLinked) {
-                                    routine.medicationIds + medicationId
-                                } else {
-                                    routine.medicationIds.filterNot { it == medicationId }
-                                },
-                            ),
-                            id = routine.id,
-                        )
-                    }
-                }
-                refreshState()
-            }.onFailure { error ->
-                state.update { it.copy(error = error.message ?: "Failed to update routine links") }
             }
         }
     }

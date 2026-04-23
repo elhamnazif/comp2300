@@ -56,7 +56,7 @@ fun ScheduleFormSheet(
             .padding(horizontal = 24.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        androidx.compose.foundation.layout.Row(
+        Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -151,41 +151,6 @@ fun ScheduleFormSheet(
             },
         )
     }
-}
-
-@Composable
-fun scheduleSummary(routine: Routine): String {
-    val weekdayLabels = scheduleWeekdayLabels()
-    val timeSummary = formatTimesSummary(routine.timesOfDayMs)
-    val repeat = when (routine.repeatType) {
-        RoutineRepeatType.DAILY -> stringResource(Res.string.medical_routine_repeat_daily)
-
-        RoutineRepeatType.WEEKLY -> stringResource(
-            Res.string.medical_routine_summary_on_days,
-            routine.daysOfWeek.sorted().joinToString { weekdayLabels[it] },
-        )
-    }
-    val reminder =
-        if (!routine.hasReminder || routine.reminderOffsetsMins.isEmpty()) {
-            stringResource(Res.string.medical_routine_summary_no_reminders)
-        } else {
-            val reminderParts = buildList {
-                for (offset in routine.reminderOffsetsMins) {
-                    add(
-                        if (offset == 0) {
-                            stringResource(Res.string.medical_routine_form_reminder_at_time)
-                        } else {
-                            stringResource(Res.string.medical_routine_form_reminder_before, offset)
-                        },
-                    )
-                }
-            }
-            stringResource(
-                Res.string.medical_routine_summary_reminder_prefix,
-                reminderParts.joinToString(separator = ", "),
-            )
-        }
-    return "$timeSummary • $repeat • $reminder"
 }
 
 @Composable

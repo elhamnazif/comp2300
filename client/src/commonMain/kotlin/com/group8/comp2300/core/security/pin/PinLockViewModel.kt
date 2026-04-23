@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 
 class PinLockViewModel(
     private val pinDataSource: PinDataSource,
@@ -94,7 +95,7 @@ class PinLockViewModel(
         viewModelScope.launch {
             while (rateLimiter.isLockedOut()) {
                 updateLockoutError()
-                delay(1000L)
+                delay(1.seconds)
             }
             error.value = null
         }

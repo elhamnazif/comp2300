@@ -6,11 +6,24 @@ import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.offline.MedicalOfflineMutations
-import com.group8.comp2300.data.offline.QueuedOfflineStore
-import com.group8.comp2300.data.offline.QueuedWriteDispatcher
-import com.group8.comp2300.domain.model.medical.*
+import com.group8.comp2300.data.offline.OfflineMutationQueue
+import com.group8.comp2300.data.offline.OptimisticOfflineWriteStore
+import com.group8.comp2300.domain.model.medical.MedicationLog
+import com.group8.comp2300.domain.model.medical.MedicationLogLinkMode
+import com.group8.comp2300.domain.model.medical.MedicationLogRequest
+import com.group8.comp2300.domain.model.medical.MedicationLogStatus
+import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
+import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
+import com.group8.comp2300.domain.model.medical.buildMedicationOccurrenceCandidates
+import com.group8.comp2300.domain.model.medical.buildRoutineDayAgenda
 import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
-import kotlinx.datetime.*
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 import kotlin.time.Instant
 
@@ -19,12 +32,12 @@ class MedicationLogDataRepositoryImpl(
     private val routineLocal: RoutineLocalDataSource,
     private val routineOccurrenceOverrideLocal: RoutineOccurrenceOverrideLocalDataSource,
     private val medicationLogLocal: MedicationLogLocalDataSource,
-    private val queuedWriteDispatcher: QueuedWriteDispatcher,
+    private val offlineMutationQueue: OfflineMutationQueue,
     private val routineNotificationScheduler: RoutineNotificationScheduler,
 ) : MedicationLogDataRepository {
-    private val occurrenceOverrideWrites = QueuedOfflineStore(
+    private val occurrenceOverrideWrites = OptimisticOfflineWriteStore(
         mutation = MedicalOfflineMutations.routineOccurrenceOverrideUpsert,
-        queuedWriteDispatcher = queuedWriteDispatcher,
+        offlineMutationQueue = offlineMutationQueue,
         buildLocal = { _, request ->
             RoutineOccurrenceOverride(
                 id = "${request.routineId}:${request.originalOccurrenceTimeMs}",
@@ -34,11 +47,11 @@ class MedicationLogDataRepositoryImpl(
             )
         },
         saveLocal = routineOccurrenceOverrideLocal::insert,
-        readLocal = { overrideId -> routineOccurrenceOverrideLocal.getAll().firstOrNull { it.id == overrideId } },
+        readLocal = routineOccurrenceOverrideLocal::getById,
     )
-    private val medicationLogWrites = QueuedOfflineStore(
+    private val medicationLogWrites = OptimisticOfflineWriteStore(
         mutation = MedicalOfflineMutations.medicationLog,
-        queuedWriteDispatcher = queuedWriteDispatcher,
+        offlineMutationQueue = offlineMutationQueue,
         buildLocal = { localId, request ->
             val medication = medicationLocal.getById(request.medicationId)
             MedicationLog(
@@ -53,7 +66,7 @@ class MedicationLogDataRepositoryImpl(
             )
         },
         saveLocal = medicationLogLocal::insert,
-        readLocal = { logId -> medicationLogLocal.getAll().firstOrNull { it.id == logId } },
+        readLocal = medicationLogLocal::getById,
     )
 
     override suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda> {

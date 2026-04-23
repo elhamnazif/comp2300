@@ -7,7 +7,7 @@ import com.group8.comp2300.data.local.*
 import com.group8.comp2300.data.remote.ApiException
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.dto.*
-import com.group8.comp2300.data.repository.medical.TestSyncCoordinator
+import com.group8.comp2300.data.repository.medical.TestOfflineSyncCoordinator
 import com.group8.comp2300.domain.model.chatbot.ChatbotMessage
 import com.group8.comp2300.domain.model.chatbot.ChatbotRequest
 import com.group8.comp2300.domain.model.chatbot.ChatbotResponse
@@ -30,14 +30,14 @@ class AuthRepositoryImplTest {
         val db = newDatabase()
         val sessionDataSource = SessionDataSource(db)
         val tokenManager = TokenManagerImpl(sessionDataSource)
-        val syncCoordinator = TestSyncCoordinator()
+        val offlineSyncCoordinator = TestOfflineSyncCoordinator()
         val apiService = FakeApiService()
         val repository = AuthRepositoryImpl(
             apiService = apiService,
             tokenManager = tokenManager,
             sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
-            syncCoordinator = syncCoordinator,
+            offlineSyncCoordinator = offlineSyncCoordinator,
         )
 
         repository.awaitInitialRestore()
@@ -48,8 +48,8 @@ class AuthRepositoryImplTest {
         assertIs<AuthSession.SignedIn>(session)
         assertEquals("user-1", session.user.id)
         assertEquals("user-1", tokenManager.getUserId())
-        assertEquals(1, syncCoordinator.flushCalls)
-        assertEquals(1, syncCoordinator.refreshCalls)
+        assertEquals(1, offlineSyncCoordinator.syncNowCallCount)
+        assertEquals(0, offlineSyncCoordinator.refreshCacheCallCount)
     }
 
     @Test
@@ -57,7 +57,7 @@ class AuthRepositoryImplTest {
         val db = newDatabase()
         val sessionDataSource = SessionDataSource(db)
         val tokenManager = TokenManagerImpl(sessionDataSource)
-        val syncCoordinator = TestSyncCoordinator()
+        val offlineSyncCoordinator = TestOfflineSyncCoordinator()
         tokenManager.saveTokens(
             userId = "user-1",
             accessToken = "access",
@@ -78,7 +78,7 @@ class AuthRepositoryImplTest {
             tokenManager = tokenManager,
             sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
-            syncCoordinator = syncCoordinator,
+            offlineSyncCoordinator = offlineSyncCoordinator,
         )
 
         repository.awaitInitialRestore()
@@ -88,8 +88,8 @@ class AuthRepositoryImplTest {
         assertEquals("user-1", session.user.id)
         assertFalse(session.isStale)
         assertEquals("user-1", tokenManager.getUserId())
-        assertEquals(1, syncCoordinator.flushCalls)
-        assertEquals(1, syncCoordinator.refreshCalls)
+        assertEquals(1, offlineSyncCoordinator.syncNowCallCount)
+        assertEquals(0, offlineSyncCoordinator.refreshCacheCallCount)
         assertEquals(1, MedicationLocalDataSource(db).getAll().size)
         assertEquals(1, OutboxDataSource(db).getAll().size)
     }
@@ -121,7 +121,7 @@ class AuthRepositoryImplTest {
             tokenManager = tokenManager,
             sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
-            syncCoordinator = TestSyncCoordinator(),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
         )
 
         repository.awaitInitialRestore()
@@ -162,7 +162,7 @@ class AuthRepositoryImplTest {
             tokenManager = tokenManager,
             sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
-            syncCoordinator = TestSyncCoordinator(),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
         )
 
         repository.awaitInitialRestore()
@@ -183,7 +183,7 @@ class AuthRepositoryImplTest {
             tokenManager = tokenManager,
             sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
-            syncCoordinator = TestSyncCoordinator(),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
         )
 
         repository.awaitInitialRestore()
@@ -225,7 +225,7 @@ class AuthRepositoryImplTest {
             tokenManager = tokenManager,
             sessionDataSource = sessionDataSource,
             personalDataCleaner = PersonalDataCleaner(db),
-            syncCoordinator = TestSyncCoordinator(),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
         )
 
         val immediateSession = repository.session.value

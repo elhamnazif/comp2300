@@ -2,25 +2,29 @@ package com.group8.comp2300.data.repository.medical
 
 import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.offline.MedicalOfflineMutations
-import com.group8.comp2300.data.offline.QueuedOfflineStore
-import com.group8.comp2300.data.offline.QueuedWriteDispatcher
+import com.group8.comp2300.data.offline.OfflineMutationQueue
+import com.group8.comp2300.data.offline.OptimisticOfflineWriteStore
 import com.group8.comp2300.domain.model.medical.Mood
 import com.group8.comp2300.domain.model.medical.MoodEntryRequest
 import com.group8.comp2300.domain.model.medical.MoodType
 import com.group8.comp2300.domain.model.session.userOrNull
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.medical.MoodDataRepository
-import kotlinx.datetime.*
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.plus
 import kotlin.time.Clock
 
 class MoodDataRepositoryImpl(
     private val authRepository: AuthRepository,
     private val moodLocal: MoodLocalDataSource,
-    private val queuedWriteDispatcher: QueuedWriteDispatcher,
+    private val offlineMutationQueue: OfflineMutationQueue,
 ) : MoodDataRepository {
-    private val moodWrites = QueuedOfflineStore(
+    private val moodWrites = OptimisticOfflineWriteStore(
         mutation = MedicalOfflineMutations.mood,
-        queuedWriteDispatcher = queuedWriteDispatcher,
+        offlineMutationQueue = offlineMutationQueue,
         buildLocal = { moodId, request ->
             Mood(
                 id = moodId,
@@ -32,7 +36,7 @@ class MoodDataRepositoryImpl(
             )
         },
         saveLocal = moodLocal::insert,
-        readLocal = { moodId -> moodLocal.getAll().firstOrNull { it.id == moodId } },
+        readLocal = moodLocal::getById,
     )
 
     override suspend fun getMoodsForDate(dateString: String): List<Mood> {

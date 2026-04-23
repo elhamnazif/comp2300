@@ -9,7 +9,7 @@ import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
-import com.group8.comp2300.domain.repository.medical.SyncCoordinator
+import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
@@ -17,7 +17,7 @@ import kotlin.time.Clock
 class BookingViewModel(
     private val clinicRepository: ClinicRepository,
     private val appointmentRepository: AppointmentDataRepository,
-    private val syncCoordinator: SyncCoordinator,
+    private val syncCoordinator: OfflineSyncCoordinator,
 ) : ViewModel() {
     private val _state = MutableStateFlow(State(isLoadingClinics = true))
     val state: StateFlow<State> = _state
@@ -189,7 +189,7 @@ class BookingViewModel(
             _state.update { it.copy(isLoadingAppointments = true, errorMessage = null) }
             runCatching {
                 if (refreshFromServer) {
-                    syncCoordinator.refreshAuthenticatedData()
+                    syncCoordinator.refreshCaches()
                 }
                 appointmentRepository.getBookingHistory()
             }.onSuccess { appointments ->

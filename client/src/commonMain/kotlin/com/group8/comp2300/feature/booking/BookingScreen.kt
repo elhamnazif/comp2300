@@ -426,7 +426,7 @@ private fun BookingModeSearchBar(
                     )
                 },
                 leadingIcon = {
-                    androidx.compose.material3.Icon(
+                    Icon(
                         imageVector = Icons.SearchW400Outlinedfill1,
                         contentDescription = stringResource(Res.string.medical_booking_search_desc),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -435,7 +435,7 @@ private fun BookingModeSearchBar(
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { onSearchQueryChange("") }) {
-                            androidx.compose.material3.Icon(
+                            Icon(
                                 imageVector = Icons.CloseW400Outlinedfill1,
                                 contentDescription = stringResource(Res.string.medical_booking_search_desc),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -465,7 +465,7 @@ private fun BookingModeSearchBar(
                 onClick = onModeToggle,
                 modifier = Modifier.padding(start = 10.dp),
             ) {
-                androidx.compose.material3.Icon(
+                Icon(
                     imageVector = toggleIcon,
                     contentDescription = toggleContentDescription,
                     tint = MaterialTheme.colorScheme.onSurface,
@@ -602,7 +602,7 @@ internal fun ClinicCompactRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                androidx.compose.material3.Icon(
+                Icon(
                     imageVector = Icons.LocationOnW400Outlinedfill1,
                     contentDescription = null,
                     tint = supportingColor,
@@ -639,7 +639,7 @@ internal fun ClinicCompactRow(
         }
 
         IconButton(onClick = onNavigate) {
-            androidx.compose.material3.Icon(
+            Icon(
                 imageVector = Icons.ArrowForwardW400Outlinedfill1,
                 contentDescription = stringResource(Res.string.medical_booking_view_details_desc),
                 tint = if (isSelected) supportingColor else MaterialTheme.colorScheme.primary,
@@ -707,7 +707,7 @@ private fun ClinicListCard(clinic: Clinic, onClick: () -> Unit) {
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
             ) {
-                androidx.compose.material3.Icon(
+                Icon(
                     imageVector = Icons.ArrowForwardW400Outlinedfill1,
                     contentDescription = stringResource(Res.string.medical_booking_view_details_desc),
                     tint = MaterialTheme.colorScheme.primary,

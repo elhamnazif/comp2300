@@ -203,7 +203,7 @@ private fun ShopContent(
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
                                 Text(
-                                    text = error.orEmpty(),
+                                    text = error,
                                     color = MaterialTheme.colorScheme.onSurface,
                                     style = MaterialTheme.typography.titleMedium,
                                     textAlign = TextAlign.Center,

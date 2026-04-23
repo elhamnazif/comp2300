@@ -1,12 +1,36 @@
 package com.group8.comp2300.feature.home
 
 import com.group8.comp2300.data.notifications.RoutineNotificationService
-import com.group8.comp2300.domain.model.medical.*
-import com.group8.comp2300.domain.repository.medical.*
+import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
+import com.group8.comp2300.domain.model.medical.Medication
+import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
+import com.group8.comp2300.domain.model.medical.MedicationLog
+import com.group8.comp2300.domain.model.medical.MedicationLogRequest
+import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
+import com.group8.comp2300.domain.model.medical.MedicationStatus
+import com.group8.comp2300.domain.model.medical.MedicationUnit
+import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
+import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
+import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
+import com.group8.comp2300.domain.repository.medical.FailedSyncMutation
+import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
+import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
+import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
+import com.group8.comp2300.domain.repository.medical.SyncStatus
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.*
-import kotlin.test.*
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModelTest {
@@ -25,7 +49,7 @@ class HomeViewModelTest {
     @Test
     fun `load success keeps empty fallback state stable`() = runTest(dispatcher) {
         val viewModel = HomeViewModel(
-            syncCoordinator = FakeSyncCoordinator(),
+            syncCoordinator = FakeOfflineSyncCoordinator(),
             appointmentRepository = FakeAppointmentRepository(),
             medicationRepository = FakeMedicationRepository(),
             medicationLogRepository = FakeMedicationLogRepository(),
@@ -44,7 +68,7 @@ class HomeViewModelTest {
     @Test
     fun `load failure exposes underlying error message`() = runTest(dispatcher) {
         val viewModel = HomeViewModel(
-            syncCoordinator = FailingSyncCoordinator("Cannot reach server"),
+            syncCoordinator = FailingOfflineSyncCoordinator("Cannot reach server"),
             appointmentRepository = FakeAppointmentRepository(),
             medicationRepository = FakeMedicationRepository(),
             medicationLogRepository = FakeMedicationLogRepository(),
@@ -61,7 +85,7 @@ class HomeViewModelTest {
     fun `loading stays true while refresh is in flight`() = runTest(dispatcher) {
         val gate = CompletableDeferred<Unit>()
         val viewModel = HomeViewModel(
-            syncCoordinator = WaitingSyncCoordinator(gate),
+            syncCoordinator = WaitingOfflineSyncCoordinator(gate),
             appointmentRepository = FakeAppointmentRepository(),
             medicationRepository = FakeMedicationRepository(
                 medications = listOf(
@@ -92,43 +116,43 @@ class HomeViewModelTest {
     }
 }
 
-private class FakeSyncCoordinator : SyncCoordinator {
-    override suspend fun flushOutbox(): SyncStatus = SyncStatus(false, 0, 0, false)
+private class FakeOfflineSyncCoordinator : OfflineSyncCoordinator {
+    override suspend fun syncNow(): SyncStatus = SyncStatus(false, 0, 0, false)
 
-    override suspend fun refreshAuthenticatedData(): SyncStatus = SyncStatus(false, 0, 0, true)
+    override suspend fun refreshCaches(): SyncStatus = SyncStatus(false, 0, 0, true)
 
-    override suspend fun getFailedMutations(): List<FailedSyncMutation> = emptyList()
-
-    override suspend fun retryFailedMutation(id: String): SyncStatus = SyncStatus(false, 0, 0, true)
-
-    override suspend fun discardMutation(id: String) = Unit
-}
-
-private class FailingSyncCoordinator(private val message: String) : SyncCoordinator {
-    override suspend fun flushOutbox(): SyncStatus = SyncStatus(false, 0, 0, false)
-
-    override suspend fun refreshAuthenticatedData(): SyncStatus = throw IllegalStateException(message)
-
-    override suspend fun getFailedMutations(): List<FailedSyncMutation> = emptyList()
+    override suspend fun listFailedMutations(): List<FailedSyncMutation> = emptyList()
 
     override suspend fun retryFailedMutation(id: String): SyncStatus = SyncStatus(false, 0, 0, true)
 
-    override suspend fun discardMutation(id: String) = Unit
+    override suspend fun discardFailedMutation(id: String) = Unit
 }
 
-private class WaitingSyncCoordinator(private val gate: CompletableDeferred<Unit>) : SyncCoordinator {
-    override suspend fun flushOutbox(): SyncStatus = SyncStatus(false, 0, 0, false)
+private class FailingOfflineSyncCoordinator(private val message: String) : OfflineSyncCoordinator {
+    override suspend fun syncNow(): SyncStatus = SyncStatus(false, 0, 0, false)
 
-    override suspend fun refreshAuthenticatedData(): SyncStatus {
+    override suspend fun refreshCaches(): SyncStatus = throw IllegalStateException(message)
+
+    override suspend fun listFailedMutations(): List<FailedSyncMutation> = emptyList()
+
+    override suspend fun retryFailedMutation(id: String): SyncStatus = SyncStatus(false, 0, 0, true)
+
+    override suspend fun discardFailedMutation(id: String) = Unit
+}
+
+private class WaitingOfflineSyncCoordinator(private val gate: CompletableDeferred<Unit>) : OfflineSyncCoordinator {
+    override suspend fun syncNow(): SyncStatus = SyncStatus(false, 0, 0, false)
+
+    override suspend fun refreshCaches(): SyncStatus {
         gate.await()
         return SyncStatus(false, 0, 0, true)
     }
 
-    override suspend fun getFailedMutations(): List<FailedSyncMutation> = emptyList()
+    override suspend fun listFailedMutations(): List<FailedSyncMutation> = emptyList()
 
     override suspend fun retryFailedMutation(id: String): SyncStatus = SyncStatus(false, 0, 0, true)
 
-    override suspend fun discardMutation(id: String) = Unit
+    override suspend fun discardFailedMutation(id: String) = Unit
 }
 
 private class FakeAppointmentRepository(private val appointments: List<Appointment> = emptyList()) :

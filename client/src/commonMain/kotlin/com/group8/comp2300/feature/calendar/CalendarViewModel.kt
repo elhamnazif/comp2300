@@ -29,7 +29,7 @@ internal data class CalendarUiState(
 )
 
 class CalendarViewModel(
-    private val syncCoordinator: SyncCoordinator,
+    private val syncCoordinator: OfflineSyncCoordinator,
     private val calendarRepository: CalendarDataRepository,
     private val appointmentRepository: AppointmentDataRepository,
     private val medicationRepository: MedicationDataRepository,
@@ -48,7 +48,7 @@ class CalendarViewModel(
         viewModelScope.launch {
             state.update { it.copy(isLoading = true, screenError = null) }
             try {
-                syncCoordinator.refreshAuthenticatedData()
+                syncCoordinator.refreshCaches()
                 val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
                 val todayDateString = "${now.year}-${now.month.number.toString().padStart(
                     2,
@@ -119,18 +119,6 @@ class CalendarViewModel(
                 .onFailure { error ->
                     state.update { state ->
                         state.copy(snackbarMessage = error.errorMessage("Failed to load calendar month"))
-                    }
-                }
-        }
-    }
-
-    fun createMedication(request: MedicationCreateRequest) {
-        viewModelScope.launch {
-            runCatching { medicationRepository.saveMedication(request) }
-                .onSuccess { loadInitialData(state.value.selectedDate.takeIf(String::isNotBlank)) }
-                .onFailure { error ->
-                    state.update { currentState ->
-                        currentState.copy(snackbarMessage = error.errorMessage("Failed to save medication"))
                     }
                 }
         }

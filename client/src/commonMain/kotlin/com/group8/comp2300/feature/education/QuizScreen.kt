@@ -25,7 +25,6 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun QuizScreen(
-    quizId: String,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: QuizViewModel = koinViewModel(),

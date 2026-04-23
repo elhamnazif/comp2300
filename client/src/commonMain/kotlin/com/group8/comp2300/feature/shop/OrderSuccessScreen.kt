@@ -44,7 +44,7 @@ fun OrderSuccessScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        androidx.compose.material3.Icon(
+                        Icon(
                             imageVector = Icons.CheckCircleW400Outlinedfill1,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,

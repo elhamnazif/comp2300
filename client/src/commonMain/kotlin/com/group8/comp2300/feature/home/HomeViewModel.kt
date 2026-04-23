@@ -7,7 +7,7 @@ import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
-import com.group8.comp2300.domain.repository.medical.SyncCoordinator
+import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -17,7 +17,7 @@ import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
 
 class HomeViewModel(
-    private val syncCoordinator: SyncCoordinator,
+    private val syncCoordinator: OfflineSyncCoordinator,
     private val appointmentRepository: AppointmentDataRepository,
     private val medicationRepository: MedicationDataRepository,
     private val medicationLogRepository: MedicationLogDataRepository,
@@ -36,7 +36,7 @@ class HomeViewModel(
         viewModelScope.launch {
             state.update { current -> current.copy(isLoading = true, errorMessage = null) }
             try {
-                syncCoordinator.refreshAuthenticatedData()
+                syncCoordinator.refreshCaches()
                 val now = clock.now().toEpochMilliseconds()
                 val today = clock.now().toLocalDateTime(timeZone).date.toString()
                 val appointments = appointmentRepository.getAppointments()

@@ -14,7 +14,7 @@ import com.group8.comp2300.domain.model.shop.PlaceOrderRequest
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.medical.FailedSyncMutation
-import com.group8.comp2300.domain.repository.medical.SyncCoordinator
+import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
 import com.group8.comp2300.domain.repository.medical.SyncStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,7 +35,7 @@ class MedicalDataRepositoriesTest {
         val repository = MedicationDataRepositoryImpl(
             authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             medicationLocal = MedicationLocalDataSource(db),
-            queuedWriteDispatcher = dispatcher(db, outbox),
+            offlineMutationQueue = mutationQueue(db, outbox),
         )
 
         repository.saveMedication(
@@ -59,7 +59,7 @@ class MedicalDataRepositoriesTest {
         val repository = MedicationDataRepositoryImpl(
             authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             medicationLocal = MedicationLocalDataSource(db),
-            queuedWriteDispatcher = dispatcher(db, OutboxDataSource(db)),
+            offlineMutationQueue = mutationQueue(db, OutboxDataSource(db)),
         )
 
         val savedMedication = repository.saveMedication(
@@ -77,6 +77,29 @@ class MedicalDataRepositoriesTest {
     }
 
     @Test
+    fun moodLogReturnsStoredOptimisticRow() = runTest {
+        val db = newDatabase()
+        val repository = MoodDataRepositoryImpl(
+            authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
+            moodLocal = MoodLocalDataSource(db),
+            offlineMutationQueue = mutationQueue(db, OutboxDataSource(db)),
+        )
+
+        val savedMood = repository.logMood(
+            MoodEntryRequest(
+                moodScore = 4,
+                tags = listOf("steady"),
+                symptoms = emptyList(),
+                notes = "Feeling okay",
+                timestampMs = 123L,
+            ),
+        )
+
+        assertEquals(savedMood.id, MoodLocalDataSource(db).getById(savedMood.id)?.id)
+        assertEquals(MoodType.GOOD, MoodLocalDataSource(db).getAll().single().moodType)
+    }
+
+    @Test
     fun guestRoutineSaveQueuesPendingWriteAndSyncsNotifications() = runTest {
         val db = newDatabase()
         val outbox = OutboxDataSource(db)
@@ -85,7 +108,7 @@ class MedicalDataRepositoriesTest {
         val repository = RoutineDataRepositoryImpl(
             authRepository = FakeSessionAuthRepository(AuthSession.SignedOut),
             routineLocal = RoutineLocalDataSource(db),
-            queuedWriteDispatcher = dispatcher(db, outbox),
+            offlineMutationQueue = mutationQueue(db, outbox),
             routineNotificationScheduler = notificationScheduler,
         )
 
@@ -116,15 +139,15 @@ class MedicalDataRepositoriesTest {
             refreshToken = "refresh",
             expiresAt = Long.MAX_VALUE,
         )
-        val dataRefresher = object : OfflineDataRefresher {
-            var refreshCalls = 0
+        val cacheRefresher = object : OfflineCacheRefresher {
+            var refreshCallCount = 0
 
-            override suspend fun refreshAuthenticatedData() {
-                refreshCalls += 1
+            override suspend fun refreshCaches() {
+                refreshCallCount += 1
                 MedicationLocalDataSource(db).replaceAll(emptyList())
             }
         }
-        val mutationHandlers = MutationHandlerRegistry(
+        val mutationHandlers = OfflineMutationHandlers(
             listOf(
                 object : OfflineMutationHandler {
                     override val type: String = MedicalOfflineMutations.medicationUpsert.type
@@ -134,14 +157,14 @@ class MedicalDataRepositoriesTest {
                 },
             ),
         )
-        val queuedWriteDispatcher = QueuedWriteDispatcher(
+        val offlineMutationQueue = OfflineMutationQueue(
             tokenManager = TokenManagerImpl(sessionDataSource),
             outbox = outbox,
-            syncCoordinator = SyncCoordinatorImpl(
+            offlineSyncCoordinator = OfflineSyncCoordinatorImpl(
                 tokenManager = TokenManagerImpl(sessionDataSource),
                 outbox = outbox,
                 mutationHandlers = mutationHandlers,
-                dataRefresher = dataRefresher,
+                cacheRefresher = cacheRefresher,
             ),
         )
         val repository = MedicationDataRepositoryImpl(
@@ -156,7 +179,7 @@ class MedicalDataRepositoriesTest {
                 ),
             ),
             medicationLocal = MedicationLocalDataSource(db),
-            queuedWriteDispatcher = queuedWriteDispatcher,
+            offlineMutationQueue = offlineMutationQueue,
         )
 
         val savedMedication = repository.saveMedication(
@@ -172,7 +195,7 @@ class MedicalDataRepositoriesTest {
 
         assertEquals(savedMedication.id, MedicationLocalDataSource(db).getAll().single().id)
         assertEquals(1, outbox.getPending().size)
-        assertEquals(0, dataRefresher.refreshCalls)
+        assertEquals(0, cacheRefresher.refreshCallCount)
     }
 
     @Test
@@ -308,11 +331,11 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = dispatcher(db, outbox),
+            offlineMutationQueue = mutationQueue(db, outbox),
             routineNotificationScheduler = RecordingRoutineNotificationScheduler(),
         )
 
-        repository.logMedication(
+        val savedLog = repository.logMedication(
             MedicationLogRequest(
                 medicationId = "med-1",
                 status = MedicationLogStatus.TAKEN.name,
@@ -323,6 +346,7 @@ class MedicalDataRepositoriesTest {
         )
 
         assertEquals(1, MedicationLogLocalDataSource(db).getAll().size)
+        assertEquals(savedLog.id, MedicationLogLocalDataSource(db).getAll().single().id)
         assertEquals("MEDICATION_LOG", outbox.getAll().single().entityType)
     }
 
@@ -341,7 +365,7 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = dispatcher(db, OutboxDataSource(db)),
+            offlineMutationQueue = mutationQueue(db, OutboxDataSource(db)),
             routineNotificationScheduler = RecordingRoutineNotificationScheduler(),
         )
         val agenda = repository.getRoutineAgenda("2026-03-17")
@@ -380,7 +404,7 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = dispatcher(db, OutboxDataSource(db)),
+            offlineMutationQueue = mutationQueue(db, OutboxDataSource(db)),
             routineNotificationScheduler = RecordingRoutineNotificationScheduler(),
         )
         val originalTimestamp = LocalDateTime(2026, Month.MARCH, 17, 9, 0, 0, 0)
@@ -423,7 +447,7 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = logLocal,
-            queuedWriteDispatcher = dispatcher(db, OutboxDataSource(db)),
+            offlineMutationQueue = mutationQueue(db, OutboxDataSource(db)),
             routineNotificationScheduler = RecordingRoutineNotificationScheduler(),
         )
         val firstLogTime = LocalDateTime(2026, Month.MARCH, 17, 8, 15, 0, 0)
@@ -484,7 +508,7 @@ class MedicalDataRepositoriesTest {
             routineLocal = RoutineLocalDataSource(db),
             routineOccurrenceOverrideLocal = RoutineOccurrenceOverrideLocalDataSource(db),
             medicationLogLocal = MedicationLogLocalDataSource(db),
-            queuedWriteDispatcher = dispatcher(db, outbox),
+            offlineMutationQueue = mutationQueue(db, outbox),
             routineNotificationScheduler = notificationScheduler,
         )
         val originalTimestamp = LocalDateTime(2026, Month.MARCH, 17, 9, 0, 0, 0)
@@ -630,40 +654,40 @@ private fun sampleAppointment(
     paymentStatus = "PENDING",
 )
 
-class TestSyncCoordinator : SyncCoordinator {
-    var flushCalls: Int = 0
-    var refreshCalls: Int = 0
+class TestOfflineSyncCoordinator : OfflineSyncCoordinator {
+    var syncNowCallCount: Int = 0
+    var refreshCacheCallCount: Int = 0
 
-    override suspend fun flushOutbox(): SyncStatus {
-        flushCalls += 1
+    override suspend fun syncNow(): SyncStatus {
+        syncNowCallCount += 1
         return SyncStatus(
             hasAuthenticatedSession = true,
             pendingCount = 0,
             failedCount = 0,
-            refreshed = false,
+            cachesRefreshed = false,
         )
     }
 
-    override suspend fun refreshAuthenticatedData(): SyncStatus {
-        refreshCalls += 1
+    override suspend fun refreshCaches(): SyncStatus {
+        refreshCacheCallCount += 1
         return SyncStatus(
             hasAuthenticatedSession = true,
             pendingCount = 0,
             failedCount = 0,
-            refreshed = true,
+            cachesRefreshed = true,
         )
     }
 
-    override suspend fun getFailedMutations(): List<FailedSyncMutation> = emptyList()
+    override suspend fun listFailedMutations(): List<FailedSyncMutation> = emptyList()
 
     override suspend fun retryFailedMutation(id: String): SyncStatus = SyncStatus(
         hasAuthenticatedSession = true,
         pendingCount = 0,
         failedCount = 0,
-        refreshed = false,
+        cachesRefreshed = false,
     )
 
-    override suspend fun discardMutation(id: String) = Unit
+    override suspend fun discardFailedMutation(id: String) = Unit
 }
 
 private class FakeSessionAuthRepository(initialSession: AuthSession) : AuthRepository {
@@ -701,11 +725,11 @@ private class RecordingRoutineNotificationScheduler : RoutineNotificationSchedul
     override suspend fun syncAllRoutines() = Unit
 }
 
-private fun dispatcher(db: com.group8.comp2300.data.database.AppDatabase, outbox: OutboxDataSource) =
-    QueuedWriteDispatcher(
+private fun mutationQueue(db: com.group8.comp2300.data.database.AppDatabase, outbox: OutboxDataSource) =
+    OfflineMutationQueue(
         TokenManagerImpl(SessionDataSource(db)),
         outbox,
-        TestSyncCoordinator(),
+        TestOfflineSyncCoordinator(),
     )
 
 private fun routine(id: String, timesOfDayMs: List<Long>) = Routine(

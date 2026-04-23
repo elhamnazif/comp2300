@@ -11,7 +11,6 @@ import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 

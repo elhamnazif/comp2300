@@ -5,19 +5,11 @@ import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
 
 class MedicationLogLocalDataSource(private val database: AppDatabase) {
-
     fun getAll(): List<MedicationLog> =
-        database.appDatabaseQueries.selectAllMedicationLogs().executeAsList().map { entity ->
-            MedicationLog(
-                id = entity.id,
-                medicationId = entity.medicationId,
-                medicationTime = entity.medicationTime,
-                status = MedicationLogStatus.valueOf(entity.status),
-                routineId = entity.routineId,
-                occurrenceTimeMs = entity.occurrenceTimeMs,
-                medicationName = entity.medicationName,
-            )
-        }
+        database.appDatabaseQueries.selectAllMedicationLogs().executeAsList().map(::toMedicationLog)
+
+    fun getById(id: String): MedicationLog? =
+        database.appDatabaseQueries.selectMedicationLogById(id).executeAsOneOrNull()?.let(::toMedicationLog)
 
     /**
      * Get medication logs for a specific date range.
@@ -26,17 +18,7 @@ class MedicationLogLocalDataSource(private val database: AppDatabase) {
     fun getByDateRange(startOfDayMs: Long, endOfDayMs: Long): List<MedicationLog> =
         database.appDatabaseQueries.selectMedicationLogsByDate(startOfDayMs, endOfDayMs)
             .executeAsList()
-            .map { entity ->
-                MedicationLog(
-                    id = entity.id,
-                    medicationId = entity.medicationId,
-                    medicationTime = entity.medicationTime,
-                    status = MedicationLogStatus.valueOf(entity.status),
-                    routineId = entity.routineId,
-                    occurrenceTimeMs = entity.occurrenceTimeMs,
-                    medicationName = entity.medicationName,
-                )
-            }
+            .map(::toMedicationLog)
 
     fun insert(log: MedicationLog) {
         database.appDatabaseQueries.insertMedicationLog(
@@ -64,4 +46,15 @@ class MedicationLogLocalDataSource(private val database: AppDatabase) {
     fun deleteAll() {
         database.appDatabaseQueries.deleteAllMedicationLogs()
     }
+
+    private fun toMedicationLog(entity: com.group8.comp2300.data.database.MedicationLogEntity): MedicationLog =
+        MedicationLog(
+            id = entity.id,
+            medicationId = entity.medicationId,
+            medicationTime = entity.medicationTime,
+            status = MedicationLogStatus.valueOf(entity.status),
+            routineId = entity.routineId,
+            occurrenceTimeMs = entity.occurrenceTimeMs,
+            medicationName = entity.medicationName,
+        )
 }

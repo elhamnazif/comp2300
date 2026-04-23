@@ -5,8 +5,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.group8.comp2300.domain.model.content.ContentTopic
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
-import comp2300.i18n.generated.resources.*
-import org.jetbrains.compose.resources.StringResource
 
 /**
  * UI-specific extension properties for ContentTopic. These are kept in client since they
@@ -36,14 +34,3 @@ val ContentTopic.icon: ImageVector
             ContentTopic.GENERAL_HEALTH -> Icons.InfoW400Outlinedfill1
         }
 
-val ContentTopic.labelRes: StringResource
-    get() =
-        when (this) {
-            ContentTopic.CONTRACEPTION -> Res.string.education_topic_contraception
-            ContentTopic.STI_PREVENTION -> Res.string.education_topic_sti_prevention
-            ContentTopic.PREGNANCY -> Res.string.education_topic_pregnancy
-            ContentTopic.MENSTRUAL_HEALTH -> Res.string.education_topic_menstrual_health
-            ContentTopic.CONSENT -> Res.string.education_topic_consent
-            ContentTopic.RELATIONSHIPS -> Res.string.education_topic_relationships
-            ContentTopic.GENERAL_HEALTH -> Res.string.education_topic_general_health
-        }

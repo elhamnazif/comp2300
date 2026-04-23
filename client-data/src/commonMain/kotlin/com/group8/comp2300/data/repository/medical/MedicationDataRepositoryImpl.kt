@@ -2,8 +2,8 @@ package com.group8.comp2300.data.repository.medical
 
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.offline.MedicalOfflineMutations
-import com.group8.comp2300.data.offline.QueuedOfflineStore
-import com.group8.comp2300.data.offline.QueuedWriteDispatcher
+import com.group8.comp2300.data.offline.OfflineMutationQueue
+import com.group8.comp2300.data.offline.OptimisticOfflineWriteStore
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationStatus
@@ -15,11 +15,11 @@ import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
 class MedicationDataRepositoryImpl(
     private val authRepository: AuthRepository,
     private val medicationLocal: MedicationLocalDataSource,
-    private val queuedWriteDispatcher: QueuedWriteDispatcher,
+    private val offlineMutationQueue: OfflineMutationQueue,
 ) : MedicationDataRepository {
-    private val medicationWrites = QueuedOfflineStore(
+    private val medicationWrites = OptimisticOfflineWriteStore(
         mutation = MedicalOfflineMutations.medicationUpsert,
-        queuedWriteDispatcher = queuedWriteDispatcher,
+        offlineMutationQueue = offlineMutationQueue,
         buildLocal = { medicationId, request ->
             Medication(
                 id = medicationId,
@@ -56,10 +56,10 @@ class MedicationDataRepositoryImpl(
     }
 
     override suspend fun deleteMedication(id: String) {
-        queuedWriteDispatcher.deletePending(MedicalOfflineMutations.medicationUpsert, id)
+        offlineMutationQueue.deletePending(MedicalOfflineMutations.medicationUpsert, id)
         medicationLocal.deleteById(id)
         if (authRepository.session.value.userOrNull != null) {
-            queuedWriteDispatcher.replacePending(MedicalOfflineMutations.medicationDelete, id, Unit)
+            offlineMutationQueue.replacePending(MedicalOfflineMutations.medicationDelete, id, Unit)
         }
     }
 }

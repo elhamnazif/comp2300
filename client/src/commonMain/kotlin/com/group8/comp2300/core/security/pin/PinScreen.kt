@@ -389,7 +389,6 @@ fun PinScreen(
                 val biometricTitle = stringResource(Res.string.pin_biometric_prompt_title)
                 val biometricReason = stringResource(Res.string.pin_biometric_prompt_reason)
                 val biometricFailedText = stringResource(Res.string.pin_biometric_failed)
-                val biometricSuccess = requireNotNull(onBiometricSuccess)
 
                 BiometrikAuthenticator(
                     state = biometrikState,
@@ -397,7 +396,7 @@ fun PinScreen(
                     title = biometricTitle,
                     reason = biometricReason,
                     onSuccess = {
-                        LaunchedEffect(Unit) { biometricSuccess() }
+                        LaunchedEffect(Unit) { onBiometricSuccess() }
                     },
                     onFailure = {
                         LaunchedEffect(Unit) {

@@ -63,7 +63,7 @@ fun BookingSuccessScreen(
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        androidx.compose.material3.Icon(
+                        Icon(
                             imageVector = Icons.CheckCircleW400Outlinedfill1,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,

@@ -27,7 +27,6 @@ import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun ArticleDetailScreen(
-    articleId: String,
     onBack: () -> Unit,
     onQuizClick: (String) -> Unit,
     onRetry: () -> Unit,

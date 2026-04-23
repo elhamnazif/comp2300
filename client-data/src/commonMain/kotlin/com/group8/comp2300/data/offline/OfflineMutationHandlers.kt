@@ -9,7 +9,7 @@ interface OfflineMutationHandler {
     suspend fun apply(item: OutboxItem)
 }
 
-class MutationHandlerRegistry(handlers: List<OfflineMutationHandler>) {
+class OfflineMutationHandlers(handlers: List<OfflineMutationHandler>) {
     private val handlersByType = handlers.associateBy(OfflineMutationHandler::type)
 
     init {
@@ -22,7 +22,7 @@ class MutationHandlerRegistry(handlers: List<OfflineMutationHandler>) {
 }
 
 abstract class DecodingOfflineMutationHandler<T>(
-    private val mutation: OfflineMutationSpec<T>,
+    private val mutation: OfflineMutationDescriptor<T>,
     private val json: Json = Json,
 ) : OfflineMutationHandler {
     final override val type: String = mutation.type

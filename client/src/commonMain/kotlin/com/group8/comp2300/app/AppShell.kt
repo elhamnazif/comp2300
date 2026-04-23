@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.collectLatest
 import org.koin.compose.koinInject
 import org.koin.compose.navigation3.koinEntryProvider
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 private val mainTabs =
     listOf(
@@ -77,7 +78,7 @@ fun AppShell(
     LaunchedEffect(notificationBootstrap) {
         snapshotFlow { privacySettings.notificationPrivacyMode to privacySettings.notificationAlias }
             .collectLatest {
-                delay(250)
+                delay(250.milliseconds)
                 notificationBootstrap.synchronize()
             }
     }

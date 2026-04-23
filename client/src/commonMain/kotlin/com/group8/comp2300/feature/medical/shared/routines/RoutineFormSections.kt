@@ -136,7 +136,7 @@ fun RoutineFieldsSection(
                             },
                             label = { Text(formatTimeOfDayMs(timeOfDayMs)) },
                         )
-                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.weight(1f))
                         IconButton(
                             onClick = {
                                 onDraftChange(

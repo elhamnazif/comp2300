@@ -12,17 +12,17 @@ data class SyncStatus(
     val hasAuthenticatedSession: Boolean,
     val pendingCount: Int,
     val failedCount: Int,
-    val refreshed: Boolean,
+    val cachesRefreshed: Boolean,
 )
 
-interface SyncCoordinator {
-    suspend fun flushOutbox(): SyncStatus
+interface OfflineSyncCoordinator {
+    suspend fun syncNow(): SyncStatus
 
-    suspend fun refreshAuthenticatedData(): SyncStatus
+    suspend fun refreshCaches(): SyncStatus
 
-    suspend fun getFailedMutations(): List<FailedSyncMutation>
+    suspend fun listFailedMutations(): List<FailedSyncMutation>
 
     suspend fun retryFailedMutation(id: String): SyncStatus
 
-    suspend fun discardMutation(id: String)
+    suspend fun discardFailedMutation(id: String)
 }

@@ -6,14 +6,11 @@ import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
 class RoutineOccurrenceOverrideLocalDataSource(private val database: AppDatabase) {
     fun getAll(): List<RoutineOccurrenceOverride> = database.appDatabaseQueries.selectAllRoutineOccurrenceOverrides()
         .executeAsList()
-        .map { entity ->
-            RoutineOccurrenceOverride(
-                id = entity.id,
-                routineId = entity.routineId,
-                originalOccurrenceTimeMs = entity.originalOccurrenceTimeMs,
-                rescheduledOccurrenceTimeMs = entity.rescheduledOccurrenceTimeMs,
-            )
-        }
+        .map(::toRoutineOccurrenceOverride)
+
+    fun getById(id: String): RoutineOccurrenceOverride? =
+        database.appDatabaseQueries.selectRoutineOccurrenceOverrideById(id).executeAsOneOrNull()
+            ?.let(::toRoutineOccurrenceOverride)
 
     fun insert(override: RoutineOccurrenceOverride) {
         database.appDatabaseQueries.insertRoutineOccurrenceOverride(
@@ -38,4 +35,13 @@ class RoutineOccurrenceOverrideLocalDataSource(private val database: AppDatabase
     fun deleteAll() {
         database.appDatabaseQueries.deleteAllRoutineOccurrenceOverrides()
     }
+
+    private fun toRoutineOccurrenceOverride(
+        entity: com.group8.comp2300.data.database.RoutineOccurrenceOverrideEntity,
+    ): RoutineOccurrenceOverride = RoutineOccurrenceOverride(
+        id = entity.id,
+        routineId = entity.routineId,
+        originalOccurrenceTimeMs = entity.originalOccurrenceTimeMs,
+        rescheduledOccurrenceTimeMs = entity.rescheduledOccurrenceTimeMs,
+    )
 }

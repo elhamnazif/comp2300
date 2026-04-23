@@ -16,7 +16,7 @@ import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
-import com.group8.comp2300.domain.repository.medical.SyncCoordinator
+import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
 import com.group8.comp2300.util.toEpochMilliseconds
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +29,7 @@ class AuthRepositoryImpl(
     private val tokenManager: TokenManager,
     private val sessionDataSource: SessionDataSource,
     private val personalDataCleaner: PersonalDataCleaner,
-    private val syncCoordinator: SyncCoordinator,
+    private val offlineSyncCoordinator: OfflineSyncCoordinator,
 ) : AuthRepository {
     private val repositoryScope = CoroutineScope(Dispatchers.IO + Job())
     private val logger = Logger.withTag("AuthRepository")
@@ -149,8 +149,7 @@ class AuthRepositoryImpl(
     private suspend fun synchronizeAuthenticatedData(user: User) {
         _session.value = AuthSession.SignedIn(user)
         try {
-            syncCoordinator.flushOutbox()
-            syncCoordinator.refreshAuthenticatedData()
+            offlineSyncCoordinator.syncNow()
             _session.value = AuthSession.SignedIn(user)
         } catch (e: Exception) {
             if (e.isAuthenticationFailure()) {

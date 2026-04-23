@@ -107,6 +107,10 @@ selectAllMoods:
 SELECT * FROM MoodEntity
 ORDER BY timestamp DESC;
 
+selectMoodById:
+SELECT * FROM MoodEntity
+WHERE id = ?;
+
 insertMood:
 INSERT OR REPLACE INTO MoodEntity (id, userId, timestamp, moodType, feeling, journal)
 VALUES (?, ?, ?, ?, ?, ?);
@@ -189,6 +193,10 @@ CREATE TABLE MedicationLogEntity (
 selectAllMedicationLogs:
 SELECT * FROM MedicationLogEntity
 ORDER BY medicationTime DESC;
+
+selectMedicationLogById:
+SELECT * FROM MedicationLogEntity
+WHERE id = ?;
 
 selectMedicationLogsByDate:
 SELECT * FROM MedicationLogEntity
@@ -303,6 +311,10 @@ CREATE TABLE RoutineOccurrenceOverrideEntity (
 selectAllRoutineOccurrenceOverrides:
 SELECT * FROM RoutineOccurrenceOverrideEntity
 ORDER BY rescheduledOccurrenceTimeMs ASC;
+
+selectRoutineOccurrenceOverrideById:
+SELECT * FROM RoutineOccurrenceOverrideEntity
+WHERE id = ?;
 
 insertRoutineOccurrenceOverride:
 INSERT OR REPLACE INTO RoutineOccurrenceOverrideEntity (

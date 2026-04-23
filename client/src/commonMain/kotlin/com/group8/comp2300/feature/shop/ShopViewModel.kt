@@ -13,6 +13,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
     private val allProducts = MutableStateFlow<List<Product>>(emptyList())
@@ -51,7 +53,7 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.WhileSubscribed(5.seconds),
         initialValue = BrowseScreenState(isLoadingProducts = true),
     )
 
@@ -65,7 +67,7 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.WhileSubscribed(5.seconds),
         initialValue = CartScreenState(isLoadingCart = true),
     )
 
@@ -84,7 +86,7 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
+        started = SharingStarted.WhileSubscribed(5.seconds),
         initialValue = CheckoutScreenState(isLoadingCart = true),
     )
 
@@ -131,10 +133,6 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
     fun dismissBrowseFeedback() {
         browseFeedbackClearJob?.cancel()
         browseStore.value = BrowseStore()
-    }
-
-    fun dismissCartError() {
-        cartStore.update { it.copy(error = null) }
     }
 
     private fun mutateAddToCart(product: Product, onSuccess: () -> Unit = {}, onFailure: (String) -> Unit) {
@@ -213,8 +211,6 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
 
     suspend fun getProductById(id: String): Product? = runCatching { repository.getProductById(id) }.getOrNull()
 
-    suspend fun getOrders(): List<Order> = repository.getOrders()
-
     private fun loadProducts() {
         viewModelScope.launch {
             isLoadingProducts.value = true
@@ -258,7 +254,7 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
         browseStore.value = BrowseStore(feedback = feedback)
         if (autoDismiss) {
             browseFeedbackClearJob = viewModelScope.launch {
-                delay(2_500)
+                delay(2_500.milliseconds)
                 if (browseStore.value.feedback == feedback) {
                     browseStore.value = BrowseStore()
                 }

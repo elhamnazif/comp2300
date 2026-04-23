@@ -3,13 +3,11 @@ package com.group8.comp2300.feature.medical.shared.labresults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.group8.comp2300.core.ui.accessibility.AccessibleStatusChip
 import com.group8.comp2300.core.ui.accessibility.StatusIcon
 import com.group8.comp2300.domain.model.medical.LabResult
 import com.group8.comp2300.domain.model.medical.LabStatus
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.stringResource
 
 private data class LabResultStatusPresentation(
     val containerColor: Color,
@@ -31,13 +29,3 @@ private fun labResultStatusPresentation(result: LabResult): LabResultStatusPrese
     return LabResultStatusPresentation(containerColor, contentColor, statusRes, icon)
 }
 
-@Composable
-fun LabResultStatusChip(result: LabResult) {
-    val (containerColor, contentColor, statusRes, icon) = labResultStatusPresentation(result)
-    AccessibleStatusChip(
-        label = stringResource(statusRes),
-        icon = icon,
-        containerColor = containerColor,
-        contentColor = contentColor,
-    )
-}

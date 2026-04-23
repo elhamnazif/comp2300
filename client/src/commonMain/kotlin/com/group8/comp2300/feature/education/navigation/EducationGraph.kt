@@ -61,7 +61,6 @@ val educationGraphModule = module {
 
         ArticleDetailScreen(
             viewModel = viewModel,
-            articleId = route.articleId,
             onBack = if (useRootOverlayForShellChildren) navigator::goBack else navigator::goBackWithinShell,
             onQuizClick = { quizId -> navigator.navigate(Screen.QuizScreen(quizId)) },
             onRetry = viewModel::refresh,
@@ -76,7 +75,6 @@ val educationGraphModule = module {
             }
         QuizScreen(
             viewModel = viewModel,
-            quizId = route.quizId,
             onBack = navigator::goBack,
         )
     }

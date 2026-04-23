@@ -138,11 +138,11 @@ private fun MedicationCard(
             },
         ),
     ) {
-        androidx.compose.foundation.layout.Row(
+        Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            androidx.compose.foundation.layout.Column(
+            Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
@@ -160,7 +160,7 @@ private fun MedicationCard(
                 }
             }
             Spacer(Modifier.width(16.dp))
-            androidx.compose.foundation.layout.Column(
+            Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {

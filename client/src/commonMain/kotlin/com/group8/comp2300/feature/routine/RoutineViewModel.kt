@@ -7,8 +7,8 @@ import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
 import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
+import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
 import com.group8.comp2300.domain.repository.medical.RoutineDataRepository
-import com.group8.comp2300.domain.repository.medical.SyncCoordinator
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -25,7 +25,7 @@ data class RoutineUiState(
 class RoutineViewModel(
     private val routineRepository: RoutineDataRepository,
     private val medicationRepository: MedicationDataRepository,
-    private val syncCoordinator: SyncCoordinator,
+    private val syncCoordinator: OfflineSyncCoordinator,
 ) : ViewModel() {
     val state: StateFlow<RoutineUiState>
         field: MutableStateFlow<RoutineUiState> = MutableStateFlow(RoutineUiState(isLoading = true))
@@ -38,7 +38,7 @@ class RoutineViewModel(
         viewModelScope.launch {
             state.update { it.copy(isLoading = true, error = null) }
             runCatching {
-                syncCoordinator.refreshAuthenticatedData()
+                syncCoordinator.refreshCaches()
                 routineRepository.getRoutines() to medicationRepository.getMedications()
             }.onSuccess { (routines, medications) ->
                 state.update {

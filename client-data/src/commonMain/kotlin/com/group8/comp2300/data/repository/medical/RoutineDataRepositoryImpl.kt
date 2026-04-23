@@ -3,8 +3,8 @@ package com.group8.comp2300.data.repository.medical
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.offline.MedicalOfflineMutations
-import com.group8.comp2300.data.offline.QueuedOfflineStore
-import com.group8.comp2300.data.offline.QueuedWriteDispatcher
+import com.group8.comp2300.data.offline.OfflineMutationQueue
+import com.group8.comp2300.data.offline.OptimisticOfflineWriteStore
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
 import com.group8.comp2300.domain.model.medical.RoutineRepeatType
@@ -16,12 +16,12 @@ import com.group8.comp2300.domain.repository.medical.RoutineDataRepository
 class RoutineDataRepositoryImpl(
     private val authRepository: AuthRepository,
     private val routineLocal: RoutineLocalDataSource,
-    private val queuedWriteDispatcher: QueuedWriteDispatcher,
+    private val offlineMutationQueue: OfflineMutationQueue,
     private val routineNotificationScheduler: RoutineNotificationScheduler,
 ) : RoutineDataRepository {
-    private val routineWrites = QueuedOfflineStore(
+    private val routineWrites = OptimisticOfflineWriteStore(
         mutation = MedicalOfflineMutations.routineUpsert,
-        queuedWriteDispatcher = queuedWriteDispatcher,
+        offlineMutationQueue = offlineMutationQueue,
         buildLocal = { routineId, request ->
             Routine(
                 id = routineId,
@@ -66,11 +66,11 @@ class RoutineDataRepositoryImpl(
 
     override suspend fun deleteRoutine(id: String) {
         val existingRoutine = routineLocal.getById(id)
-        queuedWriteDispatcher.deletePending(MedicalOfflineMutations.routineUpsert, id)
+        offlineMutationQueue.deletePending(MedicalOfflineMutations.routineUpsert, id)
         routineLocal.deleteById(id)
         existingRoutine?.let { routineNotificationScheduler.removeRoutine(it) }
         if (authRepository.session.value.userOrNull != null) {
-            queuedWriteDispatcher.replacePending(MedicalOfflineMutations.routineDelete, id, Unit)
+            offlineMutationQueue.replacePending(MedicalOfflineMutations.routineDelete, id, Unit)
         }
     }
 }

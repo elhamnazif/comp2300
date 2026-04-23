@@ -92,12 +92,11 @@ val coreModule = module {
     singleOf(::RoutineOccurrenceOverrideMutationHandler) { bind<OfflineMutationHandler>() }
     singleOf(::MedicationLogMutationHandler) { bind<OfflineMutationHandler>() }
     singleOf(::MoodMutationHandler) { bind<OfflineMutationHandler>() }
-    single { MutationHandlerRegistry(getAll()) }
+    single { OfflineMutationHandlers(getAll()) }
 
-    singleOf(::MedicalOfflineDataRefresher)
-    single<OfflineDataRefresher> { CompositeOfflineDataRefresher(listOf(get<MedicalOfflineDataRefresher>())) }
-    single<SyncCoordinator> { SyncCoordinatorImpl(get(), get(), get(), get()) }
-    single { QueuedWriteDispatcher(get(), get(), get()) }
+    singleOf(::MedicalOfflineCacheRefresher) { bind<OfflineCacheRefresher>() }
+    single<OfflineSyncCoordinator> { OfflineSyncCoordinatorImpl(get(), get(), get(), get()) }
+    single { OfflineMutationQueue(get(), get(), get()) }
 
     single<ShopRepository> { ShopRepositoryImpl(get(), get(), get(), get()) }
     single<AppointmentDataRepository> { AppointmentDataRepositoryImpl(get(), get()) }
