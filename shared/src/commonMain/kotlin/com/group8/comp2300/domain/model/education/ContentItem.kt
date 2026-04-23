@@ -18,13 +18,4 @@ data class ContentItem(
     val relatedAction: String? = null,
     val thumbnailUrl: String? = null,
     val publishedAt: Long = 0L,
-) {
-    /** Formatted duration for display */
-    val formattedDuration: String
-        get() =
-            if (durationMinutes < 60) {
-                "${durationMinutes}min"
-            } else {
-                "${durationMinutes / 60}h ${durationMinutes % 60}min"
-            }
-}
+)

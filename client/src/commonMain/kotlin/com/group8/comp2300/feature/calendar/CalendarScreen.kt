@@ -248,16 +248,13 @@ fun CalendarScreen(
                             items = state.routineAgenda,
                             key = { "${it.routineId}:${it.occurrenceTimeMs}" },
                         ) { routine ->
-                            val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
-                            RoutineAgendaCard(
+                            RoutineAgendaEntry(
                                 routine = routine,
-                                isExpanded = routineKey in expandedRoutineKeys,
-                                onToggleExpansion = { onToggleRoutineExpansion(routineKey) },
-                                onLogMedication = { medicationId, status ->
-                                    onLogMedication(routine, medicationId, status)
-                                },
-                                onLogAll = { status -> onLogAll(routine, status) },
-                                onMoveDose = { onMoveDose(routine) },
+                                expandedRoutineKeys = expandedRoutineKeys,
+                                onToggleRoutineExpansion = onToggleRoutineExpansion,
+                                onLogMedication = onLogMedication,
+                                onLogAll = onLogAll,
+                                onMoveDose = onMoveDose,
                             )
                         }
                     }

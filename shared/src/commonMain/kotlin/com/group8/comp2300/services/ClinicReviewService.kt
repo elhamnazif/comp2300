@@ -1,9 +1,11 @@
 package com.group8.comp2300.services
 
-import com.group8.comp2300.domain.model.medical.*
+import com.group8.comp2300.domain.model.medical.CreateReviewRequest
+import com.group8.comp2300.domain.model.medical.Review
+import com.group8.comp2300.domain.model.medical.ReviewSortBy
+import com.group8.comp2300.domain.model.medical.UpdateReviewRequest
 import com.group8.comp2300.domain.repository.ClinicReviewRepository
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 class ClinicReviewService(private val repository: ClinicReviewRepository) {
 
@@ -11,7 +13,7 @@ class ClinicReviewService(private val repository: ClinicReviewRepository) {
     @OptIn(ExperimentalUuidApi::class)
     suspend fun submitReview(request: CreateReviewRequest): Result<Review> {
         // Validation
-        if (request.rating < 1 || request.rating > 5) {
+        if (request.rating !in 1..5) {
             return Result.failure(IllegalArgumentException("Rating must be between 1 and 5"))
         }
 
@@ -51,7 +53,7 @@ class ClinicReviewService(private val repository: ClinicReviewRepository) {
     ): Result<Review> {
         // Validation
         rating?.let {
-            if (it < 1 || it > 5) {
+            if (it !in 1..5) {
                 return Result.failure(IllegalArgumentException("Rating must be between 1 and 5"))
             }
         }

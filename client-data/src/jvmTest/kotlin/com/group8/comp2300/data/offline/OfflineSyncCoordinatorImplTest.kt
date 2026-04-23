@@ -9,8 +9,8 @@ import com.group8.comp2300.data.repository.newDatabase
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class OfflineSyncCoordinatorImplTest {
@@ -31,7 +31,7 @@ class OfflineSyncCoordinatorImplTest {
                 object : OfflineMutationHandler {
                     override val type: String = TestMutationType
 
-                    override suspend fun apply(item: OutboxItem): Unit = throw Exception("offline")
+                    override suspend fun apply(item: OutboxItem): Unit = throw IllegalStateException("offline")
                 },
             ),
         )

@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.accessibility.PatternSwatch
+import com.group8.comp2300.core.ui.components.ConfirmActionDialog
 import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.feature.medical.shared.forms.MedicalFormTextField
 import com.group8.comp2300.feature.medical.shared.routines.*
@@ -137,13 +138,12 @@ fun MedicationFormSheet(
                 unitLabel = stringResource(Res.string.medical_medication_form_dose_unit_label),
                 onUnitSelect = { doseUnit = it },
             )
-            if (doseUnit == MedicationUnit.OTHER) {
-                MedicalFormTextField(
-                    label = stringResource(Res.string.medical_medication_form_custom_dose_unit_label),
-                    value = customDoseUnit,
-                    onValueChange = { customDoseUnit = it },
-                )
-            }
+            OtherUnitField(
+                visible = doseUnit == MedicationUnit.OTHER,
+                label = stringResource(Res.string.medical_medication_form_custom_dose_unit_label),
+                value = customDoseUnit,
+                onValueChange = { customDoseUnit = it },
+            )
             MedicationAmountRow(
                 amountLabel = stringResource(Res.string.medical_medication_form_stock_amount_label),
                 amountValue = stockAmount,
@@ -153,13 +153,12 @@ fun MedicationFormSheet(
                 unitLabel = stringResource(Res.string.medical_medication_form_stock_unit_label),
                 onUnitSelect = { stockUnit = it },
             )
-            if (stockUnit == MedicationUnit.OTHER) {
-                MedicalFormTextField(
-                    label = stringResource(Res.string.medical_medication_form_custom_unit_label),
-                    value = customStockUnit,
-                    onValueChange = { customStockUnit = it },
-                )
-            }
+            OtherUnitField(
+                visible = stockUnit == MedicationUnit.OTHER,
+                label = stringResource(Res.string.medical_medication_form_custom_unit_label),
+                value = customStockUnit,
+                onValueChange = { customStockUnit = it },
+            )
             MedicalFormTextField(
                 label = stringResource(Res.string.medical_medication_form_instructions_label),
                 value = instruction,
@@ -272,50 +271,40 @@ fun MedicationFormSheet(
     }
 
     if (showDeleteConfirmation && medicationToEdit != null) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text(stringResource(Res.string.medical_medication_delete_confirm_title)) },
-            text = { Text(stringResource(Res.string.medical_medication_delete_confirm_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteConfirmation = false
-                        onDelete(medicationToEdit.id)
-                    },
-                ) {
-                    Text(stringResource(Res.string.medical_medication_delete_desc))
-                }
+        ConfirmActionDialog(
+            title = stringResource(Res.string.medical_medication_delete_confirm_title),
+            message = stringResource(Res.string.medical_medication_delete_confirm_message),
+            confirmLabel = stringResource(Res.string.medical_medication_delete_desc),
+            onConfirm = {
+                showDeleteConfirmation = false
+                onDelete(medicationToEdit.id)
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text(stringResource(Res.string.common_cancel))
-                }
-            },
+            onDismiss = { showDeleteConfirmation = false },
         )
     }
 
     scheduleToRemove?.let { routine ->
-        AlertDialog(
-            onDismissRequest = { scheduleToRemove = null },
-            title = { Text(stringResource(Res.string.medical_medication_schedule_remove_confirm_title)) },
-            text = { Text(stringResource(Res.string.medical_medication_schedule_remove_confirm_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        scheduleToRemove = null
-                        onRemoveSchedule(routine)
-                    },
-                ) {
-                    Text(stringResource(Res.string.medical_medication_form_schedule_remove))
-                }
+        ConfirmActionDialog(
+            title = stringResource(Res.string.medical_medication_schedule_remove_confirm_title),
+            message = stringResource(Res.string.medical_medication_schedule_remove_confirm_message),
+            confirmLabel = stringResource(Res.string.medical_medication_form_schedule_remove),
+            onConfirm = {
+                scheduleToRemove = null
+                onRemoveSchedule(routine)
             },
-            dismissButton = {
-                TextButton(onClick = { scheduleToRemove = null }) {
-                    Text(stringResource(Res.string.common_cancel))
-                }
-            },
+            onDismiss = { scheduleToRemove = null },
         )
     }
+}
+
+@Composable
+private fun OtherUnitField(visible: Boolean, label: String, value: String, onValueChange: (String) -> Unit) {
+    if (!visible) return
+    MedicalFormTextField(
+        label = label,
+        value = value,
+        onValueChange = onValueChange,
+    )
 }
 
 @Composable

@@ -58,6 +58,7 @@ fun PinScreen(
     val haptic = LocalHapticFeedback.current
     val shakeOffset = remember { Animatable(0f) }
     val mismatchErrorText = stringResource(Res.string.onboarding_pin_mismatch)
+    val currentOnBiometricSuccess by rememberUpdatedState(onBiometricSuccess)
 
     val showBiometricOption = !isSetup && onBiometricSuccess != null
     val biometricAvailable = showBiometricOption && isBiometricAvailable()
@@ -396,7 +397,7 @@ fun PinScreen(
                     title = biometricTitle,
                     reason = biometricReason,
                     onSuccess = {
-                        LaunchedEffect(Unit) { onBiometricSuccess() }
+                        LaunchedEffect(Unit) { currentOnBiometricSuccess?.invoke() }
                     },
                     onFailure = {
                         LaunchedEffect(Unit) {

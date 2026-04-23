@@ -5,6 +5,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.components.AppTopBar
@@ -16,13 +17,6 @@ private enum class DiagnosisRisk {
     LOW,
 }
 
-/**
- * Self Diagnosis Screen
- *
- * TODO: Future Enhancement We want to make this screen reusable so that we can define an STI Object and pass it to the
- *   screen and the screen will automatically format the questions as inputs and stuff for us. For now, this is a simple
- *   implementation for HIV.
- */
 @Composable
 fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, modifier: Modifier = Modifier) {
     var unprotectedSex by remember { mutableStateOf<Boolean?>(null) }
@@ -109,111 +103,17 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                 style = MaterialTheme.typography.bodyMedium,
             )
 
-            // Question 1
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = stringResource(Res.string.medical_self_diagnosis_q1),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = { unprotectedSex = true },
-                            colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                if (unprotectedSex == true) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                },
-                                contentColor =
-                                if (unprotectedSex == true) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ),
-                        ) {
-                            Text(stringResource(Res.string.common_yes))
-                        }
-                        Button(
-                            onClick = { unprotectedSex = false },
-                            colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                if (unprotectedSex == false) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                },
-                                contentColor =
-                                if (unprotectedSex == false) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ),
-                        ) {
-                            Text(stringResource(Res.string.common_no))
-                        }
-                    }
-                }
-            }
+            DiagnosisQuestionCard(
+                question = stringResource(Res.string.medical_self_diagnosis_q1),
+                answer = unprotectedSex,
+                onAnswerChange = { unprotectedSex = it },
+            )
 
-            // Question 2
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = stringResource(Res.string.medical_self_diagnosis_q2),
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = { sharedNeedles = true },
-                            colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                if (sharedNeedles == true) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                },
-                                contentColor =
-                                if (sharedNeedles == true) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ),
-                        ) {
-                            Text(stringResource(Res.string.common_yes))
-                        }
-                        Button(
-                            onClick = { sharedNeedles = false },
-                            colors =
-                            ButtonDefaults.buttonColors(
-                                containerColor =
-                                if (sharedNeedles == false) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surfaceVariant
-                                },
-                                contentColor =
-                                if (sharedNeedles == false) {
-                                    MaterialTheme.colorScheme.onPrimary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ),
-                        ) {
-                            Text(stringResource(Res.string.common_no))
-                        }
-                    }
-                }
-            }
+            DiagnosisQuestionCard(
+                question = stringResource(Res.string.medical_self_diagnosis_q2),
+                answer = sharedNeedles,
+                onAnswerChange = { sharedNeedles = it },
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -231,5 +131,56 @@ fun SelfDiagnosisScreen(onBack: () -> Unit, onNavigateToBooking: () -> Unit, mod
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+@Composable
+private fun DiagnosisQuestionCard(question: String, answer: Boolean?, onAnswerChange: (Boolean) -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = question,
+                style = MaterialTheme.typography.titleMedium,
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                DiagnosisAnswerButton(
+                    label = stringResource(Res.string.common_yes),
+                    selected = answer == true,
+                    onClick = { onAnswerChange(true) },
+                )
+                DiagnosisAnswerButton(
+                    label = stringResource(Res.string.common_no),
+                    selected = answer == false,
+                    onClick = { onAnswerChange(false) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DiagnosisAnswerButton(label: String, selected: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (selected) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant
+            },
+            contentColor = if (selected) {
+                MaterialTheme.colorScheme.onPrimary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            },
+        ),
+    ) {
+        Text(label)
     }
 }

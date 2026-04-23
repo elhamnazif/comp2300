@@ -132,10 +132,7 @@ class OfflineSyncCoordinatorImpl(
 
     private fun Throwable.isAuthenticationFailure(): Boolean = this is ApiException && statusCode == 401
 
-    private data class OutboxSnapshot(
-        val pendingCount: Int,
-        val failedCount: Int,
-    ) {
+    private data class OutboxSnapshot(val pendingCount: Int, val failedCount: Int) {
         val hasQueuedMutations: Boolean = pendingCount > 0 || failedCount > 0
     }
 

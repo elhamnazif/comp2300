@@ -56,6 +56,7 @@ fun buildMedicationOccurrenceCandidates(
     val endDate = Instant.fromEpochMilliseconds(timestampMs + windowMs).toLocalDateTime(timeZone).date
 
     return datesInRange(startDate, endDate)
+        .asSequence()
         .flatMap { date ->
             buildRoutineDayAgenda(
                 routines = routines,
@@ -92,6 +93,7 @@ fun buildMedicationOccurrenceCandidates(
             compareBy<MedicationOccurrenceCandidate> { abs(it.occurrenceTimeMs - timestampMs) }
                 .thenBy(MedicationOccurrenceCandidate::occurrenceTimeMs),
         )
+        .toList()
 }
 
 fun buildRoutineDayAgenda(

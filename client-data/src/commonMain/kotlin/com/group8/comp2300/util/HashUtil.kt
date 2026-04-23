@@ -5,11 +5,7 @@ import kotlin.random.Random
 const val PinHashIterations = 100_000
 private const val SaltSize = 16
 
-data class PinHashResult(
-    val hash: String,
-    val salt: String,
-    val iterations: Int,
-)
+data class PinHashResult(val hash: String, val salt: String, val iterations: Int)
 
 /** Hash a PIN with PBKDF2-HMAC-SHA256 and a per-entry random salt. */
 fun hashPinSecure(pin: String, salt: ByteArray = Random.nextBytes(SaltSize)): PinHashResult {
@@ -22,12 +18,7 @@ fun hashPinSecure(pin: String, salt: ByteArray = Random.nextBytes(SaltSize)): Pi
 }
 
 /** Re-derive and compare using constant-time equality. */
-fun verifyPinHash(
-    pin: String,
-    storedHash: String,
-    salt: String,
-    iterations: Int,
-): Boolean {
+fun verifyPinHash(pin: String, storedHash: String, salt: String, iterations: Int): Boolean {
     if (iterations <= 0 || !salt.isHexEncoded() || !storedHash.isHexEncoded()) {
         return false
     }

@@ -12,9 +12,3 @@ sealed interface AuthSession {
 
 val AuthSession.userOrNull: User?
     get() = (this as? AuthSession.SignedIn)?.user
-
-val AuthSession.isSignedIn: Boolean
-    get() = this is AuthSession.SignedIn
-
-val AuthSession.isStale: Boolean
-    get() = (this as? AuthSession.SignedIn)?.isStale == true

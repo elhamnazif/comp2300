@@ -13,8 +13,8 @@ import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.feature.medical.shared.routines.ScheduleFormSheet
+import com.group8.comp2300.feature.medical.shared.routines.rememberMedicalSheetChrome
 import com.group8.comp2300.platform.notifications.NotificationPermissionResult
-import com.group8.comp2300.platform.notifications.rememberNotificationPermissionRequester
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
@@ -31,11 +31,7 @@ fun MedicationScreen(
     viewModel: MedicationViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-    val requestNotificationPermission = rememberNotificationPermissionRequester()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showSheet by remember { mutableStateOf(false) }
+    val sheetChrome = rememberMedicalSheetChrome()
     var editingMedication by remember { mutableStateOf<Medication?>(null) }
     var editingRoutine by remember { mutableStateOf<Routine?>(null) }
     var sheetStep by remember { mutableStateOf(MedicationSheetStep.FORM) }
@@ -44,7 +40,7 @@ fun MedicationScreen(
 
     ConsumeSnackbarMessage(
         message = state.error,
-        snackbarHostState = snackbarHostState,
+        snackbarHostState = sheetChrome.snackbarHostState,
         onConsumed = viewModel::dismissError,
     )
 
@@ -53,7 +49,7 @@ fun MedicationScreen(
     }
 
     fun resetSheetState() {
-        showSheet = false
+        sheetChrome.showSheet = false
         editingMedication = null
         editingRoutine = null
         sheetStep = MedicationSheetStep.FORM
@@ -62,7 +58,7 @@ fun MedicationScreen(
 
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(sheetChrome.snackbarHostState) },
         topBar = {
             AppTopBar(
                 title = { Text(stringResource(Res.string.medical_medication_title), fontWeight = FontWeight.Bold) },
@@ -77,7 +73,7 @@ fun MedicationScreen(
                     editingRoutine = null
                     sheetStep = MedicationSheetStep.FORM
                     pendingCreatedMedicationId = null
-                    showSheet = true
+                    sheetChrome.showSheet = true
                 },
             ) {
                 Icon(
@@ -94,27 +90,27 @@ fun MedicationScreen(
                 editingRoutine = null
                 sheetStep = MedicationSheetStep.FORM
                 pendingCreatedMedicationId = null
-                showSheet = true
+                sheetChrome.showSheet = true
             },
             onEditMedication = { medication ->
                 editingMedication = medication
                 editingRoutine = null
                 sheetStep = MedicationSheetStep.FORM
                 pendingCreatedMedicationId = null
-                showSheet = true
+                sheetChrome.showSheet = true
             },
             modifier = Modifier.padding(innerPadding),
         )
     }
 
-    if (showSheet) {
+    if (sheetChrome.showSheet) {
         ModalBottomSheet(
             onDismissRequest = {
                 if (!state.isMutating) {
                     resetSheetState()
                 }
             },
-            sheetState = sheetState,
+            sheetState = sheetChrome.sheetState,
         ) {
             when (sheetStep) {
                 MedicationSheetStep.FORM -> {
@@ -133,7 +129,7 @@ fun MedicationScreen(
                                 }
 
                                 pendingCreatedMedicationId = savedMedication.id
-                                coroutineScope.launch {
+                                sheetChrome.coroutineScope.launch {
                                     val requestWithMedication = routineRequest.copy(
                                         medicationIds = listOf(savedMedication.id),
                                     )
@@ -141,7 +137,7 @@ fun MedicationScreen(
                                         if (requestWithMedication.hasReminder &&
                                             requestWithMedication.reminderOffsetsMins.isNotEmpty()
                                         ) {
-                                            requestNotificationPermission()
+                                            sheetChrome.requestNotificationPermission()
                                         } else {
                                             NotificationPermissionResult.GRANTED
                                         }
@@ -149,7 +145,7 @@ fun MedicationScreen(
                                         resetSheetState()
                                     }
                                     if (permissionResult != NotificationPermissionResult.GRANTED) {
-                                        snackbarHostState.showSnackbar(notificationDisabledMessage)
+                                        sheetChrome.snackbarHostState.showSnackbar(notificationDisabledMessage)
                                     }
                                 }
                             }
@@ -194,10 +190,10 @@ fun MedicationScreen(
                         isMutating = state.isMutating,
                         showMedicationSection = false,
                         onSave = { request, id ->
-                            coroutineScope.launch {
+                            sheetChrome.coroutineScope.launch {
                                 val permissionResult =
                                     if (request.hasReminder && request.reminderOffsetsMins.isNotEmpty()) {
-                                        requestNotificationPermission()
+                                        sheetChrome.requestNotificationPermission()
                                     } else {
                                         NotificationPermissionResult.GRANTED
                                     }
@@ -206,7 +202,7 @@ fun MedicationScreen(
                                     sheetStep = MedicationSheetStep.FORM
                                 }
                                 if (permissionResult != NotificationPermissionResult.GRANTED) {
-                                    snackbarHostState.showSnackbar(notificationDisabledMessage)
+                                    sheetChrome.snackbarHostState.showSnackbar(notificationDisabledMessage)
                                 }
                             }
                         },

@@ -75,10 +75,8 @@ class MedicationLogMutationHandler(
     }
 }
 
-class MoodMutationHandler(
-    private val apiService: ApiService,
-    private val moodLocal: MoodLocalDataSource,
-) : DecodingOfflineMutationHandler<MoodEntryRequest>(MedicalOfflineMutations.mood) {
+class MoodMutationHandler(private val apiService: ApiService, private val moodLocal: MoodLocalDataSource) :
+    DecodingOfflineMutationHandler<MoodEntryRequest>(MedicalOfflineMutations.mood) {
     override suspend fun handle(item: OutboxItem, payload: MoodEntryRequest) {
         val serverResult = apiService.logMood(payload)
         moodLocal.deleteById(item.localId)

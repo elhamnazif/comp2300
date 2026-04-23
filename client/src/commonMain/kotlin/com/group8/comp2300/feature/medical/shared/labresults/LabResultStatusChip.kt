@@ -28,4 +28,3 @@ private fun labResultStatusPresentation(result: LabResult): LabResultStatusPrese
     }
     return LabResultStatusPresentation(containerColor, contentColor, statusRes, icon)
 }
-

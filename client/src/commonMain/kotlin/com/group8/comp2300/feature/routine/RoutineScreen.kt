@@ -9,11 +9,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.ui.components.ActionEmptyStateCard
 import com.group8.comp2300.core.ui.components.AppTopBar
+import com.group8.comp2300.core.ui.components.CenteredLoadingPanel
 import com.group8.comp2300.core.ui.components.ConsumeSnackbarMessage
 import com.group8.comp2300.core.ui.components.SectionHeader
 import com.group8.comp2300.domain.model.medical.Medication
@@ -22,9 +22,9 @@ import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.feature.medical.shared.routines.ReminderIndicator
 import com.group8.comp2300.feature.medical.shared.routines.ScheduleFormSheet
+import com.group8.comp2300.feature.medical.shared.routines.rememberMedicalSheetChrome
 import com.group8.comp2300.feature.medical.shared.routines.scheduleLinkSummary
 import com.group8.comp2300.platform.notifications.NotificationPermissionResult
-import com.group8.comp2300.platform.notifications.rememberNotificationPermissionRequester
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.AddW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
@@ -36,17 +36,13 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: RoutineViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-    val requestNotificationPermission = rememberNotificationPermissionRequester()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var showSheet by remember { mutableStateOf(false) }
+    val sheetChrome = rememberMedicalSheetChrome()
     var editingRoutine by remember { mutableStateOf<Routine?>(null) }
     val notificationDisabledMessage = stringResource(Res.string.medical_routine_notification_disabled)
 
     ConsumeSnackbarMessage(
         message = state.error,
-        snackbarHostState = snackbarHostState,
+        snackbarHostState = sheetChrome.snackbarHostState,
         onConsumed = viewModel::dismissError,
     )
 
@@ -55,7 +51,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
 
     Scaffold(
         modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = { SnackbarHost(sheetChrome.snackbarHostState) },
         topBar = {
             AppTopBar(
                 title = { Text(stringResource(Res.string.medical_routine_title), fontWeight = FontWeight.Bold) },
@@ -66,7 +62,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 editingRoutine = null
-                showSheet = true
+                sheetChrome.showSheet = true
             }) {
                 Icon(
                     Icons.AddW400Outlinedfill1,
@@ -83,19 +79,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                     .background(MaterialTheme.colorScheme.surface),
                 contentAlignment = Alignment.Center,
             ) {
-                Column(
-                    modifier = Modifier.widthIn(max = 320.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = "Loading schedules",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                }
+                CenteredLoadingPanel(title = "Loading schedules")
             }
         } else {
             LazyColumn(
@@ -114,7 +98,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                             actionLabel = stringResource(Res.string.medical_routine_empty_button),
                             onAction = {
                                 editingRoutine = null
-                                showSheet = true
+                                sheetChrome.showSheet = true
                             },
                         )
                     }
@@ -133,7 +117,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                             medications = state.medications,
                             onClick = {
                                 editingRoutine = routine
-                                showSheet = true
+                                sheetChrome.showSheet = true
                             },
                         )
                     }
@@ -152,7 +136,7 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                             isArchived = true,
                             onClick = {
                                 editingRoutine = routine
-                                showSheet = true
+                                sheetChrome.showSheet = true
                             },
                         )
                     }
@@ -162,14 +146,14 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
         }
     }
 
-    if (showSheet) {
+    if (sheetChrome.showSheet) {
         ModalBottomSheet(
             onDismissRequest = {
                 if (!state.isMutating) {
-                    showSheet = false
+                    sheetChrome.showSheet = false
                 }
             },
-            sheetState = sheetState,
+            sheetState = sheetChrome.sheetState,
         ) {
             ScheduleFormSheet(
                 title = if (editingRoutine == null) {
@@ -181,26 +165,26 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                 medications = state.medications.filter { it.status == MedicationStatus.ACTIVE },
                 isMutating = state.isMutating,
                 onSave = { request, id ->
-                    coroutineScope.launch {
+                    sheetChrome.coroutineScope.launch {
                         val permissionResult = if (request.hasReminder && request.reminderOffsetsMins.isNotEmpty()) {
-                            requestNotificationPermission()
+                            sheetChrome.requestNotificationPermission()
                         } else {
                             NotificationPermissionResult.GRANTED
                         }
                         viewModel.saveRoutine(request, id) {
-                            showSheet = false
+                            sheetChrome.showSheet = false
                         }
                         if (permissionResult != NotificationPermissionResult.GRANTED) {
-                            snackbarHostState.showSnackbar(notificationDisabledMessage)
+                            sheetChrome.snackbarHostState.showSnackbar(notificationDisabledMessage)
                         }
                     }
                 },
                 onDelete = { routineId ->
                     viewModel.deleteRoutine(routineId) {
-                        showSheet = false
+                        sheetChrome.showSheet = false
                     }
                 },
-                onCancel = { showSheet = false },
+                onCancel = { sheetChrome.showSheet = false },
             )
         }
     }

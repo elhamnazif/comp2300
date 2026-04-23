@@ -24,11 +24,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun QuizScreen(
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: QuizViewModel = koinViewModel(),
-) {
+fun QuizScreen(onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: QuizViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsState()
     val quiz = state.quiz
 

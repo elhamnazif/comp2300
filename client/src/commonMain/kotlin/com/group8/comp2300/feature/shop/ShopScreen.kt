@@ -29,9 +29,9 @@ import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.Screen
+import com.group8.comp2300.core.network.resolveRemoteAssetUrl
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.core.ui.components.shimmerEffect
-import com.group8.comp2300.data.remote.apiBaseUrl
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.domain.model.shop.ProductCategory
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -555,12 +555,7 @@ internal fun ShopProductArtwork(product: Product, modifier: Modifier = Modifier)
     }
 }
 
-internal fun resolveShopImageUrl(imageUrl: String?): String? {
-    val value = imageUrl?.trim().orEmpty()
-    if (value.isEmpty()) return null
-    if (value.startsWith("http://") || value.startsWith("https://")) return value
-    return "${apiBaseUrl().trimEnd('/')}/${value.trimStart('/')}"
-}
+internal fun resolveShopImageUrl(imageUrl: String?): String? = resolveRemoteAssetUrl(imageUrl)
 
 @Composable
 private fun productAccent(product: Product): Color = when {

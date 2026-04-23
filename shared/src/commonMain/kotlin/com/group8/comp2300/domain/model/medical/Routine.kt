@@ -18,9 +18,6 @@ data class Routine(
     val medicationIds: List<String> = emptyList(),
 )
 
-@Serializable
-data class RoutineMedicationLink(val id: String, val routineId: String, val medicationId: String)
-
 fun Routine.normalized(): Routine = copy(
     daysOfWeek = daysOfWeek.sorted().distinct(),
     timesOfDayMs = timesOfDayMs.sorted().distinct(),
@@ -29,4 +26,4 @@ fun Routine.normalized(): Routine = copy(
 )
 
 fun List<Routine>.sortedByRoutineTime(): List<Routine> =
-    sortedWith(compareBy<Routine>({ it.timesOfDayMs.firstOrNull() ?: Long.MAX_VALUE }, { it.name }))
+    sortedWith(compareBy({ it.timesOfDayMs.firstOrNull() ?: Long.MAX_VALUE }, { it.name }))

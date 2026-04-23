@@ -12,10 +12,7 @@ enum class MedicationUnit(val displayName: String) {
     ML("mL"),
     MG("mg"),
     OTHER("Other"),
-    ;
 }
-
-typealias MedicationStockUnit = MedicationUnit
 
 fun formatMedicationAmount(amount: String, unit: MedicationUnit, customUnit: String? = null): String {
     val normalizedAmount = amount.trim().ifBlank { "1" }

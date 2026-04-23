@@ -33,4 +33,3 @@ val ContentTopic.icon: ImageVector
             ContentTopic.RELATIONSHIPS -> Icons.AccountBoxW400Outlinedfill1
             ContentTopic.GENERAL_HEALTH -> Icons.InfoW400Outlinedfill1
         }
-

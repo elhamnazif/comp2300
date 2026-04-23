@@ -23,7 +23,6 @@ import com.group8.comp2300.security.JwtServiceImpl
 import com.group8.comp2300.service.auth.AuthService
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -50,6 +49,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientContentNegotiation
 
 class AuthRoutesTest {
     @Test
@@ -594,11 +594,10 @@ private suspend fun HttpClient.preregister(email: String, password: String): Htt
         setBody(PreregisterRequest(email = email, password = password))
     }
 
-private suspend fun HttpClient.login(email: String, password: String): HttpResponse =
-    post("/api/auth/login") {
-        contentType(ContentType.Application.Json)
-        setBody(LoginRequest(email = email, password = password))
-    }
+private suspend fun HttpClient.login(email: String, password: String): HttpResponse = post("/api/auth/login") {
+    contentType(ContentType.Application.Json)
+    setBody(LoginRequest(email = email, password = password))
+}
 
 private suspend fun createActivatedSession(
     client: HttpClient,

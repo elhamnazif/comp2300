@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
+import com.group8.comp2300.core.ui.components.ConfirmActionDialog
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.Routine
 import com.group8.comp2300.domain.model.medical.RoutineRepeatType
@@ -130,25 +131,15 @@ fun ScheduleFormSheet(
     }
 
     if (showDeleteConfirmation && routineToEdit != null && onDelete != null) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text(stringResource(Res.string.medical_routine_delete_confirm_title)) },
-            text = { Text(stringResource(Res.string.medical_routine_delete_confirm_message)) },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteConfirmation = false
-                        onDelete(routineToEdit.id)
-                    },
-                ) {
-                    Text(stringResource(Res.string.medical_medication_delete_desc))
-                }
+        ConfirmActionDialog(
+            title = stringResource(Res.string.medical_routine_delete_confirm_title),
+            message = stringResource(Res.string.medical_routine_delete_confirm_message),
+            confirmLabel = stringResource(Res.string.medical_medication_delete_desc),
+            onConfirm = {
+                showDeleteConfirmation = false
+                onDelete(routineToEdit.id)
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text(stringResource(Res.string.common_cancel))
-                }
-            },
+            onDismiss = { showDeleteConfirmation = false },
         )
     }
 }

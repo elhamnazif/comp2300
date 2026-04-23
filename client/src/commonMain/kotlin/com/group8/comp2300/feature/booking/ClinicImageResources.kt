@@ -7,7 +7,7 @@ import androidx.compose.ui.layout.ContentScale
 import coil3.compose.AsyncImage
 import coil3.compose.LocalPlatformContext
 import coil3.request.ImageRequest
-import com.group8.comp2300.data.remote.apiBaseUrl
+import com.group8.comp2300.core.network.resolveRemoteAssetUrl
 import com.group8.comp2300.domain.model.medical.Clinic
 
 @Composable
@@ -34,9 +34,4 @@ internal fun ClinicImage(clinic: Clinic, modifier: Modifier = Modifier, contentD
     }
 }
 
-private fun resolveClinicImageUrl(imageUrl: String?): String? {
-    val value = imageUrl?.trim().orEmpty()
-    if (value.isEmpty()) return null
-    if (value.startsWith("http://") || value.startsWith("https://")) return value
-    return "${apiBaseUrl().trimEnd('/')}/${value.trimStart('/')}"
-}
+private fun resolveClinicImageUrl(imageUrl: String?): String? = resolveRemoteAssetUrl(imageUrl)

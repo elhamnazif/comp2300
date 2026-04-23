@@ -1,7 +1,6 @@
 package com.group8.comp2300.mock
 
 import com.group8.comp2300.domain.model.medical.Clinic
-import com.group8.comp2300.domain.model.medical.Doctor
 import kotlin.time.Clock
 
 // Helper to create timestamps (hours from now)
@@ -250,31 +249,3 @@ private val rawSampleClinics =
 val sampleClinics = rawSampleClinics.mapIndexed { index, clinic ->
     clinic.copy(imageUrl = clinicImageUrl(index))
 }
-
-val sampleDoctors =
-    listOf(
-        Doctor(
-            id = "d1",
-            name = "Dr. Sarah Lee",
-            role = "Sexual Health Specialist",
-            isOnline = true,
-            nextAvailableSlot =
-            Clock.System.now().toEpochMilliseconds(), // Available now
-            specializations = listOf("HIV/AIDS", "PrEP", "STI Testing"),
-        ),
-        Doctor(
-            id = "d2",
-            name = "Dr. Azman Shah",
-            role = "Infectious Disease",
-            isOnline = false,
-            nextAvailableSlot = hoursFromNow(4),
-            specializations = listOf("Hepatitis", "HIV Treatment"),
-        ),
-        Doctor(
-            id = "d3",
-            name = "Nurse Alex",
-            role = "PrEP Counselor",
-            isOnline = true,
-            nextAvailableSlot = Clock.System.now().toEpochMilliseconds(),
-        ),
-    )

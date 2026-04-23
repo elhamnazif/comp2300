@@ -3,6 +3,7 @@ package com.group8.comp2300.feature.chatbot
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.group8.comp2300.core.error.isTimeoutLikeError
 import com.group8.comp2300.domain.model.chatbot.ChatbotMessage
 import com.group8.comp2300.domain.model.chatbot.ChatbotRole
 import com.group8.comp2300.domain.repository.ChatbotRepository
@@ -117,20 +118,11 @@ class ChatbotViewModel(private val chatbotRepository: ChatbotRepository) : ViewM
 }
 
 private fun Throwable.userFacingMessage(): String = message
-    ?.takeUnless { isTimeoutLikeMessage() }
+    ?.takeUnless { isTimeoutLikeError() }
     ?.trim()
     ?.takeIf(String::isNotEmpty)
-    ?: if (isTimeoutLikeMessage()) {
+    ?: if (isTimeoutLikeError()) {
         "The server took too long to respond. Try again."
     } else {
         "Couldn't get a reply right now."
-    }
-
-private fun Throwable.isTimeoutLikeMessage(): Boolean = generateSequence(this) { it.cause }
-    .any { throwable ->
-        val name = throwable::class.simpleName.orEmpty()
-        val message = throwable.message.orEmpty()
-        name.contains("Timeout", ignoreCase = true) ||
-            message.contains("timeout", ignoreCase = true) ||
-            message.contains("timed out", ignoreCase = true)
     }

@@ -177,14 +177,13 @@ internal fun AgendaDaySection(
                     fontWeight = FontWeight.SemiBold,
                 )
                 day.routineAgenda.forEach { routine ->
-                    val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
-                    RoutineAgendaCard(
+                    RoutineAgendaEntry(
                         routine = routine,
-                        isExpanded = routineKey in expandedRoutineKeys,
-                        onToggleExpansion = { onToggleRoutineExpansion(routineKey) },
-                        onLogMedication = { medicationId, status -> onLogMedication(routine, medicationId, status) },
-                        onLogAll = { status -> onLogAll(routine, status) },
-                        onMoveDose = { onMoveDose(routine) },
+                        expandedRoutineKeys = expandedRoutineKeys,
+                        onToggleRoutineExpansion = onToggleRoutineExpansion,
+                        onLogMedication = onLogMedication,
+                        onLogAll = onLogAll,
+                        onMoveDose = onMoveDose,
                     )
                 }
             }
@@ -215,6 +214,26 @@ internal fun AgendaDaySection(
             }
         }
     }
+}
+
+@Composable
+internal fun RoutineAgendaEntry(
+    routine: RoutineDayAgenda,
+    expandedRoutineKeys: Set<String>,
+    onToggleRoutineExpansion: (String) -> Unit,
+    onLogMedication: (RoutineDayAgenda, String, MedicationLogStatus) -> Unit,
+    onLogAll: (RoutineDayAgenda, MedicationLogStatus) -> Unit,
+    onMoveDose: (RoutineDayAgenda) -> Unit,
+) {
+    val routineKey = "${routine.routineId}:${routine.occurrenceTimeMs}"
+    RoutineAgendaCard(
+        routine = routine,
+        isExpanded = routineKey in expandedRoutineKeys,
+        onToggleExpansion = { onToggleRoutineExpansion(routineKey) },
+        onLogMedication = { medicationId, status -> onLogMedication(routine, medicationId, status) },
+        onLogAll = { status -> onLogAll(routine, status) },
+        onMoveDose = { onMoveDose(routine) },
+    )
 }
 
 internal fun hasAgendaContent(day: CalendarAgendaDay, appointments: List<Appointment>): Boolean =

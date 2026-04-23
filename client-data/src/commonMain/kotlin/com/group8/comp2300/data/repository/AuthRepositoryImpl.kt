@@ -27,16 +27,16 @@ import kotlinx.datetime.LocalDate
 class AuthRepositoryImpl(
     private val apiService: ApiService,
     private val tokenManager: TokenManager,
-    private val sessionDataSource: SessionDataSource,
     private val personalDataCleaner: PersonalDataCleaner,
     private val offlineSyncCoordinator: OfflineSyncCoordinator,
+    sessionDataSource: SessionDataSource,
 ) : AuthRepository {
     private val repositoryScope = CoroutineScope(Dispatchers.IO + Job())
     private val logger = Logger.withTag("AuthRepository")
     private val initialRestoreCompleted = CompletableDeferred<Unit>()
     private val cachedUserId = sessionDataSource.currentSession()?.userId
 
-    private val _session = MutableStateFlow<AuthSession>(
+    private val _session = MutableStateFlow(
         cachedUserId?.let { AuthSession.SignedIn(staleUser(it), isStale = true) } ?: AuthSession.SignedOut,
     )
     override val session: StateFlow<AuthSession> = _session.asStateFlow()
@@ -81,22 +81,18 @@ class AuthRepositoryImpl(
     override suspend fun activateAccount(token: String): Result<Unit> = runCatching {
         val response = apiService.activateAccount(token)
         establishAuthenticatedSession(response.user.id, response.accessToken, response.refreshToken)
-        Unit
     }
 
     override suspend fun forgotPassword(email: String): Result<Unit> = runCatching {
         apiService.forgotPassword(email)
-        Unit
     }
 
     override suspend fun resendVerificationEmail(email: String): Result<Unit> = runCatching {
         apiService.resendVerificationEmail(email)
-        Unit
     }
 
     override suspend fun resetPassword(token: String, newPassword: String): Result<Unit> = runCatching {
         apiService.resetPassword(token, newPassword)
-        Unit
     }
 
     override suspend fun logout() {

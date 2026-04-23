@@ -117,15 +117,8 @@ class CompleteProfileViewModel(private val completeProfileUseCase: CompleteProfi
                 state.update { it.copy(isLoading = false, isComplete = true) }
             } else {
                 val exception = result.exceptionOrNull()
-                val exceptionName = exception?.let { it::class.simpleName } ?: ""
                 val exceptionMessage = exception?.message ?: ""
-
-                val isNetworkError = exceptionName.contains("Connect") ||
-                    exceptionName.contains("Socket") ||
-                    exceptionName.contains("Timeout") ||
-                    exceptionName.contains("UnknownHost") ||
-                    exceptionMessage.contains("Failed to connect", ignoreCase = true) ||
-                    exceptionMessage.contains("Connection refused", ignoreCase = true)
+                val isNetworkError = com.group8.comp2300.feature.auth.parseAuthError(exception).isNetworkError
 
                 val (errorText, errorRes) = when {
                     isNetworkError -> null to Res.string.auth_error_network

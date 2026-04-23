@@ -108,7 +108,7 @@ val coreModule = module {
     single<MedicalRecordDataRepository> { MedicalRecordDataRepositoryImpl(get()) }
     single<AuthRepository> { AuthRepositoryImpl(get(), get(), get(), get(), get()) }
     single<ChatbotRepository> { ChatbotRepositoryImpl(get()) }
-    single<ClinicRepository> { RemoteClinicRepository(get()) }
+    single<ClinicRepository> { ClinicRepositoryImpl(get()) }
     single<EducationRepository> { EducationRepositoryImpl(get()) }
     single<ReminderRepository> { ReminderRepositoryImpl(get()) }
 
