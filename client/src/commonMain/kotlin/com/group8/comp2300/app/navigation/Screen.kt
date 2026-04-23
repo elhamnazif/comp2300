@@ -15,6 +15,9 @@ sealed interface Screen : NavKey {
     data object Home : Screen
 
     @Serializable
+    data object HomeInbox : Screen
+
+    @Serializable
     data object Booking : Screen
 
     @Serializable
@@ -99,6 +102,9 @@ sealed interface Screen : NavKey {
     data object Accessibility : Screen
 
     @Serializable
+    data object Appearance : Screen
+
+    @Serializable
     data object Notifications : Screen
 
     @Serializable
@@ -112,6 +118,15 @@ sealed interface Screen : NavKey {
 
     @Serializable
     data object GuestSignIn : Screen
+
+    @Serializable
+    data object Cart : Screen
+
+    @Serializable
+    data object Checkout : Screen
+
+    @Serializable
+    data class OrderSuccess(val orderId: String, val total: Double) : Screen
 }
 
 val mainTabScreens: List<Screen> =
@@ -124,3 +139,13 @@ val mainTabScreens: List<Screen> =
     )
 
 fun Screen.isMainTab(): Boolean = this in mainTabScreens
+
+fun Screen.requiresAuthentication(): Boolean = when (this) {
+    Screen.Chatbot,
+    Screen.Checkout,
+    Screen.MedicalRecords,
+    is Screen.BookingHistory,
+    -> true
+
+    else -> false
+}

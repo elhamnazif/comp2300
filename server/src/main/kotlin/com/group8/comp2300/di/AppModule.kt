@@ -1,10 +1,6 @@
 package com.group8.comp2300.di
 
-import com.group8.comp2300.config.CareCatalogSeeder
-import com.group8.comp2300.config.ChatbotConfig
-import com.group8.comp2300.config.DevSeeder
-import com.group8.comp2300.config.JwtConfig
-import com.group8.comp2300.config.ResendConfig
+import com.group8.comp2300.config.*
 import com.group8.comp2300.data.repository.*
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.repository.*
@@ -21,6 +17,7 @@ import com.group8.comp2300.service.content.*
 import com.group8.comp2300.service.email.EmailService
 import com.group8.comp2300.service.medicalRecords.MedicalRecordService
 import com.group8.comp2300.service.medication.MedicationService
+import com.group8.comp2300.service.order.OrderService
 import org.koin.dsl.module
 
 val serverModule = module {
@@ -48,6 +45,7 @@ val serverModule = module {
     // Data layer - Repositories
     single<UserRepository> { UserRepositoryImpl(get()) }
     single<ProductRepository> { ProductRepositoryImpl(get()) }
+    single<OrderRepository> { OrderRepositoryImpl(get()) }
     single<RefreshTokenRepository> {
         RefreshTokenRepositoryImpl(database = get(), refreshTokenExpiration = get<JwtService>().refreshTokenExpiration)
     }
@@ -93,6 +91,7 @@ val serverModule = module {
             database = get(),
         )
     }
+    single { OrderService(get(), get()) }
     single {
         MedicationService(
             medicationRepository = get(),

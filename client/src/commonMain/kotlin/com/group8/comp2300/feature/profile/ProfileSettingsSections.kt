@@ -21,6 +21,7 @@ internal fun ProfileSettingsSections(
     onNavigateToMedicalRecords: () -> Unit,
     onNavigateToPrivacySecurity: () -> Unit,
     onNavigateToAccessibility: () -> Unit,
+    onNavigateToAppearance: () -> Unit,
     onNavigateToPrivacyLegalese: () -> Unit,
     onNavigateToNotifications: () -> Unit,
     onNavigateToHelpSupport: () -> Unit,
@@ -67,23 +68,31 @@ internal fun ProfileSettingsSections(
                 title = stringResource(Res.string.profile_accessibility_title),
                 description = stringResource(Res.string.profile_accessibility_desc),
                 index = 0,
-                total = 3,
+                total = 4,
                 onClick = onNavigateToAccessibility,
+            )
+            SettingsNavigationRow(
+                icon = Icons.LightbulbW400Outlinedfill1,
+                title = stringResource(Res.string.profile_appearance_title),
+                description = stringResource(Res.string.profile_appearance_desc),
+                index = 1,
+                total = 4,
+                onClick = onNavigateToAppearance,
             )
             SettingsNavigationRow(
                 icon = Icons.NotificationsW400Outlinedfill1,
                 title = stringResource(Res.string.profile_notifications_title),
                 description = stringResource(Res.string.profile_notifications_desc),
-                index = 1,
-                total = 3,
+                index = 2,
+                total = 4,
                 onClick = onNavigateToNotifications,
             )
             SettingsNavigationRow(
                 icon = Icons.InfoW400Outlined,
                 title = stringResource(Res.string.profile_help_support_title),
                 description = stringResource(Res.string.profile_faqs_desc),
-                index = 2,
-                total = 3,
+                index = 3,
+                total = 4,
                 onClick = onNavigateToHelpSupport,
             )
         }

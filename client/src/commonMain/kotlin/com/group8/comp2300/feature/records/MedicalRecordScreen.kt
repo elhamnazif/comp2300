@@ -11,6 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.core.ui.components.ConsumeSnackbarMessage
@@ -127,19 +129,53 @@ fun MedicalRecordScreen(viewModel: MedicalRecordViewModel, onNavigateBack: () ->
             }
 
             if (state.isLoading) {
-                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                if (state.records.isNotEmpty()) {
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                }
             }
 
-            if (state.records.isEmpty() && !state.isLoading) {
+            if (state.records.isEmpty() && state.isLoading) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                    modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        "No records found",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Column(
+                        modifier = Modifier.widthIn(max = 320.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Loading records",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+            } else if (state.records.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(
+                        modifier = Modifier.widthIn(max = 320.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = "No records yet",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            text = "Upload a record to keep it here.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             } else if (!state.isLoading) {
                 LazyColumn(

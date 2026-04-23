@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.ui.components.ActionEmptyStateCard
@@ -74,60 +75,84 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
             }
         },
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.surface),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            if (activeRoutines.isEmpty() && archivedRoutines.isEmpty()) {
-                item {
-                    ActionEmptyStateCard(
-                        title = stringResource(Res.string.medical_routine_empty_title),
-                        message = stringResource(Res.string.medical_routine_empty_desc),
-                        actionLabel = stringResource(Res.string.medical_routine_empty_button),
-                        onAction = {
-                            editingRoutine = null
-                            showSheet = true
-                        },
+        if (state.isLoading && activeRoutines.isEmpty() && archivedRoutines.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(MaterialTheme.colorScheme.surface),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    modifier = Modifier.widthIn(max = 320.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = "Loading schedules",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
                     )
                 }
-            } else {
-                if (activeRoutines.isNotEmpty()) {
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .background(MaterialTheme.colorScheme.surface),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                if (activeRoutines.isEmpty() && archivedRoutines.isEmpty()) {
                     item {
-                        SectionHeader(stringResource(Res.string.medical_medication_section_active), activeRoutines.size)
+                        ActionEmptyStateCard(
+                            title = stringResource(Res.string.medical_routine_empty_title),
+                            message = stringResource(Res.string.medical_routine_empty_desc),
+                            actionLabel = stringResource(Res.string.medical_routine_empty_button),
+                            onAction = {
+                                editingRoutine = null
+                                showSheet = true
+                            },
+                        )
+                    }
+                } else {
+                    if (activeRoutines.isNotEmpty()) {
+                        item {
+                            SectionHeader(stringResource(Res.string.medical_medication_section_active), activeRoutines.size)
+                        }
+                    }
+                    items(activeRoutines, key = Routine::id) { routine ->
+                        RoutineCard(
+                            routine = routine,
+                            medications = state.medications,
+                            onClick = {
+                                editingRoutine = routine
+                                showSheet = true
+                            },
+                        )
                     }
                 }
-                items(activeRoutines, key = Routine::id) { routine ->
-                    RoutineCard(
-                        routine = routine,
-                        medications = state.medications,
-                        onClick = {
-                            editingRoutine = routine
-                            showSheet = true
-                        },
-                    )
+                if (archivedRoutines.isNotEmpty()) {
+                    item {
+                        SectionHeader(stringResource(Res.string.medical_medication_section_archived), archivedRoutines.size)
+                    }
+                    items(archivedRoutines, key = Routine::id) { routine ->
+                        RoutineCard(
+                            routine = routine,
+                            medications = state.medications,
+                            isArchived = true,
+                            onClick = {
+                                editingRoutine = routine
+                                showSheet = true
+                            },
+                        )
+                    }
                 }
+                item { Spacer(Modifier.height(72.dp)) }
             }
-            if (archivedRoutines.isNotEmpty()) {
-                item {
-                    SectionHeader(stringResource(Res.string.medical_medication_section_archived), archivedRoutines.size)
-                }
-                items(archivedRoutines, key = Routine::id) { routine ->
-                    RoutineCard(
-                        routine = routine,
-                        medications = state.medications,
-                        isArchived = true,
-                        onClick = {
-                            editingRoutine = routine
-                            showSheet = true
-                        },
-                    )
-                }
-            }
-            item { Spacer(Modifier.height(72.dp)) }
         }
     }
 

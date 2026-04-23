@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.format.DateFormatter
@@ -86,7 +87,19 @@ fun BookingDetailsScreen(
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
                     contentAlignment = Alignment.Center,
                 ) {
-                    CircularProgressIndicator()
+                    Column(
+                        modifier = Modifier.widthIn(max = 320.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Loading clinic",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
 
@@ -95,7 +108,24 @@ fun BookingDetailsScreen(
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Not found")
+                    Column(
+                        modifier = Modifier.widthIn(max = 320.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = "Clinic unavailable",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                        )
+                        Text(
+                            text = "Try another clinic.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
 

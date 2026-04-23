@@ -79,6 +79,7 @@ private fun ClinicEntity.toDomain(tags: List<String>, nextAvailableSlot: Long): 
         lng = longitude,
         address = address,
         phone = phone,
+        imageUrl = fixture?.imageUrl,
         pricingTier = fixture?.pricingTier,
         serviceTypes = fixture?.serviceTypes.orEmpty(),
         inclusivityFlags = fixture?.inclusivityFlags ?: com.group8.comp2300.domain.model.medical.InclusivityFlags(),

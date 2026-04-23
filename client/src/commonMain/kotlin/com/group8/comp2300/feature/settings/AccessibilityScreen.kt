@@ -1,6 +1,5 @@
 package com.group8.comp2300.feature.settings
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,13 +25,6 @@ fun AccessibilityScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
         onBack = onBack,
         modifier = modifier,
     ) {
-        item {
-            SettingsInfoCard(
-                description = stringResource(Res.string.accessibility_supporting_text),
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-            )
-        }
         item {
             SettingsSection {
                 SettingsToggleRow(

@@ -13,6 +13,7 @@ data class Clinic(
     val lng: Double,
     val address: String? = null,
     val phone: String? = null,
+    val imageUrl: String? = null,
     val pricingTier: PricingTier? = null,
     val serviceTypes: List<ServiceType> = emptyList(),
     val inclusivityFlags: InclusivityFlags = InclusivityFlags(),

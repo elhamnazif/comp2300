@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import com.group8.comp2300.core.ui.accessibility.grayscale
 import com.group8.comp2300.data.local.AccessibilitySettingsDataSource
+import com.group8.comp2300.data.local.AppearanceSettingsDataSource
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.di.coreModule
 import com.group8.comp2300.di.platformModule
@@ -22,9 +23,11 @@ fun App() {
         content = {
             val accessibilitySettingsDataSource: AccessibilitySettingsDataSource = koinInject()
             val accessibilitySettings by accessibilitySettingsDataSource.state.collectAsState()
+            val appearanceSettingsDataSource: AppearanceSettingsDataSource = koinInject()
+            val appearanceSettings by appearanceSettingsDataSource.state.collectAsState()
             val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
             val privacySettings by privacySettingsDataSource.state.collectAsState()
-            AppTheme {
+            AppTheme(appearanceThemeMode = appearanceSettings.themeMode) {
                 AppPrivacyMask(
                     modifier =
                     Modifier

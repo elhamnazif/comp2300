@@ -119,6 +119,7 @@ kotlin {
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.coroutines.core)
+                implementation(libs.mp.stools)
 
                 // Moko
                 implementation(libs.moko.permissions.compose)
@@ -213,6 +214,7 @@ symbolCraft {
         "bookmark",
         "play_circle",
         "article",
+        "school",
         "quiz",
         "lightbulb",
         "emoji_events",

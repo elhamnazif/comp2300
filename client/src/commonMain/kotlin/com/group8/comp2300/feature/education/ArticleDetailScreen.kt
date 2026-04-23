@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
@@ -80,6 +81,13 @@ fun ArticleDetailScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     CircularProgressIndicator()
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = "Loading article",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
                 }
             }
 
@@ -88,14 +96,16 @@ fun ArticleDetailScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding)
-                        .padding(24.dp),
+                        .padding(24.dp)
+                        .widthIn(max = 320.dp),
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
                         text = stringResource(Res.string.education_article_loading_error),
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
                     )
                     Button(
                         onClick = onRetry,

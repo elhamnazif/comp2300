@@ -1,51 +1,146 @@
 package com.group8.comp2300.feature.shop
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.domain.model.shop.Product
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.CheckCircleW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ShoppingCartW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun ProductDetailScreen(productId: String, viewModel: ShopViewModel = koinViewModel(), onBack: () -> Unit) {
-    val productState by
-        produceState<Product?>(initialValue = null, productId) { value = viewModel.getProductById(productId) }
+fun ProductDetailScreen(
+    productId: String,
+    onBack: () -> Unit,
+    onCartClick: () -> Unit,
+    viewModel: ShopViewModel = koinViewModel(),
+) {
+    val cartState by viewModel.cartState.collectAsState()
+    val productState by produceState(ProductLoadState(), productId) {
+        value = ProductLoadState(isLoading = true)
+        value = ProductLoadState(product = viewModel.getProductById(productId), isLoading = false)
+    }
 
-    ProductDetailContent(product = productState, onBack = onBack, onAddToCart = { prod -> viewModel.addToCart(prod) })
+        ProductDetailContent(
+        product = productState.product,
+        isLoading = productState.isLoading,
+        cartItemCount = cartState.cartItemCount,
+        onBack = onBack,
+        onCartClick = onCartClick,
+        onAddToCart = viewModel::addToCart,
+    )
 }
 
 @Composable
-private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToCart: (Product) -> Unit) {
+private fun ProductDetailContent(
+    product: Product?,
+    isLoading: Boolean,
+    cartItemCount: Int,
+    onBack: () -> Unit,
+    onCartClick: () -> Unit,
+    onAddToCart: (Product) -> Unit,
+) {
+    if (isLoading) {
+        Scaffold(
+            topBar = {
+                AppTopBar(
+                    title = { Text("") },
+                    centered = true,
+                    onBackClick = onBack,
+                )
+            },
+        ) { padding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    modifier = Modifier.widthIn(max = 320.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = "Loading product",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
+        return
+    }
+
     if (product == null) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+        Scaffold(
+            topBar = {
+                AppTopBar(
+                    title = { Text("") },
+                    centered = true,
+                    onBackClick = onBack,
+                )
+            },
+        ) { padding ->
+            Box(
+                modifier = Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stringResource(Res.string.shop_product_unavailable),
+                    modifier = Modifier.widthIn(max = 320.dp),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
         return
     }
 
     Scaffold(
         topBar = {
             AppTopBar(
-                title = {},
-                centered = true,
+                title = {
+                    Text(
+                        text = product.name,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 onBackClick = onBack,
+                actions = {
+                    IconButton(onClick = onCartClick) {
+                        if (cartItemCount > 0) {
+                            BadgedBox(badge = { Badge { Text(cartItemCount.toString()) } }) {
+                                Icon(Icons.ShoppingCartW400Outlinedfill1, stringResource(Res.string.shop_cart_desc))
+                            }
+                        } else {
+                            Icon(Icons.ShoppingCartW400Outlinedfill1, stringResource(Res.string.shop_cart_desc))
+                        }
+                    }
+                },
             )
         },
         bottomBar = {
-            // Sticky Checkout Bar
             Surface(shadowElevation = 12.dp) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp).navigationBarsPadding(),
@@ -64,15 +159,17 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
                                 product.formattedPrice
                             },
                             style = MaterialTheme.typography.headlineSmall,
-                            color =
-                            if (product.insuranceCovered) {
+                            color = if (product.insuranceCovered) {
                                 MaterialTheme.colorScheme.primary
                             } else {
                                 MaterialTheme.colorScheme.onSurface
                             },
                         )
                     }
-                    Button(onClick = { onAddToCart(product) }, modifier = Modifier.weight(1f).height(50.dp)) {
+                    Button(
+                        onClick = { onAddToCart(product) },
+                        modifier = Modifier.weight(1f).height(50.dp),
+                    ) {
                         Text(stringResource(Res.string.shop_details_add_to_cart_button))
                     }
                 }
@@ -80,17 +177,12 @@ private fun ProductDetailContent(product: Product?, onBack: () -> Unit, onAddToC
         },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).verticalScroll(rememberScrollState())) {
-            Box(
-                modifier = Modifier.fillMaxWidth().height(250.dp).background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    Icons.CheckCircleW400Outlinedfill1,
-                    null,
-                    modifier = Modifier.size(80.dp),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            ShopProductArtwork(
+                product = product,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(250.dp),
+            )
 
             Column(modifier = Modifier.padding(24.dp)) {
                 if (product.insuranceCovered) {
@@ -146,3 +238,8 @@ fun FeatureRow(title: String, subtitle: String, modifier: Modifier = Modifier) {
         }
     }
 }
+
+private data class ProductLoadState(
+    val product: Product? = null,
+    val isLoading: Boolean = true,
+)

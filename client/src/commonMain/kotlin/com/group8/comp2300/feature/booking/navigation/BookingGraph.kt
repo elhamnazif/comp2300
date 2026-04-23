@@ -1,7 +1,6 @@
 package com.group8.comp2300.feature.booking.navigation
 
 import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.app.navigation.LocalNavigator
@@ -81,15 +80,6 @@ val bookingGraphModule = module {
 
     navigation<Screen.BookingHistory>(metadata = overlayNavigationMetadata()) { route ->
         val navigator = LocalNavigator.current
-        val authRepository = koinInject<AuthRepository>()
-        val session by authRepository.session.collectAsState()
-
-        if (session !is AuthSession.SignedIn) {
-            LaunchedEffect(route.highlightedAppointmentId) {
-                navigator.requireAuth(Screen.BookingHistory(route.highlightedAppointmentId))
-            }
-            return@navigation
-        }
 
         BookingHistoryScreen(
             highlightedAppointmentId = route.highlightedAppointmentId,

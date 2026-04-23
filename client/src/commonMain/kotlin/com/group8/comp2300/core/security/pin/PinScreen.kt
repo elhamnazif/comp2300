@@ -39,6 +39,7 @@ fun PinScreen(
     modifier: Modifier = Modifier,
     pinLength: Int = 4,
     isSetup: Boolean = true,
+    applySystemBarsPadding: Boolean = true,
     title: String? = null,
     description: String? = null,
     errorMessage: String? = null,
@@ -158,16 +159,17 @@ fun PinScreen(
         }
     }
 
-    Box(
-        modifier = modifier.fillMaxSize().systemBarsPadding(),
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .then(if (applySystemBarsPadding) Modifier.systemBarsPadding() else Modifier),
     ) {
         if (onDismiss != null) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(64.dp)
-                    .padding(horizontal = 8.dp)
-                    .align(Alignment.TopStart),
+                    .padding(horizontal = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(Modifier.size(48.dp)) {
@@ -186,7 +188,8 @@ fun PinScreen(
 
         BoxWithConstraints(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .padding(horizontal = 24.dp),
         ) {
             val buttonSize = if (maxHeight < 560.dp) {
@@ -418,16 +421,18 @@ fun PinScreen(
         }
 
         if (footerActionLabel != null && onFooterAction != null) {
-            TextButton(
-                onClick = onFooterAction,
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp),
+                    .fillMaxWidth()
+                    .padding(top = 12.dp, bottom = 16.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text = footerActionLabel,
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                TextButton(onClick = onFooterAction) {
+                    Text(
+                        text = footerActionLabel,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
         }
     }

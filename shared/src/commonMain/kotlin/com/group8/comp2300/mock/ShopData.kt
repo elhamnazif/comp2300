@@ -12,6 +12,7 @@ val sampleProducts =
             0.0,
             ProductCategory.TESTING,
             true,
+            "/images/shop/icare1_hiv_test_wholeblood.png",
         ),
         Product(
             "2",
@@ -20,6 +21,7 @@ val sampleProducts =
             0.0,
             ProductCategory.MEDICATION,
             true,
+            "/images/shop/prep1_generic_tenoem.png",
         ),
         Product(
             "3",
@@ -28,6 +30,7 @@ val sampleProducts =
             45.0,
             ProductCategory.TESTING,
             false,
+            "/images/shop/icare4_full_test_kit.png",
         ),
         Product(
             "4",
@@ -36,6 +39,7 @@ val sampleProducts =
             20.0,
             ProductCategory.MEDICATION,
             false,
+            "/images/shop/doxypep.png",
         ),
         Product(
             "5",
@@ -44,6 +48,7 @@ val sampleProducts =
             12.0,
             ProductCategory.PREVENTION,
             false,
+            "/images/shop/condom1_durex_classic.png",
         ),
-        Product("6", "Lube", "Water-based", 8.0, ProductCategory.PREVENTION, false),
+        Product("6", "Lube", "Water-based", 8.0, ProductCategory.PREVENTION, false, "/images/shop/lube1_durex50ml.png"),
     )

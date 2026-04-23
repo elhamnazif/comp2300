@@ -3,15 +3,12 @@ package com.group8.comp2300.routes
 import com.group8.comp2300.domain.model.chatbot.ChatbotRequest
 import com.group8.comp2300.dto.ErrorResponse
 import com.group8.comp2300.service.chatbot.ChatbotService
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.plugins.BadRequestException
+import io.ktor.http.*
+import io.ktor.server.plugins.*
 import io.ktor.server.plugins.ContentTransformationException
-import io.ktor.server.request.receive
-import io.ktor.server.response.respond
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.post
-import io.ktor.server.routing.route
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 import org.slf4j.LoggerFactory
 

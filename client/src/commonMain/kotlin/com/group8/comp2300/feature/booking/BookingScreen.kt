@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
@@ -214,16 +215,11 @@ private fun BookingListMode(
 
             if (isLoading) {
                 item {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
-                    }
+                    LoadingPanel(title = "Loading clinics")
                 }
             } else if (filteredClinics.isEmpty()) {
                 item {
-                    EmptyPanel(
+                    SearchEmptyPanel(
                         title = stringResource(Res.string.medical_booking_no_results),
                         body = "Try another search.",
                     )
@@ -290,16 +286,11 @@ private fun BookingMapMode(
 
                 if (isLoading) {
                     item {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
+                        LoadingPanel(title = "Loading clinics")
                     }
                 } else if (filteredClinics.isEmpty()) {
                     item {
-                        EmptyPanel(
+                        SearchEmptyPanel(
                             title = stringResource(Res.string.medical_booking_no_results),
                             body = "Try another search.",
                         )
@@ -390,10 +381,9 @@ private fun BookingMapMode(
                             shadowElevation = 8.dp,
                             color = MaterialTheme.colorScheme.surface,
                         ) {
-                            Text(
-                                text = stringResource(Res.string.medical_booking_no_results),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            SearchEmptyPanel(
+                                title = stringResource(Res.string.medical_booking_no_results),
+                                body = "Try another search.",
                                 modifier = Modifier.padding(16.dp),
                             )
                         }
@@ -765,13 +755,86 @@ private fun shortDayName(dayName: String): String = dayName
 
 @Composable
 internal fun EmptyPanel(title: String, body: String) {
-    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
+        contentAlignment = Alignment.Center,
+    ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.widthIn(max = 320.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text(body, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = body,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoadingPanel(title: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier.widthIn(max = 320.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CircularProgressIndicator()
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SearchEmptyPanel(
+    title: String,
+    body: String? = null,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            modifier = Modifier.widthIn(max = 320.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+            )
+            body?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
     }
 }

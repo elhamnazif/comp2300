@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -19,8 +20,19 @@ fun SectionHeader(title: String, count: Int, modifier: Modifier = Modifier) {
 
 @Composable
 fun EmptyStateMessage(msg: String, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
-        Text(msg, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = msg,
+            modifier = Modifier.widthIn(max = 320.dp),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
@@ -32,25 +44,29 @@ fun ActionEmptyStateCard(
     onAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        shape = MaterialTheme.shapes.extraLarge,
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 32.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 32.dp),
+            modifier = Modifier.widthIn(max = 360.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Text(
-                title,
+                text = title,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
             )
             Text(
-                message,
+                text = message,
+                modifier = Modifier.widthIn(max = 320.dp),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
             )
             Button(onClick = onAction) {
                 Text(actionLabel)

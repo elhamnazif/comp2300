@@ -367,6 +367,31 @@ VALUES (?, ?, ?, ?, ?, ?, ?);
 deleteAllProducts:
 DELETE FROM ProductEntity;
 
+CREATE TABLE CartEntity (
+    userId TEXT NOT NULL,
+    productId TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    priceAtAdd REAL NOT NULL,
+    PRIMARY KEY (userId, productId)
+);
+
+selectCartItemsByUserId:
+SELECT * FROM CartEntity
+WHERE userId = ?
+ORDER BY productId ASC;
+
+insertCartItem:
+INSERT OR REPLACE INTO CartEntity (userId, productId, quantity, priceAtAdd)
+VALUES (?, ?, ?, ?);
+
+deleteCartItem:
+DELETE FROM CartEntity
+WHERE userId = ? AND productId = ?;
+
+deleteCartByUserId:
+DELETE FROM CartEntity
+WHERE userId = ?;
+
 CREATE TABLE OutboxEntity (
     id TEXT NOT NULL PRIMARY KEY,
     entityType TEXT NOT NULL,

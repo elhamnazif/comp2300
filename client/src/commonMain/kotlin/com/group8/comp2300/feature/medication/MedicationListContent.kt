@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.accessibility.IndicatorPattern
@@ -43,7 +44,19 @@ internal fun MedicationListContent(
                 .background(MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.Center,
         ) {
-            CircularProgressIndicator()
+            Column(
+                modifier = Modifier.widthIn(max = 320.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                CircularProgressIndicator()
+                Text(
+                    text = "Loading medications",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
         }
         return
     }

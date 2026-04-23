@@ -154,10 +154,9 @@ class ClinicReviewServiceTest {
         val result = service.submitReview(request)
 
         assertTrue(result.isSuccess)
-        val review = result.getOrNull()
-        assertNotNull(review)
-        assertEquals(5, review?.rating)
-        assertEquals("Great Clinic!", review?.title)
+        val review = assertNotNull(result.getOrNull())
+        assertEquals(5, review.rating)
+        assertEquals("Great Clinic!", review.title)
     }
 
     @Test

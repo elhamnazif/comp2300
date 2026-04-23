@@ -3,9 +3,9 @@ package com.group8.comp2300.feature.auth.navigation
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
-import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.Screen
+import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.repository.AuthRepository

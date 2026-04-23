@@ -4,7 +4,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -47,7 +49,7 @@ private val mainTabs =
         MainTab(Screen.Home, Icons.HomeW400Outlinedfill1, "Home"),
         MainTab(Screen.Booking, Icons.LocationOnW400Outlinedfill1, "Care"),
         MainTab(Screen.Calendar, Icons.DateRangeW400Outlinedfill1, "Track"),
-        MainTab(Screen.Education, Icons.InfoW400Outlinedfill1, "Education"),
+        MainTab(Screen.Education, Icons.SchoolW400Outlinedfill1, "Education"),
         MainTab(Screen.Profile, Icons.PersonW400Outlinedfill1, "Me"),
     )
 
@@ -107,7 +109,17 @@ private fun AppLoadingState(modifier: Modifier = Modifier) {
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator()
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CircularProgressIndicator()
+            Text(
+                text = "Loading app",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

@@ -5,10 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.data.local.PinRateLimiter
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 class PinLockViewModel(

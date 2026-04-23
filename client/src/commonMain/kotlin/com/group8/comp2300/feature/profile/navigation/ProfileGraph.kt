@@ -31,6 +31,7 @@ val profileGraphModule = module {
             },
             onNavigateToPrivacySecurity = { navigator.navigate(Screen.PrivacySecurity) },
             onNavigateToAccessibility = { navigator.navigate(Screen.Accessibility) },
+            onNavigateToAppearance = { navigator.navigate(Screen.Appearance) },
             onNavigateToPrivacyLegalese = { navigator.navigate(Screen.PrivacyLegalese) },
             onNavigateToNotifications = { navigator.navigate(Screen.Notifications) },
             onNavigateToHelpSupport = { navigator.navigate(Screen.HelpSupport) },

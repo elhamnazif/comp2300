@@ -5,7 +5,9 @@ import com.group8.comp2300.data.auth.TokenManagerImpl
 import com.group8.comp2300.data.database.DatabaseDriverFactory
 import com.group8.comp2300.data.database.createDatabase
 import com.group8.comp2300.data.local.AccessibilitySettingsDataSource
+import com.group8.comp2300.data.local.AppearanceSettingsDataSource
 import com.group8.comp2300.data.local.AppointmentLocalDataSource
+import com.group8.comp2300.data.local.CartLocalDataSource
 import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.data.local.MedicationLocalDataSource
 import com.group8.comp2300.data.local.MedicationLogLocalDataSource
@@ -131,8 +133,10 @@ val coreModule = module {
     single { ReminderLocalDataSource(get()) }
     single { OutboxDataSource(get()) }
     single { ProductLocalDataSource(get()) }
+    single { CartLocalDataSource(get()) }
     single { PersonalDataCleaner(get()) }
     single { Settings() }
+    single { AppearanceSettingsDataSource(get()) }
     single { AccessibilitySettingsDataSource(get()) }
     single { LocalAuthSettingsDataSource(get(), get()) }
     single { PrivacySettingsDataSource(get()) }
@@ -164,7 +168,7 @@ val coreModule = module {
     single<SyncCoordinator> { SyncCoordinatorImpl(get(), get(), get(), get()) }
     single { QueuedWriteDispatcher(get(), get(), get()) }
 
-    single<ShopRepository> { ShopRepositoryImpl(get(), get()) }
+    single<ShopRepository> { ShopRepositoryImpl(get(), get(), get(), get()) }
     single<AppointmentDataRepository> { AppointmentDataRepositoryImpl(get(), get()) }
     single<MedicationDataRepository> { MedicationDataRepositoryImpl(get(), get(), get()) }
     single<RoutineDataRepository> { RoutineDataRepositoryImpl(get(), get(), get(), get()) }

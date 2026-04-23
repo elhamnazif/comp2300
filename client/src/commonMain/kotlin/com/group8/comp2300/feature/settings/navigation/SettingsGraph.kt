@@ -1,6 +1,8 @@
 package com.group8.comp2300.feature.settings.navigation
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.app.navigation.overlayNavigationMetadata
@@ -13,6 +15,13 @@ import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
 val settingsGraphModule = module {
+    navigation<Screen.Appearance>(metadata = overlayNavigationMetadata()) {
+        val navigator = LocalNavigator.current
+        AppearanceScreen(
+            onBack = navigator::goBack,
+        )
+    }
+
     navigation<Screen.PrivacySecurity>(metadata = overlayNavigationMetadata()) {
         val navigator = LocalNavigator.current
         val localAuthSettingsDataSource = koinInject<LocalAuthSettingsDataSource>()

@@ -1,29 +1,42 @@
 package com.group8.comp2300.feature.booking
 
-import androidx.compose.foundation.Image
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import coil3.compose.AsyncImage
+import coil3.compose.LocalPlatformContext
+import coil3.request.ImageRequest
+import com.group8.comp2300.data.remote.apiBaseUrl
 import com.group8.comp2300.domain.model.medical.Clinic
-import comp2300.client.generated.resources.*
-import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
-import comp2300.client.generated.resources.Res as ClientRes
-
-internal fun clinicMockImage(clinic: Clinic): DrawableResource = when (clinic.id.hashCode().mod(5)) {
-    0 -> ClientRes.drawable.clinic_photo_medical_center_glass
-    1 -> ClientRes.drawable.clinic_photo_frontage_night
-    2 -> ClientRes.drawable.clinic_photo_waiting_room
-    3 -> ClientRes.drawable.clinic_photo_exam_room
-    else -> ClientRes.drawable.clinic_photo_treatment_room
-}
 
 @Composable
 internal fun ClinicImage(clinic: Clinic, modifier: Modifier = Modifier, contentDescription: String? = null) {
-    Image(
-        painter = painterResource(clinicMockImage(clinic)),
-        contentDescription = contentDescription,
-        modifier = modifier,
-        contentScale = ContentScale.Crop,
-    )
+    val platformContext = LocalPlatformContext.current
+    var hasError by remember(clinic.imageUrl) { mutableStateOf(false) }
+    val request = resolveClinicImageUrl(clinic.imageUrl)?.let { imageUrl ->
+        ImageRequest.Builder(platformContext)
+            .data(imageUrl)
+            .build()
+    }
+
+    if (request != null && !hasError) {
+        AsyncImage(
+            model = request,
+            contentDescription = contentDescription,
+            modifier = modifier,
+            contentScale = ContentScale.Crop,
+            onError = { hasError = true },
+            onSuccess = { hasError = false },
+        )
+    } else {
+        Box(modifier = modifier)
+    }
+}
+
+private fun resolveClinicImageUrl(imageUrl: String?): String? {
+    val value = imageUrl?.trim().orEmpty()
+    if (value.isEmpty()) return null
+    if (value.startsWith("http://") || value.startsWith("https://")) return value
+    return "${apiBaseUrl().trimEnd('/')}/${value.trimStart('/')}"
 }

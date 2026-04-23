@@ -14,11 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.accessibility.PatternSwatch
 import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.feature.medical.shared.forms.MedicalFormTextField
-import com.group8.comp2300.feature.medical.shared.routines.RoutineFieldsSection
-import com.group8.comp2300.feature.medical.shared.routines.canSaveRoutineDraft
-import com.group8.comp2300.feature.medical.shared.routines.defaultRoutineDraft
-import com.group8.comp2300.feature.medical.shared.routines.scheduleLinkSummary
-import com.group8.comp2300.feature.medical.shared.routines.toRequest
+import com.group8.comp2300.feature.medical.shared.routines.*
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DeleteW400Outlined

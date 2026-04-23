@@ -7,7 +7,17 @@ import kotlin.time.Clock
 // Helper to create timestamps (hours from now)
 private fun hoursFromNow(hours: Int): Long = Clock.System.now().toEpochMilliseconds() + (hours * 60 * 60 * 1000L)
 
-val sampleClinics =
+private val clinicImageNames = listOf(
+    "clinic_photo_medical_center_glass.jpg",
+    "clinic_photo_frontage_night.jpg",
+    "clinic_photo_waiting_room.jpg",
+    "clinic_photo_exam_room.jpg",
+    "clinic_photo_treatment_room.jpg",
+)
+
+private fun clinicImageUrl(index: Int): String = "/images/${clinicImageNames[index % clinicImageNames.size]}"
+
+private val rawSampleClinics =
     listOf(
         // Kuala Lumpur Area
         Clinic(
@@ -236,6 +246,10 @@ val sampleClinics =
             phone = "+60 3-4028 1234",
         ),
     )
+
+val sampleClinics = rawSampleClinics.mapIndexed { index, clinic ->
+    clinic.copy(imageUrl = clinicImageUrl(index))
+}
 
 val sampleDoctors =
     listOf(

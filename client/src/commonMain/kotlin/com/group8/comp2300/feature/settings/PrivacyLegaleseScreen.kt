@@ -1,58 +1,92 @@
 package com.group8.comp2300.feature.settings
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.core.ui.settings.SettingsDetailScaffold
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.group8.comp2300.core.ui.settings.SettingsInfoCard
 import com.group8.comp2300.core.ui.settings.SettingsNavigationRow
 import com.group8.comp2300.core.ui.settings.SettingsSection
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowBackW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DescriptionW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.MailOutlineW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ShieldW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
+private const val LegalSupportEmail = "legal@vitahealth.app"
+
+private enum class LegalDocument {
+    TermsOfService,
+    PrivacyPolicy,
+}
+
 @Composable
 fun PrivacyLegaleseScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
-    var showTerms by remember { mutableStateOf(false) }
-    var showPrivacyPolicy by remember { mutableStateOf(false) }
+    var activeDocumentName by rememberSaveable { mutableStateOf<String?>(null) }
+    val activeDocument = remember(activeDocumentName) {
+        activeDocumentName?.let { savedName ->
+            LegalDocument.entries.firstOrNull { it.name == savedName }
+        }
+    }
+    val uriHandler = LocalUriHandler.current
 
-    SettingsDetailScaffold(
+    LegalDocumentScaffold(
         title = stringResource(Res.string.profile_privacy_legalese_title),
         onBack = onBack,
         modifier = modifier,
+        listState = rememberLazySettingsListState(),
     ) {
         item {
             SettingsSection(
                 title = stringResource(Res.string.privacy_legalese_overview_title),
                 description = stringResource(Res.string.privacy_legalese_overview_body),
             ) {
+                LegalDocument.entries.forEachIndexed { index, document ->
+                    SettingsNavigationRow(
+                        icon = document.icon(),
+                        title = stringResource(document.titleRes()),
+                        description = stringResource(document.descriptionRes()),
+                        index = index,
+                        total = LegalDocument.entries.size,
+                        onClick = { activeDocumentName = document.name },
+                    )
+                }
+            }
+        }
+        item {
+            SettingsSection {
                 SettingsNavigationRow(
-                    icon = Icons.DescriptionW400Outlinedfill1,
-                    title = stringResource(Res.string.privacy_legalese_terms_title),
-                    description = stringResource(Res.string.privacy_legalese_terms_desc),
+                    icon = Icons.MailOutlineW400Outlinedfill1,
+                    title = stringResource(Res.string.privacy_legalese_email_us),
+                    description = LegalSupportEmail,
                     index = 0,
-                    total = 2,
-                    onClick = { showTerms = true },
-                )
-                SettingsNavigationRow(
-                    icon = Icons.ShieldW400Outlinedfill1,
-                    title = stringResource(Res.string.privacy_legalese_privacy_title),
-                    description = stringResource(Res.string.privacy_legalese_privacy_desc),
-                    index = 1,
-                    total = 2,
-                    onClick = { showPrivacyPolicy = true },
+                    total = 1,
+                    onClick = {
+                        uriHandler.openUri("mailto:$LegalSupportEmail")
+                    },
                 )
             }
         }
@@ -64,41 +98,140 @@ fun PrivacyLegaleseScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
         }
     }
 
-    // Terms of Service Dialog
-    if (showTerms) {
-        LegalDocumentDialog(
-            title = stringResource(Res.string.privacy_legalese_terms_title),
-            content = stringResource(Res.string.privacy_legalese_terms_content),
-            onDismiss = { showTerms = false },
-        )
-    }
-
-    // Privacy Policy Dialog
-    if (showPrivacyPolicy) {
-        LegalDocumentDialog(
-            title = stringResource(Res.string.privacy_legalese_privacy_title),
-            content = stringResource(Res.string.privacy_legalese_privacy_content),
-            onDismiss = { showPrivacyPolicy = false },
+    if (activeDocument != null) {
+        LegalDocumentViewer(
+            document = activeDocument,
+            onDismiss = { activeDocumentName = null },
         )
     }
 }
 
 @Composable
-private fun LegalDocumentDialog(title: String, content: String, onDismiss: () -> Unit) {
-    AlertDialog(
+private fun LegalDocumentViewer(document: LegalDocument, onDismiss: () -> Unit) {
+    val title = stringResource(document.titleRes())
+    val content = stringResource(document.contentRes())
+    val sections = remember(document, title, content) {
+        content
+            .removePrefix("$title\n\n")
+            .split("\n\n")
+            .map(String::trim)
+            .filter(String::isNotEmpty)
+    }
+    val listState = rememberSaveable(document.name, saver = LazyListState.Saver) {
+        LazyListState()
+    }
+
+    Dialog(
         onDismissRequest = onDismiss,
-        title = { Text(title, fontWeight = FontWeight.Bold) },
-        text = {
-            Column(
-                modifier = Modifier.fillMaxWidth().heightIn(max = 400.dp).verticalScroll(rememberScrollState()),
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnClickOutside = false,
+        ),
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        ) {
+            LegalDocumentScaffold(
+                title = title,
+                onBack = onDismiss,
+                listState = listState,
             ) {
-                Text(content, style = MaterialTheme.typography.bodyMedium)
+                item {
+                    Text(
+                        text = stringResource(Res.string.privacy_legalese_overview_body),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                sections.forEach { section ->
+                    item {
+                        SelectionContainer {
+                            SettingsInfoCard(
+                                description = section,
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun rememberLazySettingsListState(): LazyListState = rememberSaveable(saver = LazyListState.Saver) {
+    LazyListState()
+}
+
+@Composable
+private fun LegalDocumentScaffold(
+    title: String,
+    onBack: () -> Unit,
+    listState: LazyListState,
+    modifier: Modifier = Modifier,
+    content: androidx.compose.foundation.lazy.LazyListScope.() -> Unit,
+) {
+    val containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
+    Scaffold(
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        containerColor = containerColor,
+        topBar = {
+            LargeTopAppBar(
+                title = {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.ArrowBackW400Outlinedfill1,
+                            contentDescription = null,
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = containerColor,
+                    scrolledContainerColor = containerColor,
+                ),
+                scrollBehavior = scrollBehavior,
+            )
         },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(Res.string.privacy_legalese_close))
-            }
-        },
-    )
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
+            state = listState,
+            contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            content = content,
+        )
+    }
+}
+
+private fun LegalDocument.titleRes() = when (this) {
+    LegalDocument.TermsOfService -> Res.string.privacy_legalese_terms_title
+    LegalDocument.PrivacyPolicy -> Res.string.privacy_legalese_privacy_title
+}
+
+private fun LegalDocument.descriptionRes() = when (this) {
+    LegalDocument.TermsOfService -> Res.string.privacy_legalese_terms_desc
+    LegalDocument.PrivacyPolicy -> Res.string.privacy_legalese_privacy_desc
+}
+
+private fun LegalDocument.contentRes() = when (this) {
+    LegalDocument.TermsOfService -> Res.string.privacy_legalese_terms_content
+    LegalDocument.PrivacyPolicy -> Res.string.privacy_legalese_privacy_content
+}
+
+private fun LegalDocument.icon() = when (this) {
+    LegalDocument.TermsOfService -> Icons.DescriptionW400Outlinedfill1
+    LegalDocument.PrivacyPolicy -> Icons.ShieldW400Outlinedfill1
 }

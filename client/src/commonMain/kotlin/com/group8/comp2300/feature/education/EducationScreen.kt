@@ -1,5 +1,6 @@
 package com.group8.comp2300.feature.education
 
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -11,16 +12,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
@@ -30,12 +36,7 @@ import com.group8.comp2300.domain.model.education.Category
 import com.group8.comp2300.domain.model.education.EarnedBadge
 import com.group8.comp2300.domain.model.education.UserQuizStats
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.ArrowForwardW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.CheckCircleW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.CloseW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.EmojiEventsW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.InfoW400Outlinedfill1
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.SearchW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
@@ -63,119 +64,148 @@ fun EducationScreen(
     val progressVisible =
         stats.totalPerfectScores > 0 || stats.averageTimeSpentSeconds > 0.0 || earnedBadges.isNotEmpty()
     val focusManager = LocalFocusManager.current
+    val pullToRefreshState = rememberPullToRefreshState()
+    val scaleFraction = {
+        if (isLoading) {
+            1f
+        } else {
+            LinearOutSlowInEasing.transform(pullToRefreshState.distanceFraction).coerceIn(0f, 1f)
+        }
+    }
 
-    Scaffold(modifier = modifier) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(paddingValues),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
-            item {
-                EducationTitleRow()
-            }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .pullToRefresh(
+                state = pullToRefreshState,
+                isRefreshing = isLoading,
+                onRefresh = onRetry,
+            ),
+    ) {
+        Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                item {
+                    EducationTitleRow()
+                }
 
-            stickyHeader {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface),
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                stickyHeader {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface),
                     ) {
-                        SearchBar(
-                            query = searchQuery,
-                            onQueryChange = onSearchQueryChange,
-                            onSearchImeAction = { focusManager.clearFocus() },
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                        )
-                        CategoryRow(
-                            categories = categories,
-                            selectedCategoryId = selectedCategoryId,
-                            onCategorySelect = onCategorySelect,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                }
-            }
-
-            when {
-                isLoading -> {
-                    item {
-                        LoadingPanel(
-                            title = stringResource(Res.string.education_library_loading),
-                        )
-                    }
-                }
-
-                isError -> {
-                    item {
-                        ErrorPanel(
-                            title = stringResource(Res.string.education_library_loading_error),
-                            actionLabel = stringResource(Res.string.education_library_retry),
-                            onAction = onRetry,
-                        )
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            SearchBar(
+                                query = searchQuery,
+                                onQueryChange = onSearchQueryChange,
+                                onSearchImeAction = { focusManager.clearFocus() },
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                            CategoryRow(
+                                categories = categories,
+                                selectedCategoryId = selectedCategoryId,
+                                onCategorySelect = onCategorySelect,
+                                modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
                     }
                 }
 
-                else -> {
-                    if (featuredVisible) {
+                when {
+                    isLoading -> {
                         item {
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                Text(
-                                    text = stringResource(Res.string.education_featured_title),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold,
+                            LoadingPanel(
+                                title = stringResource(Res.string.education_library_loading),
+                            )
+                        }
+                    }
+
+                    isError -> {
+                        item {
+                            EmptyStatePanel(title = stringResource(Res.string.education_library_loading_error))
+                        }
+                    }
+
+                    else -> {
+                        if (featuredVisible) {
+                            item {
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(
+                                        text = stringResource(Res.string.education_featured_title),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold,
+                                    )
+                                    FeaturedArticleCard(
+                                        article = featuredArticle,
+                                        onClick = { onArticleClick(featuredArticle.id) },
+                                    )
+                                }
+                            }
+                        }
+
+                        if (progressVisible) {
+                            item {
+                                CompactProgressHeader(
+                                    stats = stats,
+                                    earnedBadges = earnedBadges,
                                 )
-                                FeaturedArticleCard(
-                                    article = featuredArticle,
-                                    onClick = { onArticleClick(featuredArticle.id) },
+                            }
+                        }
+
+                        item {
+                            SectionHeader(
+                                title = when {
+                                    searchQuery.isNotBlank() -> stringResource(Res.string.education_search_results)
+                                    selectedCategory != null -> selectedCategory.title
+                                    else -> stringResource(Res.string.education_latest_updates)
+                                },
+                                supportingText = formatArticleCount(articles.size),
+                            )
+                        }
+
+                        if (articles.isEmpty()) {
+                            item {
+                                EmptyStatePanel(title = stringResource(Res.string.education_library_empty))
+                            }
+                        } else {
+                            items(
+                                items = articles,
+                                key = { it.id },
+                            ) { article ->
+                                StandardArticleCard(
+                                    article = article,
+                                    onClick = { onArticleClick(article.id) },
                                 )
                             }
                         }
                     }
-
-                    if (progressVisible) {
-                        item {
-                            CompactProgressHeader(
-                                stats = stats,
-                                earnedBadges = earnedBadges,
-                            )
-                        }
-                    }
-
-                    item {
-                        SectionHeader(
-                            title = when {
-                                searchQuery.isNotBlank() -> stringResource(Res.string.education_search_results)
-                                selectedCategory != null -> selectedCategory.title
-                                else -> stringResource(Res.string.education_latest_updates)
-                            },
-                            supportingText = formatArticleCount(articles.size),
-                        )
-                    }
-
-                    if (articles.isEmpty()) {
-                        item {
-                            EmptyStateCard(text = stringResource(Res.string.education_library_empty))
-                        }
-                    } else {
-                        items(
-                            items = articles,
-                            key = { it.id },
-                        ) { article ->
-                            StandardArticleCard(
-                                article = article,
-                                onClick = { onArticleClick(article.id) },
-                            )
-                        }
-                    }
                 }
             }
+        }
+
+        Box(
+            Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .graphicsLayer {
+                    scaleX = scaleFraction()
+                    scaleY = scaleFraction()
+                },
+        ) {
+            PullToRefreshDefaults.LoadingIndicator(
+                state = pullToRefreshState,
+                isRefreshing = isLoading,
+            )
         }
     }
 }
@@ -384,60 +414,56 @@ private fun CategoryRow(
 }
 
 @Composable
-private fun EmptyStateCard(text: String) {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        shape = MaterialTheme.shapes.extraLarge,
+private fun EmptyStatePanel(title: String, body: String? = null, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 24.dp),
+        contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(20.dp),
-        )
+        Column(
+            modifier = Modifier.widthIn(max = 320.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+            )
+            body?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                )
+            }
+        }
     }
 }
 
 @Composable
 private fun LoadingPanel(title: String, modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        CircularProgressIndicator()
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-@Composable
-private fun ErrorPanel(
-    title: String,
-    actionLabel: String,
-    onAction: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 32.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Button(onClick = onAction) {
-            Text(actionLabel)
+        Column(
+            modifier = Modifier.widthIn(max = 320.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            CircularProgressIndicator()
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

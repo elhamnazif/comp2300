@@ -3,13 +3,7 @@ package com.group8.comp2300.feature.settings
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import com.group8.comp2300.core.ui.settings.SettingsChoiceOption
-import com.group8.comp2300.core.ui.settings.SettingsChoiceRow
-import com.group8.comp2300.core.ui.settings.SettingsDetailScaffold
-import com.group8.comp2300.core.ui.settings.SettingsInfoCard
-import com.group8.comp2300.core.ui.settings.SettingsSection
-import com.group8.comp2300.core.ui.settings.SettingsTextFieldRow
-import com.group8.comp2300.core.ui.settings.SettingsToggleRow
+import com.group8.comp2300.core.ui.settings.*
 import com.group8.comp2300.data.local.NotificationPrivacyMode
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons

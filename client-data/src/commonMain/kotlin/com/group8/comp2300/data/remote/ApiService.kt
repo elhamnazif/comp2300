@@ -39,6 +39,8 @@ import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
 import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
+import com.group8.comp2300.domain.model.shop.Order
+import com.group8.comp2300.domain.model.shop.PlaceOrderRequest
 import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -69,6 +71,10 @@ interface ApiService {
     suspend fun getProducts(): List<ProductDto>
 
     suspend fun getProduct(id: String): ProductDto
+
+    suspend fun placeOrder(request: PlaceOrderRequest): Order
+
+    suspend fun getOrders(): List<Order>
 
     suspend fun login(request: LoginRequest): AuthResponse
 
@@ -174,6 +180,11 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun getProducts(): List<ProductDto> = client.get("/api/products").body()
 
     override suspend fun getProduct(id: String): ProductDto = client.get("/api/products/$id").body()
+
+    override suspend fun placeOrder(request: PlaceOrderRequest): Order =
+        client.post("/api/orders") { setBody(request) }.body()
+
+    override suspend fun getOrders(): List<Order> = client.get("/api/orders/me").body()
 
     override suspend fun login(request: LoginRequest): AuthResponse =
         handleAuthResponse(client.post("/api/auth/login") { setBody(request) })

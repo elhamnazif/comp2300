@@ -52,6 +52,8 @@ import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.model.session.AuthSession
+import com.group8.comp2300.domain.model.shop.Order
+import com.group8.comp2300.domain.model.shop.PlaceOrderRequest
 import com.group8.comp2300.domain.model.user.Gender
 import com.group8.comp2300.domain.model.user.SexualOrientation
 import com.group8.comp2300.domain.model.user.User
@@ -284,6 +286,7 @@ internal open class FakeApiService(
     var medicationLogs: MutableList<MedicationLog> = mutableListOf(),
     var moods: MutableList<Mood> = mutableListOf(),
     var appointments: MutableList<Appointment> = mutableListOf(),
+    var orders: MutableList<Order> = mutableListOf(),
 ) : ApiService {
     override suspend fun getHealth(): Map<String, String> = emptyMap()
     override suspend fun sendChatbotMessage(request: ChatbotRequest): ChatbotResponse = ChatbotResponse(
@@ -292,8 +295,10 @@ internal open class FakeApiService(
             content = "ok",
         ),
     )
-    override suspend fun getProducts() = emptyList<com.group8.comp2300.data.remote.dto.ProductDto>()
-    override suspend fun getProduct(id: String) = error("unused")
+    override suspend fun getProducts(): List<com.group8.comp2300.data.remote.dto.ProductDto> = emptyList()
+    override suspend fun getProduct(id: String): com.group8.comp2300.data.remote.dto.ProductDto = error("unused")
+    override suspend fun placeOrder(request: PlaceOrderRequest): Order = error("unused")
+    override suspend fun getOrders(): List<Order> = orders.toList()
     override suspend fun login(request: LoginRequest): AuthResponse = AuthResponse(profileUser, "access", "refresh")
 
     override suspend fun refreshToken(request: RefreshTokenRequest): TokenResponse = error("unused")

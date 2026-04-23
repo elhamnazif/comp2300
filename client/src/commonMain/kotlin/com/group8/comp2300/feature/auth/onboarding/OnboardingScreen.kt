@@ -154,6 +154,7 @@ fun OnboardingScreen(
                                 onPinCreated(finalPin)
                                 step++
                             },
+                            applySystemBarsPadding = false,
                             footerActionLabel = stringResource(Res.string.onboarding_skip_pin),
                             onFooterAction = { step++ },
                         )

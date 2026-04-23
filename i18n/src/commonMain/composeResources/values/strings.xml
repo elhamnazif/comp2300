@@ -152,6 +152,35 @@
     <string name="home_schedules_description">Routines and reminders</string>
     <string name="home_quick_access_title">Quick access</string>
     <string name="home_menu_partner_notify">Partner Notify</string>
+    <string name="home_greeting_morning">Good morning</string>
+    <string name="home_greeting_afternoon">Good afternoon</string>
+    <string name="home_greeting_evening">Good evening</string>
+    <string name="home_hero_supporting">Here’s what needs your attention today.</string>
+    <string name="home_today_title">Today</string>
+    <string name="home_today_next_appointment">Next appointment</string>
+    <string name="home_today_next_appointment_none">No appointments scheduled</string>
+    <string name="home_today_medications_due">Medications due</string>
+    <string name="home_today_adherence">Adherence</string>
+    <string name="home_today_adherence_empty">No routines due today</string>
+    <string name="home_today_adherence_format">%1$d of %2$d doses taken</string>
+    <string name="home_today_due_count_zero">Nothing due</string>
+    <string name="home_today_due_count_one">1 dose due</string>
+    <string name="home_today_due_count_many">%1$d doses due</string>
+    <string name="home_ask_vita_supporting">Questions, app help, and quick next steps.</string>
+    <string name="home_medication_count_one">1 active medication</string>
+    <string name="home_medication_count_many">%1$d active medications</string>
+    <string name="home_retry">Retry</string>
+    <string name="home_inbox_title">Inbox</string>
+    <string name="home_inbox_settings_action">Settings</string>
+    <string name="home_inbox_empty_title">You’re caught up</string>
+    <string name="home_inbox_empty_body">Important health reminders and app alerts will appear here.</string>
+    <string name="home_inbox_section_attention">Needs attention</string>
+    <string name="home_inbox_section_today">Today</string>
+    <string name="home_inbox_item_notifications_disabled_title">Turn on notifications</string>
+    <string name="home_inbox_item_notifications_disabled_body">Routine reminders are set, but notifications are off on this device.</string>
+    <string name="home_inbox_item_medication_body_one">1 dose needs attention. Open Track to manage it.</string>
+    <string name="home_inbox_item_medication_body_many">%1$d doses need attention. Open Track to manage them.</string>
+    <string name="home_inbox_item_appointment_body">%1$s. Opens your booking details.</string>
 
     <!-- Chatbot -->
     <string name="chatbot_title">Chat with Vita</string>
@@ -533,14 +562,22 @@
     <string name="common_day_sat_short">Sat</string>
 
     <!-- Shop Module -->
-    <string name="shop_discreet_packaging">100% Discreet, Unbranded Packaging</string>
+    <string name="shop_discreet_packaging">Discreet packaging</string>
     <string name="shop_title">Prevention Store</string>
+    <string name="shop_browse_subtitle">Essentials for testing, prevention, and refills</string>
     <string name="shop_cart_desc">Cart</string>
+    <string name="shop_view_cart">View cart</string>
     <string name="shop_product_insured_price">$0 (Insured)</string>
+    <string name="shop_covered">Covered</string>
+    <string name="shop_product_add">Add</string>
+    <string name="shop_added">Added</string>
+    <string name="shop_browse_view">View</string>
     <string name="shop_category_all">All</string>
     <string name="shop_category_medication">Medication</string>
     <string name="shop_category_testing">At-Home Kits</string>
     <string name="shop_category_prevention">Prevention</string>
+    <string name="shop_browse_empty_title">No items here</string>
+    <string name="shop_browse_empty_body">Try another category.</string>
 
     <!-- Shop Details -->
     <string name="shop_details_total_label">Total</string>
@@ -552,6 +589,24 @@
     <string name="shop_details_feature_delivery_desc">Arrives in 2-3 business days.</string>
     <string name="shop_details_feature_refills_title">Automatic Refills</string>
     <string name="shop_details_feature_refills_desc">Never run out of your prevention.</string>
+    <string name="shop_cart_title">Cart</string>
+    <string name="shop_cart_empty">Your cart is empty.</string>
+    <string name="shop_cart_subtotal">Subtotal</string>
+    <string name="shop_cart_checkout">Checkout</string>
+    <string name="shop_cart_qty">Qty</string>
+    <string name="shop_cart_remove">Remove</string>
+    <string name="shop_continue_shopping">Continue shopping</string>
+    <string name="shop_checkout_title">Checkout</string>
+    <string name="shop_checkout_summary">Order summary</string>
+    <string name="shop_checkout_address_label">Shipping address</string>
+    <string name="shop_checkout_place_order">Place order</string>
+    <string name="shop_order_success_title">Order placed</string>
+    <string name="shop_order_success_reference">Reference</string>
+    <string name="shop_order_success_total">Total</string>
+    <string name="shop_order_success_done">Back home</string>
+    <string name="shop_product_unavailable">Product unavailable</string>
+    <string name="shop_unavailable_item">Unavailable item</string>
+    <string name="shop_unavailable_item_action">Remove to continue</string>
 
     <!-- Education Module -->
     <string name="education_search_placeholder">Search topics, e.g., 'PrEP'</string>
@@ -654,6 +709,8 @@
     <string name="profile_notifications_title">Notifications</string>
     <string name="profile_notifications_desc">Privacy-safe reminders</string>
     <string name="profile_privacy_security_title">Privacy &amp; Security</string>
+    <string name="profile_appearance_title">Appearance</string>
+    <string name="profile_appearance_desc">Mint or wallpaper theme</string>
     <string name="profile_biometrics_enabled">Biometrics enabled</string>
     <string name="profile_pin_enabled">PIN enabled</string>
     <string name="profile_app_lock_off">App lock off</string>
@@ -670,8 +727,9 @@
     <string name="privacy_legalese_terms_content">Terms of Service\n\nBy using Vita, you agree to the following terms:\n\n1. Acceptance of Terms\nBy accessing and using this application, you accept and agree to be bound by these Terms of Service and our Privacy Policy.\n\n2. Health Information Disclaimer\nThis app provides health information for educational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.\n\n3. User Responsibilities\nYou are responsible for maintaining the confidentiality of your account and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use of your account.\n\n4. Data Accuracy\nWhile we strive to keep health information accurate and up-to-date, we make no representations or warranties about the completeness, accuracy, reliability, or suitability of any information provided.\n\n5. Service Modifications\nWe reserve the right to modify or discontinue any part of the service at any time without notice.\n\n6. Limitation of Liability\nIn no event shall Vita be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the service.</string>
     <string name="privacy_legalese_privacy_title">Privacy Policy</string>
     <string name="privacy_legalese_privacy_desc">Read our privacy policy</string>
-    <string name="privacy_legalese_privacy_content">Privacy Policy\n\nYour privacy is important to us. This policy explains how we collect, use, and protect your information.\n\n1. Information We Collect\nWe collect information you provide directly, including: name, email address, health screening results, and appointment history.\n\n2. How We Use Your Information\nWe use your information to: provide health services, send appointment reminders, improve our services, and communicate with you about your health.\n\n3. Data Security\nWe implement industry-standard security measures including encryption, secure servers, and regular security audits to protect your personal and health information.\n\n4. Data Retention\nWe retain your information for as long as your account is active or as needed to provide services. You can request deletion of your account and associated data at any time.\n\n5. Your Rights\nYou have the right to: access your data, correct inaccurate data, request deletion, and opt-out of marketing communications.\n\n6. Third-Party Services\nWe may use third-party services that collect anonymous usage data to help us improve the app. These services have their own privacy policies.\n\n7. Children\'s Privacy\nThis app is not intended for children under 13. We do not knowingly collect information from children under 13.\n\n8. Contact Us\nIf you have questions about this privacy policy, please contact us at privacy@vitahealth.app</string>
+    <string name="privacy_legalese_privacy_content">Privacy Policy\n\nYour privacy is important to us. This policy explains how we collect, use, and protect your information.\n\n1. Information We Collect\nWe collect information you provide directly, including: name, email address, health screening results, and appointment history.\n\n2. How We Use Your Information\nWe use your information to: provide health services, send appointment reminders, improve our services, and communicate with you about your health.\n\n3. Data Security\nWe implement industry-standard security measures including encryption, secure servers, and regular security audits to protect your personal and health information.\n\n4. Data Retention\nWe retain your information for as long as your account is active or as needed to provide services. You can request deletion of your account and associated data at any time.\n\n5. Your Rights\nYou have the right to: access your data, correct inaccurate data, request deletion, and opt-out of marketing communications.\n\n6. Third-Party Services\nWe may use third-party services that collect anonymous usage data to help us improve the app. These services have their own privacy policies.\n\n7. Children's Privacy\nThis app is not intended for children under 13. We do not knowingly collect information from children under 13.\n\n8. Contact Us\nIf you have questions about this privacy policy, please contact us at privacy@vitahealth.app</string>
     <string name="privacy_legalese_contact_title">Questions?</string>
+    <string name="privacy_legalese_email_us">Email us</string>
     <string name="privacy_legalese_contact_body">If you have any questions about our terms or privacy policy, please contact our support team at legal@vitahealth.app</string>
     <string name="privacy_legalese_close">Close</string>
 
@@ -743,10 +801,16 @@
 
     <!-- Accessibility -->
     <string name="accessibility_title">Accessibility</string>
-    <string name="accessibility_supporting_text">Adjust visual accommodations so information remains clear without depending on colour alone.</string>
     <string name="accessibility_grayscale_title">Grayscale Mode</string>
     <string name="accessibility_grayscale_desc">Desaturate the app so status differences are easier to perceive without relying on colour</string>
     <string name="accessibility_grayscale_info">Grayscale mode is saved on this device and applies across the calendar, charts, and the rest of the app interface.</string>
+
+    <!-- Appearance -->
+    <string name="appearance_title">Appearance</string>
+    <string name="appearance_theme_label">Theme</string>
+    <string name="appearance_theme_mint">Mint</string>
+    <string name="appearance_theme_wallpaper">Wallpaper</string>
+    <string name="appearance_theme_unavailable_info">Wallpaper isn't available on this device.</string>
 
     <!-- Privacy & Security -->
     <string name="privacy_security_title">Privacy &amp; Security</string>

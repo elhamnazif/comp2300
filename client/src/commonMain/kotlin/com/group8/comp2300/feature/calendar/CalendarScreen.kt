@@ -1,5 +1,6 @@
 package com.group8.comp2300.feature.calendar
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,8 +8,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -555,6 +556,7 @@ fun CalendarScreen(
 @Composable
 private fun CalendarLoadingState() {
     Column(
+        modifier = Modifier.widthIn(max = 320.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -562,6 +564,7 @@ private fun CalendarLoadingState() {
         Text(
             text = stringResource(Res.string.calendar_loading),
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
     }
@@ -593,16 +596,17 @@ private fun CalendarLoadingBanner() {
 @Composable
 private fun CalendarErrorState(message: String, onRetry: () -> Unit) {
     Column(
+        modifier = Modifier.widthIn(max = 320.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
         )
-        TextButton(onClick = onRetry) {
+        Button(onClick = onRetry) {
             Text(stringResource(Res.string.calendar_retry))
         }
     }
@@ -611,8 +615,9 @@ private fun CalendarErrorState(message: String, onRetry: () -> Unit) {
 @Composable
 private fun CalendarErrorBanner(message: String, onRetry: () -> Unit) {
     Surface(
-        color = MaterialTheme.colorScheme.errorContainer,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = MaterialTheme.shapes.large,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
@@ -623,7 +628,7 @@ private fun CalendarErrorBanner(message: String, onRetry: () -> Unit) {
                 text = message,
                 modifier = Modifier.weight(1f),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onErrorContainer,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             TextButton(onClick = onRetry) {
                 Text(stringResource(Res.string.calendar_retry))

@@ -33,6 +33,8 @@ import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.model.medical.RoutineRepeatType
 import com.group8.comp2300.domain.model.medical.RoutineStatus
 import com.group8.comp2300.domain.model.session.AuthSession
+import com.group8.comp2300.domain.model.shop.Order
+import com.group8.comp2300.domain.model.shop.PlaceOrderRequest
 import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.medical.FailedSyncMutation
@@ -545,6 +547,8 @@ private class BookingApiStub : ApiService {
         error("unused")
     override suspend fun getProducts() = emptyList<com.group8.comp2300.data.remote.dto.ProductDto>()
     override suspend fun getProduct(id: String) = error("unused")
+    override suspend fun placeOrder(request: PlaceOrderRequest): Order = error("unused")
+    override suspend fun getOrders(): List<Order> = emptyList()
     override suspend fun login(request: com.group8.comp2300.data.remote.dto.LoginRequest) = error("unused")
     override suspend fun refreshToken(request: com.group8.comp2300.data.remote.dto.RefreshTokenRequest) =
         error("unused")

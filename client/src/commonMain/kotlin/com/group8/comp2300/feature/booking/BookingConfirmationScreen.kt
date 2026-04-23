@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.ui.components.AppTopBar
@@ -164,12 +165,24 @@ fun BookingConfirmationScreen(
         }
 
         if (clinic == null || slot == null || draft == null) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(paddingValues),
-                contentPadding = PaddingValues(16.dp),
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center,
             ) {
-                item {
-                    Text("Loading...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Column(
+                    modifier = Modifier.widthIn(max = 320.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    CircularProgressIndicator()
+                    Text(
+                        text = "Loading review",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                    )
                 }
             }
             return@Scaffold

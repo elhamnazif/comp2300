@@ -7,5 +7,5 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
 val appBindingsModule = module {
-    viewModel<Navigator> { RealNavigator(get(), Screen.Onboarding) }
+    viewModel<Navigator> { RealNavigator(get(), get(), Screen.Onboarding) }
 }

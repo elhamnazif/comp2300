@@ -12,6 +12,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.engine.*
+import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
@@ -79,6 +80,7 @@ fun Application.module() {
         get("/") { call.respondText("Ktor: ready") }
 
         get("/api/health") { call.respond(mapOf("status" to "OK")) }
+        staticResources("/images", "images")
 
         authRoutes(get())
         productRoutes()
@@ -89,6 +91,7 @@ fun Application.module() {
 
         authenticate("auth-jwt", optional = devBypass) {
             chatbotRoutes()
+            orderRoutes()
             appointmentRoutes()
             badgeRoutes()
             medicationRoutes()

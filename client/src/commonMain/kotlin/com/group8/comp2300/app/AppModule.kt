@@ -6,6 +6,7 @@ import com.group8.comp2300.feature.booking.bookingModule
 import com.group8.comp2300.feature.calendar.calendarModule
 import com.group8.comp2300.feature.chatbot.chatbotModule
 import com.group8.comp2300.feature.education.educationModule
+import com.group8.comp2300.feature.home.homeModule
 import com.group8.comp2300.feature.medication.medicationModule
 import com.group8.comp2300.feature.profile.profileModule
 import com.group8.comp2300.feature.records.recordsModule
@@ -24,6 +25,7 @@ val appModule = module {
         calendarModule,
         chatbotModule,
         educationModule,
+        homeModule,
         medicationModule,
         profileModule,
         recordsModule,

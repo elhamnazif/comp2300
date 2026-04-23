@@ -20,7 +20,11 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 
-internal data class SettingsChoiceOption(val key: String, val label: String)
+internal data class SettingsChoiceOption(
+    val key: String,
+    val label: String,
+    val enabled: Boolean = true,
+)
 
 private val SingleItemShape = RoundedCornerShape(28.dp)
 private val TopItemShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 12.dp, bottomEnd = 12.dp)
@@ -224,13 +228,13 @@ internal fun SettingsExpandableRow(
 internal fun SettingsChoiceRow(
     icon: ImageVector,
     title: String,
-    description: String,
     options: List<SettingsChoiceOption>,
     selectedKey: String,
     index: Int,
     total: Int,
     onOptionSelected: (String) -> Unit,
     modifier: Modifier = Modifier,
+    description: String? = null,
 ) {
     SettingsRowContainer(
         shape = settingsItemShape(index = index, total = total),
@@ -256,12 +260,14 @@ internal fun SettingsChoiceRow(
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                     )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    if (description != null) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -269,6 +275,7 @@ internal fun SettingsChoiceRow(
                     FilterChip(
                         selected = option.key == selectedKey,
                         onClick = { onOptionSelected(option.key) },
+                        enabled = option.enabled,
                         label = { Text(option.label) },
                     )
                 }

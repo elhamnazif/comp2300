@@ -13,6 +13,9 @@ data class Product(
     val insuranceCovered: Boolean = false,
     val imageUrl: String? = null,
 ) {
+    val effectivePrice: Double
+        get() = if (insuranceCovered) 0.0 else price
+
     /** Formatted price for display */
     val formattedPrice: String
         get() = "$%.2f".format(price)

@@ -6,8 +6,13 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.toMutableStateList
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.SavedStateHandleSaveableApi
 import androidx.lifecycle.viewmodel.compose.saveable
+import com.group8.comp2300.domain.model.session.AuthSession
+import com.group8.comp2300.domain.repository.AuthRepository
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 abstract class Navigator : ViewModel() {
@@ -36,7 +41,11 @@ abstract class Navigator : ViewModel() {
 }
 
 @OptIn(SavedStateHandleSaveableApi::class)
-class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen = Screen.Onboarding) : Navigator() {
+class RealNavigator(
+    savedStateHandle: SavedStateHandle,
+    private val authRepository: AuthRepository,
+    startDestination: Screen = Screen.Onboarding,
+) : Navigator() {
 
     override val backStack: MutableList<Screen> = savedStateHandle.saveable(
         key = "nav_stack",
@@ -86,9 +95,14 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
 
     init {
         normalizeRestoredStacks()
+        observeAuthSession()
     }
 
     override fun navigate(screen: Screen) {
+        if (shouldRequireAuth(screen)) {
+            requireAuth(screen)
+            return
+        }
         if (screen.isMainTab()) {
             selectTab(screen)
             if (backStack.none { it == Screen.MainShell }) {
@@ -100,6 +114,10 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
     }
 
     override fun navigateWithinShell(screen: Screen) {
+        if (shouldRequireAuth(screen)) {
+            requireAuth(screen)
+            return
+        }
         if (screen.isMainTab()) {
             selectTab(screen)
             return
@@ -123,6 +141,10 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
     }
 
     override fun clearAndGoTo(screen: Screen) {
+        if (shouldRequireAuth(screen)) {
+            requireAuth(screen)
+            return
+        }
         backStack.clear()
         if (screen.isMainTab()) {
             resetTabs(screen)
@@ -146,11 +168,7 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
             backStack.removeAt(backStack.lastIndex)
         }
         if (target != null) {
-            if (target.isMainTab()) {
-                clearAndGoTo(target)
-            } else if (backStack.lastOrNull() != target) {
-                backStack.add(target)
-            }
+            navigate(target)
         } else {
             clearAndGoTo(Screen.Home)
         }
@@ -174,6 +192,55 @@ class RealNavigator(savedStateHandle: SavedStateHandle, startDestination: Screen
     private fun resetTabs(tab: Screen) {
         mainShellBackStack.clear()
         mainShellBackStack.add(tab)
+    }
+
+    private fun shouldRequireAuth(screen: Screen): Boolean =
+        screen.requiresAuthentication() && authRepository.session.value !is AuthSession.SignedIn
+
+    private fun observeAuthSession() {
+        viewModelScope.launch {
+            authRepository.session.collect { session ->
+                if (session !is AuthSession.SignedIn) {
+                    pruneProtectedDestinations()
+                }
+            }
+        }
+    }
+
+    private fun pruneProtectedDestinations() {
+        backStack.removeAll { it.requiresAuthentication() }
+        mainShellBackStack.removeAll { it.requiresAuthentication() }
+
+        val shouldPreserveProtectedTarget = currentScreen == Screen.Login && postLoginTarget?.requiresAuthentication() == true
+        if (!shouldPreserveProtectedTarget && postLoginTarget?.requiresAuthentication() == true) {
+            postLoginTarget = null
+        }
+
+        ensureValidShellState()
+        ensureValidRootState()
+    }
+
+    private fun ensureValidShellState() {
+        if (mainShellBackStack.any(Screen::isMainTab)) return
+        resetTabs(Screen.Home)
+    }
+
+    private fun ensureValidRootState() {
+        when {
+            backStack.isEmpty() -> {
+                backStack.add(Screen.MainShell)
+            }
+            backStack.contains(Screen.MainShell) -> return
+            backStack.firstOrNull() == Screen.Onboarding -> return
+            else -> {
+                val keepLogin = currentScreen == Screen.Login
+                backStack.clear()
+                backStack.add(Screen.MainShell)
+                if (keepLogin) {
+                    backStack.add(Screen.Login)
+                }
+            }
+        }
     }
 
     private fun normalizeRestoredStacks() {

@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.domain.model.education.Quiz
@@ -88,7 +89,19 @@ fun QuizScreen(
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center,
                 ) {
-                    CircularProgressIndicator()
+                    Column(
+                        modifier = Modifier.widthIn(max = 320.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        CircularProgressIndicator()
+                        Text(
+                            text = "Loading quiz",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
                 }
             }
 
@@ -496,14 +509,17 @@ private fun ErrorState(title: String, onRetry: () -> Unit, onClose: () -> Unit, 
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier
+                .padding(24.dp)
+                .widthIn(max = 320.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
             )
             Button(onClick = onRetry) {
                 Text(stringResource(Res.string.education_quiz_retry_load))
