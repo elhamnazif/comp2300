@@ -12,6 +12,7 @@ interface ClinicTagRepository {
      * Returns a simple list of strings for UI chips or labels.
      */
     fun getTagsByClinicId(clinicId: String): List<String>
+    fun getAllTagsByClinicId(): Map<String, List<String>>
 
     /**
      * Removes a single specific tag from a clinic.

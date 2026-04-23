@@ -21,6 +21,8 @@ import com.group8.comp2300.routes.authRoutes
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
 import com.group8.comp2300.service.auth.AuthService
+import com.group8.comp2300.service.auth.InMemoryVerificationRequestThrottle
+import com.group8.comp2300.service.auth.VerificationRequestThrottle
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -54,12 +56,12 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation as ClientCon
 class AuthRoutesTest {
     @Test
     fun loginWithValidCredentialsReturnsSuccess() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val authResponse = createActivatedSession(
             client = client,
-            userRepo = userRepo,
+            userRepo = fixture.userRepository,
             email = "login.user@example.com",
             password = "Password1",
         )
@@ -91,12 +93,12 @@ class AuthRoutesTest {
 
     @Test
     fun refreshWithValidTokenReturnsNewTokenPair() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val authResponse = createActivatedSession(
             client = client,
-            userRepo = userRepo,
+            userRepo = fixture.userRepository,
             email = "refresh.user@example.com",
             password = "Password1",
         )
@@ -114,12 +116,12 @@ class AuthRoutesTest {
 
     @Test
     fun profileEndpointReturnsUserForValidAccessToken() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val authResponse = createActivatedSession(
             client = client,
-            userRepo = userRepo,
+            userRepo = fixture.userRepository,
             email = "profile.user@example.com",
             password = "Password1",
         )
@@ -200,7 +202,7 @@ class AuthRoutesTest {
 
     @Test
     fun forgotPasswordReturnsSuccessForExistingEmail() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val preregisterResponse = client.preregister(
@@ -208,7 +210,7 @@ class AuthRoutesTest {
             password = "Password1",
         )
         assertEquals(HttpStatusCode.OK, preregisterResponse.status)
-        userRepo.clearVerificationRequest("forgot.password@example.com")
+        fixture.verificationThrottle.clearRequest("forgot.password@example.com")
 
         val response = client.post("/api/auth/forgot-password") {
             contentType(ContentType.Application.Json)
@@ -296,7 +298,7 @@ class AuthRoutesTest {
 
     @Test
     fun preregisterDuplicateEmailReturnsConflict() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val firstResponse = client.preregister(
@@ -305,9 +307,9 @@ class AuthRoutesTest {
         )
         assertEquals(HttpStatusCode.OK, firstResponse.status)
 
-        val user = userRepo.findByEmail("preregister.dupe@example.com")
+        val user = fixture.userRepository.findByEmail("preregister.dupe@example.com")
         assertNotNull(user)
-        userRepo.activateUser(user.id)
+        fixture.userRepository.activateUser(user.id)
 
         val secondResponse = client.preregister(
             email = "preregister.dupe@example.com",
@@ -357,12 +359,12 @@ class AuthRoutesTest {
 
     @Test
     fun completeProfileWithValidDataReturnsUpdatedUser() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val authResponse = createActivatedSession(
             client = client,
-            userRepo = userRepo,
+            userRepo = fixture.userRepository,
             email = "complete.profile@example.com",
             password = "Password1",
         )
@@ -381,12 +383,12 @@ class AuthRoutesTest {
 
     @Test
     fun completeProfileWithBlankNamesReturnsBadRequest() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val authResponse = createActivatedSession(
             client = client,
-            userRepo = userRepo,
+            userRepo = fixture.userRepository,
             email = "blank.names@example.com",
             password = "Password1",
         )
@@ -416,12 +418,12 @@ class AuthRoutesTest {
 
     @Test
     fun logoutRevokesRefreshTokens() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val authResponse = createActivatedSession(
             client = client,
-            userRepo = userRepo,
+            userRepo = fixture.userRepository,
             email = "logout.user@example.com",
             password = "Password1",
         )
@@ -440,7 +442,7 @@ class AuthRoutesTest {
 
     @Test
     fun resendVerificationReturnsSuccessForExistingInactiveUser() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val preregisterResponse = client.preregister(
@@ -448,7 +450,7 @@ class AuthRoutesTest {
             password = "Password1",
         )
         assertEquals(HttpStatusCode.OK, preregisterResponse.status)
-        userRepo.clearVerificationRequest("resend.inactive@example.com")
+        fixture.verificationThrottle.clearRequest("resend.inactive@example.com")
 
         val response = client.post("/api/auth/resend-verification") {
             contentType(ContentType.Application.Json)
@@ -475,7 +477,7 @@ class AuthRoutesTest {
 
     @Test
     fun resendVerificationReturnsBadRequestForActivatedAccount() = testApplication {
-        val userRepo = configureAuthTestModule()
+        val fixture = configureAuthTestModule()
         val client = jsonClient()
 
         val preregisterResponse = client.preregister(
@@ -483,10 +485,10 @@ class AuthRoutesTest {
             password = "Password1",
         )
         assertEquals(HttpStatusCode.OK, preregisterResponse.status)
-        val user = userRepo.findByEmail("resend.activated@example.com")
+        val user = fixture.userRepository.findByEmail("resend.activated@example.com")
         assertNotNull(user)
-        userRepo.activateUser(user.id)
-        userRepo.clearVerificationRequest("resend.activated@example.com")
+        fixture.userRepository.activateUser(user.id)
+        fixture.verificationThrottle.clearRequest("resend.activated@example.com")
 
         val response = client.post("/api/auth/resend-verification") {
             contentType(ContentType.Application.Json)
@@ -521,23 +523,39 @@ class AuthRoutesTest {
     }
 }
 
-private fun ApplicationTestBuilder.configureAuthTestModule(): UserRepository {
+private data class AuthTestFixture(
+    val userRepository: UserRepository,
+    val verificationThrottle: VerificationRequestThrottle,
+)
+
+private fun ApplicationTestBuilder.configureAuthTestModule(): AuthTestFixture {
     val database = createServerDatabase("jdbc:sqlite::memory:")
     val jwtService = testJwtService()
     val userRepository = UserRepositoryImpl(database)
+    val verificationThrottle = InMemoryVerificationRequestThrottle()
     val refreshTokenRepository = RefreshTokenRepositoryImpl(
         database = database,
         refreshTokenExpiration = jwtService.refreshTokenExpiration,
     )
     val passwordResetTokenRepository = PasswordResetTokenRepositoryImpl(database)
     val authService =
-        AuthService(userRepository, refreshTokenRepository, passwordResetTokenRepository, jwtService, null)
+        AuthService(
+            userRepository = userRepository,
+            refreshTokenRepository = refreshTokenRepository,
+            passwordResetTokenRepository = passwordResetTokenRepository,
+            jwtService = jwtService,
+            emailService = null,
+            verificationRequestThrottle = verificationThrottle,
+        )
 
     application {
         authTestModule(authService, jwtService)
     }
 
-    return userRepository
+    return AuthTestFixture(
+        userRepository = userRepository,
+        verificationThrottle = verificationThrottle,
+    )
 }
 
 private fun ApplicationTestBuilder.jsonClient() = createClient {

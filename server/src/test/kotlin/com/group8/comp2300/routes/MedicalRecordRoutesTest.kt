@@ -67,7 +67,11 @@ class MedicalRecordRoutesTest {
             )
         }
 
-        routing { medicalRecordRoutes() }
+        routing {
+            authenticate("auth-jwt") {
+                medicalRecordRoutes()
+            }
+        }
     }
 
     @Test

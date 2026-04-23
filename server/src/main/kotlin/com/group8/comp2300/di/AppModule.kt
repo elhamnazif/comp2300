@@ -10,6 +10,8 @@ import com.group8.comp2300.mapper.CategoryMapper
 import com.group8.comp2300.security.*
 import com.group8.comp2300.service.appointment.AppointmentService
 import com.group8.comp2300.service.auth.AuthService
+import com.group8.comp2300.service.auth.InMemoryVerificationRequestThrottle
+import com.group8.comp2300.service.auth.VerificationRequestThrottle
 import com.group8.comp2300.service.chatbot.ChatbotProviderClient
 import com.group8.comp2300.service.chatbot.ChatbotService
 import com.group8.comp2300.service.chatbot.GoogleChatbotProviderClient
@@ -71,6 +73,7 @@ val serverModule = module {
     single { EmailService(ResendConfig.apiKey, ResendConfig.fromEmail, ResendConfig.appName) }
     single { ChatbotConfig }
     single<ChatbotProviderClient> { GoogleChatbotProviderClient(get()) }
+    single<VerificationRequestThrottle> { InMemoryVerificationRequestThrottle() }
 
     // Services
     single {
@@ -80,6 +83,7 @@ val serverModule = module {
             passwordResetTokenRepository = get(),
             jwtService = get(),
             emailService = if (ResendConfig.isConfigured) get<EmailService>() else null,
+            verificationRequestThrottle = get(),
         )
     }
     single { MedicalRecordService(repository = get(), medicalRecordCipher = get()) }

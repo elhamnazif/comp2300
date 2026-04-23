@@ -281,7 +281,7 @@
     <string name="medical_medication_form_edit_finish_title">Ready to update this medication?</string>
     <string name="medical_medication_form_edit_finish_hint">Review the summary, then update details or manage linked schedules below.</string>
     <string name="medical_medication_form_stock_amount_label">Amount on hand</string>
-    <string name="medical_medication_form_stock_amount_placeholder">30</string>
+    <string name="medical_medication_form_stock_amount_placeholder">0</string>
     <string name="medical_medication_form_stock_unit_label">Unit</string>
     <string name="medical_medication_form_custom_unit_label">Custom unit</string>
     <string name="medical_medication_form_stock_amount_hint">Track supply like 30 tablets, 20 capsules, or 100 mL.</string>

@@ -440,7 +440,7 @@ private fun SummaryTile(label: String, value: String, modifier: Modifier = Modif
 private fun AvailabilityHeader(hasSlots: Boolean, selectedSlot: AppointmentSlot?) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Surface(
-            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.28f),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
             shape = MaterialTheme.shapes.extraLarge,
         ) {
             Column(
@@ -451,7 +451,7 @@ private fun AvailabilityHeader(hasSlots: Boolean, selectedSlot: AppointmentSlot?
                     text = "Available times",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
                     text = when {
@@ -463,7 +463,7 @@ private fun AvailabilityHeader(hasSlots: Boolean, selectedSlot: AppointmentSlot?
 
                         else -> "Pick a time. Most visits take 30 min."
                     },
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.78f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

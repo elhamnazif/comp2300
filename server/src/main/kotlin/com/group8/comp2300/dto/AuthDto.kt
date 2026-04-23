@@ -7,6 +7,18 @@ import kotlinx.serialization.Serializable
 data class LoginRequest(val email: String, val password: String)
 
 @Serializable
+data class RegisterRequest(
+    val email: String,
+    val password: String,
+    val firstName: String,
+    val lastName: String,
+    val phone: String? = null,
+    val dateOfBirth: Long? = null,
+    val gender: String? = null,
+    val sexualOrientation: String? = null,
+)
+
+@Serializable
 data class AuthResponse(val user: User, val accessToken: String, val refreshToken: String)
 
 @Serializable

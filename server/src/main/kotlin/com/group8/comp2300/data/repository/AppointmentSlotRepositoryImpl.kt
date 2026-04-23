@@ -25,6 +25,14 @@ class AppointmentSlotRepositoryImpl(private val database: ServerDatabase) : Appo
             .executeAsList()
             .map { it.toDomain() }
 
+    override fun getNextAvailableStartTimesByClinicId(): Map<String, Long> =
+        database.appointmentSlotQueries.selectNextAvailableStartTimes()
+            .executeAsList()
+            .mapNotNull { result ->
+                result.next_start_time?.let { startTime -> result.clinic_id to startTime }
+            }
+            .toMap()
+
     override fun updateSlotBookingStatus(id: String, isBooked: Boolean) {
         database.appointmentSlotQueries.updateSlotReservationStatus(
             is_booked = if (isBooked) 1L else 0L,

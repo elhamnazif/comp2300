@@ -58,7 +58,7 @@ fun MedicationFormSheet(
         mutableStateOf(medicationToEdit?.doseUnit ?: MedicationUnit.TABLET)
     }
     var customDoseUnit by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.customDoseUnit ?: "") }
-    var stockAmount by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.stockAmount ?: "0") }
+    var stockAmount by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.stockAmount ?: "") }
     var stockUnit by remember(medicationToEdit?.id) {
         mutableStateOf(medicationToEdit?.stockUnit ?: MedicationUnit.TABLET)
     }

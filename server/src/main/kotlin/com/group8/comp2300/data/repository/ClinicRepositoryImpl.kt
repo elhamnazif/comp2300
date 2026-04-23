@@ -16,13 +16,16 @@ class ClinicRepositoryImpl(
 
     override fun getAll(): List<Clinic> = database.clinicQueries.selectAllClinics()
         .executeAsList()
-        .map { entity ->
-            val nextAvailableSlot = appointmentSlotRepository.getAvailableByClinic(entity.id).firstOrNull()?.startTime
-                ?: System.currentTimeMillis()
-            entity.toDomain(
-                tags = clinicTagRepository.getTagsByClinicId(entity.id),
-                nextAvailableSlot = nextAvailableSlot,
-            )
+        .let { clinics ->
+            val nextAvailableSlotFallback = System.currentTimeMillis()
+            val tagsByClinicId = clinicTagRepository.getAllTagsByClinicId()
+            val nextAvailableSlotByClinicId = appointmentSlotRepository.getNextAvailableStartTimesByClinicId()
+            clinics.map { entity ->
+                entity.toDomain(
+                    tags = tagsByClinicId[entity.id].orEmpty(),
+                    nextAvailableSlot = nextAvailableSlotByClinicId[entity.id] ?: nextAvailableSlotFallback,
+                )
+            }
         }
 
     override fun getById(id: String): Clinic? = database.clinicQueries.selectClinicById(id)
@@ -67,8 +70,10 @@ class ClinicRepositoryImpl(
     }
 }
 
+private val sampleClinicsById = sampleClinics.associateBy { it.id }
+
 private fun ClinicEntity.toDomain(tags: List<String>, nextAvailableSlot: Long): Clinic {
-    val fixture = sampleClinics.firstOrNull { it.id == id }
+    val fixture = sampleClinicsById[id]
     return Clinic(
         id = id,
         name = name,

@@ -16,6 +16,11 @@ class ClinicTagRepositoryImpl(private val database: ServerDatabase) : ClinicTagR
         database.clinicTagQueries.selectAllTagsByClinicId(clinicId)
             .executeAsList()
 
+    override fun getAllTagsByClinicId(): Map<String, List<String>> =
+        database.clinicTagQueries.selectAllClinicTags()
+            .executeAsList()
+            .groupBy(keySelector = { it.clinic_id }, valueTransform = { it.tag_name })
+
     override fun removeTag(clinicId: String, tagName: String) {
         database.clinicTagQueries.deleteClinicTag(
             clinic_id = clinicId,

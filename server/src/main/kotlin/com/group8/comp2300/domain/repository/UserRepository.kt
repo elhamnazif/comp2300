@@ -32,22 +32,6 @@ interface UserRepository {
     )
 
     /**
-     * Checks if a verification request can be made for the given email.
-     * Returns false if a request was made within the last minute.
-     */
-    fun canRequestVerification(email: String): Boolean
-
-    /**
-     * Records a verification request timestamp for the given email.
-     */
-    fun recordVerificationRequest(email: String)
-
-    /**
-     * Clears the verification request timestamp for the given email.
-     */
-    fun clearVerificationRequest(email: String)
-
-    /**
      * Deletes unactivated accounts created before the given cutoff timestamp.
      */
     fun deleteUnactivatedAccounts(cutoffMillis: Long)
