@@ -2,9 +2,9 @@ package com.group8.comp2300.feature.auth.navigation
 
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import com.group8.comp2300.app.navigation.LocalNavigator
 import com.group8.comp2300.app.navigation.Screen
+import com.group8.comp2300.data.local.finalizeOnboardingLocalAuth
 import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.domain.model.session.AuthSession
@@ -15,7 +15,6 @@ import com.group8.comp2300.feature.auth.forgotpassword.ForgotPasswordScreen
 import com.group8.comp2300.feature.auth.login.AuthScreen
 import com.group8.comp2300.feature.auth.onboarding.OnboardingScreen
 import com.group8.comp2300.feature.auth.resetpassword.ResetPasswordScreen
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
@@ -27,21 +26,19 @@ val authGraphModule = module {
         val localAuthSettingsDataSource = koinInject<LocalAuthSettingsDataSource>()
         val pinDataSource = koinInject<PinDataSource>()
         val session by authRepository.session.collectAsState()
-        val scope = rememberCoroutineScope()
         OnboardingScreen(
-            onFinish = {
-                localAuthSettingsDataSource.markOnboardingCompleted()
+            onFinish = { pendingPin ->
+                finalizeOnboardingLocalAuth(
+                    pendingPin = pendingPin,
+                    markOnboardingCompleted = localAuthSettingsDataSource::markOnboardingCompleted,
+                    savePin = pinDataSource::savePin,
+                    setAppLockEnabled = localAuthSettingsDataSource::setAppLockEnabled,
+                    setBiometricUnlockEnabled = localAuthSettingsDataSource::setBiometricUnlockEnabled,
+                )
                 navigator.clearAndGoTo(Screen.Home)
             },
             isGuest = session !is AuthSession.SignedIn,
             onRequireAuth = { navigator.requireAuth(Screen.Home) },
-            onPinCreated = { pin ->
-                scope.launch {
-                    pinDataSource.savePin(pin)
-                    localAuthSettingsDataSource.setAppLockEnabled(true)
-                    localAuthSettingsDataSource.setBiometricUnlockEnabled(true)
-                }
-            },
         )
     }
 

@@ -29,13 +29,13 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun OnboardingScreen(
-    onFinish: () -> Unit,
+    onFinish: (String?) -> Unit,
     modifier: Modifier = Modifier,
     isGuest: Boolean = true,
     onRequireAuth: () -> Unit = {},
-    onPinCreated: (String) -> Unit = {},
 ) {
     var step by remember { mutableIntStateOf(0) } // 0: Welcome, 1: Auth, 2: PIN, 3+: Questions, Last: Result
+    var pendingPin by remember { mutableStateOf<String?>(null) }
     val answers = remember(sampleOnboardingQuestions.size) {
         mutableStateListOf<Int?>().apply {
             repeat(sampleOnboardingQuestions.size) { add(null) }
@@ -151,12 +151,15 @@ fun OnboardingScreen(
 
                         2 -> PinScreen(
                             onComplete = { finalPin ->
-                                onPinCreated(finalPin)
+                                pendingPin = finalPin
                                 step++
                             },
                             applySystemBarsPadding = false,
                             footerActionLabel = stringResource(Res.string.onboarding_skip_pin),
-                            onFooterAction = { step++ },
+                            onFooterAction = {
+                                pendingPin = null
+                                step++
+                            },
                         )
 
                         in questionStartIndex until questionEndIndex -> {
@@ -198,7 +201,7 @@ fun OnboardingScreen(
 
                         questionEndIndex -> ResultStep(
                             riskScore = riskScore,
-                            onFinish = onFinish,
+                            onFinish = { onFinish(pendingPin) },
                         )
                     }
                 }
