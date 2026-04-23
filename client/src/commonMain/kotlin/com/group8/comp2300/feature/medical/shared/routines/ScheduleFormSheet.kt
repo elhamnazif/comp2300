@@ -1,13 +1,18 @@
 package com.group8.comp2300.feature.medical.shared.routines
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
 import com.group8.comp2300.core.ui.components.ConfirmActionDialog
@@ -36,6 +41,8 @@ fun ScheduleFormSheet(
     onCancel: () -> Unit,
     showMedicationSection: Boolean = true,
 ) {
+    val scheduleNameFocusRequester = remember { FocusRequester() }
+    val startDateFocusRequester = remember { FocusRequester() }
     val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
     var draft by remember(routineToEdit?.id, title, initialSelectedMedicationIds) {
         mutableStateOf(
@@ -111,6 +118,10 @@ fun ScheduleFormSheet(
                 showNameField = true,
                 showMedicationSection = showMedicationSection,
                 showArchiveToggle = routineToEdit != null,
+                nameTextFieldModifier = Modifier.focusRequester(scheduleNameFocusRequester),
+                nameKeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                nameKeyboardActions = KeyboardActions(onNext = { startDateFocusRequester.requestFocus() }),
+                startDateModifier = Modifier.focusRequester(startDateFocusRequester),
             )
         }
 

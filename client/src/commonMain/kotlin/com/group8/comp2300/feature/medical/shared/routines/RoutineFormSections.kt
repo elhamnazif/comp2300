@@ -1,6 +1,8 @@
 package com.group8.comp2300.feature.medical.shared.routines
 
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -92,6 +94,10 @@ fun RoutineFieldsSection(
     showMedicationSection: Boolean,
     showArchiveToggle: Boolean,
     modifier: Modifier = Modifier,
+    nameTextFieldModifier: Modifier = Modifier,
+    nameKeyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    nameKeyboardActions: KeyboardActions = KeyboardActions.Default,
+    startDateModifier: Modifier = Modifier,
 ) {
     var activeDatePicker by remember { mutableStateOf<String?>(null) }
     var editingTimeIndex by remember { mutableStateOf<Int?>(null) }
@@ -111,6 +117,9 @@ fun RoutineFieldsSection(
                 value = draft.name,
                 onValueChange = { onDraftChange(draft.copy(name = it)) },
                 placeholder = stringResource(Res.string.medical_routine_form_name_placeholder),
+                textFieldModifier = nameTextFieldModifier,
+                keyboardOptions = nameKeyboardOptions,
+                keyboardActions = nameKeyboardActions,
             )
         }
 
@@ -214,6 +223,7 @@ fun RoutineFieldsSection(
             label = stringResource(Res.string.medical_routine_form_start_date),
             value = LocalDate.parse(draft.startDate),
             onClick = { activeDatePicker = "start" },
+            modifier = startDateModifier,
         )
         Row(
             modifier = Modifier.fillMaxWidth(),

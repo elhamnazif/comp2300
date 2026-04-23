@@ -1,6 +1,8 @@
 package com.group8.comp2300.feature.medication
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,8 +10,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.accessibility.PatternSwatch
 import com.group8.comp2300.core.ui.components.ConfirmActionDialog
@@ -38,6 +44,13 @@ fun MedicationFormSheet(
     onEditSchedule: (Routine) -> Unit = {},
     onRemoveSchedule: (Routine) -> Unit = {},
 ) {
+    val focusManager = LocalFocusManager.current
+    val nameFocusRequester = remember { FocusRequester() }
+    val doseAmountFocusRequester = remember { FocusRequester() }
+    val customDoseUnitFocusRequester = remember { FocusRequester() }
+    val stockAmountFocusRequester = remember { FocusRequester() }
+    val customStockUnitFocusRequester = remember { FocusRequester() }
+    val instructionFocusRequester = remember { FocusRequester() }
     val today = remember { Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date }
     var name by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.name ?: "") }
     var doseAmount by remember(medicationToEdit?.id) { mutableStateOf(medicationToEdit?.doseAmount ?: "") }
@@ -128,6 +141,9 @@ fun MedicationFormSheet(
                 value = name,
                 onValueChange = { name = it },
                 placeholder = stringResource(Res.string.medical_medication_form_name_placeholder),
+                textFieldModifier = Modifier.focusRequester(nameFocusRequester),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { doseAmountFocusRequester.requestFocus() }),
             )
             MedicationAmountRow(
                 amountLabel = stringResource(Res.string.medical_medication_form_dose_label),
@@ -137,12 +153,26 @@ fun MedicationFormSheet(
                 selectedUnit = doseUnit,
                 unitLabel = stringResource(Res.string.medical_medication_form_dose_unit_label),
                 onUnitSelect = { doseUnit = it },
+                amountTextFieldModifier = Modifier.focusRequester(doseAmountFocusRequester),
+                amountKeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                amountKeyboardActions = KeyboardActions(
+                    onNext = {
+                        if (doseUnit == MedicationUnit.OTHER) {
+                            customDoseUnitFocusRequester.requestFocus()
+                        } else {
+                            stockAmountFocusRequester.requestFocus()
+                        }
+                    },
+                ),
             )
             OtherUnitField(
                 visible = doseUnit == MedicationUnit.OTHER,
                 label = stringResource(Res.string.medical_medication_form_custom_dose_unit_label),
                 value = customDoseUnit,
                 onValueChange = { customDoseUnit = it },
+                textFieldModifier = Modifier.focusRequester(customDoseUnitFocusRequester),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { stockAmountFocusRequester.requestFocus() }),
             )
             MedicationAmountRow(
                 amountLabel = stringResource(Res.string.medical_medication_form_stock_amount_label),
@@ -152,12 +182,26 @@ fun MedicationFormSheet(
                 selectedUnit = stockUnit,
                 unitLabel = stringResource(Res.string.medical_medication_form_stock_unit_label),
                 onUnitSelect = { stockUnit = it },
+                amountTextFieldModifier = Modifier.focusRequester(stockAmountFocusRequester),
+                amountKeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                amountKeyboardActions = KeyboardActions(
+                    onNext = {
+                        if (stockUnit == MedicationUnit.OTHER) {
+                            customStockUnitFocusRequester.requestFocus()
+                        } else {
+                            instructionFocusRequester.requestFocus()
+                        }
+                    },
+                ),
             )
             OtherUnitField(
                 visible = stockUnit == MedicationUnit.OTHER,
                 label = stringResource(Res.string.medical_medication_form_custom_unit_label),
                 value = customStockUnit,
                 onValueChange = { customStockUnit = it },
+                textFieldModifier = Modifier.focusRequester(customStockUnitFocusRequester),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { instructionFocusRequester.requestFocus() }),
             )
             MedicalFormTextField(
                 label = stringResource(Res.string.medical_medication_form_instructions_label),
@@ -165,6 +209,9 @@ fun MedicationFormSheet(
                 onValueChange = { instruction = it },
                 minLines = 2,
                 placeholder = stringResource(Res.string.medical_medication_form_instructions_placeholder),
+                textFieldModifier = Modifier.focusRequester(instructionFocusRequester),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             )
             MedicationColorPicker(
                 selectedColor = selectedColor,
@@ -298,12 +345,23 @@ fun MedicationFormSheet(
 }
 
 @Composable
-private fun OtherUnitField(visible: Boolean, label: String, value: String, onValueChange: (String) -> Unit) {
+private fun OtherUnitField(
+    visible: Boolean,
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    textFieldModifier: Modifier = Modifier,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+) {
     if (!visible) return
     MedicalFormTextField(
         label = label,
         value = value,
         onValueChange = onValueChange,
+        textFieldModifier = textFieldModifier,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
     )
 }
 
@@ -316,6 +374,9 @@ private fun MedicationAmountRow(
     selectedUnit: MedicationUnit,
     unitLabel: String,
     onUnitSelect: (MedicationUnit) -> Unit,
+    amountTextFieldModifier: Modifier = Modifier,
+    amountKeyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    amountKeyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val stacked = maxWidth < 320.dp
@@ -326,6 +387,9 @@ private fun MedicationAmountRow(
                     value = amountValue,
                     onValueChange = onAmountChange,
                     placeholder = amountPlaceholder.takeIf(String::isNotBlank),
+                    textFieldModifier = amountTextFieldModifier,
+                    keyboardOptions = amountKeyboardOptions,
+                    keyboardActions = amountKeyboardActions,
                 )
                 if (unitLabel.isNotBlank()) {
                     MedicationUnitField(
@@ -342,6 +406,9 @@ private fun MedicationAmountRow(
                     value = amountValue,
                     onValueChange = onAmountChange,
                     placeholder = amountPlaceholder.takeIf(String::isNotBlank),
+                    textFieldModifier = amountTextFieldModifier,
+                    keyboardOptions = amountKeyboardOptions,
+                    keyboardActions = amountKeyboardActions,
                 )
             } else {
                 Row(
@@ -355,6 +422,9 @@ private fun MedicationAmountRow(
                         onValueChange = onAmountChange,
                         modifier = Modifier.weight(1.15f),
                         placeholder = amountPlaceholder.takeIf(String::isNotBlank),
+                        textFieldModifier = amountTextFieldModifier,
+                        keyboardOptions = amountKeyboardOptions,
+                        keyboardActions = amountKeyboardActions,
                     )
                     MedicationUnitField(
                         selectedUnit = selectedUnit,

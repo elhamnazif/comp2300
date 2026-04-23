@@ -1,5 +1,7 @@
 package com.group8.comp2300.feature.medical.shared.forms
 
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +24,8 @@ fun MedicalFormTextField(
     textFieldModifier: Modifier = Modifier,
     placeholder: String? = null,
     minLines: Int = 1,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -39,6 +43,8 @@ fun MedicalFormTextField(
             minLines = minLines,
             singleLine = minLines == 1,
             placeholder = placeholder?.let { { Text(it) } },
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
             shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
