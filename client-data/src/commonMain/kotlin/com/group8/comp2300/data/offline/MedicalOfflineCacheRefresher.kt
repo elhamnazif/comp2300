@@ -6,6 +6,7 @@ import com.group8.comp2300.data.local.MedicationLogLocalDataSource
 import com.group8.comp2300.data.local.MoodLocalDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
+import com.group8.comp2300.data.notifications.AppointmentNotificationScheduler
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.remote.ApiService
 
@@ -18,6 +19,7 @@ class MedicalOfflineCacheRefresher(
     private val medicationLogLocal: MedicationLogLocalDataSource,
     private val moodLocal: MoodLocalDataSource,
     private val routineNotificationScheduler: RoutineNotificationScheduler,
+    private val appointmentNotificationScheduler: AppointmentNotificationScheduler,
 ) : OfflineCacheRefresher {
     override suspend fun refreshCaches() {
         val remoteMedications = apiService.getUserMedications()
@@ -34,5 +36,6 @@ class MedicalOfflineCacheRefresher(
         moodLocal.replaceAll(remoteMoods)
         appointmentLocal.replaceAll(remoteAppointments)
         routineNotificationScheduler.syncAllRoutines()
+        appointmentNotificationScheduler.syncAllAppointments()
     }
 }

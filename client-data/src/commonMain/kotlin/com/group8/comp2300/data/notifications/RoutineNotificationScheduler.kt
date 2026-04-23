@@ -1,5 +1,6 @@
 package com.group8.comp2300.data.notifications
 
+import com.group8.comp2300.data.local.NotificationSettingsDataSource
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
@@ -28,27 +29,12 @@ class RoutineNotificationBootstrap(private val scheduler: RoutineNotificationSch
     }
 }
 
-interface RoutineNotificationService {
-    suspend fun schedule(notification: ScheduledRoutineNotification)
-
-    suspend fun cancel(notificationId: String)
-
-    suspend fun notificationsEnabled(): Boolean
-}
-
-data class ScheduledRoutineNotification(
-    val id: String,
-    val routineId: String,
-    val fireAtMs: Long,
-    val title: String,
-    val body: String,
-)
-
 class RoutineNotificationSchedulerImpl(
     private val routineLocal: RoutineLocalDataSource,
     private val routineOccurrenceOverrideLocal: RoutineOccurrenceOverrideLocalDataSource,
     private val registry: RoutineNotificationRegistry,
-    private val platform: RoutineNotificationService,
+    private val platform: LocalNotificationService,
+    private val notificationSettingsDataSource: NotificationSettingsDataSource,
     private val privacySettingsDataSource: PrivacySettingsDataSource,
     private val notificationContentFormatter: NotificationContentFormatter,
     private val clock: Clock = Clock.System,
@@ -60,7 +46,7 @@ class RoutineNotificationSchedulerImpl(
             cancelStoredNotifications(previousRoutine.id)
         }
 
-        if (!platform.notificationsEnabled()) {
+        if (!platform.notificationsEnabled() || !notificationSettingsDataSource.state.value.routineRemindersEnabled) {
             registry.remove(routine.id)
             return
         }
@@ -70,7 +56,7 @@ class RoutineNotificationSchedulerImpl(
             overrides = routineOccurrenceOverrideLocal.getAll(),
         )
         notifications.forEach { platform.schedule(it) }
-        registry.replace(routine.id, notifications.map(ScheduledRoutineNotification::id))
+        registry.replace(routine.id, notifications.map(ScheduledLocalNotification::id))
     }
 
     override suspend fun removeRoutine(routine: Routine) {
@@ -83,7 +69,7 @@ class RoutineNotificationSchedulerImpl(
         val routines = routineLocal.getAll()
         val routineIds = routines.mapTo(mutableSetOf(), Routine::id)
 
-        if (!platform.notificationsEnabled()) {
+        if (!platform.notificationsEnabled() || !notificationSettingsDataSource.state.value.routineRemindersEnabled) {
             trackedRoutineIds.forEach { cancelStoredNotifications(it) }
             return
         }
@@ -98,7 +84,7 @@ class RoutineNotificationSchedulerImpl(
             cancelStoredNotifications(routine.id)
             val notifications = planner.planForRoutine(routine = routine, overrides = overrides)
             notifications.forEach { platform.schedule(it) }
-            registry.replace(routine.id, notifications.map(ScheduledRoutineNotification::id))
+            registry.replace(routine.id, notifications.map(ScheduledLocalNotification::id))
         }
     }
 
@@ -171,7 +157,7 @@ private class RoutineNotificationPlanner(
     fun planForRoutine(
         routine: Routine,
         overrides: List<RoutineOccurrenceOverride>,
-    ): List<ScheduledRoutineNotification> {
+    ): List<ScheduledLocalNotification> {
         if (!routine.shouldScheduleNotifications(nowMs = nowMs, timeZone = timeZone)) return emptyList()
 
         val maxOffsetMins = routine.reminderOffsetsMins.maxOrNull() ?: 0
@@ -216,22 +202,21 @@ private class RoutineNotificationPlanner(
         }
 
         return (baseNotifications + overrideNotifications)
-            .distinctBy(ScheduledRoutineNotification::id)
-            .sortedBy(ScheduledRoutineNotification::fireAtMs)
+            .distinctBy(ScheduledLocalNotification::id)
+            .sortedBy(ScheduledLocalNotification::fireAtMs)
     }
 
     private fun notificationsForOccurrence(
         routine: Routine,
         occurrenceTimeMs: Long,
-    ): List<ScheduledRoutineNotification> = routine.reminderOffsetsMins
+    ): List<ScheduledLocalNotification> = routine.reminderOffsetsMins
         .sorted()
         .distinct()
         .mapNotNull { offsetMins ->
             val fireAtMs = occurrenceTimeMs - (offsetMins * 60_000L)
             if (fireAtMs <= nowMs) return@mapNotNull null
-            ScheduledRoutineNotification(
+            ScheduledLocalNotification(
                 id = "${routine.id}:$occurrenceTimeMs:$offsetMins",
-                routineId = routine.id,
                 fireAtMs = fireAtMs,
                 title = routineReminderContent.title,
                 body = routineReminderContent.body,

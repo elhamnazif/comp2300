@@ -1,6 +1,7 @@
 package com.group8.comp2300.feature.home
 
-import com.group8.comp2300.data.notifications.RoutineNotificationService
+import com.group8.comp2300.data.local.NotificationSettingsDataSource
+import com.group8.comp2300.data.notifications.LocalNotificationService
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
@@ -15,7 +16,8 @@ val homeModule = module {
             appointmentRepository = get<AppointmentDataRepository>(),
             medicationRepository = get<MedicationDataRepository>(),
             medicationLogRepository = get<MedicationLogDataRepository>(),
-            notificationService = get<RoutineNotificationService>(),
+            notificationService = get<LocalNotificationService>(),
+            notificationSettingsDataSource = get<NotificationSettingsDataSource>(),
         )
     }
 }

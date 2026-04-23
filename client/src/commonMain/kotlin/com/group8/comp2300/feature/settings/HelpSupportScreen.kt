@@ -3,6 +3,7 @@ package com.group8.comp2300.feature.settings
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import com.group8.comp2300.core.ui.settings.*
 import com.group8.comp2300.mock.faqs
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
@@ -12,9 +13,16 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.MailOutlineW400Ou
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
+private object SupportLinks {
+    const val SupportEmailUri = "mailto:support@sexualhealthapp.com"
+    const val SupportPhoneUri = "tel:+1800432584"
+    const val SupportResourcesUrl = "https://sexualhealthapp.com/support"
+}
+
 @Composable
 fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
     var expandedFaqIndex by remember { mutableStateOf<Int?>(null) }
+    val uriHandler = LocalUriHandler.current
 
     SettingsDetailScaffold(
         title = stringResource(Res.string.help_support_title),
@@ -50,7 +58,7 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                     description = stringResource(Res.string.help_support_email_val),
                     index = 0,
                     total = 3,
-                    onClick = {},
+                    onClick = { uriHandler.openUri(SupportLinks.SupportEmailUri) },
                 )
                 SettingsNavigationRow(
                     icon = Icons.CallW400Outlinedfill1,
@@ -58,7 +66,7 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                     description = stringResource(Res.string.help_support_phone_val),
                     index = 1,
                     total = 3,
-                    onClick = {},
+                    onClick = { uriHandler.openUri(SupportLinks.SupportPhoneUri) },
                 )
                 SettingsNavigationRow(
                     icon = Icons.InfoW400Outlinedfill1,
@@ -66,7 +74,7 @@ fun HelpSupportScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                     description = stringResource(Res.string.help_support_resources_desc),
                     index = 2,
                     total = 3,
-                    onClick = {},
+                    onClick = { uriHandler.openUri(SupportLinks.SupportResourcesUrl) },
                 )
             }
         }

@@ -31,8 +31,10 @@ import com.group8.comp2300.app.navigation.*
 import com.group8.comp2300.core.security.pin.PinLockViewModel
 import com.group8.comp2300.core.security.pin.PinScreen
 import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
+import com.group8.comp2300.data.local.NotificationSettingsDataSource
 import com.group8.comp2300.data.local.PinDataSource
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
+import com.group8.comp2300.data.notifications.AppointmentNotificationBootstrap
 import com.group8.comp2300.data.notifications.RoutineNotificationBootstrap
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.feature.auth.login.AuthViewModel
@@ -61,12 +63,15 @@ fun AppShell(
     navigator: Navigator = koinViewModel(),
     pinLockViewModel: PinLockViewModel = koinViewModel(),
 ) {
-    val notificationBootstrap: RoutineNotificationBootstrap = koinInject()
+    val routineNotificationBootstrap: RoutineNotificationBootstrap = koinInject()
+    val appointmentNotificationBootstrap: AppointmentNotificationBootstrap = koinInject()
     val localAuthSettingsDataSource: LocalAuthSettingsDataSource = koinInject()
+    val notificationSettingsDataSource: NotificationSettingsDataSource = koinInject()
     val pinDataSource: PinDataSource = koinInject()
     val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
     val session by authViewModel.session.collectAsState()
     val localAuthSettings by localAuthSettingsDataSource.state.collectAsState()
+    val notificationSettings by notificationSettingsDataSource.state.collectAsState()
     val hasPin by pinDataSource.pinSet.collectAsState()
     val isPinLocked by pinLockViewModel.isLocked.collectAsState()
     val isPinInputLocked by pinLockViewModel.isInputLocked.collectAsState()
@@ -76,11 +81,24 @@ fun AppShell(
         navigator.setStartDestination(if (localAuthSettings.onboardingCompleted) Screen.Home else Screen.Onboarding)
     }
 
-    LaunchedEffect(notificationBootstrap) {
-        snapshotFlow { privacySettings.notificationPrivacyMode to privacySettings.notificationAlias }
+    LaunchedEffect(routineNotificationBootstrap, appointmentNotificationBootstrap) {
+        snapshotFlow {
+            NotificationSyncState(
+                sessionKey = when (val currentSession = session) {
+                    AuthSession.Restoring -> "restoring"
+                    AuthSession.SignedOut -> "signed_out"
+                    is AuthSession.SignedIn -> "signed_in:${currentSession.user.id}:${currentSession.isStale}"
+                },
+                notificationPrivacyMode = privacySettings.notificationPrivacyMode,
+                notificationAlias = privacySettings.notificationAlias,
+                routineRemindersEnabled = notificationSettings.routineRemindersEnabled,
+                appointmentRemindersEnabled = notificationSettings.appointmentRemindersEnabled,
+            )
+        }
             .collectLatest {
                 delay(250.milliseconds)
-                notificationBootstrap.synchronize()
+                routineNotificationBootstrap.synchronize()
+                appointmentNotificationBootstrap.synchronize()
             }
     }
 
@@ -105,6 +123,14 @@ fun AppShell(
         )
     }
 }
+
+private data class NotificationSyncState(
+    val sessionKey: String,
+    val notificationPrivacyMode: com.group8.comp2300.data.local.NotificationPrivacyMode,
+    val notificationAlias: String,
+    val routineRemindersEnabled: Boolean,
+    val appointmentRemindersEnabled: Boolean,
+)
 
 @Composable
 private fun AppLoadingState(modifier: Modifier = Modifier) {

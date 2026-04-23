@@ -7,17 +7,25 @@ data class NotificationContent(val title: String, val body: String)
 
 class NotificationContentFormatter {
     fun routineReminder(settings: PrivacySettings): NotificationContent {
+        return NotificationContent(
+            title = reminderTitle(settings),
+            body = genericReminderBody(),
+        )
+    }
+
+    fun appointmentReminder(settings: PrivacySettings): NotificationContent = NotificationContent(
+        title = reminderTitle(settings),
+        body = genericReminderBody(),
+    )
+
+    private fun reminderTitle(settings: PrivacySettings): String {
         val alias = settings.notificationAlias.takeIf(String::isNotBlank)
         return if (settings.notificationPrivacyMode == NotificationPrivacyMode.ALIAS_BASED && alias != null) {
-            NotificationContent(
-                title = "Reminder for $alias",
-                body = "Open the app to check it.",
-            )
+            "Reminder for $alias"
         } else {
-            NotificationContent(
-                title = "Private reminder",
-                body = "Open the app to check it.",
-            )
+            "Private reminder"
         }
     }
+
+    private fun genericReminderBody(): String = "Open the app to check it."
 }

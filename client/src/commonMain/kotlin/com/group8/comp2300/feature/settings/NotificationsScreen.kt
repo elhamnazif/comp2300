@@ -5,6 +5,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import com.group8.comp2300.core.ui.settings.*
 import com.group8.comp2300.data.local.NotificationPrivacyMode
+import com.group8.comp2300.data.local.NotificationSettingsDataSource
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
@@ -15,16 +16,13 @@ import org.koin.compose.koinInject
 @Composable
 fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
     val privacySettingsDataSource: PrivacySettingsDataSource = koinInject()
+    val notificationSettingsDataSource: NotificationSettingsDataSource = koinInject()
     val privacySettings by privacySettingsDataSource.state.collectAsState()
+    val notificationSettings by notificationSettingsDataSource.state.collectAsState()
     var notificationAliasDraft by rememberSaveable(privacySettings.notificationPrivacyMode) {
         mutableStateOf(privacySettings.notificationAlias)
     }
     var isNotificationAliasFocused by remember { mutableStateOf(false) }
-    var appointmentReminders by remember { mutableStateOf(true) }
-    var testResults by remember { mutableStateOf(true) }
-    var testReminders by remember { mutableStateOf(true) }
-    var educationContent by remember { mutableStateOf(false) }
-    var productDeals by remember { mutableStateOf(false) }
 
     val commitNotificationAlias = {
         if (notificationAliasDraft != privacySettings.notificationAlias) {
@@ -112,53 +110,22 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
         item {
             SettingsSection(title = stringResource(Res.string.notifications_health_reminders_title)) {
                 SettingsToggleRow(
+                    icon = Icons.LocalPharmacyW400Outlinedfill1,
+                    title = stringResource(Res.string.notifications_medication_reminders_title),
+                    description = stringResource(Res.string.notifications_medication_reminders_desc),
+                    checked = notificationSettings.routineRemindersEnabled,
+                    index = 0,
+                    total = 2,
+                    onCheckedChange = notificationSettingsDataSource::setRoutineRemindersEnabled,
+                )
+                SettingsToggleRow(
                     icon = Icons.CalendarMonthW400Outlinedfill1,
                     title = stringResource(Res.string.notifications_appointment_reminders_title),
                     description = stringResource(Res.string.notifications_appointment_reminders_desc),
-                    checked = appointmentReminders,
-                    index = 0,
-                    total = 3,
-                    onCheckedChange = { appointmentReminders = it },
-                )
-                SettingsToggleRow(
-                    icon = Icons.CheckCircleW400Outlinedfill1,
-                    title = stringResource(Res.string.notifications_test_results_title),
-                    description = stringResource(Res.string.notifications_test_results_desc),
-                    checked = testResults,
                     index = 1,
-                    total = 3,
-                    onCheckedChange = { testResults = it },
-                )
-                SettingsToggleRow(
-                    icon = Icons.DateRangeW400Outlinedfill1,
-                    title = stringResource(Res.string.notifications_testing_reminders_title),
-                    description = stringResource(Res.string.notifications_testing_reminders_desc),
-                    checked = testReminders,
-                    index = 2,
-                    total = 3,
-                    onCheckedChange = { testReminders = it },
-                )
-            }
-        }
-        item {
-            SettingsSection(title = stringResource(Res.string.notifications_content_updates_title)) {
-                SettingsToggleRow(
-                    icon = Icons.ArticleW400Outlinedfill1,
-                    title = stringResource(Res.string.notifications_educational_content_title),
-                    description = stringResource(Res.string.notifications_educational_content_desc),
-                    checked = educationContent,
-                    index = 0,
+                    checked = notificationSettings.appointmentRemindersEnabled,
                     total = 2,
-                    onCheckedChange = { educationContent = it },
-                )
-                SettingsToggleRow(
-                    icon = Icons.SendW400Outlinedfill1,
-                    title = stringResource(Res.string.notifications_product_deals_title),
-                    description = stringResource(Res.string.notifications_product_deals_desc),
-                    checked = productDeals,
-                    index = 1,
-                    total = 2,
-                    onCheckedChange = { productDeals = it },
+                    onCheckedChange = notificationSettingsDataSource::setAppointmentRemindersEnabled,
                 )
             }
         }

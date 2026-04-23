@@ -802,6 +802,8 @@
     <string name="notifications_product_deals_desc">Special offers on protection and testing kits</string>
     <string name="notifications_discreet_mode_info">When enabled, notifications will not show specific details about appointments or test results. You'll receive a generic reminder to check the app.</string>
     <string name="notifications_privacy_info">Notifications never show medical details.</string>
+    <string name="notifications_medication_reminders_title">Medication Reminders</string>
+    <string name="notifications_medication_reminders_desc">Get notified for scheduled medication reminders</string>
     <string name="notifications_grayscale_info">Grayscale mode is saved on this device and applies across the calendar, charts, and the rest of the app interface.</string>
 
     <!-- Accessibility -->

@@ -71,20 +71,34 @@ val coreModule = module {
     single { AccessibilitySettingsDataSource(get()) }
     single { LocalAuthSettingsDataSource(get(), get()) }
     single { PrivacySettingsDataSource(get()) }
+    single { NotificationSettingsDataSource(get()) }
     single { OfflineMapSettingsDataSource(get()) }
     single { NotificationContentFormatter() }
     single { RoutineNotificationRegistry(get()) }
+    single { AppointmentNotificationRegistry(get()) }
     single<RoutineNotificationScheduler> {
         RoutineNotificationSchedulerImpl(
             routineLocal = get(),
             routineOccurrenceOverrideLocal = get(),
             registry = get(),
-            platform = get<RoutineNotificationService>(),
+            platform = get<LocalNotificationService>(),
+            notificationSettingsDataSource = get(),
             privacySettingsDataSource = get(),
             notificationContentFormatter = get(),
         )
     }
     single { RoutineNotificationBootstrap(get()) }
+    single<AppointmentNotificationScheduler> {
+        AppointmentNotificationSchedulerImpl(
+            appointmentLocal = get(),
+            registry = get(),
+            platform = get<LocalNotificationService>(),
+            notificationSettingsDataSource = get(),
+            privacySettingsDataSource = get(),
+            notificationContentFormatter = get(),
+        )
+    }
+    single { AppointmentNotificationBootstrap(get()) }
     singleOf(::MedicationUpsertMutationHandler) { bind<OfflineMutationHandler>() }
     singleOf(::MedicationDeleteMutationHandler) { bind<OfflineMutationHandler>() }
     singleOf(::RoutineUpsertMutationHandler) { bind<OfflineMutationHandler>() }
@@ -99,7 +113,7 @@ val coreModule = module {
     single { OfflineMutationQueue(get(), get(), get()) }
 
     single<ShopRepository> { ShopRepositoryImpl(get(), get(), get(), get()) }
-    single<AppointmentDataRepository> { AppointmentDataRepositoryImpl(get(), get()) }
+    single<AppointmentDataRepository> { AppointmentDataRepositoryImpl(get(), get(), get()) }
     single<MedicationDataRepository> { MedicationDataRepositoryImpl(get(), get(), get()) }
     single<RoutineDataRepository> { RoutineDataRepositoryImpl(get(), get(), get(), get()) }
     single<MedicationLogDataRepository> { MedicationLogDataRepositoryImpl(get(), get(), get(), get(), get(), get()) }

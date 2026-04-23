@@ -18,7 +18,7 @@ import kotlin.time.Instant
 
 private const val RoutineNotificationChannelId = "routine_reminders"
 
-class AndroidRoutineNotificationService(private val context: Context) : RoutineNotificationService {
+class AndroidLocalNotificationService(private val context: Context) : LocalNotificationService {
     private val alarmeeService = createAlarmeeService().apply {
         initialize(
             platformConfiguration = AlarmeeAndroidPlatformConfiguration(
@@ -36,7 +36,7 @@ class AndroidRoutineNotificationService(private val context: Context) : RoutineN
         )
     }
 
-    override suspend fun schedule(notification: ScheduledRoutineNotification) {
+    override suspend fun schedule(notification: ScheduledLocalNotification) {
         alarmeeService.local.schedule(
             alarmee = Alarmee(
                 uuid = notification.id,

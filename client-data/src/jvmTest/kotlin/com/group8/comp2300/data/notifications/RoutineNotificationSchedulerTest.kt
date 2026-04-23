@@ -1,6 +1,7 @@
 package com.group8.comp2300.data.notifications
 
 import com.group8.comp2300.data.local.NotificationPrivacyMode
+import com.group8.comp2300.data.local.NotificationSettingsDataSource
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.data.local.RoutineLocalDataSource
 import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
@@ -94,6 +95,19 @@ class RoutineNotificationSchedulerTest {
     }
 
     @Test
+    fun routineNotificationSettingOffCancelsStoredNotificationsAndSkipsRescheduling() = runTest {
+        val fixture = schedulerFixture(nowMs = utcMs(2026, Month.MARCH, 17, 8, 0))
+        val routine = fixture.dailyRoutine()
+
+        fixture.scheduler.syncRoutine(routine)
+        fixture.notificationSettingsDataSource.setRoutineRemindersEnabled(false)
+        fixture.scheduler.syncAllRoutines()
+
+        assertTrue(fixture.platform.canceled.isNotEmpty())
+        assertTrue(fixture.registry.idsForRoutine(routine.id).isEmpty())
+    }
+
+    @Test
     fun archivedOrEndedRoutinesScheduleNothing() = runTest {
         val fixture = schedulerFixture(nowMs = utcMs(2026, Month.MARCH, 17, 8, 0))
         val archived = fixture.dailyRoutine(id = "archived", status = RoutineStatus.ARCHIVED)
@@ -162,6 +176,7 @@ private class SchedulerFixture(
     val platform: RecordingService,
     val registry: RoutineNotificationRegistry,
     val overrideLocal: RoutineOccurrenceOverrideLocalDataSource,
+    val notificationSettingsDataSource: NotificationSettingsDataSource,
 ) {
     fun dailyRoutine(
         id: String = "routine-1",
@@ -197,8 +212,9 @@ private fun schedulerFixture(
     val db = newDatabase()
     val routineLocal = RoutineLocalDataSource(db)
     val overrideLocal = RoutineOccurrenceOverrideLocalDataSource(db)
-    val settings = Settings()
+    val settings = newNotificationSettings()
     val privacySettingsDataSource = PrivacySettingsDataSource(settings)
+    val notificationSettingsDataSource = NotificationSettingsDataSource(settings)
     privacySettingsDataSource.setNotificationPrivacyMode(notificationPrivacyMode)
     privacySettingsDataSource.setNotificationAlias(notificationAlias)
     val registry = RoutineNotificationRegistry(settings)
@@ -209,6 +225,7 @@ private fun schedulerFixture(
             routineOccurrenceOverrideLocal = overrideLocal,
             registry = registry,
             platform = platform,
+            notificationSettingsDataSource = notificationSettingsDataSource,
             privacySettingsDataSource = privacySettingsDataSource,
             notificationContentFormatter = NotificationContentFormatter(),
             clock = FixedClock(nowMs),
@@ -217,14 +234,20 @@ private fun schedulerFixture(
         platform = platform,
         registry = registry,
         overrideLocal = overrideLocal,
+        notificationSettingsDataSource = notificationSettingsDataSource,
     )
 }
 
-private class RecordingService : RoutineNotificationService {
-    val scheduled = mutableListOf<ScheduledRoutineNotification>()
+private fun newNotificationSettings(): Settings = Settings().also {
+    it.remove("notifications.routine_reminders_enabled")
+    it.remove("notifications.appointment_reminders_enabled")
+}
+
+private class RecordingService : LocalNotificationService {
+    val scheduled = mutableListOf<ScheduledLocalNotification>()
     val canceled = mutableListOf<String>()
 
-    override suspend fun schedule(notification: ScheduledRoutineNotification) {
+    override suspend fun schedule(notification: ScheduledLocalNotification) {
         scheduled += notification
     }
 

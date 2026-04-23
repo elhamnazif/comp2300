@@ -2,6 +2,7 @@ package com.group8.comp2300.data.repository.medical
 
 import com.group8.comp2300.data.auth.TokenManagerImpl
 import com.group8.comp2300.data.local.*
+import com.group8.comp2300.data.notifications.AppointmentNotificationScheduler
 import com.group8.comp2300.data.notifications.RoutineNotificationScheduler
 import com.group8.comp2300.data.offline.*
 import com.group8.comp2300.data.remote.ApiService
@@ -204,6 +205,7 @@ class MedicalDataRepositoriesTest {
         val repository = AppointmentDataRepositoryImpl(
             appointmentLocal = AppointmentLocalDataSource(db),
             apiService = BookingApiStub(),
+            appointmentNotificationScheduler = RecordingAppointmentNotificationScheduler(),
         )
 
         repository.bookClinicAppointment(
@@ -225,9 +227,11 @@ class MedicalDataRepositoriesTest {
     fun cancellingAppointmentUpdatesLocalRecord() = runTest {
         val db = newDatabase()
         val apiService = BookingApiStub()
+        val notificationScheduler = RecordingAppointmentNotificationScheduler()
         val repository = AppointmentDataRepositoryImpl(
             appointmentLocal = AppointmentLocalDataSource(db),
             apiService = apiService,
+            appointmentNotificationScheduler = notificationScheduler,
         )
 
         repository.bookClinicAppointment(
@@ -245,15 +249,18 @@ class MedicalDataRepositoriesTest {
         val stored = AppointmentLocalDataSource(db).getById("appointment-1")
         assertEquals("CANCELLED", stored?.status)
         assertEquals(null, stored?.bookingId)
+        assertEquals(listOf("appointment-1", "appointment-1"), notificationScheduler.syncedAppointmentIds)
     }
 
     @Test
     fun reschedulingAppointmentUpdatesLocalRecord() = runTest {
         val db = newDatabase()
         val apiService = BookingApiStub()
+        val notificationScheduler = RecordingAppointmentNotificationScheduler()
         val repository = AppointmentDataRepositoryImpl(
             appointmentLocal = AppointmentLocalDataSource(db),
             apiService = apiService,
+            appointmentNotificationScheduler = notificationScheduler,
         )
 
         repository.bookClinicAppointment(
@@ -282,6 +289,7 @@ class MedicalDataRepositoriesTest {
         assertEquals("FOLLOW_UP", stored?.appointmentType)
         assertEquals("Bring results", stored?.notes)
         assertEquals(false, stored?.hasReminder)
+        assertEquals(listOf("appointment-1", "appointment-1"), notificationScheduler.syncedAppointmentIds)
     }
 
     @Test
@@ -305,6 +313,7 @@ class MedicalDataRepositoriesTest {
         val repository = AppointmentDataRepositoryImpl(
             appointmentLocal = local,
             apiService = BookingApiStub(),
+            appointmentNotificationScheduler = RecordingAppointmentNotificationScheduler(),
         )
 
         assertEquals(listOf("appointment-confirmed"), repository.getAppointments().map(Appointment::id))
@@ -723,6 +732,18 @@ private class RecordingRoutineNotificationScheduler : RoutineNotificationSchedul
     override suspend fun removeRoutine(routine: Routine) = Unit
 
     override suspend fun syncAllRoutines() = Unit
+}
+
+private class RecordingAppointmentNotificationScheduler : AppointmentNotificationScheduler {
+    val syncedAppointmentIds = mutableListOf<String>()
+
+    override suspend fun syncAppointment(appointment: Appointment) {
+        syncedAppointmentIds += appointment.id
+    }
+
+    override suspend fun removeAppointment(appointment: Appointment) = Unit
+
+    override suspend fun syncAllAppointments() = Unit
 }
 
 private fun mutationQueue(db: com.group8.comp2300.data.database.AppDatabase, outbox: OutboxDataSource) =

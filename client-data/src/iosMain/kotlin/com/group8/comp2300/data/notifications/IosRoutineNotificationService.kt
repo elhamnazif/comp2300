@@ -15,12 +15,12 @@ import platform.UserNotifications.UNUserNotificationCenter
 import kotlin.coroutines.resume
 import kotlin.time.Instant
 
-class IosRoutineNotificationService : RoutineNotificationService {
+class IosLocalNotificationService : LocalNotificationService {
     private val alarmeeService = createAlarmeeService().apply {
         initialize(platformConfiguration = AlarmeeIosPlatformConfiguration)
     }
 
-    override suspend fun schedule(notification: ScheduledRoutineNotification) {
+    override suspend fun schedule(notification: ScheduledLocalNotification) {
         alarmeeService.local.schedule(
             alarmee = Alarmee(
                 uuid = notification.id,
