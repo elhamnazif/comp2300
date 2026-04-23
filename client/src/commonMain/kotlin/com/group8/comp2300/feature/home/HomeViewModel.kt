@@ -40,7 +40,8 @@ class HomeViewModel(
                 val now = clock.now().toEpochMilliseconds()
                 val today = clock.now().toLocalDateTime(timeZone).date.toString()
                 val appointments = appointmentRepository.getAppointments()
-                val activeMedicationCount = medicationRepository.getMedications().count { it.status == MedicationStatus.ACTIVE }
+                val activeMedicationCount =
+                    medicationRepository.getMedications().count { it.status == MedicationStatus.ACTIVE }
                 val agenda = medicationLogRepository.getRoutineAgenda(today)
                 val notificationsEnabled = runCatching { notificationService.notificationsEnabled() }.getOrDefault(true)
 

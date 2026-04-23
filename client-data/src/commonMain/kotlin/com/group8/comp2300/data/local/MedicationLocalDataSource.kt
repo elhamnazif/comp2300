@@ -4,8 +4,8 @@ import com.group8.comp2300.data.database.AppDatabase
 import com.group8.comp2300.data.database.MedicationEntity
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationStatus
-import com.group8.comp2300.domain.model.medical.formatMedicationAmount
 import com.group8.comp2300.domain.model.medical.MedicationUnit
+import com.group8.comp2300.domain.model.medical.formatMedicationAmount
 import com.group8.comp2300.domain.model.medical.parseLegacyMedicationAmount
 
 class MedicationLocalDataSource(private val database: AppDatabase) {

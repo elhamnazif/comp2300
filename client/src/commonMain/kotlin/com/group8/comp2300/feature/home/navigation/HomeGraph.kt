@@ -9,9 +9,9 @@ import com.group8.comp2300.app.navigation.overlayNavigationMetadata
 import com.group8.comp2300.domain.model.session.userOrNull
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.feature.home.HomeInboxAction
-import com.group8.comp2300.feature.home.InboxScreen
 import com.group8.comp2300.feature.home.HomeScreen
 import com.group8.comp2300.feature.home.HomeViewModel
+import com.group8.comp2300.feature.home.InboxScreen
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.module
@@ -75,6 +75,7 @@ val homeGraphModule = module {
                         }
                         navigator.navigate(Screen.Calendar)
                     }
+
                     is HomeInboxAction.OpenBookingHistory -> {
                         navigateToOverlay(Screen.BookingHistory(action.appointmentId))
                     }

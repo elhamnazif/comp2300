@@ -77,7 +77,12 @@ class CalendarViewModel(
                     )
                 }
             } catch (e: Exception) {
-                state.update { it.copy(isLoading = false, screenError = e.errorMessage("Failed to load calendar data")) }
+                state.update {
+                    it.copy(
+                        isLoading = false,
+                        screenError = e.errorMessage("Failed to load calendar data"),
+                    )
+                }
             }
         }
     }

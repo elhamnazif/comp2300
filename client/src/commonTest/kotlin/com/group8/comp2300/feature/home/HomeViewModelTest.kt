@@ -131,9 +131,8 @@ private class WaitingSyncCoordinator(private val gate: CompletableDeferred<Unit>
     override suspend fun discardMutation(id: String) = Unit
 }
 
-private class FakeAppointmentRepository(
-    private val appointments: List<Appointment> = emptyList(),
-) : AppointmentDataRepository {
+private class FakeAppointmentRepository(private val appointments: List<Appointment> = emptyList()) :
+    AppointmentDataRepository {
     override suspend fun getAppointments(): List<Appointment> = appointments
 
     override suspend fun getBookingHistory(): List<Appointment> = appointments
@@ -147,9 +146,8 @@ private class FakeAppointmentRepository(
     override suspend fun rescheduleAppointment(id: String, request: ClinicBookingRequest): Appointment = error("unused")
 }
 
-private class FakeMedicationRepository(
-    private val medications: List<Medication> = emptyList(),
-) : MedicationDataRepository {
+private class FakeMedicationRepository(private val medications: List<Medication> = emptyList()) :
+    MedicationDataRepository {
     override suspend fun getMedications(): List<Medication> = medications
 
     override suspend fun saveMedication(request: MedicationCreateRequest, id: String?): Medication = error("unused")
@@ -157,34 +155,37 @@ private class FakeMedicationRepository(
     override suspend fun deleteMedication(id: String) = Unit
 }
 
-private class FakeMedicationLogRepository(
-    private val agenda: List<RoutineDayAgenda> = emptyList(),
-) : MedicationLogDataRepository {
+private class FakeMedicationLogRepository(private val agenda: List<RoutineDayAgenda> = emptyList()) :
+    MedicationLogDataRepository {
     override suspend fun getRoutineAgenda(date: String): List<RoutineDayAgenda> = agenda
 
-    override suspend fun getRoutineAgendaRange(startDate: String, endDate: String): Map<String, List<RoutineDayAgenda>> =
-        emptyMap()
+    override suspend fun getRoutineAgendaRange(
+        startDate: String,
+        endDate: String,
+    ): Map<String, List<RoutineDayAgenda>> = emptyMap()
 
     override suspend fun getManualMedicationLogs(date: String): List<MedicationLog> = emptyList()
 
-    override suspend fun getManualMedicationLogsRange(startDate: String, endDate: String): Map<String, List<MedicationLog>> =
-        emptyMap()
+    override suspend fun getManualMedicationLogsRange(
+        startDate: String,
+        endDate: String,
+    ): Map<String, List<MedicationLog>> = emptyMap()
 
     override suspend fun getMedicationOccurrenceCandidates(
         medicationId: String,
         timestampMs: Long,
     ): List<MedicationOccurrenceCandidate> = emptyList()
 
-    override suspend fun rescheduleRoutineOccurrence(request: RoutineOccurrenceOverrideRequest): RoutineOccurrenceOverride =
-        error("unused")
+    override suspend fun rescheduleRoutineOccurrence(
+        request: RoutineOccurrenceOverrideRequest,
+    ): RoutineOccurrenceOverride = error("unused")
 
     override suspend fun logMedication(request: MedicationLogRequest): MedicationLog = error("unused")
 }
 
-private class FakeNotificationService(
-    private val enabled: Boolean = true,
-) : RoutineNotificationService {
-    override suspend fun schedule(notification: com.group8.comp2300.data.notifications.ScheduledRoutineNotification) = Unit
+private class FakeNotificationService(private val enabled: Boolean = true) : RoutineNotificationService {
+    override suspend fun schedule(notification: com.group8.comp2300.data.notifications.ScheduledRoutineNotification) =
+        Unit
 
     override suspend fun cancel(notificationId: String) = Unit
 

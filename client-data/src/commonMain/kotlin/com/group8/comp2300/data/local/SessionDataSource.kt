@@ -4,16 +4,19 @@ import com.group8.comp2300.data.database.AppDatabase
 
 class SessionDataSource(private val database: AppDatabase) {
     suspend fun saveSession(userId: String, accessToken: String, refreshToken: String, expiresAt: Long) {
-        database.appDatabaseQueries.upsertSession(
-            userId = userId,
-            accessToken = accessToken,
-            refreshToken = refreshToken,
-            expiresAt = expiresAt,
-        )
+        database.appDatabaseQueries.transaction {
+            database.appDatabaseQueries.deleteSession()
+            database.appDatabaseQueries.upsertSession(
+                userId = userId,
+                accessToken = accessToken,
+                refreshToken = refreshToken,
+                expiresAt = expiresAt,
+            )
+        }
     }
 
     fun currentSession(): Session? =
-        database.appDatabaseQueries.selectSession().executeAsOneOrNull()?.let { sessionEntity ->
+        database.appDatabaseQueries.selectLatestSession().executeAsOneOrNull()?.let { sessionEntity ->
             Session(
                 userId = sessionEntity.userId,
                 accessToken = sessionEntity.accessToken,

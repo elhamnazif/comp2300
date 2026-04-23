@@ -12,9 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.util.formatCurrency
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.domain.model.shop.CartLine
+import com.group8.comp2300.util.formatCurrency
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -24,11 +24,13 @@ fun CartScreen(
     onBack: () -> Unit,
     onCheckout: () -> Unit,
     onContinueShopping: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: ShopViewModel = koinViewModel(),
 ) {
     val state by viewModel.cartState.collectAsState()
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             AppTopBar(
                 title = { Text(stringResource(Res.string.shop_cart_title)) },
@@ -146,12 +148,7 @@ fun CartScreen(
 }
 
 @Composable
-private fun CartLineItem(
-    line: CartLine,
-    onIncrement: () -> Unit,
-    onDecrement: () -> Unit,
-    onRemove: () -> Unit,
-) {
+private fun CartLineItem(line: CartLine, onIncrement: () -> Unit, onDecrement: () -> Unit, onRemove: () -> Unit) {
     val title = line.product?.name ?: stringResource(Res.string.shop_unavailable_item)
     val subtitle = line.product?.description ?: stringResource(Res.string.shop_unavailable_item_action)
 

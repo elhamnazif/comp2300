@@ -37,7 +37,7 @@ fun ProductDetailScreen(
         value = ProductLoadState(product = viewModel.getProductById(productId), isLoading = false)
     }
 
-        ProductDetailContent(
+    ProductDetailContent(
         product = productState.product,
         isLoading = productState.isLoading,
         cartItemCount = cartState.cartItemCount,
@@ -56,54 +56,23 @@ private fun ProductDetailContent(
     onCartClick: () -> Unit,
     onAddToCart: (Product) -> Unit,
 ) {
-    if (isLoading) {
-        Scaffold(
-            topBar = {
-                AppTopBar(
-                    title = { Text("") },
-                    centered = true,
-                    onBackClick = onBack,
+    when {
+        isLoading -> ProductDetailStatusScaffold(
+            onBack = onBack,
+            content = {
+                CircularProgressIndicator()
+                Text(
+                    text = "Loading product",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                 )
             },
-        ) { padding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(
-                    modifier = Modifier.widthIn(max = 320.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    CircularProgressIndicator()
-                    Text(
-                        text = "Loading product",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            }
-        }
-        return
-    }
+        )
 
-    if (product == null) {
-        Scaffold(
-            topBar = {
-                AppTopBar(
-                    title = { Text("") },
-                    centered = true,
-                    onBackClick = onBack,
-                )
-            },
-        ) { padding ->
-            Box(
-                modifier = Modifier.fillMaxSize().padding(padding),
-                contentAlignment = Alignment.Center,
-            ) {
+        product == null -> ProductDetailStatusScaffold(
+            onBack = onBack,
+            content = {
                 Text(
                     text = stringResource(Res.string.shop_product_unavailable),
                     modifier = Modifier.widthIn(max = 320.dp),
@@ -111,109 +80,150 @@ private fun ProductDetailContent(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
                 )
+            },
+        )
+
+        else -> Scaffold(
+            topBar = {
+                AppTopBar(
+                    title = {
+                        Text(
+                            text = product.name,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    },
+                    onBackClick = onBack,
+                    actions = {
+                        IconButton(onClick = onCartClick) {
+                            if (cartItemCount > 0) {
+                                BadgedBox(badge = { Badge { Text(cartItemCount.toString()) } }) {
+                                    Icon(Icons.ShoppingCartW400Outlinedfill1, stringResource(Res.string.shop_cart_desc))
+                                }
+                            } else {
+                                Icon(Icons.ShoppingCartW400Outlinedfill1, stringResource(Res.string.shop_cart_desc))
+                            }
+                        }
+                    },
+                )
+            },
+            bottomBar = {
+                Surface(shadowElevation = 12.dp) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .navigationBarsPadding(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                stringResource(Res.string.shop_details_total_label),
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                            Text(
+                                if (product.insuranceCovered) {
+                                    stringResource(Res.string.shop_product_insured_price)
+                                } else {
+                                    product.formattedPrice
+                                },
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = if (product.insuranceCovered) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
+                            )
+                        }
+                        Button(
+                            onClick = { onAddToCart(product) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp),
+                        ) {
+                            Text(stringResource(Res.string.shop_details_add_to_cart_button))
+                        }
+                    }
+                }
+            },
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                ShopProductArtwork(
+                    product = product,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp),
+                )
+
+                Column(modifier = Modifier.padding(24.dp)) {
+                    if (product.insuranceCovered) {
+                        AssistChip(
+                            onClick = {},
+                            label = { Text(stringResource(Res.string.shop_details_insurance_badge)) },
+                            leadingIcon = { Icon(Icons.CheckCircleW400Outlinedfill1, null) },
+                            colors = AssistChipDefaults.assistChipColors(
+                                leadingIconContentColor = Color(0xFF4CAF50),
+                            ),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                    }
+
+                    Text(
+                        product.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(product.description, style = MaterialTheme.typography.bodyLarge)
+
+                    Spacer(Modifier.height(24.dp))
+
+                    FeatureRow(
+                        stringResource(Res.string.shop_details_feature_packaging_title),
+                        stringResource(Res.string.shop_details_feature_packaging_desc),
+                    )
+                    FeatureRow(
+                        stringResource(Res.string.shop_details_feature_delivery_title),
+                        stringResource(Res.string.shop_details_feature_delivery_desc),
+                    )
+                    FeatureRow(
+                        stringResource(Res.string.shop_details_feature_refills_title),
+                        stringResource(Res.string.shop_details_feature_refills_desc),
+                    )
+                }
             }
         }
-        return
     }
+}
 
+@Composable
+private fun ProductDetailStatusScaffold(onBack: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
     Scaffold(
         topBar = {
             AppTopBar(
-                title = {
-                    Text(
-                        text = product.name,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
+                title = { Text("") },
+                centered = true,
                 onBackClick = onBack,
-                actions = {
-                    IconButton(onClick = onCartClick) {
-                        if (cartItemCount > 0) {
-                            BadgedBox(badge = { Badge { Text(cartItemCount.toString()) } }) {
-                                Icon(Icons.ShoppingCartW400Outlinedfill1, stringResource(Res.string.shop_cart_desc))
-                            }
-                        } else {
-                            Icon(Icons.ShoppingCartW400Outlinedfill1, stringResource(Res.string.shop_cart_desc))
-                        }
-                    }
-                },
             )
-        },
-        bottomBar = {
-            Surface(shadowElevation = 12.dp) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp).navigationBarsPadding(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            stringResource(Res.string.shop_details_total_label),
-                            style = MaterialTheme.typography.labelLarge,
-                        )
-                        Text(
-                            if (product.insuranceCovered) {
-                                stringResource(Res.string.shop_product_insured_price)
-                            } else {
-                                product.formattedPrice
-                            },
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = if (product.insuranceCovered) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurface
-                            },
-                        )
-                    }
-                    Button(
-                        onClick = { onAddToCart(product) },
-                        modifier = Modifier.weight(1f).height(50.dp),
-                    ) {
-                        Text(stringResource(Res.string.shop_details_add_to_cart_button))
-                    }
-                }
-            }
         },
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).verticalScroll(rememberScrollState())) {
-            ShopProductArtwork(
-                product = product,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp),
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding),
+            contentAlignment = Alignment.Center,
+        ) {
+            Column(
+                modifier = Modifier.widthIn(max = 320.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                content = content,
             )
-
-            Column(modifier = Modifier.padding(24.dp)) {
-                if (product.insuranceCovered) {
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(stringResource(Res.string.shop_details_insurance_badge)) },
-                        leadingIcon = { Icon(Icons.CheckCircleW400Outlinedfill1, null) },
-                        colors = AssistChipDefaults.assistChipColors(leadingIconContentColor = Color(0xFF4CAF50)),
-                    )
-                    Spacer(Modifier.height(8.dp))
-                }
-
-                Text(product.name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(12.dp))
-                Text(product.description, style = MaterialTheme.typography.bodyLarge)
-
-                Spacer(Modifier.height(24.dp))
-
-                FeatureRow(
-                    stringResource(Res.string.shop_details_feature_packaging_title),
-                    stringResource(Res.string.shop_details_feature_packaging_desc),
-                )
-                FeatureRow(
-                    stringResource(Res.string.shop_details_feature_delivery_title),
-                    stringResource(Res.string.shop_details_feature_delivery_desc),
-                )
-                FeatureRow(
-                    stringResource(Res.string.shop_details_feature_refills_title),
-                    stringResource(Res.string.shop_details_feature_refills_desc),
-                )
-            }
         }
     }
 }
@@ -239,7 +249,4 @@ fun FeatureRow(title: String, subtitle: String, modifier: Modifier = Modifier) {
     }
 }
 
-private data class ProductLoadState(
-    val product: Product? = null,
-    val isLoading: Boolean = true,
-)
+private data class ProductLoadState(val product: Product? = null, val isLoading: Boolean = true)

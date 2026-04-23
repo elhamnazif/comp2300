@@ -1,7 +1,7 @@
 package com.group8.comp2300.domain.model.shop
 
-import kotlinx.serialization.Serializable
 import com.group8.comp2300.util.formatCurrency
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class Product(

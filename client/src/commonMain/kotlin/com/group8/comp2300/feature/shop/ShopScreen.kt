@@ -52,7 +52,8 @@ fun ShopScreen(viewModel: ShopViewModel = koinViewModel()) {
     val navigator = LocalNavigator.current
     val browseState by viewModel.browseState.collectAsState()
     val cartState by viewModel.cartState.collectAsState()
-    val selectedProductId = (navigator.backStack.lastOrNull { it is Screen.ProductDetail } as? Screen.ProductDetail)?.productId
+    val selectedProductId =
+        (navigator.backStack.lastOrNull { it is Screen.ProductDetail } as? Screen.ProductDetail)?.productId
 
     ShopContent(
         products = browseState.products,
@@ -243,7 +244,8 @@ private fun ShopContent(
                                             product = product,
                                             categoryLabel = productCategoryLabel(product.category),
                                             isSelected = selectedProductId == product.id,
-                                            justAdded = browseFeedback?.productId == product.id && !browseFeedback.isError,
+                                            justAdded = browseFeedback?.productId == product.id &&
+                                                !browseFeedback.isError,
                                             onClick = { onProductClick(product.id) },
                                             onPrimaryActionClick = { onAddToCart(product) },
                                         )
@@ -251,7 +253,6 @@ private fun ShopContent(
                                 }
                                 item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(16.dp)) }
                             }
-
                         }
                     }
                 }

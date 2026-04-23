@@ -9,10 +9,7 @@ import com.group8.comp2300.domain.repository.ProductRepository
 import java.util.*
 import kotlin.time.Clock
 
-class OrderService(
-    private val orderRepository: OrderRepository,
-    private val productRepository: ProductRepository,
-) {
+class OrderService(private val orderRepository: OrderRepository, private val productRepository: ProductRepository) {
     fun placeOrder(userId: String, request: PlaceOrderRequest): Order {
         val shippingAddress = request.shippingAddress.trim()
         require(shippingAddress.isNotEmpty()) { "Shipping address is required" }

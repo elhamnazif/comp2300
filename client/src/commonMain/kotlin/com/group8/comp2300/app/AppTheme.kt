@@ -12,13 +12,11 @@ import com.materialkolor.PaletteStyle
 
 private val MintThemeSeedColor = Color(0xFF66FFC7)
 
+@Suppress("CompositionLocalAllowlist")
 val LocalAppearanceThemeMode = staticCompositionLocalOf { AppearanceThemeMode.WALLPAPER }
 
 @Composable
-fun AppTheme(
-    appearanceThemeMode: AppearanceThemeMode,
-    content: @Composable () -> Unit,
-) {
+fun AppTheme(appearanceThemeMode: AppearanceThemeMode, content: @Composable () -> Unit) {
     val wallpaperSeedColor = getWallpaperSeedColor()
     val effectiveThemeMode = effectiveAppearanceThemeMode(appearanceThemeMode, wallpaperSeedColor)
     val seedColor = resolveThemeSeedColor(appearanceThemeMode, wallpaperSeedColor)
@@ -43,10 +41,8 @@ internal fun effectiveAppearanceThemeMode(
     else -> appearanceThemeMode
 }
 
-internal fun resolveThemeSeedColor(
-    appearanceThemeMode: AppearanceThemeMode,
-    wallpaperSeedColor: Color?,
-): Color = when (effectiveAppearanceThemeMode(appearanceThemeMode, wallpaperSeedColor)) {
-    AppearanceThemeMode.MINT -> MintThemeSeedColor
-    AppearanceThemeMode.WALLPAPER -> wallpaperSeedColor ?: MintThemeSeedColor
-}
+internal fun resolveThemeSeedColor(appearanceThemeMode: AppearanceThemeMode, wallpaperSeedColor: Color?): Color =
+    when (effectiveAppearanceThemeMode(appearanceThemeMode, wallpaperSeedColor)) {
+        AppearanceThemeMode.MINT -> MintThemeSeedColor
+        AppearanceThemeMode.WALLPAPER -> wallpaperSeedColor ?: MintThemeSeedColor
+    }

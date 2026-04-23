@@ -31,7 +31,7 @@ class ShopRepositoryImpl(
     private val authRepository: AuthRepository,
 ) : ShopRepository {
     private companion object {
-        const val GUEST_CART_USER_ID = "__guest__"
+        const val GuestCartUserId = "__guest__"
     }
 
     private val guestCartMigrationMutex = Mutex()
@@ -61,7 +61,7 @@ class ShopRepositoryImpl(
     override fun observeCart(): Flow<Cart> = authRepository.session.flatMapLatest { session ->
         flow {
             val signedIn = session as? AuthSession.SignedIn
-            val userId = signedIn?.user?.id ?: GUEST_CART_USER_ID
+            val userId = signedIn?.user?.id ?: GuestCartUserId
             if (signedIn != null) {
                 migrateGuestCartIfNeeded(userId)
             }
@@ -144,11 +144,11 @@ class ShopRepositoryImpl(
     }
 
     private fun currentCartUserId(): String =
-        (authRepository.session.value as? AuthSession.SignedIn)?.user?.id ?: GUEST_CART_USER_ID
+        (authRepository.session.value as? AuthSession.SignedIn)?.user?.id ?: GuestCartUserId
 
     private suspend fun migrateGuestCartIfNeeded(userId: String) {
         val migrated = guestCartMigrationMutex.withLock {
-            val guestItems = cartLocal.getItems(GUEST_CART_USER_ID)
+            val guestItems = cartLocal.getItems(GuestCartUserId)
             if (guestItems.isEmpty()) {
                 return@withLock false
             }
@@ -164,7 +164,7 @@ class ShopRepositoryImpl(
                     ),
                 )
             }
-            cartLocal.clearCart(GUEST_CART_USER_ID)
+            cartLocal.clearCart(GuestCartUserId)
             true
         }
         if (!migrated) return

@@ -110,30 +110,19 @@ private data class GoogleGenerateContentRequest(
 )
 
 @Serializable
-private data class GoogleContent(
-    val role: String? = null,
-    val parts: List<GooglePart>,
-)
+private data class GoogleContent(val role: String? = null, val parts: List<GooglePart>)
 
 @Serializable
-private data class GooglePart(
-    val text: String? = null,
-)
+private data class GooglePart(val text: String? = null)
 
 @Serializable
-private data class GoogleGenerationConfig(
-    val temperature: Double,
-)
+private data class GoogleGenerationConfig(val temperature: Double)
 
 @Serializable
-private data class GoogleGenerateContentResponse(
-    val candidates: List<GoogleCandidate> = emptyList(),
-)
+private data class GoogleGenerateContentResponse(val candidates: List<GoogleCandidate> = emptyList())
 
 @Serializable
-private data class GoogleCandidate(
-    val content: GoogleContent? = null,
-)
+private data class GoogleCandidate(val content: GoogleContent? = null)
 
 private fun List<ProviderMessage>.toGoogleRequest(): GoogleGenerateContentRequest {
     val systemMessage = firstOrNull { it.role == "system" }?.content

@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -165,16 +165,17 @@ class RealNavigatorTest {
     }
 
     @Test
-    fun `guest shell protected navigation redirects through login without mutating shell stack`() = runTest(dispatcher) {
-        val navigator = createNavigator()
-        navigator.clearAndGoTo(Screen.Booking)
+    fun `guest shell protected navigation redirects through login without mutating shell stack`() =
+        runTest(dispatcher) {
+            val navigator = createNavigator()
+            navigator.clearAndGoTo(Screen.Booking)
 
-        navigator.navigateWithinShell(Screen.BookingHistory())
+            navigator.navigateWithinShell(Screen.BookingHistory())
 
-        assertEquals(listOf(Screen.MainShell, Screen.Login), navigator.backStack)
-        assertEquals(listOf(Screen.Booking), navigator.mainShellBackStack)
-        assertEquals(Screen.BookingHistory(), navigator.postLoginTarget)
-    }
+            assertEquals(listOf(Screen.MainShell, Screen.Login), navigator.backStack)
+            assertEquals(listOf(Screen.Booking), navigator.mainShellBackStack)
+            assertEquals(Screen.BookingHistory(), navigator.postLoginTarget)
+        }
 
     @Test
     fun `signed in protected navigation reaches destination normally`() = runTest(dispatcher) {

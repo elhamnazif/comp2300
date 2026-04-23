@@ -32,7 +32,7 @@ class MedicationRepositoryImpl(private val database: ServerDatabase) : Medicatio
             dose_amount = medication.doseAmount,
             dose_unit = medication.doseUnit.name,
             custom_dose_unit = medication.customDoseUnit,
-            quantity = formatMedicationStock(medication.stockAmount, medication.stockUnit, medication.customStockUnit),
+            quantity = formatMedicationAmount(medication.stockAmount, medication.stockUnit, medication.customStockUnit),
             stock_amount = medication.stockAmount,
             stock_unit = medication.stockUnit.name,
             custom_stock_unit = medication.customStockUnit,
@@ -52,7 +52,7 @@ class MedicationRepositoryImpl(private val database: ServerDatabase) : Medicatio
             dose_amount = medication.doseAmount,
             dose_unit = medication.doseUnit.name,
             custom_dose_unit = medication.customDoseUnit,
-            quantity = formatMedicationStock(medication.stockAmount, medication.stockUnit, medication.customStockUnit),
+            quantity = formatMedicationAmount(medication.stockAmount, medication.stockUnit, medication.customStockUnit),
             stock_amount = medication.stockAmount,
             stock_unit = medication.stockUnit.name,
             custom_stock_unit = medication.customStockUnit,
@@ -75,7 +75,7 @@ private fun MedicationEntity.toDomain(): Medication {
     val legacyDose = parseLegacyMedicationAmount(dosage)
     val parsedDoseUnit = dose_unit?.let { runCatching { MedicationUnit.valueOf(it) }.getOrNull() }
     val doseUnitValue = parsedDoseUnit ?: legacyDose.unit
-    val legacyStock = parseLegacyMedicationStock(quantity)
+    val legacyStock = parseLegacyMedicationAmount(quantity)
     val parsedStockUnit = stock_unit?.let { runCatching { MedicationUnit.valueOf(it) }.getOrNull() }
     val stockUnitValue = parsedStockUnit ?: legacyStock.unit
 

@@ -54,7 +54,6 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.ShoppingCartW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.StethoscopeW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.SupportAgentW400Outlinedfill1
-import comp2300.client.generated.resources.Res as ClientRes
 import comp2300.client.generated.resources.clinic_photo_waiting_room
 import comp2300.i18n.generated.resources.Res
 import comp2300.i18n.generated.resources.home_chatbot_description
@@ -85,6 +84,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import comp2300.client.generated.resources.Res as ClientRes
 
 private val HomeMintAccent = Color(0xFF57C4B3)
 private val HomeMintAccentContainer = Color(0xFFE4F6F2)
@@ -217,10 +217,7 @@ internal fun HomeHero(
 }
 
 @Composable
-internal fun TodaySummaryCard(
-    summary: TodaySummary,
-    modifier: Modifier = Modifier,
-) {
+internal fun TodaySummaryCard(summary: TodaySummary, modifier: Modifier = Modifier) {
     val accentColor = homeAccentColor()
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -376,11 +373,7 @@ internal fun ActionList(
 }
 
 @Composable
-internal fun InboxSection(
-    title: String,
-    items: List<HomeInboxItem>,
-    onItemClick: (HomeInboxAction) -> Unit,
-) {
+internal fun InboxSection(title: String, items: List<HomeInboxItem>, onItemClick: (HomeInboxAction) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(
             text = title,
@@ -443,11 +436,11 @@ internal fun HomeInlineMessage(
 @Composable
 internal fun HomeCenteredMessage(
     title: String,
+    modifier: Modifier = Modifier,
     body: String? = null,
     buttonLabel: String? = null,
     onAction: (() -> Unit)? = null,
     showLoading: Boolean = false,
-    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier,
@@ -554,6 +547,7 @@ private fun InboxRow(item: HomeInboxItem, onClick: () -> Unit) {
     }
     val body = when (item) {
         is HomeInboxItem.NotificationAlert -> stringResource(Res.string.home_inbox_item_notifications_disabled_body)
+
         is HomeInboxItem.MedicationAttention -> {
             if (item.dueCount == 1) {
                 stringResource(Res.string.home_inbox_item_medication_body_one)
@@ -603,11 +597,7 @@ private fun InboxRow(item: HomeInboxItem, onClick: () -> Unit) {
 }
 
 @Composable
-private fun RowScope.TodayMetricCell(
-    label: String,
-    value: String,
-    supporting: String? = null,
-) {
+private fun RowScope.TodayMetricCell(label: String, value: String, supporting: String? = null) {
     val accentColor = homeAccentColor()
     Column(
         modifier = Modifier.weight(1f),
@@ -651,12 +641,7 @@ private fun TodayMetricDivider() {
 }
 
 @Composable
-private fun ActionIcon(
-    icon: ImageVector,
-    iconTint: Color,
-    accentColor: Color,
-    modifier: Modifier = Modifier,
-) {
+private fun ActionIcon(icon: ImageVector, iconTint: Color, accentColor: Color, modifier: Modifier = Modifier) {
     Surface(
         shape = CircleShape,
         color = accentColor,
@@ -680,8 +665,7 @@ private fun greetingLabel(period: GreetingPeriod): String = when (period) {
     GreetingPeriod.EVENING -> stringResource(Res.string.home_greeting_evening)
 }
 
-private fun adherencePercentLabel(summary: TodaySummary): String =
-    "${(summary.adherenceProgress * 100).toInt()}%"
+private fun adherencePercentLabel(summary: TodaySummary): String = "${(summary.adherenceProgress * 100).toInt()}%"
 
 @Composable
 private fun medicationDescription(activeMedicationCount: Int): String = when {

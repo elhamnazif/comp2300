@@ -121,7 +121,10 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                 } else {
                     if (activeRoutines.isNotEmpty()) {
                         item {
-                            SectionHeader(stringResource(Res.string.medical_medication_section_active), activeRoutines.size)
+                            SectionHeader(
+                                stringResource(Res.string.medical_medication_section_active),
+                                activeRoutines.size,
+                            )
                         }
                     }
                     items(activeRoutines, key = Routine::id) { routine ->
@@ -137,7 +140,10 @@ fun RoutineScreen(modifier: Modifier = Modifier, onBack: () -> Unit, viewModel: 
                 }
                 if (archivedRoutines.isNotEmpty()) {
                     item {
-                        SectionHeader(stringResource(Res.string.medical_medication_section_archived), archivedRoutines.size)
+                        SectionHeader(
+                            stringResource(Res.string.medical_medication_section_archived),
+                            archivedRoutines.size,
+                        )
                     }
                     items(archivedRoutines, key = Routine::id) { routine ->
                         RoutineCard(

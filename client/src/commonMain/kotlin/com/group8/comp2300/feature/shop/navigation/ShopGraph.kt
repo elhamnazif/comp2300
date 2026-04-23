@@ -38,7 +38,7 @@ val shopGraphModule = module {
 
         CheckoutScreen(
             onBack = navigator::goBack,
-            onOrderPlaced = { orderId, total ->
+            onOrderComplete = { orderId, total ->
                 navigator.navigate(Screen.OrderSuccess(orderId = orderId, total = total))
             },
             onContinueShopping = {

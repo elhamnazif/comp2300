@@ -42,8 +42,12 @@ fun ChatbotScreen(onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: 
 
     LaunchedEffect(state.messages.size, state.isSending, state.errorMessage) {
         val trailingItems = state.messages.size +
-            if (state.isSending) 1 else 0 +
-            if (state.errorMessage != null) 1 else 0
+            if (state.isSending) {
+                1
+            } else {
+                0 +
+                    if (state.errorMessage != null) 1 else 0
+            }
         val shouldAutoScroll = state.messages.lastOrNull()?.role == ChatbotRole.USER || listState.isNearBottom()
         if (trailingItems > 0 && shouldAutoScroll) {
             listState.animateScrollToItem(trailingItems - 1)
@@ -124,7 +128,7 @@ fun ChatbotScreen(onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: 
     ) { innerPadding ->
         if (state.messages.isEmpty() && !state.isSending && state.draftMessage.isBlank()) {
             EmptyChatState(
-                onPromptSelected = viewModel::sendPrompt,
+                onPromptSelect = viewModel::sendPrompt,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
@@ -168,7 +172,7 @@ fun ChatbotScreen(onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: 
 }
 
 @Composable
-private fun EmptyChatState(onPromptSelected: (String) -> Unit, modifier: Modifier = Modifier) {
+private fun EmptyChatState(onPromptSelect: (String) -> Unit, modifier: Modifier = Modifier) {
     val starterPrompts = listOf(
         stringResource(Res.string.chatbot_empty_prompt_booking),
         stringResource(Res.string.chatbot_empty_prompt_tracking),
@@ -209,7 +213,7 @@ private fun EmptyChatState(onPromptSelected: (String) -> Unit, modifier: Modifie
                 ) {
                     starterPrompts.forEach { prompt ->
                         AssistChip(
-                            onClick = { onPromptSelected(prompt) },
+                            onClick = { onPromptSelect(prompt) },
                             modifier = Modifier.heightIn(min = 40.dp),
                             label = { Text(prompt) },
                             colors = AssistChipDefaults.assistChipColors(

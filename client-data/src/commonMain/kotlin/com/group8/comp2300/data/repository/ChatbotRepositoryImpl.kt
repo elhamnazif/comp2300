@@ -21,13 +21,20 @@ class ChatbotRepositoryImpl(private val apiService: ApiService) : ChatbotReposit
         }.onSuccess { reply ->
             val elapsedMs = Clock.System.now().toEpochMilliseconds() - startedAtMs
             logger.i {
-                "Chatbot request succeeded: messages=${messages.size}, replyLength=${reply.content.length}, elapsedMs=$elapsedMs"
+                "Chatbot request succeeded: " +
+                    "messages=${messages.size}, " +
+                    "replyLength=${reply.content.length}, " +
+                    "elapsedMs=$elapsedMs"
             }
         }.onFailure { error ->
             val elapsedMs = Clock.System.now().toEpochMilliseconds() - startedAtMs
             val reason = if (error.isTimeoutLike()) "timeout" else "error"
             logger.w(error) {
-                "Chatbot request failed: reason=$reason, messages=${messages.size}, elapsedMs=$elapsedMs, ${error.toLogSummary()}"
+                "Chatbot request failed: " +
+                    "reason=$reason, " +
+                    "messages=${messages.size}, " +
+                    "elapsedMs=$elapsedMs, " +
+                    error.toLogSummary()
             }
         }.getOrThrow()
     }

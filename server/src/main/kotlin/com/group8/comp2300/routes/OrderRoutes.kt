@@ -22,7 +22,11 @@ fun Route.orderRoutes() {
                 call.respond(HttpStatusCode.Created, order)
             }.onFailure { error ->
                 val message = error.message ?: "Failed to place order"
-                val status = if (error is IllegalArgumentException) HttpStatusCode.BadRequest else HttpStatusCode.InternalServerError
+                val status = if (error is IllegalArgumentException) {
+                    HttpStatusCode.BadRequest
+                } else {
+                    HttpStatusCode.InternalServerError
+                }
                 call.respond(status, mapOf("error" to message))
             }
         }

@@ -20,11 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
 
-internal data class SettingsChoiceOption(
-    val key: String,
-    val label: String,
-    val enabled: Boolean = true,
-)
+internal data class SettingsChoiceOption(val key: String, val label: String, val enabled: Boolean = true)
 
 private val SingleItemShape = RoundedCornerShape(28.dp)
 private val TopItemShape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp, bottomStart = 12.dp, bottomEnd = 12.dp)

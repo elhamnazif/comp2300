@@ -12,8 +12,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.group8.comp2300.util.formatCurrency
 import com.group8.comp2300.core.ui.components.AppTopBar
+import com.group8.comp2300.util.formatCurrency
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -21,13 +21,15 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun CheckoutScreen(
     onBack: () -> Unit,
-    onOrderPlaced: (orderId: String, total: Double) -> Unit,
+    onOrderComplete: (orderId: String, total: Double) -> Unit,
     onContinueShopping: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: ShopViewModel = koinViewModel(),
 ) {
     val state by viewModel.checkoutState.collectAsState()
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             AppTopBar(
                 title = { Text(stringResource(Res.string.shop_checkout_title)) },
@@ -54,11 +56,13 @@ fun CheckoutScreen(
                         Button(
                             onClick = {
                                 viewModel.placeOrder { order ->
-                                    onOrderPlaced(order.id, order.total)
+                                    onOrderComplete(order.id, order.total)
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            enabled = !state.isPlacingOrder && !state.hasUnavailableItems && state.cartLines.isNotEmpty(),
+                            enabled = !state.isPlacingOrder &&
+                                !state.hasUnavailableItems &&
+                                state.cartLines.isNotEmpty(),
                         ) {
                             if (state.isPlacingOrder) {
                                 CircularProgressIndicator(
@@ -102,7 +106,11 @@ fun CheckoutScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 item {
-                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                        ),
+                    ) {
                         Column(
                             modifier = Modifier.fillMaxWidth().padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -117,7 +125,10 @@ fun CheckoutScreen(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                 ) {
-                                    Text("${line.quantity} x ${line.product?.name ?: stringResource(Res.string.shop_unavailable_item)}")
+                                    Text(
+                                        "${line.quantity} x " +
+                                            (line.product?.name ?: stringResource(Res.string.shop_unavailable_item)),
+                                    )
                                     Text(formatCurrency(line.lineTotal))
                                 }
                             }

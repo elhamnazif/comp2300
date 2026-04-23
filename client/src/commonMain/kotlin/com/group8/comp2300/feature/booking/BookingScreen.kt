@@ -88,13 +88,11 @@ fun BookingScreen(
                 searchQuery = searchQuery,
                 selectedTag = selectedTag,
                 isLoading = isLoading,
-                isSignedIn = isSignedIn,
                 onSearchQueryChange = onSearchQueryChange,
                 onTagToggle = onTagToggle,
                 onMapModeChange = onMapModeChange,
                 onClinicClick = onClinicClick,
                 onClinicSelect = onClinicSelect,
-                onViewBookings = onViewBookings,
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
@@ -247,13 +245,11 @@ private fun BookingMapMode(
     searchQuery: String,
     selectedTag: String?,
     isLoading: Boolean,
-    isSignedIn: Boolean,
     onSearchQueryChange: (String) -> Unit,
     onTagToggle: (String?) -> Unit,
     onMapModeChange: (Boolean) -> Unit,
     onClinicClick: (String) -> Unit,
     onClinicSelect: (Clinic) -> Unit,
-    onViewBookings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
@@ -805,11 +801,7 @@ private fun LoadingPanel(title: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun SearchEmptyPanel(
-    title: String,
-    body: String? = null,
-    modifier: Modifier = Modifier,
-) {
+private fun SearchEmptyPanel(title: String, modifier: Modifier = Modifier, body: String? = null) {
     Box(
         modifier = modifier
             .fillMaxWidth()

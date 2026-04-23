@@ -211,7 +211,8 @@ class RealNavigator(
         backStack.removeAll { it.requiresAuthentication() }
         mainShellBackStack.removeAll { it.requiresAuthentication() }
 
-        val shouldPreserveProtectedTarget = currentScreen == Screen.Login && postLoginTarget?.requiresAuthentication() == true
+        val shouldPreserveProtectedTarget =
+            currentScreen == Screen.Login && postLoginTarget?.requiresAuthentication() == true
         if (!shouldPreserveProtectedTarget && postLoginTarget?.requiresAuthentication() == true) {
             postLoginTarget = null
         }
@@ -230,8 +231,11 @@ class RealNavigator(
             backStack.isEmpty() -> {
                 backStack.add(Screen.MainShell)
             }
+
             backStack.contains(Screen.MainShell) -> return
+
             backStack.firstOrNull() == Screen.Onboarding -> return
+
             else -> {
                 val keepLogin = currentScreen == Screen.Login
                 backStack.clear()

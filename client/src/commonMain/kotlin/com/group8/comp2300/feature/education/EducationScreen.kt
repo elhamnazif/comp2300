@@ -414,7 +414,7 @@ private fun CategoryRow(
 }
 
 @Composable
-private fun EmptyStatePanel(title: String, body: String? = null, modifier: Modifier = Modifier) {
+private fun EmptyStatePanel(title: String, modifier: Modifier = Modifier, body: String? = null) {
     Box(
         modifier = modifier
             .fillMaxWidth()

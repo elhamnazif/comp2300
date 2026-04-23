@@ -32,11 +32,7 @@ internal data class TodaySummary(
         get() = if (totalMedicationCount == 0) 0f else takenMedicationCount.toFloat() / totalMedicationCount
 }
 
-internal data class HomeAppointmentSummary(
-    val appointmentId: String,
-    val title: String,
-    val appointmentTime: Long,
-)
+internal data class HomeAppointmentSummary(val appointmentId: String, val title: String, val appointmentTime: Long)
 
 internal enum class HomeInboxGroup {
     ATTENTION,
@@ -57,9 +53,7 @@ internal sealed interface HomeInboxItem {
     val timestampMs: Long
     val action: HomeInboxAction
 
-    data class NotificationAlert(
-        override val timestampMs: Long,
-    ) : HomeInboxItem {
+    data class NotificationAlert(override val timestampMs: Long) : HomeInboxItem {
         override val id: String = "alert:notifications_disabled"
         override val group: HomeInboxGroup = HomeInboxGroup.ATTENTION
         override val action: HomeInboxAction = HomeInboxAction.OpenNotificationSettings
@@ -76,11 +70,8 @@ internal sealed interface HomeInboxItem {
         override val action: HomeInboxAction = HomeInboxAction.OpenCalendar
     }
 
-    data class AppointmentUpdate(
-        val appointmentId: String,
-        val title: String,
-        override val timestampMs: Long,
-    ) : HomeInboxItem {
+    data class AppointmentUpdate(val appointmentId: String, val title: String, override val timestampMs: Long) :
+        HomeInboxItem {
         override val id: String = "appointment:$appointmentId"
         override val group: HomeInboxGroup = HomeInboxGroup.TODAY
         override val action: HomeInboxAction = HomeInboxAction.OpenBookingHistory(appointmentId)

@@ -14,9 +14,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
-class ShopViewModel(
-    private val repository: ShopRepository,
-) : ViewModel() {
+class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
     private val allProducts = MutableStateFlow<List<Product>>(emptyList())
     private val selectedCategory = MutableStateFlow(ProductCategory.ALL)
     private val isLoadingProducts = MutableStateFlow(true)
@@ -139,11 +137,7 @@ class ShopViewModel(
         cartStore.update { it.copy(error = null) }
     }
 
-    private fun mutateAddToCart(
-        product: Product,
-        onSuccess: () -> Unit = {},
-        onFailure: (String) -> Unit,
-    ) {
+    private fun mutateAddToCart(product: Product, onSuccess: () -> Unit = {}, onFailure: (String) -> Unit) {
         viewModelScope.launch {
             runCatching { repository.addToCart(product) }
                 .onSuccess {
@@ -323,20 +317,11 @@ private data class CheckoutStore(
     val orderError: String? = null,
 )
 
-private data class BrowseStore(
-    val feedback: BrowseFeedback? = null,
-)
+private data class BrowseStore(val feedback: BrowseFeedback? = null)
 
-private data class BrowseChrome(
-    val cartItemCount: Int,
-    val feedback: BrowseFeedback?,
-)
+private data class BrowseChrome(val cartItemCount: Int, val feedback: BrowseFeedback?)
 
 @Immutable
-data class BrowseFeedback(
-    val productId: String? = null,
-    val message: String,
-    val isError: Boolean = false,
-)
+data class BrowseFeedback(val productId: String? = null, val message: String, val isError: Boolean = false)
 
 private fun Throwable.userMessage(fallback: String): String = fallback

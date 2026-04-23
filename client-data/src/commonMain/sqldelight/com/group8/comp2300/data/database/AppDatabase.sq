@@ -5,8 +5,10 @@ CREATE TABLE SessionEntity (
     expiresAt INTEGER NOT NULL
 );
 
-selectSession:
-SELECT * FROM SessionEntity LIMIT 1;
+selectLatestSession:
+SELECT * FROM SessionEntity
+ORDER BY expiresAt DESC
+LIMIT 1;
 
 upsertSession:
 INSERT OR REPLACE INTO SessionEntity (userId, accessToken, refreshToken, expiresAt)
@@ -465,21 +467,3 @@ VALUES (?, ?, ?, ?, ?, ?);
 
 deletePin:
 DELETE FROM PinEntity;
-
-CREATE TABLE CalendarOverviewEntity (
-    date TEXT NOT NULL,
-    status TEXT NOT NULL,
-    yearMonth TEXT NOT NULL
-);
-
-selectCalendarOverviewByYearMonth:
-SELECT * FROM CalendarOverviewEntity
-WHERE yearMonth = ?;
-
-deleteCalendarOverviewByYearMonth:
-DELETE FROM CalendarOverviewEntity
-WHERE yearMonth = ?;
-
-insertCalendarOverview:
-INSERT OR REPLACE INTO CalendarOverviewEntity (date, status, yearMonth)
-VALUES (?, ?, ?);

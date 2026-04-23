@@ -80,7 +80,13 @@ fun CalendarScreen(
     }
     val agendaEndDate = remember(selectedDate) { selectedDate.plus(6, DateTimeUnit.DAY) }
     var expandedRoutineKeys by remember { mutableStateOf(emptySet<String>()) }
-    val hasUsableContent = remember(state.selectedDate, state.overview, state.agendaDays, state.appointments, state.medications) {
+    val hasUsableContent = remember(
+        state.selectedDate,
+        state.overview,
+        state.agendaDays,
+        state.appointments,
+        state.medications,
+    ) {
         state.selectedDate.isNotBlank() ||
             state.overview.isNotEmpty() ||
             state.agendaDays.isNotEmpty() ||

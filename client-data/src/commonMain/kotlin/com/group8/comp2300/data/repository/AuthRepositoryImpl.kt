@@ -2,9 +2,9 @@ package com.group8.comp2300.data.repository
 
 import co.touchlab.kermit.Logger
 import com.group8.comp2300.data.auth.TokenManager
-import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.auth.extractJwtExpiration
 import com.group8.comp2300.data.local.PersonalDataCleaner
+import com.group8.comp2300.data.local.SessionDataSource
 import com.group8.comp2300.data.offline.isRetryable
 import com.group8.comp2300.data.remote.ApiException
 import com.group8.comp2300.data.remote.ApiService
@@ -18,11 +18,11 @@ import com.group8.comp2300.domain.model.user.User
 import com.group8.comp2300.domain.repository.AuthRepository
 import com.group8.comp2300.domain.repository.medical.SyncCoordinator
 import com.group8.comp2300.util.toEpochMilliseconds
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

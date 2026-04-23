@@ -44,8 +44,8 @@ import com.group8.comp2300.domain.model.shop.PlaceOrderRequest
 import com.group8.comp2300.domain.model.user.User
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.timeout
 import io.ktor.client.plugins.ResponseException
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.delete
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
@@ -162,8 +162,8 @@ interface ApiService {
     suspend fun getEducationEarnedBadges(): List<EarnedBadgeDto>
 }
 
-private const val CHATBOT_REQUEST_TIMEOUT_MS = 100_000L
-private const val CHATBOT_SOCKET_TIMEOUT_MS = 100_000L
+private const val ChatbotRequestTimeoutMs = 100_000L
+private const val ChatbotSocketTimeoutMs = 100_000L
 
 class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun getHealth(): Map<String, String> = client.get("/api/health").body()
@@ -171,8 +171,8 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun sendChatbotMessage(request: ChatbotRequest): ChatbotResponse = client.post("/api/chatbot") {
         contentType(ContentType.Application.Json)
         timeout {
-            requestTimeoutMillis = CHATBOT_REQUEST_TIMEOUT_MS
-            socketTimeoutMillis = CHATBOT_SOCKET_TIMEOUT_MS
+            requestTimeoutMillis = ChatbotRequestTimeoutMs
+            socketTimeoutMillis = ChatbotSocketTimeoutMs
         }
         setBody(request)
     }.body()
