@@ -23,7 +23,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = koinViewModel(),
-    onNavigateToGuestSignIn: () -> Unit = {},
+    onRequireAuth: () -> Unit = {},
     onNavigateToEditProfile: () -> Unit = {},
     appLockEnabled: Boolean = false,
     biometricUnlockEnabled: Boolean = false,
@@ -87,7 +87,7 @@ fun ProfileScreen(
             item {
                 ProfileOverviewSection(
                     state = uiState,
-                    onNavigateToGuestSignIn = onNavigateToGuestSignIn,
+                    onRequireAuth = onRequireAuth,
                     onNavigateToEditProfile = onNavigateToEditProfile,
                 )
             }

@@ -6,7 +6,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.components.ScreenHeader
@@ -19,7 +18,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun ProfileOverviewSection(
     state: ProfileViewModel.State,
-    onNavigateToGuestSignIn: () -> Unit,
+    onRequireAuth: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -27,7 +26,7 @@ fun ProfileOverviewSection(
         Column(modifier.padding(horizontal = 16.dp)) {
             Header(
                 state,
-                onNavigateToGuestSignIn = onNavigateToGuestSignIn,
+                onRequireAuth = onRequireAuth,
                 onNavigateToEditProfile = onNavigateToEditProfile,
             )
             Spacer(Modifier.height(24.dp))
@@ -42,111 +41,16 @@ fun ProfileOverviewSection(
 }
 
 @Composable
-internal fun NotLoggedInContent(onRequireAuth: () -> Unit, modifier: Modifier = Modifier) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            stringResource(Res.string.profile_why_account_title),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.Start),
-        )
-
-        Spacer(Modifier.height(12.dp))
-        FeatureCard(
-            icon = Icons.CheckCircleW400Outlinedfill1,
-            title = stringResource(Res.string.profile_track_results_title),
-            description = stringResource(Res.string.profile_track_results_desc),
-        )
-
-        Spacer(Modifier.height(12.dp))
-        FeatureCard(
-            icon = Icons.DateRangeW400Outlinedfill1,
-            title = stringResource(Res.string.profile_schedule_screenings_title),
-            description = stringResource(Res.string.profile_schedule_screenings_desc),
-        )
-
-        Spacer(Modifier.height(12.dp))
-        FeatureCard(
-            icon = Icons.LockW400Outlinedfill1,
-            title = stringResource(Res.string.profile_private_secure_title),
-            description = stringResource(Res.string.profile_private_secure_desc),
-        )
-
-        Spacer(Modifier.height(12.dp))
-        FeatureCard(
-            icon = Icons.SendW400Outlinedfill1,
-            title = stringResource(Res.string.profile_anonymous_partner_title),
-            description = stringResource(Res.string.profile_anonymous_partner_desc),
-        )
-
-        Spacer(Modifier.height(24.dp))
-        Button(
-            onClick = onRequireAuth,
-            modifier = Modifier.fillMaxWidth().height(48.dp),
-        ) {
-            Text(
-                stringResource(Res.string.profile_sign_in_label),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-    }
-}
-
-@Composable
-private fun FeatureCard(icon: ImageVector, title: String, description: String, modifier: Modifier = Modifier) {
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        shape = RoundedCornerShape(28.dp),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(48.dp),
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-            }
-
-            Spacer(Modifier.size(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    description,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.secondary,
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun Header(
     state: ProfileViewModel.State,
-    onNavigateToGuestSignIn: () -> Unit,
+    onRequireAuth: () -> Unit,
     onNavigateToEditProfile: () -> Unit,
 ) {
     if (!state.isLoading && !state.isSignedIn) {
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
             shape = RoundedCornerShape(28.dp),
-            onClick = onNavigateToGuestSignIn,
+            onClick = onRequireAuth,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(

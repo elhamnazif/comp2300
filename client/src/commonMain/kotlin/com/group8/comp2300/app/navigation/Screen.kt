@@ -120,9 +120,6 @@ sealed interface Screen : NavKey {
     data object PrivacyLegalese : Screen
 
     @Serializable
-    data object GuestSignIn : Screen
-
-    @Serializable
     data object Cart : Screen
 
     @Serializable
