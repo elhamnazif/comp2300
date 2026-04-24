@@ -1,6 +1,7 @@
 package com.group8.comp2300.service.auth
 
 import com.group8.comp2300.domain.model.user.User
+import com.group8.comp2300.domain.repository.EmailChangeTokenRepository
 import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
 import com.group8.comp2300.domain.repository.RefreshTokenRepository
 import com.group8.comp2300.domain.repository.UserRepository
@@ -28,6 +29,7 @@ class AuthServiceTest {
             userRepository = repository,
             refreshTokenRepository = NoopRefreshTokenRepository(),
             passwordResetTokenRepository = NoopPasswordResetTokenRepository(),
+            emailChangeTokenRepository = NoopEmailChangeTokenRepository(),
             jwtService = NoopJwtService(),
             emailService = null,
             verificationRequestThrottle = InMemoryVerificationRequestThrottle(),
@@ -77,6 +79,10 @@ private class FailingProfileImageRepository(user: User) : UserRepository {
 
     override fun isActivated(userId: String): Boolean = true
 
+    override fun isDeactivated(userId: String): Boolean = false
+
+    override fun isActive(userId: String): Boolean = true
+
     override fun updateProfile(
         userId: String,
         firstName: String,
@@ -87,12 +93,18 @@ private class FailingProfileImageRepository(user: User) : UserRepository {
         sexualOrientation: String?,
     ) = error("unused")
 
+    override fun updateEmail(userId: String, email: String) = error("unused")
+
     override fun updateProfileImageUrl(userId: String, profileImageUrl: String?) {
         if (profileImageUrl != currentUser.profileImageUrl) {
             throw IllegalStateException("db write failed")
         }
         currentUser = currentUser.copy(profileImageUrl = profileImageUrl)
     }
+
+    override fun deactivateUser(userId: String, deactivatedAt: Long) = error("unused")
+
+    override fun clearDeactivatedAt(userId: String) = error("unused")
 
     override fun deleteUnactivatedAccounts(cutoffMillis: Long) = error("unused")
 
@@ -119,6 +131,18 @@ private class NoopPasswordResetTokenRepository : PasswordResetTokenRepository {
     override fun insert(tokenHash: String, userId: String) = Unit
 
     override fun findValid(tokenHash: String): String? = null
+
+    override fun markUsed(tokenHash: String) = Unit
+
+    override fun deleteExpired(cutoffMillis: Long) = Unit
+
+    override fun deleteByUserId(userId: String) = Unit
+}
+
+private class NoopEmailChangeTokenRepository : EmailChangeTokenRepository {
+    override fun insert(tokenHash: String, userId: String, newEmail: String) = Unit
+
+    override fun findValid(tokenHash: String) = null
 
     override fun markUsed(tokenHash: String) = Unit
 

@@ -90,7 +90,7 @@ class MedicalRecordRoutesTest {
             id = "user-1", email = "test@vita.com", passwordHash = "hash",
             firstName = "Test", lastName = "User", phone = null, dateOfBirth = null,
             gender = null, sexualOrientation = null, profileImageUrl = null,
-            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L,
+            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L, deactivatedAt = null,
         )
 
         repository.insert("file-1", "user-1", "Old.pdf", "path", 100, 100, MedicalRecordCategory.GENERAL)
@@ -121,7 +121,7 @@ class MedicalRecordRoutesTest {
             id = "user-1", email = "delete@vita.com", passwordHash = "hash",
             firstName = "Del", lastName = "User", phone = null, dateOfBirth = null,
             gender = null, sexualOrientation = null, profileImageUrl = null,
-            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L,
+            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L, deactivatedAt = null,
         )
 
         repository.insert("del-1", "user-1", "Bye.pdf", "path", 100, 100, MedicalRecordCategory.GENERAL)
@@ -150,7 +150,7 @@ class MedicalRecordRoutesTest {
             id = "user-1", email = "down@vita.com", passwordHash = "hash",
             firstName = "Test", lastName = "User", phone = null, dateOfBirth = null,
             gender = null, sexualOrientation = null, profileImageUrl = null,
-            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L,
+            createdAt = 1700000000L, preferredLanguage = "en", isActivated = 1L, deactivatedAt = null,
         )
 
         val filesToTest = listOf(

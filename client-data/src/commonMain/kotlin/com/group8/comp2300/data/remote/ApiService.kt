@@ -46,6 +46,14 @@ interface ApiService {
 
     suspend fun resetPassword(token: String, newPassword: String): MessageResponse
 
+    suspend fun changePassword(currentPassword: String, newPassword: String): MessageResponse
+
+    suspend fun requestEmailChange(currentPassword: String, newEmail: String): MessageResponse
+
+    suspend fun confirmEmailChange(code: String): MessageResponse
+
+    suspend fun deactivateAccount(currentPassword: String): MessageResponse
+
     suspend fun preregister(request: PreregisterRequest): PreregisterResponse
 
     suspend fun updateProfile(request: UpdateProfileRequest): User
@@ -171,6 +179,26 @@ class ApiServiceImpl(private val client: HttpClient) : ApiService {
     override suspend fun resetPassword(token: String, newPassword: String): MessageResponse =
         client.post("/api/auth/reset-password") {
             setBody(ResetPasswordRequest(token, newPassword))
+        }.body()
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): MessageResponse =
+        client.post("/api/auth/change-password") {
+            setBody(ChangePasswordRequest(currentPassword = currentPassword, newPassword = newPassword))
+        }.body()
+
+    override suspend fun requestEmailChange(currentPassword: String, newEmail: String): MessageResponse =
+        client.post("/api/auth/change-email/request") {
+            setBody(RequestEmailChangeRequest(currentPassword = currentPassword, newEmail = newEmail))
+        }.body()
+
+    override suspend fun confirmEmailChange(code: String): MessageResponse =
+        client.post("/api/auth/change-email/confirm") {
+            setBody(ConfirmEmailChangeRequest(code))
+        }.body()
+
+    override suspend fun deactivateAccount(currentPassword: String): MessageResponse =
+        client.post("/api/auth/deactivate") {
+            setBody(DeactivateAccountRequest(currentPassword))
         }.body()
 
     override suspend fun preregister(request: PreregisterRequest): PreregisterResponse =

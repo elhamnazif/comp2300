@@ -83,32 +83,39 @@ private fun Header(
             }
         }
     } else {
-        Row(
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            shape = RoundedCornerShape(28.dp),
+            onClick = onNavigateToEditProfile,
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
         ) {
-            ProfileAvatar(
-                state.userInitials.ifEmpty {
-                    stringResource(Res.string.profile_default_user_initials)
-                },
-                imageModel = state.profileImageUrl,
-                isLoading = state.isLoading,
-            )
-            Spacer(Modifier.size(16.dp))
-            UserInfo(
-                name = state.userName,
-                memberSince = state.memberSince,
-                isLoading = state.isLoading,
-                modifier = Modifier.weight(1f),
-            )
-            if (state.isSignedIn) {
-                TextButton(onClick = onNavigateToEditProfile) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                ProfileAvatar(
+                    state.userInitials.ifEmpty {
+                        stringResource(Res.string.profile_default_user_initials)
+                    },
+                    imageModel = state.profileImageUrl,
+                    isLoading = state.isLoading,
+                )
+                Spacer(Modifier.size(16.dp))
+                UserInfo(
+                    name = state.userName,
+                    memberSince = state.memberSince,
+                    isLoading = state.isLoading,
+                    modifier = Modifier.weight(1f),
+                )
+                if (state.isSignedIn) {
+                    Spacer(Modifier.width(12.dp))
                     Icon(
-                        imageVector = Icons.EditW400Outlinedfill1,
+                        imageVector = Icons.ChevronRightW400Outlined,
                         contentDescription = null,
+                        tint = MaterialTheme.colorScheme.secondary,
                     )
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(Res.string.profile_edit_label))
                 }
             }
         }

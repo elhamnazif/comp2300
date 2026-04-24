@@ -84,5 +84,13 @@ private class FakeAuthRepository(initialSession: AuthSession) : AuthRepository {
 
     override suspend fun resetPassword(token: String, newPassword: String) = error("unused")
 
+    override suspend fun changePassword(currentPassword: String, newPassword: String) = error("unused")
+
+    override suspend fun requestEmailChange(currentPassword: String, newEmail: String) = error("unused")
+
+    override suspend fun confirmEmailChange(code: String) = error("unused")
+
+    override suspend fun deactivateAccount(currentPassword: String) = error("unused")
+
     override suspend fun logout() = error("unused")
 }

@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream
 private const val DUPLICATE_ACCOUNT_MESSAGE = "An account with this email already exists"
 private const val FORGOT_PASSWORD_RESPONSE_MESSAGE =
     "If an account with that email exists, a password reset link has been sent"
+private const val EMAIL_CHANGE_RESPONSE_MESSAGE = "Verification code sent"
 
 fun Route.authRoutes(authService: AuthService) {
     post("/api/auth/login") {
@@ -197,6 +198,74 @@ fun Route.authRoutes(authService: AuthService) {
                             error = error,
                             expectedStatus = HttpStatusCode.BadRequest,
                             defaultMessage = "Profile photo removal failed",
+                        )
+                    },
+                )
+            }
+        }
+
+        post("/api/auth/change-password") {
+            withUserId { userId ->
+                val request = call.receive<ChangePasswordRequest>()
+                call.respondResult(
+                    result = authService.changePassword(userId, request.currentPassword, request.newPassword),
+                    successBody = MessageResponse("Password updated"),
+                    onFailure = { error ->
+                        respondExpectedFailure(
+                            error = error,
+                            expectedStatus = HttpStatusCode.BadRequest,
+                            defaultMessage = "Password change failed",
+                        )
+                    },
+                )
+            }
+        }
+
+        post("/api/auth/change-email/request") {
+            withUserId { userId ->
+                val request = call.receive<RequestEmailChangeRequest>()
+                call.respondResult(
+                    result = authService.requestEmailChange(userId, request.currentPassword, request.newEmail),
+                    successBody = MessageResponse(EMAIL_CHANGE_RESPONSE_MESSAGE),
+                    onFailure = { error ->
+                        respondExpectedFailure(
+                            error = error,
+                            expectedStatus = HttpStatusCode.BadRequest,
+                            defaultMessage = "Email change request failed",
+                        )
+                    },
+                )
+            }
+        }
+
+        post("/api/auth/change-email/confirm") {
+            withUserId { _ ->
+                val request = call.receive<ConfirmEmailChangeRequest>()
+                call.respondResult(
+                    result = authService.confirmEmailChange(request.code),
+                    successBody = MessageResponse("Email updated"),
+                    onFailure = { error ->
+                        respondExpectedFailure(
+                            error = error,
+                            expectedStatus = HttpStatusCode.BadRequest,
+                            defaultMessage = "Email change failed",
+                        )
+                    },
+                )
+            }
+        }
+
+        post("/api/auth/deactivate") {
+            withUserId { userId ->
+                val request = call.receive<DeactivateAccountRequest>()
+                call.respondResult(
+                    result = authService.deactivateAccount(userId, request.currentPassword),
+                    successBody = MessageResponse("Account deactivated"),
+                    onFailure = { error ->
+                        respondExpectedFailure(
+                            error = error,
+                            expectedStatus = HttpStatusCode.BadRequest,
+                            defaultMessage = "Account deactivation failed",
                         )
                     },
                 )

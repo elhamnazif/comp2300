@@ -42,9 +42,10 @@ val authGraphModule = module {
         )
     }
 
-    navigation<Screen.Login> {
+    navigation<Screen.Login> { screen ->
         val navigator = LocalNavigator.current
         AuthScreen(
+            initialSuccessMessage = screen.successMessage,
             onLoginSuccess = navigator::onAuthSuccess,
             onDismiss = navigator::goBack,
             onNavigateToEmailVerification = { email ->
@@ -88,7 +89,7 @@ val authGraphModule = module {
         val navigator = LocalNavigator.current
         ResetPasswordScreen(
             token = screen.token,
-            onPasswordReset = { navigator.navigate(Screen.Login) },
+            onPasswordReset = { navigator.navigate(Screen.Login()) },
             onBack = { navigator.goBack() },
         )
     }

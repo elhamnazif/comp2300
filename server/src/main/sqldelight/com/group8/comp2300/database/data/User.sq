@@ -11,7 +11,8 @@ CREATE TABLE UserEntity (
     profileImageUrl TEXT,
     createdAt INTEGER NOT NULL,
     preferredLanguage TEXT NOT NULL DEFAULT 'en',
-    isActivated INTEGER NOT NULL DEFAULT 0
+    isActivated INTEGER NOT NULL DEFAULT 0,
+    deactivatedAt INTEGER
 );
 
 selectUserByEmail:
@@ -21,8 +22,8 @@ selectUserById:
 SELECT * FROM UserEntity WHERE id = ?;
 
 insertUser:
-INSERT INTO UserEntity (id, email, passwordHash, firstName, lastName, phone, dateOfBirth, gender, sexualOrientation, profileImageUrl, createdAt, preferredLanguage, isActivated)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO UserEntity (id, email, passwordHash, firstName, lastName, phone, dateOfBirth, gender, sexualOrientation, profileImageUrl, createdAt, preferredLanguage, isActivated, deactivatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updatePassword:
 UPDATE UserEntity SET passwordHash = ? WHERE id = ?;
@@ -38,6 +39,21 @@ WHERE id = ?;
 updateProfileImageUrl:
 UPDATE UserEntity
 SET profileImageUrl = ?
+WHERE id = ?;
+
+updateEmail:
+UPDATE UserEntity
+SET email = ?
+WHERE id = ?;
+
+deactivateUser:
+UPDATE UserEntity
+SET deactivatedAt = ?
+WHERE id = ?;
+
+clearDeactivatedAt:
+UPDATE UserEntity
+SET deactivatedAt = NULL
 WHERE id = ?;
 
 deleteUnactivatedAccounts:

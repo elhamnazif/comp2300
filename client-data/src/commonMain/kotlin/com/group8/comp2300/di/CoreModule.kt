@@ -129,9 +129,13 @@ val coreModule = module {
     singleOf(::GetProductsUseCase)
     singleOf(::LoginUseCase)
     singleOf(::ActivateAccountUseCase)
+    singleOf(::ChangePasswordUseCase)
+    singleOf(::ConfirmEmailChangeUseCase)
+    singleOf(::DeactivateAccountUseCase)
     singleOf(::UpdateProfileUseCase)
     singleOf(::ForgotPasswordUseCase)
     singleOf(::PreregisterUseCase)
+    singleOf(::RequestEmailChangeUseCase)
     singleOf(::ResendVerificationEmailUseCase)
     singleOf(::ResetPasswordUseCase)
 }

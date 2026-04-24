@@ -39,6 +39,8 @@ internal enum class ProfileEditorMode {
     Edit,
 }
 
+private fun optionalLabel(label: String, optional: String): String = "$label ($optional)"
+
 @Composable
 internal fun ProfileEditorScreen(
     mode: ProfileEditorMode,
@@ -177,7 +179,10 @@ internal fun ProfileEditorScreen(
             AuthTextField(
                 value = state.phone,
                 onValueChange = viewModel::onPhoneChanged,
-                label = stringResource(Res.string.auth_phone_label),
+                label = optionalLabel(
+                    stringResource(Res.string.auth_phone_label),
+                    stringResource(Res.string.common_optional),
+                ),
                 leadingIcon = Icons.PersonW400Outlinedfill1,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Phone,
@@ -194,7 +199,10 @@ internal fun ProfileEditorScreen(
             )
 
             AuthDropdown(
-                label = stringResource(Res.string.auth_gender_label),
+                label = optionalLabel(
+                    stringResource(Res.string.auth_gender_label),
+                    stringResource(Res.string.common_optional),
+                ),
                 selectedValue = state.gender,
                 options = listOf(
                     stringResource(Res.string.auth_gender_male),
@@ -203,10 +211,15 @@ internal fun ProfileEditorScreen(
                     stringResource(Res.string.auth_gender_prefer_not_to_say),
                 ),
                 onSelectOption = viewModel::onGenderChanged,
+                allowClear = true,
+                clearLabel = stringResource(Res.string.common_none),
             )
 
             AuthDropdown(
-                label = stringResource(Res.string.auth_orientation_label),
+                label = optionalLabel(
+                    stringResource(Res.string.auth_orientation_label),
+                    stringResource(Res.string.common_optional),
+                ),
                 selectedValue = state.sexualOrientation,
                 options = listOf(
                     stringResource(Res.string.auth_orientation_heterosexual),
@@ -217,6 +230,8 @@ internal fun ProfileEditorScreen(
                     stringResource(Res.string.auth_orientation_asexual),
                 ),
                 onSelectOption = viewModel::onOrientationChanged,
+                allowClear = true,
+                clearLabel = stringResource(Res.string.common_none),
             )
 
             Spacer(Modifier.height(8.dp))

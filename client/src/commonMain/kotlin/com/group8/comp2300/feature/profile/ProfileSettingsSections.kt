@@ -19,6 +19,7 @@ internal fun ProfileSettingsSections(
     appLockEnabled: Boolean,
     biometricUnlockEnabled: Boolean,
     onNavigateToMedicalRecords: () -> Unit,
+    onNavigateToAccount: () -> Unit,
     onNavigateToPrivacySecurity: () -> Unit,
     onNavigateToAccessibility: () -> Unit,
     onNavigateToAppearance: () -> Unit,
@@ -33,6 +34,7 @@ internal fun ProfileSettingsSections(
         biometricUnlockEnabled && isBiometricAvailable() -> stringResource(Res.string.profile_biometrics_enabled)
         else -> stringResource(Res.string.profile_pin_enabled)
     }
+    val primarySectionTotal = if (isSignedIn) 4 else 3
 
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         SettingsSection {
@@ -41,23 +43,33 @@ internal fun ProfileSettingsSections(
                 title = stringResource(Res.string.profile_health_records_title),
                 description = stringResource(Res.string.profile_track_results_desc),
                 index = 0,
-                total = 3,
+                total = primarySectionTotal,
                 onClick = onNavigateToMedicalRecords,
             )
+            if (isSignedIn) {
+                SettingsNavigationRow(
+                    icon = Icons.AccountBoxW400Outlinedfill1,
+                    title = stringResource(Res.string.profile_account_title),
+                    description = stringResource(Res.string.profile_account_desc),
+                    index = 1,
+                    total = primarySectionTotal,
+                    onClick = onNavigateToAccount,
+                )
+            }
             SettingsNavigationRow(
                 icon = Icons.LockW400Outlinedfill1,
                 title = stringResource(Res.string.profile_privacy_security_title),
                 description = privacySecurityDescription,
-                index = 1,
-                total = 3,
+                index = if (isSignedIn) 2 else 1,
+                total = primarySectionTotal,
                 onClick = onNavigateToPrivacySecurity,
             )
             SettingsNavigationRow(
                 icon = Icons.ShieldW400Outlinedfill1,
                 title = stringResource(Res.string.profile_privacy_legalese_title),
                 description = stringResource(Res.string.profile_privacy_legalese_desc),
-                index = 2,
-                total = 3,
+                index = if (isSignedIn) 3 else 2,
+                total = primarySectionTotal,
                 onClick = onNavigateToPrivacyLegalese,
             )
         }

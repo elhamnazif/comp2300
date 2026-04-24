@@ -4,6 +4,8 @@
     <string name="common_back_desc">Back</string>
     <string name="common_ok">OK</string>
     <string name="common_cancel">Cancel</string>
+    <string name="common_optional">Optional</string>
+    <string name="common_none">None</string>
 
     <!-- Auth Module -->
     <string name="auth_ok">OK</string>
@@ -713,6 +715,8 @@
     <string name="profile_settings_title">App Settings</string>
     <string name="profile_notifications_title">Notifications</string>
     <string name="profile_notifications_desc">Privacy-safe reminders</string>
+    <string name="profile_account_title">Account</string>
+    <string name="profile_account_desc">Password, email, and account status</string>
     <string name="profile_privacy_security_title">Privacy &amp; Security</string>
     <string name="profile_appearance_title">Appearance</string>
     <string name="profile_appearance_desc">Mint or wallpaper theme</string>
@@ -744,6 +748,36 @@
     <string name="profile_logout_label">Logout</string>
     <string name="profile_logout_confirm_title">Are you sure you want to logout?</string>
     <string name="profile_logout_confirm_message">You will need to sign in again to access your account.</string>
+    <string name="account_title">Account</string>
+    <string name="account_current_email_title">Current email</string>
+    <string name="account_change_password_title">Change Password</string>
+    <string name="account_change_password_desc">Update your sign-in password.</string>
+    <string name="account_change_email_title">Change Email</string>
+    <string name="account_change_email_desc">Update the email on your account.</string>
+    <string name="account_deactivate_title">Deactivate Account</string>
+    <string name="account_deactivate_desc">Disable this account for now.</string>
+    <string name="account_current_password_label">Current Password</string>
+    <string name="account_new_email_label">New Email</string>
+    <string name="account_change_password_screen_title">Change Password</string>
+    <string name="account_change_password_screen_desc">Enter your current password and a new one.</string>
+    <string name="account_change_password_submit">Update Password</string>
+    <string name="account_change_password_success">Password updated. Sign in again.</string>
+    <string name="account_change_email_screen_title">Change Email</string>
+    <string name="account_change_email_screen_desc">Enter your new email.</string>
+    <string name="account_change_email_submit">Send Code</string>
+    <string name="account_change_email_verify_title">Verify New Email</string>
+    <string name="account_change_email_verify_desc">Enter the code sent to</string>
+    <string name="account_change_email_confirm">Update Email</string>
+    <string name="account_change_email_edit">Use different email</string>
+    <string name="account_change_email_success">Email updated.</string>
+    <string name="account_deactivate_screen_title">Deactivate Account</string>
+    <string name="account_deactivate_screen_desc">Enter your password to continue.</string>
+    <string name="account_deactivate_warning">This signs you out and disables this account until it is restored.</string>
+    <string name="account_deactivate_continue">Continue</string>
+    <string name="account_deactivate_confirm_title">Confirm Deactivation</string>
+    <string name="account_deactivate_confirm_desc">You will keep your data, but you will not be able to sign in until the account is restored.</string>
+    <string name="account_deactivate_confirm">Deactivate Account</string>
+    <string name="account_deactivate_success">Account deactivated.</string>
 
     <!-- Months -->
     <string name="month_jan">Jan</string>

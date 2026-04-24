@@ -1,5 +1,6 @@
 package com.group8.comp2300
 
+import com.group8.comp2300.data.repository.EmailChangeTokenRepositoryImpl
 import com.group8.comp2300.data.repository.PasswordResetTokenRepositoryImpl
 import com.group8.comp2300.data.repository.RefreshTokenRepositoryImpl
 import com.group8.comp2300.data.repository.UserRepositoryImpl
@@ -18,6 +19,7 @@ import com.group8.comp2300.dto.TokenResponse
 import com.group8.comp2300.dto.UpdateProfileRequest
 import com.group8.comp2300.infrastructure.database.createServerDatabase
 import com.group8.comp2300.routes.authRoutes
+import com.group8.comp2300.routes.withUserId
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
 import com.group8.comp2300.service.auth.AuthService
@@ -46,11 +48,15 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
+import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import org.koin.dsl.module
+import org.koin.ktor.plugin.Koin
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlin.io.path.createTempDirectory
@@ -744,11 +750,13 @@ private fun ApplicationTestBuilder.configureAuthTestModule(): AuthTestFixture {
         refreshTokenExpiration = jwtService.refreshTokenExpiration,
     )
     val passwordResetTokenRepository = PasswordResetTokenRepositoryImpl(database)
+    val emailChangeTokenRepository = EmailChangeTokenRepositoryImpl(database)
     val authService =
         AuthService(
             userRepository = userRepository,
             refreshTokenRepository = refreshTokenRepository,
             passwordResetTokenRepository = passwordResetTokenRepository,
+            emailChangeTokenRepository = emailChangeTokenRepository,
             jwtService = jwtService,
             emailService = null,
             verificationRequestThrottle = verificationThrottle,
@@ -756,7 +764,7 @@ private fun ApplicationTestBuilder.configureAuthTestModule(): AuthTestFixture {
         )
 
     application {
-        authTestModule(authService, jwtService)
+        authTestModule(authService, jwtService, userRepository)
     }
 
     return AuthTestFixture(
@@ -777,7 +785,11 @@ private fun ApplicationTestBuilder.jsonClient() = createClient {
     }
 }
 
-private fun Application.authTestModule(authService: AuthService, jwtService: JwtService) {
+private fun Application.authTestModule(
+    authService: AuthService,
+    jwtService: JwtService,
+    userRepository: UserRepository,
+) {
     install(ContentNegotiation) {
         json(
             Json {
@@ -788,13 +800,21 @@ private fun Application.authTestModule(authService: AuthService, jwtService: Jwt
         )
     }
 
+    install(Koin) {
+        modules(
+            module {
+                single<UserRepository> { userRepository }
+            },
+        )
+    }
+
     install(Authentication) {
         jwt("auth-jwt") {
             realm = "comp2300-test"
             verifier(jwtService.verifier)
             validate { credential ->
                 val userId = credential.payload.subject
-                if (userId != null) {
+                if (userId != null && userRepository.isActive(userId)) {
                     JWTPrincipal(credential.payload)
                 } else {
                     null
@@ -805,6 +825,13 @@ private fun Application.authTestModule(authService: AuthService, jwtService: Jwt
 
     routing {
         authRoutes(authService)
+        authenticate("auth-jwt") {
+            get("/api/protected") {
+                withUserId {
+                    call.response.status(HttpStatusCode.OK)
+                }
+            }
+        }
     }
 }
 

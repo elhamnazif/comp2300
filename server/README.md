@@ -186,9 +186,12 @@ For local development without Resend, you can:
 - `POST /api/auth/refresh` - Refresh access token
 - `POST /api/auth/forgot-password` - Request password reset email
 - `POST /api/auth/reset-password` - Reset password with token
+- `POST /api/auth/change-password` - Change password (authenticated)
+- `POST /api/auth/change-email/request` - Request email change verification code (authenticated)
+- `POST /api/auth/change-email/confirm` - Confirm email change with verification code (authenticated)
 - `GET /api/auth/profile` - Get current user (authenticated)
 - `POST /api/auth/logout` - Revoke refresh tokens (authenticated)
-- `POST /api/auth/complete-profile` - Complete profile after activation (authenticated)
+- `POST /api/auth/deactivate` - Deactivate account (authenticated)
 
 ### Products
 - `GET /api/products` - Get all products (authenticated)

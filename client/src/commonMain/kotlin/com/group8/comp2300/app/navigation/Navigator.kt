@@ -125,7 +125,7 @@ class RealNavigator(
     }
 
     override fun goBack() {
-        if (currentScreen == Screen.Login) {
+        if (currentScreen is Screen.Login) {
             postLoginTarget = null
         }
         if (backStack.size > 1) {
@@ -155,15 +155,15 @@ class RealNavigator(
 
     override fun requireAuth(targetScreen: Screen?) {
         postLoginTarget = targetScreen
-        if (currentScreen != Screen.Login) {
-            backStack.add(Screen.Login)
+        if (currentScreen !is Screen.Login) {
+            backStack.add(Screen.Login())
         }
     }
 
     override fun onAuthSuccess() {
         val target = postLoginTarget
         postLoginTarget = null
-        if (currentScreen == Screen.Login && backStack.isNotEmpty()) {
+        if (currentScreen is Screen.Login && backStack.isNotEmpty()) {
             backStack.removeAt(backStack.lastIndex)
         }
         if (target != null) {
@@ -211,7 +211,7 @@ class RealNavigator(
         mainShellBackStack.removeAll { it.requiresAuthentication() }
 
         val shouldPreserveProtectedTarget =
-            currentScreen == Screen.Login && postLoginTarget?.requiresAuthentication() == true
+            currentScreen is Screen.Login && postLoginTarget?.requiresAuthentication() == true
         if (!shouldPreserveProtectedTarget && postLoginTarget?.requiresAuthentication() == true) {
             postLoginTarget = null
         }
@@ -236,11 +236,11 @@ class RealNavigator(
             backStack.firstOrNull() == Screen.Onboarding -> return
 
             else -> {
-                val keepLogin = currentScreen == Screen.Login
+                val keepLogin = currentScreen is Screen.Login
                 backStack.clear()
                 backStack.add(Screen.MainShell)
                 if (keepLogin) {
-                    backStack.add(Screen.Login)
+                    backStack.add(Screen.Login())
                 }
             }
         }

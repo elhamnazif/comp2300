@@ -38,6 +38,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun AuthScreen(
     onLoginSuccess: () -> Unit,
+    initialSuccessMessage: String? = null,
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel = koinViewModel(),
     onDismiss: () -> Unit = {},
@@ -50,6 +51,7 @@ fun AuthScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
+    val successMessage = if (authError == null) initialSuccessMessage else null
 
     Scaffold(
         modifier = modifier,
@@ -61,15 +63,35 @@ fun AuthScreen(
             )
         },
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(24.dp),
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 104.dp),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                Column {
+                    AuthBanner(
+                        message = successMessage,
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f),
+                    )
+                    AuthBanner(message = authError)
+                }
+            }
+
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize().imePadding(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .imePadding(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -119,11 +141,6 @@ fun AuthScreen(
                     )
                 }
             }
-
-            AuthBanner(
-                message = authError,
-                modifier = Modifier.align(Alignment.TopCenter),
-            )
         }
     }
 }

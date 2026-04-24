@@ -148,7 +148,7 @@ class RealNavigatorTest {
 
         navigator.navigate(Screen.Chatbot)
 
-        assertEquals(listOf(Screen.MainShell, Screen.Login), navigator.backStack)
+        assertEquals(listOf(Screen.MainShell, Screen.Login()), navigator.backStack)
         assertEquals(listOf(Screen.Home), navigator.mainShellBackStack)
         assertEquals(Screen.Chatbot, navigator.postLoginTarget)
     }
@@ -161,7 +161,7 @@ class RealNavigatorTest {
 
         navigator.navigate(Screen.Checkout)
 
-        assertEquals(listOf(Screen.MainShell, Screen.Cart, Screen.Login), navigator.backStack)
+        assertEquals(listOf(Screen.MainShell, Screen.Cart, Screen.Login()), navigator.backStack)
         assertEquals(Screen.Checkout, navigator.postLoginTarget)
     }
 
@@ -173,7 +173,7 @@ class RealNavigatorTest {
 
             navigator.navigateWithinShell(Screen.BookingHistory())
 
-            assertEquals(listOf(Screen.MainShell, Screen.Login), navigator.backStack)
+            assertEquals(listOf(Screen.MainShell, Screen.Login()), navigator.backStack)
             assertEquals(listOf(Screen.Booking), navigator.mainShellBackStack)
             assertEquals(Screen.BookingHistory(), navigator.postLoginTarget)
         }
@@ -213,7 +213,7 @@ class RealNavigatorTest {
 
         navigator.navigate(Screen.MedicalRecords)
 
-        assertEquals(listOf(Screen.MainShell, Screen.Login), navigator.backStack)
+        assertEquals(listOf(Screen.MainShell, Screen.Login()), navigator.backStack)
         assertEquals(Screen.MedicalRecords, navigator.postLoginTarget)
     }
 
@@ -243,7 +243,7 @@ class RealNavigatorTest {
                     mapOf(
                         "nav_stack" to listOf(
                             Json.encodeToString<Screen>(Screen.Chatbot),
-                            Json.encodeToString<Screen>(Screen.Login),
+                            Json.encodeToString<Screen>(Screen.Login()),
                         ),
                     ),
                 ),
@@ -251,7 +251,7 @@ class RealNavigatorTest {
 
         advanceUntilIdle()
 
-        assertEquals(listOf(Screen.MainShell, Screen.Login), navigator.backStack)
+        assertEquals(listOf(Screen.MainShell, Screen.Login()), navigator.backStack)
         assertEquals(listOf(Screen.Home), navigator.mainShellBackStack)
     }
 }
@@ -287,6 +287,16 @@ private class FakeAuthRepository(initialSession: AuthSession = AuthSession.Signe
     override suspend fun resendVerificationEmail(email: String) = error("Not used in test")
 
     override suspend fun resetPassword(token: String, newPassword: String) = error("Not used in test")
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String) =
+        error("Not used in test")
+
+    override suspend fun requestEmailChange(currentPassword: String, newEmail: String) =
+        error("Not used in test")
+
+    override suspend fun confirmEmailChange(code: String) = error("Not used in test")
+
+    override suspend fun deactivateAccount(currentPassword: String) = error("Not used in test")
 
     override suspend fun logout() = error("Not used in test")
 }

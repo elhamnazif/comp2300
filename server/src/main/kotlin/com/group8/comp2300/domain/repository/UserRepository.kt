@@ -22,6 +22,8 @@ interface UserRepository {
     fun updatePasswordHash(userId: String, newHash: String)
     fun activateUser(userId: String)
     fun isActivated(userId: String): Boolean
+    fun isDeactivated(userId: String): Boolean
+    fun isActive(userId: String): Boolean
     fun updateProfile(
         userId: String,
         firstName: String,
@@ -32,7 +34,13 @@ interface UserRepository {
         sexualOrientation: String?,
     )
 
+    fun updateEmail(userId: String, email: String)
+
     fun updateProfileImageUrl(userId: String, profileImageUrl: String?)
+
+    fun deactivateUser(userId: String, deactivatedAt: Long)
+
+    fun clearDeactivatedAt(userId: String)
 
     /**
      * Deletes unactivated accounts created before the given cutoff timestamp.

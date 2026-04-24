@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.group8.comp2300.core.PasswordValidationResult
 import com.group8.comp2300.core.Validation
 import com.group8.comp2300.domain.model.user.User
+import com.group8.comp2300.domain.repository.EmailChangeTokenRepository
 import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
 import com.group8.comp2300.domain.repository.RefreshTokenRepository
 import com.group8.comp2300.domain.repository.UserRepository
@@ -23,6 +24,7 @@ class AuthService(
     private val userRepository: UserRepository,
     private val refreshTokenRepository: RefreshTokenRepository,
     private val passwordResetTokenRepository: PasswordResetTokenRepository,
+    private val emailChangeTokenRepository: EmailChangeTokenRepository,
     private val jwtService: JwtService,
     private val emailService: EmailService?,
     private val verificationRequestThrottle: VerificationRequestThrottle,
@@ -79,6 +81,10 @@ class AuthService(
             return Result.failure(IllegalArgumentException("Invalid email or password"))
         }
 
+        if (userRepository.isDeactivated(user.id)) {
+            return Result.failure(IllegalArgumentException("Account is deactivated"))
+        }
+
         if (!userRepository.isActivated(user.id)) {
             return Result.failure(IllegalArgumentException("Please activate your account before logging in"))
         }
@@ -123,6 +129,11 @@ class AuthService(
 
         if (tokenUserId != userId) {
             return Result.failure(IllegalArgumentException("Token does not belong to the specified user"))
+        }
+
+        if (!userRepository.isActive(userId)) {
+            refreshTokenRepository.revoke(tokenHash)
+            return Result.failure(IllegalArgumentException("Account is deactivated"))
         }
 
         refreshTokenRepository.revoke(tokenHash)
@@ -176,7 +187,7 @@ class AuthService(
         }
 
         val user = userRepository.findByEmail(email)
-        if (user == null) {
+        if (user == null || userRepository.isDeactivated(user.id)) {
             delay(TIMING_ATTACK_DELAY_MS)
             return Result.success(Unit)
         }
@@ -238,6 +249,117 @@ class AuthService(
         userRepository.updatePasswordHash(userId, newHash)
         passwordResetTokenRepository.markUsed(tokenHash)
         refreshTokenRepository.revokeAllForUser(userId)
+
+        return Result.success(Unit)
+    }
+
+    fun changePassword(userId: String, currentPassword: String, newPassword: String): Result<Unit> {
+        val user = requireMutableAccountUser(userId)
+            ?: return Result.failure(IllegalArgumentException("User not found"))
+
+        validatePasswordMessage(newPassword)?.let { message ->
+            return Result.failure(IllegalArgumentException(message))
+        }
+
+        val passwordHash = userRepository.getPasswordHash(user.email)
+            ?: return Result.failure(IllegalArgumentException("Invalid password"))
+
+        if (!passwordHasher.verify(currentPassword, passwordHash)) {
+            return Result.failure(IllegalArgumentException("Invalid password"))
+        }
+
+        userRepository.updatePasswordHash(userId, passwordHasher.hash(newPassword))
+        refreshTokenRepository.revokeAllForUser(userId)
+        return Result.success(Unit)
+    }
+
+    suspend fun requestEmailChange(userId: String, currentPassword: String, newEmail: String): Result<Unit> {
+        val user = requireMutableAccountUser(userId)
+            ?: return Result.failure(IllegalArgumentException("User not found"))
+        val normalizedEmail = newEmail.trim().lowercase()
+
+        if (!Validation.isValidEmail(normalizedEmail)) {
+            return Result.failure(IllegalArgumentException("Invalid email format"))
+        }
+
+        if (normalizedEmail == user.email.lowercase()) {
+            return Result.failure(IllegalArgumentException("New email must be different"))
+        }
+
+        val passwordHash = userRepository.getPasswordHash(user.email)
+            ?: return Result.failure(IllegalArgumentException("Invalid password"))
+        if (!passwordHasher.verify(currentPassword, passwordHash)) {
+            return Result.failure(IllegalArgumentException("Invalid password"))
+        }
+
+        val existingUser = userRepository.findByEmail(normalizedEmail)
+        if (existingUser != null && existingUser.id != userId) {
+            return Result.failure(IllegalArgumentException("An account with this email already exists"))
+        }
+
+        emailChangeTokenRepository.deleteByUserId(userId)
+        val token = generateVerificationCode()
+        emailChangeTokenRepository.insert(
+            tokenHash = hashToken(token),
+            userId = userId,
+            newEmail = normalizedEmail,
+        )
+
+        when (val result = emailService?.sendEmailChangeEmail(normalizedEmail, token)) {
+            is EmailResult.Success -> {
+                log.debug("Email change verification sent successfully to {} (messageId={})", normalizedEmail, result.messageId)
+            }
+
+            is EmailResult.Failure -> {
+                log.warn("Failed to send email change verification to {}: {}", normalizedEmail, result.error.message)
+            }
+
+            null -> {
+                log.debug("Email service not configured - skipping email change verification for {}", normalizedEmail)
+            }
+        }
+
+        return Result.success(Unit)
+    }
+
+    fun confirmEmailChange(code: String): Result<Unit> {
+        val tokenHash = hashToken(code)
+        val token = emailChangeTokenRepository.findValid(tokenHash)
+            ?: return Result.failure(IllegalArgumentException("Invalid or expired verification code"))
+        val user = requireMutableAccountUser(token.userId)
+            ?: return Result.failure(IllegalArgumentException("User not found"))
+
+        val existingUser = userRepository.findByEmail(token.newEmail)
+        if (existingUser != null && existingUser.id != token.userId) {
+            return Result.failure(IllegalArgumentException("An account with this email already exists"))
+        }
+
+        userRepository.updateEmail(token.userId, token.newEmail)
+        emailChangeTokenRepository.markUsed(tokenHash)
+        emailChangeTokenRepository.deleteByUserId(token.userId)
+        refreshTokenRepository.revokeAllForUser(token.userId)
+
+        return if (userRepository.findById(user.id)?.email == token.newEmail) {
+            Result.success(Unit)
+        } else {
+            Result.failure(IllegalStateException("Failed to update email"))
+        }
+    }
+
+    fun deactivateAccount(userId: String, currentPassword: String): Result<Unit> {
+        val user = requireMutableAccountUser(userId)
+            ?: return Result.failure(IllegalArgumentException("User not found"))
+        val passwordHash = userRepository.getPasswordHash(user.email)
+            ?: return Result.failure(IllegalArgumentException("Invalid password"))
+
+        if (!passwordHasher.verify(currentPassword, passwordHash)) {
+            return Result.failure(IllegalArgumentException("Invalid password"))
+        }
+
+        userRepository.deactivateUser(userId, Clock.System.now().toEpochMilliseconds())
+        refreshTokenRepository.revokeAllForUser(userId)
+        passwordResetTokenRepository.deleteByUserId(userId)
+        emailChangeTokenRepository.deleteByUserId(userId)
 
         return Result.success(Unit)
     }
@@ -400,7 +522,8 @@ class AuthService(
     }
 
     private fun ensureNoActivatedAccount(email: String) {
-        if (userRepository.existsByEmailAndActivated(email)) {
+        val existingUser = userRepository.findByEmail(email)
+        if (existingUser != null && (userRepository.isActivated(existingUser.id) || userRepository.isDeactivated(existingUser.id))) {
             throw IllegalArgumentException("An account with this email already exists")
         }
     }
@@ -484,6 +607,16 @@ class AuthService(
         val unactivatedCutoff = Clock.System.now() - UNACTIVATED_ACCOUNT_MAX_AGE
         userRepository.deleteUnactivatedAccounts(unactivatedCutoff.toEpochMilliseconds())
         passwordResetTokenRepository.deleteExpired(Clock.System.now().toEpochMilliseconds())
+        emailChangeTokenRepository.deleteExpired(Clock.System.now().toEpochMilliseconds())
+    }
+
+    private fun requireMutableAccountUser(userId: String): User? {
+        val user = userRepository.findById(userId) ?: return null
+        return when {
+            userRepository.isDeactivated(userId) -> null
+            !userRepository.isActivated(userId) -> null
+            else -> user
+        }
     }
 
     private inline fun <T> runWithDuplicateEmailHandling(block: () -> Result<T>): Result<T> = try {

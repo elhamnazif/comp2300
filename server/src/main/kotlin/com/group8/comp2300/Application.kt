@@ -6,6 +6,7 @@ import com.group8.comp2300.config.ResendConfig
 import com.group8.comp2300.di.serverModule
 import com.group8.comp2300.routes.*
 import com.group8.comp2300.security.JwtService
+import com.group8.comp2300.domain.repository.UserRepository
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -44,6 +45,7 @@ fun Application.module() {
     }
 
     val jwtService: JwtService = get()
+    val userRepository: UserRepository = get()
     val devBypass = Environment.devAuthBypass
 
     install(Authentication) {
@@ -52,7 +54,7 @@ fun Application.module() {
             verifier(jwtService.verifier)
             validate { credential ->
                 val userId = credential.payload.subject
-                if (userId != null) {
+                if (userId != null && userRepository.isActive(userId)) {
                     JWTPrincipal(credential.payload)
                 } else {
                     null

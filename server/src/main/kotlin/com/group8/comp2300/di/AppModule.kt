@@ -53,6 +53,7 @@ val serverModule = module {
         RefreshTokenRepositoryImpl(database = get(), refreshTokenExpiration = get<JwtService>().refreshTokenExpiration)
     }
     single<PasswordResetTokenRepository> { PasswordResetTokenRepositoryImpl(get()) }
+    single<EmailChangeTokenRepository> { EmailChangeTokenRepositoryImpl(get()) }
     single<AppointmentRepository> { AppointmentRepositoryImpl(get()) }
     single<AppointmentSlotRepository> { AppointmentSlotRepositoryImpl(get()) }
     single<ArticleRepository> { ArticleRepositoryImpl(get()) }
@@ -83,6 +84,7 @@ val serverModule = module {
             userRepository = get(),
             refreshTokenRepository = get(),
             passwordResetTokenRepository = get(),
+            emailChangeTokenRepository = get(),
             jwtService = get(),
             emailService = if (ResendConfig.isConfigured) get<EmailService>() else null,
             verificationRequestThrottle = get(),

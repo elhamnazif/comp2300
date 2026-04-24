@@ -99,6 +99,26 @@ class AuthRepositoryImpl(
         apiService.resetPassword(token, newPassword)
     }
 
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit> = runCatching {
+        apiService.changePassword(currentPassword, newPassword)
+        clearLocalAuthState()
+    }
+
+    override suspend fun requestEmailChange(currentPassword: String, newEmail: String): Result<Unit> = runCatching {
+        apiService.requestEmailChange(currentPassword, newEmail)
+    }
+
+    override suspend fun confirmEmailChange(code: String): Result<Unit> = runCatching {
+        apiService.confirmEmailChange(code)
+        val user = apiService.getProfile()
+        _session.value = AuthSession.SignedIn(user)
+    }
+
+    override suspend fun deactivateAccount(currentPassword: String): Result<Unit> = runCatching {
+        apiService.deactivateAccount(currentPassword)
+        clearLocalAuthState()
+    }
+
     override suspend fun logout() {
         try {
             if (session.value is AuthSession.SignedIn) {
@@ -107,9 +127,7 @@ class AuthRepositoryImpl(
         } catch (e: Exception) {
             logger.w(e) { "Logout API call failed, clearing local state anyway" }
         } finally {
-            tokenManager.clearTokens()
-            personalDataCleaner.clearAllPersonalData()
-            _session.value = AuthSession.SignedOut
+            clearLocalAuthState()
         }
     }
 
@@ -166,6 +184,12 @@ class AuthRepositoryImpl(
         lastName = "",
         email = "",
     )
+
+    private suspend fun clearLocalAuthState() {
+        tokenManager.clearTokens()
+        personalDataCleaner.clearAllPersonalData()
+        _session.value = AuthSession.SignedOut
+    }
 
     private fun Throwable.isAuthenticationFailure(): Boolean = this is ApiException && statusCode == 401
 }

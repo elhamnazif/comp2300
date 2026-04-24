@@ -37,6 +37,18 @@ data class ForgotPasswordRequest(val email: String)
 data class ResetPasswordRequest(val token: String, val newPassword: String)
 
 @Serializable
+data class ChangePasswordRequest(val currentPassword: String, val newPassword: String)
+
+@Serializable
+data class RequestEmailChangeRequest(val currentPassword: String, val newEmail: String)
+
+@Serializable
+data class ConfirmEmailChangeRequest(val code: String)
+
+@Serializable
+data class DeactivateAccountRequest(val currentPassword: String)
+
+@Serializable
 data class MessageResponse(val message: String)
 
 @Serializable

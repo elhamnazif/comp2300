@@ -48,6 +48,7 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
             createdAt = now,
             preferredLanguage = preferredLanguage,
             isActivated = 0,
+            deactivatedAt = null,
         )
     }
 
@@ -58,6 +59,16 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
     override fun isActivated(userId: String): Boolean {
         val user = database.userQueries.selectUserById(userId).executeAsOneOrNull() ?: return false
         return user.isActivated != 0L
+    }
+
+    override fun isDeactivated(userId: String): Boolean {
+        val user = database.userQueries.selectUserById(userId).executeAsOneOrNull() ?: return false
+        return user.deactivatedAt != null
+    }
+
+    override fun isActive(userId: String): Boolean {
+        val user = database.userQueries.selectUserById(userId).executeAsOneOrNull() ?: return false
+        return user.isActivated != 0L && user.deactivatedAt == null
     }
 
     override fun getPasswordHash(email: String): String? =
@@ -87,8 +98,20 @@ class UserRepositoryImpl(private val database: ServerDatabase) : UserRepository 
         )
     }
 
+    override fun updateEmail(userId: String, email: String) {
+        database.userQueries.updateEmail(email, userId)
+    }
+
     override fun updateProfileImageUrl(userId: String, profileImageUrl: String?) {
         database.userQueries.updateProfileImageUrl(profileImageUrl, userId)
+    }
+
+    override fun deactivateUser(userId: String, deactivatedAt: Long) {
+        database.userQueries.deactivateUser(deactivatedAt, userId)
+    }
+
+    override fun clearDeactivatedAt(userId: String) {
+        database.userQueries.clearDeactivatedAt(userId)
     }
 
     override fun deleteUnactivatedAccounts(cutoffMillis: Long) {

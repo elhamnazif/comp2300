@@ -16,6 +16,8 @@ fun AuthDropdown(
     selectedValue: String,
     options: List<String>,
     onSelectOption: (String) -> Unit,
+    allowClear: Boolean = false,
+    clearLabel: String = "",
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -33,6 +35,16 @@ fun AuthDropdown(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.7f),
         ) {
+            if (allowClear && selectedValue.isNotBlank()) {
+                DropdownMenuItem(
+                    text = { Text(clearLabel) },
+                    onClick = {
+                        onSelectOption("")
+                        expanded = false
+                    },
+                )
+            }
+
             options.forEach { option ->
                 DropdownMenuItem(
                     text = { Text(option) },

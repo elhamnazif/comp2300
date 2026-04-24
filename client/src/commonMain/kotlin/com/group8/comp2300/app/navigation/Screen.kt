@@ -40,7 +40,7 @@ sealed interface Screen : NavKey {
     data object Onboarding : Screen
 
     @Serializable
-    data object Login : Screen
+    data class Login(val successMessage: String? = null) : Screen
 
     @Serializable
     data class EmailVerification(val email: String) : Screen
@@ -102,6 +102,18 @@ sealed interface Screen : NavKey {
     data object PrivacySecurity : Screen
 
     @Serializable
+    data object Account : Screen
+
+    @Serializable
+    data object ChangePassword : Screen
+
+    @Serializable
+    data object ChangeEmail : Screen
+
+    @Serializable
+    data object DeactivateAccount : Screen
+
+    @Serializable
     data object Accessibility : Screen
 
     @Serializable
@@ -142,6 +154,8 @@ fun Screen.isMainTab(): Boolean = this in mainTabScreens
 
 fun Screen.requiresAuthentication(): Boolean = when (this) {
     Screen.Chatbot,
+    Screen.Account,
+    Screen.ChangeEmail,
     Screen.Checkout,
     Screen.EditProfile,
     Screen.MedicalRecords,

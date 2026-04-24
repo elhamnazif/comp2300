@@ -30,6 +30,7 @@ class EmailService(apiKey: String, private val fromEmail: String, private val ap
 
     private val activationTemplate: String by lazy { loadTemplate("activation-email.html") }
     private val passwordResetTemplate: String by lazy { loadTemplate("password-reset-email.html") }
+    private val emailChangeTemplate: String by lazy { loadTemplate("email-change-email.html") }
 
     /**
      * Sends an activation/verification email to the user.
@@ -74,6 +75,25 @@ class EmailService(apiKey: String, private val fromEmail: String, private val ap
                 .subject("Reset your password")
                 .html(htmlContent)
                 .addTag(Tag.builder().name("email_type").value("password_reset").build())
+                .build()
+
+            val response = resend.emails().send(params)
+            EmailResult.Success(response.id)
+        }
+    } catch (e: Exception) {
+        EmailResult.Failure(e)
+    }
+
+    suspend fun sendEmailChangeEmail(toEmail: String, token: String): EmailResult = try {
+        withContext(Dispatchers.IO) {
+            val htmlContent = renderTemplate(emailChangeTemplate, mapOf("token" to token))
+
+            val params = CreateEmailOptions.builder()
+                .from(fromEmail)
+                .to(toEmail)
+                .subject("Confirm your new email")
+                .html(htmlContent)
+                .addTag(Tag.builder().name("email_type").value("email_change").build())
                 .build()
 
             val response = resend.emails().send(params)

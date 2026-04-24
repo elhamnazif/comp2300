@@ -1,9 +1,19 @@
 package com.group8.comp2300.feature.profile
 
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val profileModule = module {
     viewModelOf(::ProfileViewModel)
     viewModelOf(::ProfileEditorViewModel)
+    viewModelOf(::ChangePasswordViewModel)
+    viewModel { params ->
+        ChangeEmailViewModel(
+            initialEmail = params.get(),
+            requestEmailChangeUseCase = get(),
+            confirmEmailChangeUseCase = get(),
+        )
+    }
+    viewModelOf(::DeactivateAccountViewModel)
 }

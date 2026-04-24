@@ -566,6 +566,10 @@ private class BookingApiStub : ApiService {
     override suspend fun activateAccount(token: String) = error("unused")
     override suspend fun forgotPassword(email: String) = error("unused")
     override suspend fun resetPassword(token: String, newPassword: String) = error("unused")
+    override suspend fun changePassword(currentPassword: String, newPassword: String) = error("unused")
+    override suspend fun requestEmailChange(currentPassword: String, newEmail: String) = error("unused")
+    override suspend fun confirmEmailChange(code: String) = error("unused")
+    override suspend fun deactivateAccount(currentPassword: String) = error("unused")
     override suspend fun preregister(request: com.group8.comp2300.data.remote.dto.PreregisterRequest) = error("unused")
     override suspend fun updateProfile(request: com.group8.comp2300.data.remote.dto.UpdateProfileRequest) = error("unused")
     override suspend fun uploadProfilePhoto(fileBytes: ByteArray, fileName: String) = error("unused")
@@ -719,6 +723,10 @@ private class FakeSessionAuthRepository(initialSession: AuthSession) : AuthRepos
     override suspend fun forgotPassword(email: String) = error("unused")
     override suspend fun resendVerificationEmail(email: String) = error("unused")
     override suspend fun resetPassword(token: String, newPassword: String) = error("unused")
+    override suspend fun changePassword(currentPassword: String, newPassword: String) = error("unused")
+    override suspend fun requestEmailChange(currentPassword: String, newEmail: String) = error("unused")
+    override suspend fun confirmEmailChange(code: String) = error("unused")
+    override suspend fun deactivateAccount(currentPassword: String) = error("unused")
     override suspend fun logout() = Unit
 }
 

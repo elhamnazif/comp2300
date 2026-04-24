@@ -318,6 +318,98 @@ class AuthRepositoryImplTest {
         val session = repository.session.value as AuthSession.SignedIn
         assertNull(session.user.profileImageUrl)
     }
+
+    @Test
+    fun changePasswordClearsSessionAndPersonalData() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val tokenManager = TokenManagerImpl(sessionDataSource)
+        val repository = AuthRepositoryImpl(
+            apiService = FakeApiService(),
+            tokenManager = tokenManager,
+            sessionDataSource = sessionDataSource,
+            personalDataCleaner = PersonalDataCleaner(db),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
+        )
+
+        repository.awaitInitialRestore()
+        repository.login("user@example.com", "pw")
+        MedicationLocalDataSource(db).insert(sampleMedication())
+        OutboxDataSource(db).enqueue(
+            entityType = "MEDICATION_UPSERT",
+            payload = "{}",
+            localId = "med-1",
+            state = OutboxState.PENDING,
+        )
+
+        val result = repository.changePassword("pw", "NewPassword1")
+
+        assertTrue(result.isSuccess)
+        assertIs<AuthSession.SignedOut>(repository.session.value)
+        assertNull(tokenManager.getUserId())
+        assertTrue(MedicationLocalDataSource(db).getAll().isEmpty())
+        assertTrue(OutboxDataSource(db).getAll().isEmpty())
+    }
+
+    @Test
+    fun confirmEmailChangeRefreshesSignedInSession() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val apiService = object : FakeApiService() {
+            override suspend fun confirmEmailChange(code: String): MessageResponse {
+                profileUser = profileUser.copy(email = "updated@example.com")
+                return MessageResponse("ok")
+            }
+        }
+        val repository = AuthRepositoryImpl(
+            apiService = apiService,
+            tokenManager = TokenManagerImpl(sessionDataSource),
+            sessionDataSource = sessionDataSource,
+            personalDataCleaner = PersonalDataCleaner(db),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
+        )
+
+        repository.awaitInitialRestore()
+        repository.login("user@example.com", "pw")
+
+        val result = repository.confirmEmailChange("123456")
+
+        assertTrue(result.isSuccess)
+        val session = repository.session.value as AuthSession.SignedIn
+        assertEquals("updated@example.com", session.user.email)
+    }
+
+    @Test
+    fun deactivateAccountClearsSessionAndPersonalData() = runTest {
+        val db = newDatabase()
+        val sessionDataSource = SessionDataSource(db)
+        val tokenManager = TokenManagerImpl(sessionDataSource)
+        val repository = AuthRepositoryImpl(
+            apiService = FakeApiService(),
+            tokenManager = tokenManager,
+            sessionDataSource = sessionDataSource,
+            personalDataCleaner = PersonalDataCleaner(db),
+            offlineSyncCoordinator = TestOfflineSyncCoordinator(),
+        )
+
+        repository.awaitInitialRestore()
+        repository.login("user@example.com", "pw")
+        MedicationLocalDataSource(db).insert(sampleMedication())
+        OutboxDataSource(db).enqueue(
+            entityType = "MEDICATION_UPSERT",
+            payload = "{}",
+            localId = "med-1",
+            state = OutboxState.PENDING,
+        )
+
+        val result = repository.deactivateAccount("pw")
+
+        assertTrue(result.isSuccess)
+        assertIs<AuthSession.SignedOut>(repository.session.value)
+        assertNull(tokenManager.getUserId())
+        assertTrue(MedicationLocalDataSource(db).getAll().isEmpty())
+        assertTrue(OutboxDataSource(db).getAll().isEmpty())
+    }
 }
 
 internal fun newDatabase(): AppDatabase {
@@ -381,6 +473,16 @@ internal open class FakeApiService(
     override suspend fun forgotPassword(email: String): MessageResponse = MessageResponse("ok")
 
     override suspend fun resetPassword(token: String, newPassword: String): MessageResponse = MessageResponse("ok")
+
+    override suspend fun changePassword(currentPassword: String, newPassword: String): MessageResponse =
+        MessageResponse("ok")
+
+    override suspend fun requestEmailChange(currentPassword: String, newEmail: String): MessageResponse =
+        MessageResponse("ok")
+
+    override suspend fun confirmEmailChange(code: String): MessageResponse = MessageResponse("ok")
+
+    override suspend fun deactivateAccount(currentPassword: String): MessageResponse = MessageResponse("ok")
 
     override suspend fun preregister(request: PreregisterRequest): PreregisterResponse =
         PreregisterResponse(request.email, "ok")
