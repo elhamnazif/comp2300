@@ -5,11 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentSlot
+import com.group8.comp2300.domain.model.medical.BookingPaymentMethod
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
+import com.group8.comp2300.domain.model.medical.bookingConsultationFee
+import com.group8.comp2300.domain.model.medical.consultationFeeFor
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
@@ -76,6 +80,13 @@ class BookingViewModel(
                         availableSlots = slots.sortedBy(AppointmentSlot::startTime),
                         isLoadingClinic = false,
                         isLoadingSlots = false,
+                        bookingDraft = it.bookingDraft?.takeIf { draft -> draft.clinicId == clinic.id }?.let { draft ->
+                            if (draft.rescheduleAppointmentId == null) {
+                                draft.copy(quotedFee = clinic.bookingConsultationFee())
+                            } else {
+                                draft
+                            }
+                        } ?: it.bookingDraft,
                     )
                 }
             }.onFailure { error ->
@@ -104,32 +115,60 @@ class BookingViewModel(
         _state.update { it.copy(selectedClinic = clinic) }
     }
 
-    fun ensureBookingDraft(clinicId: String, slotId: String, rescheduleAppointment: Appointment? = null) {
+    fun ensureBookingDraft(
+        clinicId: String,
+        slotId: String,
+        appointmentType: String? = null,
+        reason: String? = null,
+        hasReminder: Boolean? = null,
+        rescheduleAppointment: Appointment? = null,
+    ) {
         val currentDraft = _state.value.bookingDraft
+        val defaultDraft = BookingDraft()
+        val restoredAppointmentType = appointmentType ?: currentDraft?.appointmentType ?: defaultDraft.appointmentType
+        val restoredReason = reason ?: currentDraft?.reason ?: defaultDraft.reason
+        val restoredReminder = hasReminder ?: currentDraft?.hasReminder ?: defaultDraft.hasReminder
         if (
             currentDraft?.clinicId == clinicId &&
             currentDraft.slotId == slotId &&
-            currentDraft.rescheduleAppointmentId == rescheduleAppointment?.id
+            currentDraft.rescheduleAppointmentId == rescheduleAppointment?.id &&
+            currentDraft.appointmentType == restoredAppointmentType &&
+            currentDraft.reason == restoredReason &&
+            currentDraft.hasReminder == restoredReminder
         ) {
             return
         }
 
         _state.update { current ->
-            current.copy(
-                bookingDraft = rescheduleAppointment?.let {
-                    BookingDraft(
-                        clinicId = clinicId,
-                        slotId = slotId,
-                        appointmentType = it.appointmentType,
-                        reason = it.notes.orEmpty(),
-                        hasReminder = it.hasReminder,
-                        rescheduleAppointmentId = it.id,
-                    )
-                } ?: current.bookingDraft?.takeIf { it.clinicId == clinicId }?.copy(slotId = slotId) ?: BookingDraft(
+            val existingDraft = current.bookingDraft?.takeIf { it.clinicId == clinicId }
+            val nextDraft = rescheduleAppointment?.let {
+                BookingDraft(
                     clinicId = clinicId,
                     slotId = slotId,
-                ),
+                    appointmentType = it.appointmentType,
+                    reason = it.notes.orEmpty(),
+                    hasReminder = it.hasReminder,
+                    rescheduleAppointmentId = it.id,
+                    quotedFee = it.paymentAmount ?: resolveConsultationFee(clinicId),
+                )
+            } ?: existingDraft?.copy(
+                slotId = slotId,
+                appointmentType = appointmentType ?: existingDraft.appointmentType,
+                reason = reason ?: existingDraft.reason,
+                hasReminder = hasReminder ?: existingDraft.hasReminder,
+                quotedFee = resolveConsultationFee(clinicId),
+            ) ?: BookingDraft(
+                clinicId = clinicId,
+                slotId = slotId,
+                appointmentType = appointmentType ?: defaultDraft.appointmentType,
+                reason = reason ?: defaultDraft.reason,
+                hasReminder = hasReminder ?: defaultDraft.hasReminder,
+                quotedFee = resolveConsultationFee(clinicId),
+            )
+            current.copy(
+                bookingDraft = nextDraft,
                 lastBookedAppointment = null,
+                paymentErrorMessage = null,
             )
         }
     }
@@ -137,14 +176,22 @@ class BookingViewModel(
     fun selectSlot(clinicId: String, slotId: String) {
         _state.update { current ->
             val nextDraft = if (current.bookingDraft?.clinicId == clinicId) {
-                current.bookingDraft.copy(slotId = slotId)
+                current.bookingDraft.copy(
+                    slotId = slotId,
+                    quotedFee = resolveConsultationFee(clinicId),
+                )
             } else {
                 BookingDraft(
                     clinicId = clinicId,
                     slotId = slotId,
+                    quotedFee = resolveConsultationFee(clinicId),
                 )
             }
-            current.copy(bookingDraft = nextDraft, lastBookedAppointment = null)
+            current.copy(
+                bookingDraft = nextDraft,
+                lastBookedAppointment = null,
+                paymentErrorMessage = null,
+            )
         }
     }
 
@@ -169,8 +216,21 @@ class BookingViewModel(
         _state.update { it.copy(isMapMode = enabled) }
     }
 
+    fun selectPaymentMethod(method: BookingPaymentMethod) {
+        _state.update { current ->
+            current.copy(
+                bookingDraft = current.bookingDraft?.copy(selectedPaymentMethod = method),
+                paymentErrorMessage = null,
+            )
+        }
+    }
+
     fun clearBookingError() {
         _state.update { it.copy(errorMessage = null) }
+    }
+
+    fun clearPaymentError() {
+        _state.update { it.copy(paymentErrorMessage = null) }
     }
 
     fun clearBookingFlow() {
@@ -180,6 +240,7 @@ class BookingViewModel(
                 lastBookedAppointment = null,
                 selectedManagedAppointmentId = null,
                 errorMessage = null,
+                paymentErrorMessage = null,
             )
         }
     }
@@ -235,6 +296,7 @@ class BookingViewModel(
                     reason = appointment.notes.orEmpty(),
                     hasReminder = appointment.hasReminder,
                     rescheduleAppointmentId = appointment.id,
+                    quotedFee = appointment.paymentAmount ?: resolveConsultationFee(clinicId),
                 ),
             )
         }
@@ -299,17 +361,28 @@ class BookingViewModel(
         hasReminder: Boolean,
     ) {
         viewModelScope.launch {
-            _state.update { it.copy(isSubmitting = true, errorMessage = null) }
+            val draft = _state.value.bookingDraft
+            val isReschedule = draft?.rescheduleAppointmentId != null
+            val paymentMethod = draft?.selectedPaymentMethod
+            if (!isReschedule && paymentMethod == null) {
+                _state.update { it.copy(paymentErrorMessage = "Choose a payment method") }
+                return@launch
+            }
+
+            _state.update { it.copy(isSubmitting = true, errorMessage = null, paymentErrorMessage = null) }
             runCatching {
-                val draft = _state.value.bookingDraft
                 val request = ClinicBookingRequest(
                     clinicId = clinicId,
                     slotId = slotId,
                     appointmentType = draft?.appointmentType ?: appointmentType,
                     reason = (draft?.reason ?: reason).trim().ifBlank { null },
                     hasReminder = draft?.hasReminder ?: hasReminder,
+                    paymentMethod = if (isReschedule) null else paymentMethod,
                 )
                 val rescheduleAppointmentId = draft?.rescheduleAppointmentId
+                if (rescheduleAppointmentId == null) {
+                    delay(PaymentProcessingDelayMs)
+                }
                 val appointment = if (rescheduleAppointmentId == null) {
                     appointmentRepository.bookClinicAppointment(request)
                 } else {
@@ -324,15 +397,25 @@ class BookingViewModel(
                         managedAppointments = it.managedAppointments
                             .replaceAppointment(appointment)
                             .sortedWith(bookingHistoryComparator()),
+                        paymentErrorMessage = null,
                     )
                 }
                 _bookingEvents.emit(BookingEvent.Submitted(appointment, wasRescheduled))
             }.onFailure { error ->
-                _state.update {
-                    it.copy(
-                        isSubmitting = false,
-                        errorMessage = error.message ?: "Failed to save booking",
-                    )
+                if (isReschedule) {
+                    _state.update {
+                        it.copy(
+                            isSubmitting = false,
+                            errorMessage = error.message ?: "Failed to save booking",
+                        )
+                    }
+                } else {
+                    _state.update {
+                        it.copy(
+                            isSubmitting = false,
+                            paymentErrorMessage = error.message ?: "Couldn't process payment right now",
+                        )
+                    }
                 }
             }
         }
@@ -352,6 +435,11 @@ class BookingViewModel(
 
     fun getManagedAppointment(appointmentId: String): Appointment? =
         _state.value.managedAppointments.firstOrNull { it.id == appointmentId }
+
+    fun getQuotedFee(clinicId: String): Double = _state.value.bookingDraft
+        ?.takeIf { it.clinicId == clinicId }
+        ?.quotedFee
+        ?: resolveConsultationFee(clinicId)
 
     private fun filterClinics(state: State): List<Clinic> {
         val query = state.searchQuery.trim()
@@ -385,20 +473,30 @@ class BookingViewModel(
         val managedAppointments: List<Appointment> = emptyList(),
         val selectedManagedAppointmentId: String? = null,
         val errorMessage: String? = null,
+        val paymentErrorMessage: String? = null,
     )
 
     @Immutable
     data class BookingDraft(
-        val clinicId: String,
-        val slotId: String,
+        val clinicId: String = "",
+        val slotId: String = "",
         val appointmentType: String = "STI_TESTING",
         val reason: String = "",
         val hasReminder: Boolean = true,
         val rescheduleAppointmentId: String? = null,
+        val selectedPaymentMethod: BookingPaymentMethod? = null,
+        val quotedFee: Double = consultationFeeFor(null),
     )
 
     sealed interface BookingEvent {
         data class Submitted(val appointment: Appointment, val wasRescheduled: Boolean) : BookingEvent
+    }
+
+    private fun resolveConsultationFee(clinicId: String): Double = getClinic(clinicId)?.bookingConsultationFee()
+        ?: consultationFeeFor(null)
+
+    companion object {
+        private const val PaymentProcessingDelayMs = 700L
     }
 }
 

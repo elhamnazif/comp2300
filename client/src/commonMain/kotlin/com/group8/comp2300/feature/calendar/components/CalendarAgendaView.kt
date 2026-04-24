@@ -81,14 +81,6 @@ internal fun AgendaRangeHeader(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
-                    stringResource(
-                        Res.string.calendar_agenda_range_context,
-                        DateFormatter.formatDayMonthYear(startDate),
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
                     "${DateFormatter.formatDayMonthYear(startDate)} - ${DateFormatter.formatDayMonthYear(endDate)}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,

@@ -32,10 +32,15 @@ private fun seedProducts(database: ServerDatabase) {
 }
 
 private fun seedBadges(database: ServerDatabase) {
-    if (database.badgeQueries.getAllBadges().executeAsList().isEmpty()) {
-        val repository = BadgeRepositoryImpl(database)
-        database.transaction {
-            sampleBadges.forEach { repository.saveBadge(it) }
+    val repository = BadgeRepositoryImpl(database)
+    database.transaction {
+        sampleBadges.forEach { sample ->
+            val existing = repository.getBadgeById(sample.id)
+            if (existing == null) {
+                repository.saveBadge(sample)
+            } else if (existing.name != sample.name || existing.iconPath != sample.iconPath) {
+                repository.updateBadge(sample)
+            }
         }
     }
 }
@@ -61,10 +66,8 @@ private fun seedArticles(database: ServerDatabase) {
 }
 
 private fun seedQuizzes(database: ServerDatabase) {
-    if (database.quizQueries.getAllQuizzes().executeAsList().isEmpty()) {
-        val repository = QuizRepositoryImpl(database)
-        database.transaction {
-            allQuizzes.forEach { repository.upsertQuiz(it) }
-        }
+    val repository = QuizRepositoryImpl(database)
+    database.transaction {
+        allQuizzes.forEach { repository.upsertQuiz(it) }
     }
 }

@@ -67,6 +67,7 @@ class ChangePasswordViewModel(private val changePasswordUseCase: ChangePasswordU
             }
 
             Event.Submit -> submit()
+
             Event.ClearError -> state.update { it.copy(errorMessage = null, errorMessageRes = null) }
         }
     }

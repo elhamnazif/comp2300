@@ -360,81 +360,89 @@ val hivAidsQuiz = Quiz(
 
 val disclosureQuiz = Quiz(
     id = "q-disclosing-std",
-    articleId = "art-disclosing-std",
+    articleId = "telling-your-partner-you-have-an-std",
     title = "Telling Your Partner",
     questions = listOf(
         QuizQuestion(
             id = "q-disclose-1",
-            title = "What is the primary reason the article suggests 'reversing roles' before having the talk?",
-            explanation = "Imagining yourself as the recipient helps you frame the conversation with the empathy and honesty you would want to receive.",
+            title = "Why does the article say you should tell past or current partners if you have an STD?",
+            explanation =
+            "Letting partners know gives them the chance to see a doctor, get tested, " +
+                "and receive treatment instead of unknowingly living with an untreated infection.",
             options = listOf(
-                QuizOption("opt-1a", "To help you come up with a way to hide the diagnosis.", false),
-                QuizOption("opt-1b", "To help you understand what your partner might expect and feel.", true),
-                QuizOption("opt-1c", "To figure out if your partner also has an infection.", false),
-                QuizOption("opt-1d", "To practice being angry so you can defend yourself.", false),
+                QuizOption("opt-1a", "So they can decide whether to see a doctor and get treated.", true),
+                QuizOption("opt-1b", "So you can avoid taking your own medicine.", false),
+                QuizOption("opt-1c", "So they can keep the diagnosis secret from health providers.", false),
+                QuizOption("opt-1d", "So you can delay the conversation until symptoms get worse.", false),
             ),
         ),
         QuizQuestion(
             id = "q-disclose-2",
-            title = "If you haven’t had sex yet, how does the article suggest starting the conversation?",
-            explanation = "Clear, direct language like \"Before we have sex, I want us to talk about STDs...\" ensures there are no misunderstandings.",
+            title = "What is the best timing for this conversation according to the article?",
+            explanation =
+            "The article says not to avoid the conversation and to talk with your partner " +
+                "before having sex so both people can make informed choices.",
             options = listOf(
-                QuizOption("opt-2a", "By waiting for the partner to ask about your medical history.", false),
-                QuizOption("opt-2b", "By being direct and mentioning the STD and protection needs.", true),
-                QuizOption("opt-2c", "By sending an anonymous email so you don't have to see their face.", false),
-                QuizOption("opt-2d", "By bringing it up only if the partner refuses to use a condom.", false),
+                QuizOption("opt-2a", "Only after you have already had sex several times.", false),
+                QuizOption("opt-2b", "Before having sex, instead of avoiding the conversation.", true),
+                QuizOption("opt-2c", "Only when your partner notices symptoms.", false),
+                QuizOption("opt-2d", "After treatment is finished, so there is nothing to discuss.", false),
             ),
         ),
         QuizQuestion(
             id = "q-disclose-3",
-            title = "What should you do if your partner has a lot of questions you cannot answer?",
-            explanation = "It’s okay not to know everything; seeking out professional medical facts together builds trust and ensures accuracy.",
+            title = "Which communication style does the article recommend during disclosure?",
+            explanation =
+            "The article recommends being open, honest, respectful, and nonjudgmental " +
+                "so the conversation stays productive and can continue over time.",
             options = listOf(
-                QuizOption("opt-3a", "Make up an answer so you don't look like you're uninformed.", false),
-                QuizOption("opt-3b", "Tell them the questions aren't important.", false),
-                QuizOption("opt-3c", "Offer to look for the answers together online or at a health clinic.", true),
-                QuizOption("opt-3d", "Change the subject to something more positive.", false),
+                QuizOption("opt-3a", "Be open, honest, and respectful.", true),
+                QuizOption("opt-3b", "Keep details vague so the talk ends faster.", false),
+                QuizOption("opt-3c", "Be judgmental so they take the issue seriously.", false),
+                QuizOption("opt-3d", "Focus on defending yourself instead of listening.", false),
             ),
         ),
         QuizQuestion(
             id = "q-disclose-4",
-            title = "Why is it important to 'listen rather than doing all the talking' during this conversation?",
-            explanation = "People need space to handle surprise or panic. Listening shows you respect their feelings and are confident in the conversation.",
+            title = "What should you tell a partner even if you are already taking medicine?",
+            explanation =
+            "The article says you should still tell your partner if you have an STI, " +
+                "even when you are taking medicine to treat it.",
             options = listOf(
                 QuizOption(
                     "opt-4a",
-                    "Because you should let the partner decide if they want to break up immediately.",
+                    "Nothing, because treatment means disclosure is no longer needed.",
                     false,
                 ),
-                QuizOption("opt-4b", "Because the partner may be surprised and needs time to process and react.", true),
-                QuizOption("opt-4c", "Because talking too much will make the virus spread faster.", false),
-                QuizOption("opt-4d", "Because you should wait for the partner to apologize to you.", false),
+                QuizOption("opt-4b", "That you have an STI, even if you are currently being treated.", true),
+                QuizOption("opt-4c", "Only the name of your clinic, without mentioning the STI.", false),
+                QuizOption("opt-4d", "That they should assume everything is fine unless symptoms appear.", false),
             ),
         ),
         QuizQuestion(
             id = "q-disclose-5",
-            title = "How should you handle the partner's decision-making process after the disclosure?",
-            explanation = "Giving space shows you are in control and respect their right to process personal health information before making decisions about sex or the relationship.",
+            title = "What question does the article suggest asking your partner during the discussion?",
+            explanation =
+            "The article suggests asking when they were last tested for STIs and " +
+                "even considering getting tested together.",
             options = listOf(
-                QuizOption("opt-5a", "Push them to promise they will stay with you forever.", false),
-                QuizOption("opt-5b", "Give them space and suggest they take time to think about it.", true),
-                QuizOption("opt-5c", "Tell them they have to decide within the next five minutes.", false),
-                QuizOption("opt-5d", "Avoid talking to them for a month so they don't get overwhelmed.", false),
+                QuizOption("opt-5a", "When were you last tested for STIs?", true),
+                QuizOption("opt-5b", "How many people have you told about this already?", false),
+                QuizOption("opt-5c", "Do you want to skip testing if neither of us has symptoms?", false),
+                QuizOption("opt-5d", "Should we avoid doctors and just wait to see what happens?", false),
             ),
         ),
         QuizQuestion(
             id = "q-disclose-6",
-            title = "Sharing the specific type of STD you have is recommended because:",
-            explanation = "Openness reduces the stigma and allows the partner to understand the specific risks and treatments associated with that infection.",
+            title = "How should you respond if your partner needs time after you tell them?",
+            explanation =
+            "The article recommends giving them space and not pushing for a decision " +
+                "right away. You can acknowledge they may need time to think.",
             options = listOf(
-                QuizOption("opt-6a", "It is required by law to show a medical certificate.", false),
-                QuizOption(
-                    "opt-6b",
-                    "It helps the partner feel more comfortable and shows you are open to talking.",
-                    true,
-                ),
-                QuizOption("opt-6c", "It allows the partner to tell their friends exactly what you have.", false),
-                QuizOption("opt-6d", "It makes the infection go away faster.", false),
+                QuizOption("opt-6a", "Push for an immediate answer so the situation ends quickly.", false),
+                QuizOption("opt-6b", "Give them space and suggest they take time to think.", true),
+                QuizOption("opt-6c", "End the conversation and refuse to discuss it again.", false),
+                QuizOption("opt-6d", "Assume silence means they have agreed to sex.", false),
             ),
         ),
     ),

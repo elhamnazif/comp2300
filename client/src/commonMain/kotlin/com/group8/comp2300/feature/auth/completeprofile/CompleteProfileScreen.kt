@@ -6,16 +6,11 @@ import com.group8.comp2300.feature.profile.ProfileEditorMode
 import com.group8.comp2300.feature.profile.ProfileEditorScreen
 
 @Composable
-fun CompleteProfileScreen(
-    email: String,
-    onComplete: () -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun CompleteProfileScreen(email: String, onComplete: () -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier) {
     email
     ProfileEditorScreen(
         mode = ProfileEditorMode.Complete,
-        onSaved = onComplete,
+        onSave = onComplete,
         onBack = onBack,
         modifier = modifier,
     )

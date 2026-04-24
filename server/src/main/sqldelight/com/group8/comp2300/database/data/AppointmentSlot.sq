@@ -18,6 +18,11 @@ SELECT * FROM AppointmentSlotEnt
 WHERE clinic_id = ? AND is_booked = 0
 ORDER BY start_time ASC;
 
+selectSlotsByClinic:
+SELECT * FROM AppointmentSlotEnt
+WHERE clinic_id = ?
+ORDER BY start_time ASC;
+
 selectNextAvailableStartTimes:
 SELECT clinic_id, MIN(start_time) AS next_start_time
 FROM AppointmentSlotEnt

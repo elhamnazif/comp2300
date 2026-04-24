@@ -41,11 +41,7 @@ fun ProfileOverviewSection(
 }
 
 @Composable
-private fun Header(
-    state: ProfileViewModel.State,
-    onRequireAuth: () -> Unit,
-    onNavigateToEditProfile: () -> Unit,
-) {
+private fun Header(state: ProfileViewModel.State, onRequireAuth: () -> Unit, onNavigateToEditProfile: () -> Unit) {
     if (!state.isLoading && !state.isSignedIn) {
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),

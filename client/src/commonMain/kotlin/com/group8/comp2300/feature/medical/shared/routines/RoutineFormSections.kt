@@ -1,11 +1,11 @@
 package com.group8.comp2300.feature.medical.shared.routines
 
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -95,9 +95,9 @@ fun RoutineFieldsSection(
     showArchiveToggle: Boolean,
     modifier: Modifier = Modifier,
     nameTextFieldModifier: Modifier = Modifier,
+    startDateModifier: Modifier = Modifier,
     nameKeyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     nameKeyboardActions: KeyboardActions = KeyboardActions.Default,
-    startDateModifier: Modifier = Modifier,
 ) {
     var activeDatePicker by remember { mutableStateOf<String?>(null) }
     var editingTimeIndex by remember { mutableStateOf<Int?>(null) }

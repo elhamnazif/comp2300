@@ -58,7 +58,9 @@ class ChangeEmailViewModel(
             }
 
             Event.SubmitRequest -> submitRequest()
+
             Event.ConfirmCode -> confirmCode()
+
             Event.EditEmail -> {
                 state.update {
                     it.copy(requestSent = false, code = "", errorMessage = null, errorMessageRes = null)

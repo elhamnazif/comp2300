@@ -1,19 +1,19 @@
 package com.group8.comp2300.feature.medication
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -153,7 +153,7 @@ fun MedicationFormSheet(
                 selectedUnit = doseUnit,
                 unitLabel = stringResource(Res.string.medical_medication_form_dose_unit_label),
                 onUnitSelect = { doseUnit = it },
-                amountTextFieldModifier = Modifier.focusRequester(doseAmountFocusRequester),
+                focusRequester = doseAmountFocusRequester,
                 amountKeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 amountKeyboardActions = KeyboardActions(
                     onNext = {
@@ -170,7 +170,7 @@ fun MedicationFormSheet(
                 label = stringResource(Res.string.medical_medication_form_custom_dose_unit_label),
                 value = customDoseUnit,
                 onValueChange = { customDoseUnit = it },
-                textFieldModifier = Modifier.focusRequester(customDoseUnitFocusRequester),
+                focusRequester = customDoseUnitFocusRequester,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { stockAmountFocusRequester.requestFocus() }),
             )
@@ -182,7 +182,7 @@ fun MedicationFormSheet(
                 selectedUnit = stockUnit,
                 unitLabel = stringResource(Res.string.medical_medication_form_stock_unit_label),
                 onUnitSelect = { stockUnit = it },
-                amountTextFieldModifier = Modifier.focusRequester(stockAmountFocusRequester),
+                focusRequester = stockAmountFocusRequester,
                 amountKeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 amountKeyboardActions = KeyboardActions(
                     onNext = {
@@ -199,7 +199,7 @@ fun MedicationFormSheet(
                 label = stringResource(Res.string.medical_medication_form_custom_unit_label),
                 value = customStockUnit,
                 onValueChange = { customStockUnit = it },
-                textFieldModifier = Modifier.focusRequester(customStockUnitFocusRequester),
+                focusRequester = customStockUnitFocusRequester,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
                 keyboardActions = KeyboardActions(onNext = { instructionFocusRequester.requestFocus() }),
             )
@@ -350,7 +350,7 @@ private fun OtherUnitField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
-    textFieldModifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
@@ -359,7 +359,7 @@ private fun OtherUnitField(
         label = label,
         value = value,
         onValueChange = onValueChange,
-        textFieldModifier = textFieldModifier,
+        textFieldModifier = focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
     )
@@ -374,10 +374,11 @@ private fun MedicationAmountRow(
     selectedUnit: MedicationUnit,
     unitLabel: String,
     onUnitSelect: (MedicationUnit) -> Unit,
-    amountTextFieldModifier: Modifier = Modifier,
+    focusRequester: FocusRequester? = null,
     amountKeyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     amountKeyboardActions: KeyboardActions = KeyboardActions.Default,
 ) {
+    val textFieldModifier = focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
     BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
         val stacked = maxWidth < 320.dp
         if (stacked) {
@@ -387,7 +388,7 @@ private fun MedicationAmountRow(
                     value = amountValue,
                     onValueChange = onAmountChange,
                     placeholder = amountPlaceholder.takeIf(String::isNotBlank),
-                    textFieldModifier = amountTextFieldModifier,
+                    textFieldModifier = textFieldModifier,
                     keyboardOptions = amountKeyboardOptions,
                     keyboardActions = amountKeyboardActions,
                 )
@@ -406,7 +407,7 @@ private fun MedicationAmountRow(
                     value = amountValue,
                     onValueChange = onAmountChange,
                     placeholder = amountPlaceholder.takeIf(String::isNotBlank),
-                    textFieldModifier = amountTextFieldModifier,
+                    textFieldModifier = textFieldModifier,
                     keyboardOptions = amountKeyboardOptions,
                     keyboardActions = amountKeyboardActions,
                 )
@@ -422,7 +423,7 @@ private fun MedicationAmountRow(
                         onValueChange = onAmountChange,
                         modifier = Modifier.weight(1.15f),
                         placeholder = amountPlaceholder.takeIf(String::isNotBlank),
-                        textFieldModifier = amountTextFieldModifier,
+                        textFieldModifier = textFieldModifier,
                         keyboardOptions = amountKeyboardOptions,
                         keyboardActions = amountKeyboardActions,
                     )

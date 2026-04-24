@@ -24,7 +24,9 @@ CREATE TABLE AppointmentEntity (
     ),
     clinic_id TEXT REFERENCES ClinicEntity(id) ON DELETE SET NULL,
     booking_id TEXT REFERENCES AppointmentSlotEnt(id) ON DELETE SET NULL,
-    status TEXT DEFAULT 'CONFIRMED' CHECK (status IN ('PENDING', 'CONFIRMED', 'CANCELLED', 'PENDING_PAYMENT')),
+    status TEXT DEFAULT 'CONFIRMED' CHECK (
+        status IN ('PENDING_PAYMENT', 'CONFIRMED', 'CHECKED_IN', 'COMPLETED', 'NO_SHOW', 'CANCELLED')
+    ),
     notes TEXT,
     has_reminder INTEGER DEFAULT 1 CHECK (has_reminder IN (0, 1)),
     payment_method TEXT,
@@ -49,7 +51,7 @@ updateAppointmentStatus:
 UPDATE AppointmentEntity SET status = ? WHERE id = ?;
 
 updatePaymentDetails:
-UPDATE AppointmentEntity SET payment_method = ?, payment_status = ?, transaction_id = ? WHERE id = ?;
+UPDATE AppointmentEntity SET payment_method = ?, payment_status = ?, payment_amount = ?, transaction_id = ? WHERE id = ?;
 
 selectByUserAndPaymentStatus:
 SELECT * FROM AppointmentEntity WHERE user_id = ? AND payment_status = ?;

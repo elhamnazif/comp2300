@@ -5,6 +5,7 @@ import com.group8.comp2300.data.notifications.AppointmentNotificationScheduler
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
+import com.group8.comp2300.domain.model.medical.resolvedStatus
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 
 class AppointmentDataRepositoryImpl(
@@ -13,7 +14,7 @@ class AppointmentDataRepositoryImpl(
     private val appointmentNotificationScheduler: AppointmentNotificationScheduler,
 ) : AppointmentDataRepository {
     override suspend fun getAppointments(): List<Appointment> =
-        appointmentLocal.getAll().filterNot { it.status == "CANCELLED" }
+        appointmentLocal.getAll().filter { it.resolvedStatus().isScheduled }
 
     override suspend fun getBookingHistory(): List<Appointment> = appointmentLocal.getAll()
 

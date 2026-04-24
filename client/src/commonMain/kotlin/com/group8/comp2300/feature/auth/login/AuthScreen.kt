@@ -38,8 +38,8 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun AuthScreen(
     onLoginSuccess: () -> Unit,
-    initialSuccessMessage: String? = null,
     modifier: Modifier = Modifier,
+    initialSuccessMessage: String? = null,
     viewModel: AuthViewModel = koinViewModel(),
     onDismiss: () -> Unit = {},
     onNavigateToEmailVerification: (String) -> Unit = {},

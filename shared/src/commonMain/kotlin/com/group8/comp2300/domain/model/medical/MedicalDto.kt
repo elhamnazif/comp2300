@@ -71,6 +71,7 @@ data class ClinicBookingRequest(
     val appointmentType: String,
     val reason: String? = null,
     val hasReminder: Boolean = true,
+    val paymentMethod: BookingPaymentMethod? = null,
 )
 
 @Serializable

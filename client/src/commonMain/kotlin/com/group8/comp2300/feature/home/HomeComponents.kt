@@ -33,7 +33,13 @@ import org.jetbrains.compose.resources.stringResource
 import comp2300.client.generated.resources.Res as ClientRes
 
 private val HomeMintAccent = Color(0xFF57C4B3)
-private val HomeMintAccentContainer = Color(0xFFE4F6F2)
+
+private enum class HomeActionTone {
+    PRIMARY,
+    SECONDARY,
+    TERTIARY,
+    SURFACE,
+}
 
 @Composable
 internal fun HomeHero(
@@ -163,7 +169,12 @@ internal fun HomeHero(
 }
 
 @Composable
-internal fun TodaySummaryCard(summary: TodaySummary, modifier: Modifier = Modifier) {
+internal fun TodaySummaryCard(
+    summary: TodaySummary,
+    onOpenCalendar: () -> Unit,
+    onOpenAppointment: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+) {
     val accentColor = homeAccentColor()
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -183,46 +194,37 @@ internal fun TodaySummaryCard(summary: TodaySummary, modifier: Modifier = Modifi
             tonalElevation = 1.dp,
             shadowElevation = 6.dp,
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 18.dp, vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-            ) {
-                TodayMetricCell(
-                    label = stringResource(Res.string.home_today_next_appointment),
-                    value = summary.nextAppointment?.let { DateFormatter.formatTime(it.appointmentTime) } ?: "--",
-                    supporting = summary.nextAppointment?.title,
+            Column(modifier = Modifier.fillMaxWidth()) {
+                AppointmentSummaryRow(
+                    summary = summary,
+                    onClick = onOpenAppointment,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 16.dp),
                 )
-                TodayMetricDivider()
-                TodayMetricCell(
-                    label = stringResource(Res.string.home_today_medications_due),
-                    value = summary.medicationsDueCount.toString(),
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.32f)),
                 )
-                TodayMetricDivider()
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
-                    Text(
-                        text = stringResource(Res.string.home_today_adherence),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    TodayStatCell(
+                        label = stringResource(Res.string.home_today_medications_due),
+                        value = summary.medicationsDueCount.toString(),
+                        valueColor = accentColor,
+                        onClick = onOpenCalendar,
+                        modifier = Modifier.weight(1f),
                     )
-                    Text(
-                        text = adherencePercentLabel(summary),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold,
-                        color = accentColor,
-                    )
-                    LinearProgressIndicator(
-                        progress = { summary.adherenceProgress },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(8.dp)
-                            .clip(RoundedCornerShape(999.dp)),
-                        color = accentColor,
-                        trackColor = accentColor.copy(alpha = 0.2f),
+                    TodayMetricDivider()
+                    AdherenceStatCell(
+                        summary = summary,
+                        accentColor = accentColor,
+                        onClick = onOpenCalendar,
+                        modifier = Modifier.weight(1f),
                     )
                 }
             }
@@ -231,15 +233,179 @@ internal fun TodaySummaryCard(summary: TodaySummary, modifier: Modifier = Modifi
 }
 
 @Composable
+private fun AppointmentSummaryRow(summary: TodaySummary, onClick: (() -> Unit)?, modifier: Modifier = Modifier) {
+    val appointment = summary.nextAppointment
+    Row(
+        modifier = modifier.then(
+            if (onClick != null && appointment != null) {
+                Modifier.clip(RoundedCornerShape(22.dp)).clickable(onClick = onClick)
+            } else {
+                Modifier
+            },
+        ).padding(horizontal = 2.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = stringResource(Res.string.home_today_next_appointment),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = appointment?.let { DateFormatter.formatTime(it.appointmentTime) } ?: "--",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            appointment?.title?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        if (onClick != null && appointment != null) {
+            Icon(
+                imageVector = Icons.ChevronRightW400Outlined,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun TodayStatCell(
+    label: String,
+    value: String,
+    valueColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(22.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = valueColor,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun AdherenceStatCell(
+    summary: TodaySummary,
+    accentColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(22.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 18.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = stringResource(Res.string.home_today_adherence),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+
+        when (summary.adherenceState) {
+            TodayAdherenceState.NO_DOSES -> {
+                Text(
+                    text = stringResource(Res.string.home_today_no_doses),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            TodayAdherenceState.NOT_STARTED -> {
+                Text(
+                    text = summary.firstMedicationTimeMs?.let {
+                        stringResource(Res.string.home_today_starts_at, DateFormatter.formatTime(it))
+                    } ?: stringResource(Res.string.home_today_no_doses),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            TodayAdherenceState.IN_PROGRESS -> {
+                Text(
+                    text = adherencePercentLabel(summary),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = accentColor,
+                )
+                Text(
+                    text = stringResource(
+                        Res.string.home_today_taken_summary,
+                        summary.takenMedicationCount,
+                        summary.adherenceEligibleMedicationCount,
+                    ),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                LinearProgressIndicator(
+                    progress = { summary.adherenceProgress },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(999.dp)),
+                    color = accentColor,
+                    trackColor = accentColor.copy(alpha = 0.2f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
 internal fun AskVitaRow(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val accentColor = homeAccentColor()
-    val accentContainerColor = homeAccentContainerColor()
+    val tone = HomeActionTone.TERTIARY
     Surface(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(30.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.5.dp, accentColor.copy(alpha = 0.55f)),
+        border = BorderStroke(1.5.dp, tone.borderColor()),
         tonalElevation = 1.dp,
     ) {
         Row(
@@ -251,8 +417,8 @@ internal fun AskVitaRow(onClick: () -> Unit, modifier: Modifier = Modifier) {
         ) {
             ActionIcon(
                 icon = Icons.SupportAgentW400Outlinedfill1,
-                iconTint = accentColor,
-                accentColor = accentContainerColor,
+                iconTint = tone.iconColor(),
+                accentColor = tone.containerColor(),
                 modifier = Modifier.size(44.dp),
             )
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -272,7 +438,7 @@ internal fun AskVitaRow(onClick: () -> Unit, modifier: Modifier = Modifier) {
             Icon(
                 imageVector = Icons.ChevronRightW400Outlined,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -295,24 +461,28 @@ internal fun ActionList(
             icon = Icons.StethoscopeW400Outlinedfill1,
             title = stringResource(Res.string.home_menu_symptom_check),
             description = stringResource(Res.string.home_symptom_description),
+            tone = HomeActionTone.SECONDARY,
             onClick = onNavigateToSymptomChecker,
         )
         HomeActionRow(
             icon = Icons.LocalPharmacyW400Outlinedfill1,
             title = stringResource(Res.string.home_menu_medication_cabinet),
             description = medicationDescription(activeMedicationCount),
+            tone = HomeActionTone.PRIMARY,
             onClick = onNavigateToMedication,
         )
         HomeActionRow(
             icon = Icons.DateRangeW400Outlinedfill1,
             title = stringResource(Res.string.home_menu_schedules),
             description = stringResource(Res.string.home_schedules_description),
+            tone = HomeActionTone.TERTIARY,
             onClick = onNavigateToRoutines,
         )
         HomeActionRow(
             icon = Icons.ShoppingCartW400Outlinedfill1,
             title = stringResource(Res.string.home_menu_shop),
             description = stringResource(Res.string.home_shop_description),
+            tone = HomeActionTone.SURFACE,
             onClick = onNavigateToShop,
         )
     }
@@ -430,11 +600,10 @@ private fun HomeActionRow(
     icon: ImageVector,
     title: String,
     description: String,
+    tone: HomeActionTone,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val accentColor = homeAccentColor()
-    val accentContainerColor = homeAccentContainerColor()
     Surface(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
@@ -450,8 +619,8 @@ private fun HomeActionRow(
         ) {
             ActionIcon(
                 icon = icon,
-                iconTint = accentColor,
-                accentColor = accentContainerColor,
+                iconTint = tone.iconColor(),
+                accentColor = tone.containerColor(),
                 modifier = Modifier.size(50.dp),
             )
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -473,7 +642,7 @@ private fun HomeActionRow(
             Icon(
                 imageVector = Icons.ChevronRightW400Outlined,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurface,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -485,6 +654,11 @@ private fun InboxRow(item: HomeInboxItem, onClick: () -> Unit) {
         is HomeInboxItem.NotificationAlert -> Icons.NotificationsW400Outlinedfill1
         is HomeInboxItem.MedicationAttention -> Icons.LocalPharmacyW400Outlinedfill1
         is HomeInboxItem.AppointmentUpdate -> Icons.CalendarMonthW400Outlinedfill1
+    }
+    val tone = when (item) {
+        is HomeInboxItem.NotificationAlert -> HomeActionTone.SURFACE
+        is HomeInboxItem.MedicationAttention -> HomeActionTone.PRIMARY
+        is HomeInboxItem.AppointmentUpdate -> HomeActionTone.SECONDARY
     }
     val title = when (item) {
         is HomeInboxItem.NotificationAlert -> stringResource(Res.string.home_inbox_item_notifications_disabled_title)
@@ -518,8 +692,8 @@ private fun InboxRow(item: HomeInboxItem, onClick: () -> Unit) {
     ) {
         ActionIcon(
             icon = icon,
-            iconTint = MaterialTheme.colorScheme.primary,
-            accentColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+            iconTint = tone.iconColor(),
+            accentColor = tone.containerColor(),
             modifier = Modifier.size(42.dp),
         )
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -543,37 +717,27 @@ private fun InboxRow(item: HomeInboxItem, onClick: () -> Unit) {
 }
 
 @Composable
-private fun RowScope.TodayMetricCell(label: String, value: String, supporting: String? = null) {
-    val accentColor = homeAccentColor()
-    Column(
-        modifier = Modifier.weight(1f),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = if (supporting == null) accentColor else MaterialTheme.colorScheme.onSurface,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        supporting?.let {
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
+private fun HomeActionTone.containerColor(): Color = when (this) {
+    HomeActionTone.PRIMARY -> MaterialTheme.colorScheme.primaryContainer
+    HomeActionTone.SECONDARY -> MaterialTheme.colorScheme.secondaryContainer
+    HomeActionTone.TERTIARY -> MaterialTheme.colorScheme.tertiaryContainer
+    HomeActionTone.SURFACE -> MaterialTheme.colorScheme.surfaceContainerHigh
+}
+
+@Composable
+private fun HomeActionTone.iconColor(): Color = when (this) {
+    HomeActionTone.PRIMARY -> MaterialTheme.colorScheme.onPrimaryContainer
+    HomeActionTone.SECONDARY -> MaterialTheme.colorScheme.onSecondaryContainer
+    HomeActionTone.TERTIARY -> MaterialTheme.colorScheme.onTertiaryContainer
+    HomeActionTone.SURFACE -> MaterialTheme.colorScheme.onSurfaceVariant
+}
+
+@Composable
+private fun HomeActionTone.borderColor(): Color = when (this) {
+    HomeActionTone.PRIMARY -> MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
+    HomeActionTone.SECONDARY -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.22f)
+    HomeActionTone.TERTIARY -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.22f)
+    HomeActionTone.SURFACE -> MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
 }
 
 @Composable
@@ -624,10 +788,4 @@ private fun medicationDescription(activeMedicationCount: Int): String = when {
 private fun homeAccentColor(): Color = when (LocalAppearanceThemeMode.current) {
     AppearanceThemeMode.MINT -> HomeMintAccent
     AppearanceThemeMode.WALLPAPER -> MaterialTheme.colorScheme.primary
-}
-
-@Composable
-private fun homeAccentContainerColor(): Color = when (LocalAppearanceThemeMode.current) {
-    AppearanceThemeMode.MINT -> HomeMintAccentContainer
-    AppearanceThemeMode.WALLPAPER -> MaterialTheme.colorScheme.primaryContainer
 }

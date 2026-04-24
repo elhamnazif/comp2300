@@ -21,17 +21,17 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
-import com.group8.comp2300.core.ui.components.CenteredLoadingPanel
 import com.group8.comp2300.core.ui.components.CenteredMessagePanel
+import com.group8.comp2300.core.ui.components.shimmerEffect
 import com.group8.comp2300.domain.model.medical.Clinic
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
@@ -214,8 +214,8 @@ private fun BookingListMode(
             }
 
             if (isLoading) {
-                item {
-                    LoadingPanel(title = "Loading clinics")
+                items(4) {
+                    ShimmerClinicListCard()
                 }
             } else if (filteredClinics.isEmpty()) {
                 item {
@@ -283,8 +283,12 @@ private fun BookingMapMode(
                 }
 
                 if (isLoading) {
-                    item {
-                        LoadingPanel(title = "Loading clinics")
+                    items(3) {
+                        ShimmerClinicCompactRow()
+                        HorizontalDivider(
+                            modifier = Modifier.padding(top = 8.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
+                        )
                     }
                 } else if (filteredClinics.isEmpty()) {
                     item {
@@ -757,8 +761,119 @@ internal fun EmptyPanel(title: String, body: String) {
 }
 
 @Composable
-private fun LoadingPanel(title: String, modifier: Modifier = Modifier) {
-    CenteredLoadingPanel(title = title, modifier = modifier)
+private fun ShimmerClinicCompactRow(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp, horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.58f)
+                    .height(20.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .shimmerEffect(),
+            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clip(CircleShape)
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .width(96.dp)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                repeat(2) {
+                    Box(
+                        modifier = Modifier
+                            .width(if (it == 0) 82.dp else 72.dp)
+                            .height(32.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .shimmerEffect(),
+                    )
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .shimmerEffect(),
+        )
+    }
+}
+
+@Composable
+private fun ShimmerClinicListCard(modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(width = 84.dp, height = 76.dp)
+                    .clip(MaterialTheme.shapes.large)
+                    .shimmerEffect(),
+            )
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.7f)
+                        .height(22.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.46f)
+                        .height(18.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.64f)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .shimmerEffect(),
+            )
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f))
+    }
 }
 
 @Composable

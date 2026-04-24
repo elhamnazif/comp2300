@@ -4,7 +4,7 @@ import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.repository.EmailChangeToken
 import com.group8.comp2300.domain.repository.EmailChangeTokenRepository
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 class EmailChangeTokenRepositoryImpl(private val database: ServerDatabase) : EmailChangeTokenRepository {
     override fun insert(tokenHash: String, userId: String, newEmail: String) {
@@ -40,6 +40,6 @@ class EmailChangeTokenRepositoryImpl(private val database: ServerDatabase) : Ema
     }
 
     companion object {
-        val TOKEN_EXPIRATION = 1.hours
+        val TOKEN_EXPIRATION = 15.minutes
     }
 }

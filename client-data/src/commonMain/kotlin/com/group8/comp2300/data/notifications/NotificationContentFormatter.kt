@@ -3,19 +3,19 @@ package com.group8.comp2300.data.notifications
 import com.group8.comp2300.data.local.NotificationPrivacyMode
 import com.group8.comp2300.data.local.PrivacySettings
 
+private const val GenericReminderBody = "Open the app to check it."
+
 data class NotificationContent(val title: String, val body: String)
 
 class NotificationContentFormatter {
-    fun routineReminder(settings: PrivacySettings): NotificationContent {
-        return NotificationContent(
-            title = reminderTitle(settings),
-            body = genericReminderBody(),
-        )
-    }
+    fun routineReminder(settings: PrivacySettings): NotificationContent = NotificationContent(
+        title = reminderTitle(settings),
+        body = GenericReminderBody,
+    )
 
     fun appointmentReminder(settings: PrivacySettings): NotificationContent = NotificationContent(
         title = reminderTitle(settings),
-        body = genericReminderBody(),
+        body = GenericReminderBody,
     )
 
     private fun reminderTitle(settings: PrivacySettings): String {
@@ -26,6 +26,4 @@ class NotificationContentFormatter {
             "Private reminder"
         }
     }
-
-    private fun genericReminderBody(): String = "Open the app to check it."
 }

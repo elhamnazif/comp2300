@@ -215,12 +215,16 @@ class MedicalDataRepositoriesTest {
                 appointmentType = "CONSULTATION",
                 reason = "Fever",
                 hasReminder = true,
+                paymentMethod = BookingPaymentMethod.VISA_4242,
             ),
         )
 
+        val stored = AppointmentLocalDataSource(db).getAll().single()
         assertEquals(1, AppointmentLocalDataSource(db).getAll().size)
-        assertEquals("clinic-1", AppointmentLocalDataSource(db).getAll().single().clinicId)
-        assertEquals("slot-1", AppointmentLocalDataSource(db).getAll().single().bookingId)
+        assertEquals("clinic-1", stored.clinicId)
+        assertEquals("slot-1", stored.bookingId)
+        assertEquals(BookingPaymentMethod.VISA_4242.name, stored.paymentMethod)
+        assertEquals(45.0, stored.paymentAmount)
     }
 
     @Test
@@ -241,6 +245,7 @@ class MedicalDataRepositoriesTest {
                 appointmentType = "STI_TESTING",
                 reason = "Screening",
                 hasReminder = true,
+                paymentMethod = BookingPaymentMethod.VISA_4242,
             ),
         )
 
@@ -270,6 +275,7 @@ class MedicalDataRepositoriesTest {
                 appointmentType = "STI_TESTING",
                 reason = "Screening",
                 hasReminder = true,
+                paymentMethod = BookingPaymentMethod.VISA_4242,
             ),
         )
 
@@ -571,7 +577,8 @@ private class BookingApiStub : ApiService {
     override suspend fun confirmEmailChange(code: String) = error("unused")
     override suspend fun deactivateAccount(currentPassword: String) = error("unused")
     override suspend fun preregister(request: com.group8.comp2300.data.remote.dto.PreregisterRequest) = error("unused")
-    override suspend fun updateProfile(request: com.group8.comp2300.data.remote.dto.UpdateProfileRequest) = error("unused")
+    override suspend fun updateProfile(request: com.group8.comp2300.data.remote.dto.UpdateProfileRequest) =
+        error("unused")
     override suspend fun uploadProfilePhoto(fileBytes: ByteArray, fileName: String) = error("unused")
     override suspend fun removeProfilePhoto() = error("unused")
     override suspend fun resendVerificationEmail(email: String) = error("unused")
@@ -587,6 +594,10 @@ private class BookingApiStub : ApiService {
         appointmentType = request.appointmentType,
         notes = request.reason,
         hasReminder = request.hasReminder,
+        paymentMethod = request.paymentMethod?.name,
+        paymentAmount = 45.0,
+        transactionId = "mock_payment_1",
+        paymentStatus = "PAID",
     ).also { appointments[it.id] = it }
 
     override suspend fun cancelAppointment(id: String): Appointment = appointments.getValue(id)
@@ -654,6 +665,10 @@ private fun sampleAppointment(
     notes: String? = "Fever",
     hasReminder: Boolean = true,
     status: String = "CONFIRMED",
+    paymentStatus: String = "PENDING",
+    paymentMethod: String? = null,
+    paymentAmount: Double? = null,
+    transactionId: String? = null,
 ): Appointment = Appointment(
     id = id,
     userId = "user-1",
@@ -665,7 +680,10 @@ private fun sampleAppointment(
     status = status,
     notes = notes,
     hasReminder = hasReminder,
-    paymentStatus = "PENDING",
+    paymentStatus = paymentStatus,
+    paymentMethod = paymentMethod,
+    paymentAmount = paymentAmount,
+    transactionId = transactionId,
 )
 
 class TestOfflineSyncCoordinator : OfflineSyncCoordinator {

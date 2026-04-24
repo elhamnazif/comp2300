@@ -19,7 +19,7 @@ Thank you for your interest in contributing to Vita! We welcome contributions fr
 - Write clear, descriptive variable and function names.
 - Add comments where necessary, especially for complex logic.
 - Keep methods and classes focused and concise.
-- Use localised strings; edit the English [`strings.xml`](i18n/src/commonMain/composeResources/values/strings.xml) file. CrowdIn will manage translations to other languages.
+- Use localised strings; edit the English [`strings.xml`](i18n/src/commonMain/composeResources/values/strings.xml) file and keep keys consistent across usages.
     - For example,
 
       ```kotlin
@@ -43,18 +43,23 @@ Consistent linting helps keep the codebase clean and maintainable.
 
 ### Testing
 
-Vita uses both unit tests and instrumented UI tests to ensure code quality and reliability.
+Tests in this repo are split by module:
 
-- **Unit tests** are located in `shared/src/commonTest/kotlin/` and should be written for all new logic where possible.
-- **Instrumented tests** (including UI tests using Jetpack Compose) are located in `client/src/commonTest/kotlin/`. For Compose UI, use the [Jetpack Compose Testing APIs](https://developer.android.com/jetpack/compose/testing).
+- `shared/src/commonTest/kotlin/` for shared domain and utility logic.
+- `client/src/commonTest/kotlin/` for shared client logic such as navigation and ViewModels.
+- `client-data/src/jvmTest/kotlin/` for repositories, local data sources, notifications, and offline/sync behavior.
+- `server/src/test/kotlin/` for Ktor routes and server services.
 
 #### Guidelines for Testing
 
 - Add or update tests for any new features or bug fixes.
-- Ensure all tests pass by running:
-    - `./gradlew test` for unit tests
-    - `./gradlew connectedAndroidTest` for instrumented tests
-- For UI components, write Compose UI tests to verify user interactions and visual elements. See existing tests in `DebugFiltersTest.kt` for examples.
+- Run the smallest relevant checks for your change instead of assuming one umbrella task covers everything.
+- Common checks in this repo include:
+    - `./gradlew :client-data:jvmTest`
+    - `./gradlew :server:test`
+    - `./gradlew :androidApp:assembleDebug`
+- Build and verify iOS changes from `iosApp` in Xcode.
+- If a UI change is difficult to cover with automated tests, include manual verification notes in your pull request.
 - If your change is challenging to test, explain why in your pull request.
 
 Comprehensive testing helps prevent regressions and ensures a stable experience for all users.

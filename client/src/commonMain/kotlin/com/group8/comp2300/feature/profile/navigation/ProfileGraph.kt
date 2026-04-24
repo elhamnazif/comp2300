@@ -52,7 +52,7 @@ val profileGraphModule = module {
     navigation<Screen.EditProfile>(metadata = overlayNavigationMetadata()) {
         val navigator = LocalNavigator.current
         EditProfileScreen(
-            onSaved = { navigator.goBack() },
+            onSave = { navigator.goBack() },
             onBack = { navigator.goBack() },
         )
     }
@@ -75,7 +75,7 @@ val profileGraphModule = module {
         val successMessage = stringResource(Res.string.account_change_password_success)
         ChangePasswordScreen(
             onBack = navigator::goBack,
-            onPasswordChanged = {
+            onPasswordChange = {
                 navigator.clearAndGoTo(Screen.Login(successMessage = successMessage))
             },
         )
@@ -88,7 +88,7 @@ val profileGraphModule = module {
         ChangeEmailScreen(
             currentEmail = session.userOrNull?.email.orEmpty(),
             onBack = navigator::goBack,
-            onEmailChanged = navigator::goBack,
+            onEmailChange = navigator::goBack,
         )
     }
 
@@ -97,7 +97,7 @@ val profileGraphModule = module {
         val successMessage = stringResource(Res.string.account_deactivate_success)
         DeactivateAccountScreen(
             onBack = navigator::goBack,
-            onAccountDeactivated = {
+            onAccountDeactivate = {
                 navigator.clearAndGoTo(Screen.Login(successMessage = successMessage))
             },
         )

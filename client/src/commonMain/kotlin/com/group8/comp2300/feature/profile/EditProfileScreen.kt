@@ -4,14 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun EditProfileScreen(
-    onSaved: () -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun EditProfileScreen(onSave: () -> Unit, onBack: () -> Unit, modifier: Modifier = Modifier) {
     ProfileEditorScreen(
         mode = ProfileEditorMode.Edit,
-        onSaved = onSaved,
+        onSave = onSave,
         onBack = onBack,
         modifier = modifier,
     )

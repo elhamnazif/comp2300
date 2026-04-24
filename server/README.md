@@ -44,13 +44,14 @@ This forwards port 8080 from the device to your development machine. If you star
 
 ### iOS Simulator
 Works automatically - the simulator can access `localhost:8080`.
+If you changed the client host, rebuild the app with `-Pvita.api.base.url=http://YOUR_HOST:8080`.
 
 ### Real iOS Device
 Connect your device and Mac to the same Wi-Fi network, then use your Mac's local IP address:
 ```bash
 # Find your Mac's IP
 ipconfig getifaddr en0
-# Then use http://THAT_IP:8080 in the app
+# Then rebuild the app with -Pvita.api.base.url=http://THAT_IP:8080
 ```
 If you started the server on a different port, use that port in the device URL instead of `8080`.
 

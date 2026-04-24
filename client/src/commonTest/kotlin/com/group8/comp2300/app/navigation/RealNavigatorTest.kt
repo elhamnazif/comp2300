@@ -166,6 +166,21 @@ class RealNavigatorTest {
     }
 
     @Test
+    fun `guest booking payment redirect keeps confirmation visible underneath login`() = runTest(dispatcher) {
+        val navigator = createNavigator()
+        navigator.clearAndGoTo(Screen.Booking)
+        navigator.navigate(Screen.BookingConfirmation("clinic-1", "slot-1"))
+
+        navigator.navigate(Screen.BookingPayment("clinic-1", "slot-1"))
+
+        assertEquals(
+            listOf(Screen.MainShell, Screen.BookingConfirmation("clinic-1", "slot-1"), Screen.Login()),
+            navigator.backStack,
+        )
+        assertEquals(Screen.BookingPayment("clinic-1", "slot-1"), navigator.postLoginTarget)
+    }
+
+    @Test
     fun `guest shell protected navigation redirects through login without mutating shell stack`() =
         runTest(dispatcher) {
             val navigator = createNavigator()
@@ -288,11 +303,9 @@ private class FakeAuthRepository(initialSession: AuthSession = AuthSession.Signe
 
     override suspend fun resetPassword(token: String, newPassword: String) = error("Not used in test")
 
-    override suspend fun changePassword(currentPassword: String, newPassword: String) =
-        error("Not used in test")
+    override suspend fun changePassword(currentPassword: String, newPassword: String) = error("Not used in test")
 
-    override suspend fun requestEmailChange(currentPassword: String, newEmail: String) =
-        error("Not used in test")
+    override suspend fun requestEmailChange(currentPassword: String, newEmail: String) = error("Not used in test")
 
     override suspend fun confirmEmailChange(code: String) = error("Not used in test")
 

@@ -1,0 +1,76 @@
+ALTER TABLE AppointmentEntity RENAME TO AppointmentEntity_old;
+
+CREATE TABLE AppointmentEntity (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES UserEntity(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    appointment_time INTEGER NOT NULL,
+    appointment_type TEXT NOT NULL CHECK (
+        appointment_type IN (
+            'CHECKUP',
+            'CONSULTATION',
+            'SCREENING',
+            'FOLLOW_UP',
+            'VACCINATION',
+            'OTHER',
+            'FOLLOWUP',
+            'EMERGENCY',
+            'VIRTUAL_CONSULTATION',
+            'PHYSICAL_THERAPY',
+            'LAB_TEST',
+            'STI_TESTING',
+            'SYMPTOMS',
+            'CONTRACEPTION',
+            'PREP_PEP'
+        )
+    ),
+    clinic_id TEXT REFERENCES ClinicEntity(id) ON DELETE SET NULL,
+    booking_id TEXT REFERENCES AppointmentSlotEnt(id) ON DELETE SET NULL,
+    status TEXT DEFAULT 'CONFIRMED' CHECK (
+        status IN ('PENDING_PAYMENT', 'CONFIRMED', 'CHECKED_IN', 'COMPLETED', 'NO_SHOW', 'CANCELLED')
+    ),
+    notes TEXT,
+    has_reminder INTEGER DEFAULT 1 CHECK (has_reminder IN (0, 1)),
+    payment_method TEXT,
+    payment_status TEXT,
+    payment_amount REAL,
+    transaction_id TEXT
+);
+
+INSERT INTO AppointmentEntity (
+    id,
+    user_id,
+    title,
+    appointment_time,
+    appointment_type,
+    clinic_id,
+    booking_id,
+    status,
+    notes,
+    has_reminder,
+    payment_method,
+    payment_status,
+    payment_amount,
+    transaction_id
+)
+SELECT
+    id,
+    user_id,
+    title,
+    appointment_time,
+    appointment_type,
+    clinic_id,
+    booking_id,
+    CASE status
+        WHEN 'PENDING' THEN 'PENDING_PAYMENT'
+        ELSE status
+    END,
+    notes,
+    has_reminder,
+    payment_method,
+    payment_status,
+    payment_amount,
+    transaction_id
+FROM AppointmentEntity_old;
+
+DROP TABLE AppointmentEntity_old;

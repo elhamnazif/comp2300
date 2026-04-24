@@ -64,7 +64,10 @@ CREATE TABLE AppointmentEntity (
     status TEXT NOT NULL,
     notes TEXT,
     hasReminder INTEGER NOT NULL DEFAULT 0,
-    paymentStatus TEXT NOT NULL DEFAULT 'PENDING'
+    paymentStatus TEXT NOT NULL DEFAULT 'PENDING',
+    paymentMethod TEXT,
+    paymentAmount REAL,
+    transactionId TEXT
 );
 
 selectAllAppointments:
@@ -83,9 +86,12 @@ INSERT OR REPLACE INTO AppointmentEntity (
     status,
     notes,
     hasReminder,
-    paymentStatus
+    paymentStatus,
+    paymentMethod,
+    paymentAmount,
+    transactionId
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteAllAppointments:
 DELETE FROM AppointmentEntity;

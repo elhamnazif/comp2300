@@ -13,8 +13,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.util.formatCurrency
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -25,6 +27,7 @@ fun BookingConfirmationScreen(
     onBack: () -> Unit,
     isSignedIn: Boolean,
     onRequireAuth: () -> Unit,
+    onContinueToPayment: (Screen.BookingPayment) -> Unit,
     onBookingConfirmed: (Appointment, Boolean) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: BookingViewModel = koinViewModel(),
@@ -116,13 +119,25 @@ fun BookingConfirmationScreen(
                                     onRequireAuth()
                                     return@Button
                                 }
-                                viewModel.bookClinicAppointment(
-                                    clinicId = clinic.id,
-                                    slotId = slot.id,
-                                    appointmentType = draft.appointmentType,
-                                    reason = draft.reason,
-                                    hasReminder = draft.hasReminder,
-                                )
+                                if (rescheduleAppointment != null) {
+                                    viewModel.bookClinicAppointment(
+                                        clinicId = clinic.id,
+                                        slotId = slot.id,
+                                        appointmentType = draft.appointmentType,
+                                        reason = draft.reason,
+                                        hasReminder = draft.hasReminder,
+                                    )
+                                } else {
+                                    onContinueToPayment(
+                                        Screen.BookingPayment(
+                                            clinicId = clinic.id,
+                                            slotId = slot.id,
+                                            appointmentType = draft.appointmentType,
+                                            reason = draft.reason,
+                                            hasReminder = draft.hasReminder,
+                                        ),
+                                    )
+                                }
                             },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = !state.isSubmitting,
@@ -137,9 +152,9 @@ fun BookingConfirmationScreen(
                                 Text(
                                     when {
                                         !isSignedIn && rescheduleAppointment != null -> "Sign in to update"
-                                        !isSignedIn -> "Sign in to book"
+                                        !isSignedIn -> "Sign in to continue"
                                         rescheduleAppointment != null -> "Update booking"
-                                        else -> "Book"
+                                        else -> "Continue to payment"
                                     },
                                 )
                             }
@@ -259,6 +274,12 @@ fun BookingConfirmationScreen(
 
             item {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            }
+
+            if (rescheduleAppointment == null) {
+                item {
+                    EstimatedFeeRow(amount = draft.quotedFee)
+                }
             }
 
             item {
@@ -385,6 +406,25 @@ private fun ReminderRow(checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
         Checkbox(
             checked = checked,
             onCheckedChange = onCheckedChange,
+        )
+    }
+}
+
+@Composable
+private fun EstimatedFeeRow(amount: Double) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text("Estimated fee", fontWeight = FontWeight.Medium)
+            Text("Due at payment.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Text(
+            text = formatCurrency(amount),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
         )
     }
 }

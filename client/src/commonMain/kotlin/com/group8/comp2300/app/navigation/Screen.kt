@@ -69,6 +69,16 @@ sealed interface Screen : NavKey {
     ) : Screen
 
     @Serializable
+    data class BookingPayment(
+        val clinicId: String,
+        val slotId: String,
+        val appointmentType: String = "STI_TESTING",
+        val reason: String = "",
+        val hasReminder: Boolean = true,
+        val rescheduleAppointment: Appointment? = null,
+    ) : Screen
+
+    @Serializable
     data class BookingSuccess(
         val clinicId: String,
         val appointmentId: String,
@@ -160,6 +170,7 @@ fun Screen.requiresAuthentication(): Boolean = when (this) {
     Screen.EditProfile,
     Screen.MedicalRecords,
     is Screen.BookingHistory,
+    is Screen.BookingPayment,
     -> true
 
     else -> false

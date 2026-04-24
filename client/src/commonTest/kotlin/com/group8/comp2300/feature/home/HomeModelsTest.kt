@@ -8,6 +8,7 @@ import kotlinx.datetime.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class HomeModelsTest {
@@ -37,7 +38,9 @@ class HomeModelsTest {
         assertEquals(1, summary.medicationsDueCount)
         assertEquals(1, summary.takenMedicationCount)
         assertEquals(2, summary.totalMedicationCount)
+        assertEquals(2, summary.adherenceEligibleMedicationCount)
         assertEquals(0.5f, summary.adherenceProgress)
+        assertEquals(TodayAdherenceState.IN_PROGRESS, summary.adherenceState)
     }
 
     @Test
@@ -116,7 +119,24 @@ class HomeModelsTest {
         )
 
         assertEquals(0, summary.medicationsDueCount)
+        assertEquals(0, summary.adherenceEligibleMedicationCount)
+        assertEquals(TodayAdherenceState.NOT_STARTED, summary.adherenceState)
         assertTrue(items.none { it is HomeInboxItem.MedicationAttention })
+    }
+
+    @Test
+    fun `empty agenda shows no doses today instead of zero adherence`() {
+        val summary = buildTodaySummary(
+            appointments = emptyList(),
+            agenda = emptyList(),
+            nowMs = nowMs,
+        )
+
+        assertEquals(0, summary.totalMedicationCount)
+        assertEquals(0, summary.adherenceEligibleMedicationCount)
+        assertEquals(TodayAdherenceState.NO_DOSES, summary.adherenceState)
+        assertNull(summary.firstMedicationTimeMs)
+        assertEquals(0f, summary.adherenceProgress)
     }
 
     private fun appointment(id: String, title: String, time: String): Appointment = Appointment(

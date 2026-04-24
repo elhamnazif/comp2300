@@ -3,6 +3,7 @@ package com.group8.comp2300.data.repository.medical
 import com.group8.comp2300.data.local.*
 import com.group8.comp2300.domain.model.medical.CalendarOverviewResponse
 import com.group8.comp2300.domain.model.medical.buildCalendarOverviewStatus
+import com.group8.comp2300.domain.model.medical.resolvedStatus
 import com.group8.comp2300.domain.repository.medical.CalendarDataRepository
 import kotlinx.datetime.*
 import kotlin.time.Clock
@@ -48,7 +49,7 @@ class CalendarDataRepositoryImpl(
 }
 
 private fun isCancelledAppointment(appointment: com.group8.comp2300.domain.model.medical.Appointment): Boolean =
-    appointment.status == "CANCELLED"
+    !appointment.resolvedStatus().isScheduled
 
 private fun Long.toLocalDateString(): String = Instant.fromEpochMilliseconds(this)
     .toLocalDateTime(TimeZone.currentSystemDefault())

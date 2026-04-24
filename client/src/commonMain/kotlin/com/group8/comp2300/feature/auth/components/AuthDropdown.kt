@@ -16,9 +16,9 @@ fun AuthDropdown(
     selectedValue: String,
     options: List<String>,
     onSelectOption: (String) -> Unit,
+    modifier: Modifier = Modifier,
     allowClear: Boolean = false,
     clearLabel: String = "",
-    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
 

@@ -79,6 +79,9 @@ fun CalendarScreen(
         }
     }
     val agendaEndDate = remember(selectedDate) { selectedDate.plus(6, DateTimeUnit.DAY) }
+    val agendaVisibleDays = remember(state.agendaDays, agendaAppointmentsByDate) {
+        state.agendaDays.filter { day -> hasAgendaContent(day, agendaAppointmentsByDate[day.date].orEmpty()) }
+    }
     var expandedRoutineKeys by remember { mutableStateOf(emptySet<String>()) }
     val hasUsableContent = remember(
         state.selectedDate,
@@ -129,6 +132,11 @@ fun CalendarScreen(
         entryTime = occurrence.hour to occurrence.minute
         sheetUiState = CalendarSheetState.FormReschedule(routine)
     }
+    val onSelectDate: (LocalDate) -> Unit = { date ->
+        selectedDateForEntry = calendarSelectionFor(date, today)
+        entryDate = date
+        viewModel.loadAgendaForDate(date.toString())
+    }
 
     Scaffold(
         modifier = modifier,
@@ -139,14 +147,7 @@ fun CalendarScreen(
         floatingActionButton = {
             if (!showBlockingState) {
                 FloatingActionButton(onClick = {
-                    selectedDateForEntry =
-                        CalendarDay(
-                            selectedDate.day,
-                            selectedDate,
-                            AdherenceStatus.NONE,
-                            isToday = selectedDate == today,
-                            isCurrentMonth = true,
-                        )
+                    selectedDateForEntry = calendarSelectionFor(selectedDate, today)
                     entryDate = selectedDate
                     val now = Clock.System.now().toLocalDateTime(timeZone)
                     entryTime = now.hour to now.minute
@@ -213,11 +214,14 @@ fun CalendarScreen(
                             overview = state.overview,
                             selectedDate = selectedDateForEntry,
                             onDayClick = { day ->
-                                selectedDateForEntry = day
-                                entryDate = day.date
-                                viewModel.loadAgendaForDate(day.date.toString())
+                                onSelectDate(day.date)
                             },
-                            onMonthChange = viewModel::loadOverviewForMonth,
+                            onMonthChange = { year, month ->
+                                viewModel.loadOverviewForMonth(year, month)
+                                if (selectedDate.year != year || selectedDate.month.number != month) {
+                                    onSelectDate(clampDateToMonth(selectedDate, year, month))
+                                }
+                            },
                         )
                     }
 
@@ -231,19 +235,14 @@ fun CalendarScreen(
                         )
                     }
 
-                    item {
-                        Text(
-                            stringResource(Res.string.calendar_scheduled_doses),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-
-                    if (state.routineAgenda.isEmpty()) {
+                    if (state.routineAgenda.isNotEmpty()) {
                         item {
-                            EmptyStateMessage(stringResource(Res.string.calendar_no_scheduled_doses_day))
+                            Text(
+                                stringResource(Res.string.calendar_scheduled_doses),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
                         }
-                    } else {
                         items(
                             items = state.routineAgenda,
                             key = { "${it.routineId}:${it.occurrenceTimeMs}" },
@@ -291,16 +290,6 @@ fun CalendarScreen(
                             key = { it.id.ifBlank { "manual:${it.medicationTime}" } },
                         ) { log ->
                             ManualLogCard(log = log)
-                        }
-                    }
-
-                    if (state.dayMoodEntries.isNotEmpty() || state.monthMoodSummary.isNotEmpty()) {
-                        item {
-                            Text(
-                                stringResource(Res.string.calendar_mood_section_title),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold,
-                            )
                         }
                     }
 
@@ -358,22 +347,28 @@ fun CalendarScreen(
                         )
                     }
 
-                    items(
-                        items = state.agendaDays,
-                        key = { it.date.toString() },
-                    ) { day ->
-                        AgendaDaySection(
-                            day = day,
-                            appointments = agendaAppointmentsByDate[day.date].orEmpty(),
-                            expandedRoutineKeys = expandedRoutineKeys,
-                            onToggleRoutineExpansion = onToggleRoutineExpansion,
-                            onLogMedication = onLogMedication,
-                            onLogAll = onLogAll,
-                            onMoveDose = onMoveDose,
-                            onAppointmentClick = { appointment ->
-                                sheetUiState = CalendarSheetState.AppointmentDetails(appointment)
-                            },
-                        )
+                    if (agendaVisibleDays.isEmpty()) {
+                        item {
+                            EmptyStateMessage(stringResource(Res.string.calendar_agenda_empty))
+                        }
+                    } else {
+                        items(
+                            items = agendaVisibleDays,
+                            key = { it.date.toString() },
+                        ) { day ->
+                            AgendaDaySection(
+                                day = day,
+                                appointments = agendaAppointmentsByDate[day.date].orEmpty(),
+                                expandedRoutineKeys = expandedRoutineKeys,
+                                onToggleRoutineExpansion = onToggleRoutineExpansion,
+                                onLogMedication = onLogMedication,
+                                onLogAll = onLogAll,
+                                onMoveDose = onMoveDose,
+                                onAppointmentClick = { appointment ->
+                                    sheetUiState = CalendarSheetState.AppointmentDetails(appointment)
+                                },
+                            )
+                        }
                     }
                 }
 
@@ -554,6 +549,24 @@ fun CalendarScreen(
             }
         }
     }
+}
+
+private fun calendarSelectionFor(date: LocalDate, today: LocalDate): CalendarDay = CalendarDay(
+    day = date.day,
+    date = date,
+    status = AdherenceStatus.NONE,
+    isToday = date == today,
+    isCurrentMonth = true,
+)
+
+private fun clampDateToMonth(currentDate: LocalDate, year: Int, month: Int): LocalDate {
+    var day = currentDate.day
+    while (day > 28) {
+        val candidate = runCatching { LocalDate(year, month, day) }.getOrNull()
+        if (candidate != null) return candidate
+        day--
+    }
+    return LocalDate(year, month, day)
 }
 
 @Composable

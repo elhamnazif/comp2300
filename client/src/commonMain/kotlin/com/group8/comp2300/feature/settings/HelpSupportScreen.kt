@@ -14,7 +14,7 @@ import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 private object SupportLinks {
-    const val SupportEmailUri = "mailto:support@sexualhealthapp.com"
+    const val SupportEmailUri = "mailto:vita@elham.dev"
     const val SupportPhoneUri = "tel:+1800432584"
     const val SupportResourcesUrl = "https://sexualhealthapp.com/support"
 }

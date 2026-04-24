@@ -4,9 +4,9 @@ import com.group8.comp2300.config.Environment
 import com.group8.comp2300.config.JwtConfig
 import com.group8.comp2300.config.ResendConfig
 import com.group8.comp2300.di.serverModule
+import com.group8.comp2300.domain.repository.UserRepository
 import com.group8.comp2300.routes.*
 import com.group8.comp2300.security.JwtService
-import com.group8.comp2300.domain.repository.UserRepository
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*

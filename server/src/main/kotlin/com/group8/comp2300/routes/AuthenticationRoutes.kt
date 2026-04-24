@@ -1,3 +1,5 @@
+@file:Suppress("TopLevelPropertyNaming")
+
 package com.group8.comp2300.routes
 
 import com.group8.comp2300.dto.*
@@ -336,14 +338,14 @@ private suspend fun PartData.FileItem.readBytesWithLimit(maxBytes: Int): ByteArr
     val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
     var totalBytes = 0
 
-    while (true) {
-        val bytesRead = channel.readAvailable(buffer, 0, buffer.size)
-        if (bytesRead == -1) break
-        if (bytesRead == 0) continue
-
-        totalBytes += bytesRead
-        require(totalBytes <= maxBytes) { ProfileImageStorage.FILE_TOO_LARGE_MESSAGE }
-        output.write(buffer, 0, bytesRead)
+    var bytesRead = channel.readAvailable(buffer, 0, buffer.size)
+    while (bytesRead >= 0) {
+        if (bytesRead > 0) {
+            totalBytes += bytesRead
+            require(totalBytes <= maxBytes) { ProfileImageStorage.FILE_TOO_LARGE_MESSAGE }
+            output.write(buffer, 0, bytesRead)
+        }
+        bytesRead = channel.readAvailable(buffer, 0, buffer.size)
     }
 
     return output.toByteArray()

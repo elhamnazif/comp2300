@@ -33,8 +33,12 @@ class DeactivateAccountViewModel(private val deactivateAccountUseCase: Deactivat
                 }
             }
 
-            Event.EditPassword -> state.update { it.copy(confirmStep = false, errorMessage = null, errorMessageRes = null) }
+            Event.EditPassword -> state.update {
+                it.copy(confirmStep = false, errorMessage = null, errorMessageRes = null)
+            }
+
             Event.ConfirmDeactivate -> submit()
+
             Event.ClearError -> state.update { it.copy(errorMessage = null, errorMessageRes = null) }
         }
     }

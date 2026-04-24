@@ -8,12 +8,12 @@ import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
 import com.group8.comp2300.domain.model.medical.MedicationLog
 import com.group8.comp2300.domain.model.medical.MedicationLogRequest
-import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
 import com.group8.comp2300.domain.model.medical.MedicationLogStatus
+import com.group8.comp2300.domain.model.medical.MedicationOccurrenceCandidate
 import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.MedicationUnit
-import com.group8.comp2300.domain.model.medical.RoutineMedicationAgenda
 import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
+import com.group8.comp2300.domain.model.medical.RoutineMedicationAgenda
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverride
 import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
@@ -22,19 +22,19 @@ import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
 import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
 import com.group8.comp2300.domain.repository.medical.SyncStatus
+import com.russhwolf.settings.Settings
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import com.russhwolf.settings.Settings
 import kotlinx.datetime.TimeZone
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertFalse
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Clock
@@ -258,10 +258,7 @@ private class FixedClock(private val nowMs: Long) : Clock {
     override fun now(): Instant = Instant.fromEpochMilliseconds(nowMs)
 }
 
-private fun routineAgenda(
-    occurrenceTimeMs: Long,
-    hasReminder: Boolean,
-): RoutineDayAgenda = RoutineDayAgenda(
+private fun routineAgenda(occurrenceTimeMs: Long, hasReminder: Boolean): RoutineDayAgenda = RoutineDayAgenda(
     routineId = "routine-1",
     routineName = "Morning meds",
     occurrenceTimeMs = occurrenceTimeMs,
@@ -277,13 +274,13 @@ private fun routineAgenda(
     ),
 )
 
-private fun utcMs(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long =
-    Instant.parse(
-        "%04d-%02d-%02dT%02d:%02d:00Z".format(year, month, day, hour, minute),
-    ).toEpochMilliseconds()
+private fun utcMs(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long = Instant.parse(
+    "%04d-%02d-%02dT%02d:%02d:00Z".format(year, month, day, hour, minute),
+).toEpochMilliseconds()
 
 private class FakeNotificationService(private val enabled: Boolean = true) : LocalNotificationService {
-    override suspend fun schedule(notification: com.group8.comp2300.data.notifications.ScheduledLocalNotification) = Unit
+    override suspend fun schedule(notification: com.group8.comp2300.data.notifications.ScheduledLocalNotification) =
+        Unit
 
     override suspend fun cancel(notificationId: String) = Unit
 

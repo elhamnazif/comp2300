@@ -28,7 +28,6 @@ import kotlin.time.Instant
 
 @Composable
 internal fun DailyMoodSummaryCard(moods: List<Mood>) {
-    val averageEmoji = moods.averageMoodEmoji()
     val summaryText = if (moods.size == 1) {
         stringResource(Res.string.calendar_mood_one_entry)
     } else {
@@ -45,23 +44,17 @@ internal fun DailyMoodSummaryCard(moods: List<Mood>) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(averageEmoji, style = MaterialTheme.typography.headlineMedium)
-                    Column {
-                        Text(
-                            stringResource(Res.string.calendar_mood_section_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            summaryText,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                Column {
+                    Text(
+                        stringResource(Res.string.calendar_mood_entries_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        summaryText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
             moods.sortedByDescending { it.timestamp }.forEach { mood ->
@@ -144,7 +137,7 @@ internal fun MonthlyMoodChart(moodCounts: Map<MoodType, Int>) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            stringResource(Res.string.calendar_mood_monthly_trends),
+            stringResource(Res.string.calendar_mood_monthly_mix),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
         )
@@ -214,24 +207,4 @@ private fun MoodType.toEmoji(): String = when (this) {
     MoodType.NEUTRAL -> "😐"
     MoodType.GOOD -> "🙂"
     MoodType.GREAT -> "🤩"
-}
-
-private fun List<Mood>.averageMoodEmoji(): String {
-    if (isEmpty()) return "😐"
-    val avg = map { it.moodType.toScore() }.average()
-    return when {
-        avg >= 4.5 -> "🤩"
-        avg >= 3.5 -> "🙂"
-        avg >= 2.5 -> "😐"
-        avg >= 1.5 -> "😕"
-        else -> "😢"
-    }
-}
-
-private fun MoodType.toScore(): Int = when (this) {
-    MoodType.VERY_SAD -> 1
-    MoodType.SAD -> 2
-    MoodType.NEUTRAL -> 3
-    MoodType.GOOD -> 4
-    MoodType.GREAT -> 5
 }

@@ -41,3 +41,11 @@ WHERE id = :id;
 deleteOption:
 DELETE FROM QuizOptionEnt
 WHERE id = :id;
+
+deleteOptionsByQuizId:
+DELETE FROM QuizOptionEnt
+WHERE question_id IN (
+    SELECT id
+    FROM QuizQuestionEnt
+    WHERE quiz_id = :quizId
+);

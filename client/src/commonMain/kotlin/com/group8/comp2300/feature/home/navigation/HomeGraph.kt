@@ -39,6 +39,10 @@ val homeGraphModule = module {
             userFirstName = session.userOrNull?.firstName,
             onRetry = viewModel::refresh,
             onNavigateToInbox = { navigateToOverlay(Screen.HomeInbox) },
+            onNavigateToBookingHistory = { appointmentId ->
+                navigateToOverlay(Screen.BookingHistory(appointmentId))
+            },
+            onNavigateToCalendar = { navigator.navigate(Screen.Calendar) },
             onNavigateToShop = { navigator.navigate(Screen.Shop) },
             onNavigateToMedication = { navigator.navigate(Screen.Medication) },
             onNavigateToRoutines = { navigator.navigate(Screen.Routines) },

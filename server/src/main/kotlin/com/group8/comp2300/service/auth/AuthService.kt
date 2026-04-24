@@ -307,7 +307,11 @@ class AuthService(
 
         when (val result = emailService?.sendEmailChangeEmail(normalizedEmail, token)) {
             is EmailResult.Success -> {
-                log.debug("Email change verification sent successfully to {} (messageId={})", normalizedEmail, result.messageId)
+                log.debug(
+                    "Email change verification sent successfully to {} (messageId={})",
+                    normalizedEmail,
+                    result.messageId,
+                )
             }
 
             is EmailResult.Failure -> {
@@ -523,7 +527,9 @@ class AuthService(
 
     private fun ensureNoActivatedAccount(email: String) {
         val existingUser = userRepository.findByEmail(email)
-        if (existingUser != null && (userRepository.isActivated(existingUser.id) || userRepository.isDeactivated(existingUser.id))) {
+        if (existingUser != null &&
+            (userRepository.isActivated(existingUser.id) || userRepository.isDeactivated(existingUser.id))
+        ) {
             throw IllegalArgumentException("An account with this email already exists")
         }
     }

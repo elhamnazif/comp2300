@@ -4,6 +4,7 @@ import com.group8.comp2300.data.repository.*
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentSlot
+import com.group8.comp2300.domain.model.medical.BookingPaymentMethod
 import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
 import com.group8.comp2300.domain.repository.*
 import com.group8.comp2300.infrastructure.database.createServerDatabase
@@ -11,6 +12,7 @@ import com.group8.comp2300.routes.appointmentRoutes
 import com.group8.comp2300.security.JwtService
 import com.group8.comp2300.security.JwtServiceImpl
 import com.group8.comp2300.service.appointment.AppointmentService
+import com.group8.comp2300.service.appointment.MockClinicOperationsService
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -48,6 +50,7 @@ class AppointmentRoutesTest {
                     appointmentType = "STI_TESTING",
                     reason = "Screening",
                     hasReminder = true,
+                    paymentMethod = BookingPaymentMethod.VISA_4242,
                 ),
             )
         }
@@ -55,6 +58,8 @@ class AppointmentRoutesTest {
         assertEquals(HttpStatusCode.Created, createResponse.status, createResponse.bodyAsText())
         val created = createResponse.body<Appointment>()
         assertEquals("STI_TESTING", created.appointmentType)
+        assertEquals(BookingPaymentMethod.VISA_4242.name, created.paymentMethod)
+        assertEquals(35.0, created.paymentAmount)
         assertTrue(fixture.slotRepository.getSlotById(fixture.initialSlotId)?.isBooked == true)
 
         val cancelResponse = client.post("/api/appointments/${created.id}/cancel") {
@@ -91,6 +96,7 @@ class AppointmentRoutesTest {
                     appointmentType = "STI_TESTING",
                     reason = "Screening",
                     hasReminder = true,
+                    paymentMethod = BookingPaymentMethod.MASTERCARD_1881,
                 ),
             )
         }.body<Appointment>()
@@ -115,6 +121,8 @@ class AppointmentRoutesTest {
         assertEquals("FOLLOW_UP", rescheduled.appointmentType)
         assertEquals("Bring results", rescheduled.notes)
         assertFalse(rescheduled.hasReminder)
+        assertEquals(BookingPaymentMethod.MASTERCARD_1881.name, rescheduled.paymentMethod)
+        assertEquals(35.0, rescheduled.paymentAmount)
         assertFalse(fixture.slotRepository.getSlotById(fixture.initialSlotId)?.isBooked == true)
         assertTrue(fixture.slotRepository.getSlotById(fixture.rescheduleSlotId)?.isBooked == true)
     }
@@ -134,6 +142,7 @@ class AppointmentRoutesTest {
                     appointmentType = "STI_TESTING",
                     reason = "Screening",
                     hasReminder = true,
+                    paymentMethod = BookingPaymentMethod.VISA_4242,
                 ),
             )
         }.body<Appointment>()
@@ -156,6 +165,55 @@ class AppointmentRoutesTest {
         assertTrue(fixture.slotRepository.getSlotById(fixture.initialSlotId)?.isBooked == true)
         assertTrue(fixture.slotRepository.getSlotById(fixture.bookedSlotId)?.isBooked == true)
     }
+
+    @Test
+    fun bookingOverlappingAppointmentReturnsConflict() = testApplication {
+        val fixture = configureAppointmentTestModuleWithUser()
+        val client = jsonClient()
+
+        val firstResponse = client.post("/api/appointments") {
+            header(HttpHeaders.Authorization, "Bearer ${fixture.accessToken}")
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(
+                ClinicBookingRequest(
+                    clinicId = fixture.clinicId,
+                    slotId = fixture.initialSlotId,
+                    appointmentType = "STI_TESTING",
+                    reason = "Initial visit",
+                    hasReminder = true,
+                    paymentMethod = BookingPaymentMethod.DIGITAL_WALLET,
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.Created, firstResponse.status, firstResponse.bodyAsText())
+
+        val overlappingSlot = AppointmentSlot(
+            id = "slot-overlap",
+            clinicId = fixture.clinicId,
+            startTime = fixture.slotRepository.getSlotById(fixture.initialSlotId)!!.startTime + 15 * 60_000L,
+            endTime = fixture.slotRepository.getSlotById(fixture.initialSlotId)!!.endTime + 15 * 60_000L,
+            isBooked = false,
+        )
+        fixture.slotRepository.createSlot(overlappingSlot)
+
+        val conflictResponse = client.post("/api/appointments") {
+            header(HttpHeaders.Authorization, "Bearer ${fixture.accessToken}")
+            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            setBody(
+                ClinicBookingRequest(
+                    clinicId = fixture.clinicId,
+                    slotId = overlappingSlot.id,
+                    appointmentType = "FOLLOW_UP",
+                    reason = "Conflicting visit",
+                    hasReminder = true,
+                    paymentMethod = BookingPaymentMethod.VISA_4242,
+                ),
+            )
+        }
+
+        assertEquals(HttpStatusCode.Conflict, conflictResponse.status)
+    }
 }
 
 private data class AppointmentRouteFixture(
@@ -175,6 +233,8 @@ private fun ApplicationTestBuilder.configureAppointmentTestModuleWithUser(): App
     val slotRepository = AppointmentSlotRepositoryImpl(database)
     val clinicRepository = ClinicRepositoryImpl(database, clinicTagRepository, slotRepository)
     val appointmentRepository = AppointmentRepositoryImpl(database)
+    val mockClinicOperationsService =
+        MockClinicOperationsService(appointmentRepository, slotRepository, clinicRepository)
 
     val testModule = module {
         single<ServerDatabase> { database }
@@ -183,7 +243,8 @@ private fun ApplicationTestBuilder.configureAppointmentTestModuleWithUser(): App
         single<ClinicTagRepository> { clinicTagRepository }
         single<ClinicRepository> { clinicRepository }
         single<UserRepository> { userRepository }
-        single { AppointmentService(get(), get(), get(), get()) }
+        single { mockClinicOperationsService }
+        single { AppointmentService(get(), get(), get(), get(), get()) }
     }
 
     val userId = "user_appt_${java.util.UUID.randomUUID()}"

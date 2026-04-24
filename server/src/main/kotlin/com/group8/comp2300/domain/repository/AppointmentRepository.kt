@@ -37,7 +37,13 @@ interface AppointmentRepository {
     /**
      * Updates financial tracking information for a specific appointment.
      */
-    fun updatePaymentDetails(id: String, paymentMethod: String, paymentStatus: String, transactionId: String?)
+    fun updatePaymentDetails(
+        id: String,
+        paymentMethod: String,
+        paymentStatus: String,
+        paymentAmount: Double?,
+        transactionId: String?,
+    )
 
     /**
      * Filters appointments based on their payment state (e.g., 'PAID', 'PENDING').

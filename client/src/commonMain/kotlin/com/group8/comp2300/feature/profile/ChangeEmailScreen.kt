@@ -9,6 +9,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -34,7 +35,7 @@ import org.koin.core.parameter.parametersOf
 fun ChangeEmailScreen(
     currentEmail: String,
     onBack: () -> Unit,
-    onEmailChanged: () -> Unit,
+    onEmailChange: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ChangeEmailViewModel = koinViewModel<ChangeEmailViewModel> {
         parametersOf(currentEmail)
@@ -44,10 +45,11 @@ fun ChangeEmailScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
+    val currentOnEmailChange by rememberUpdatedState(onEmailChange)
 
     LaunchedEffect(state.isComplete) {
         if (state.isComplete) {
-            onEmailChanged()
+            currentOnEmailChange()
         }
     }
 
@@ -62,6 +64,7 @@ fun ChangeEmailScreen(
                 title = stringResource(Res.string.account_change_email_verify_title),
                 description = stringResource(Res.string.account_change_email_verify_desc),
                 emphasisText = state.requestedEmail,
+                supportingText = stringResource(Res.string.account_change_email_verify_supporting),
             )
 
             Spacer(Modifier.height(24.dp))

@@ -14,7 +14,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.format.DateFormatter
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.domain.model.medical.AppointmentStatus
 import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.medical.resolvedStatus
+import com.group8.comp2300.util.formatCurrency
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
@@ -323,6 +326,7 @@ private fun AppointmentManagementSheet(
         appointment.notes?.takeIf(String::isNotBlank)?.let {
             Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        PaymentDetailsBlock(appointment = appointment)
         onReschedule?.let {
             Button(
                 onClick = it,
@@ -351,18 +355,75 @@ private fun AppointmentManagementSheet(
 }
 
 @Composable
+private fun PaymentDetailsBlock(appointment: Appointment) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("Payment", fontWeight = FontWeight.Medium)
+        Text(
+            text = if (appointment.paymentStatus == "PAID") {
+                "Paid"
+            } else {
+                "Payment due"
+            },
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        appointment.paymentAmount?.let { amount ->
+            Text(
+                text = formatCurrency(amount),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        appointment.paymentMethod?.let { method ->
+            Text(
+                text = paymentMethodLabel(method),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        appointment.transactionId?.let { transactionId ->
+            Text(
+                text = "Transaction $transactionId",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
 private fun BookingStatusPill(status: String) {
     val (containerColor, contentColor, label) = when (status) {
+        AppointmentStatus.PENDING_PAYMENT.name -> Triple(
+            MaterialTheme.colorScheme.secondaryContainer,
+            MaterialTheme.colorScheme.onSecondaryContainer,
+            appointmentStatusLabel(status),
+        )
+
+        AppointmentStatus.CHECKED_IN.name -> Triple(
+            MaterialTheme.colorScheme.tertiaryContainer,
+            MaterialTheme.colorScheme.onTertiaryContainer,
+            appointmentStatusLabel(status),
+        )
+
+        AppointmentStatus.COMPLETED.name -> Triple(
+            MaterialTheme.colorScheme.surfaceContainerHigh,
+            MaterialTheme.colorScheme.onSurface,
+            appointmentStatusLabel(status),
+        )
+
+        AppointmentStatus.NO_SHOW.name -> Triple(
+            MaterialTheme.colorScheme.errorContainer,
+            MaterialTheme.colorScheme.onErrorContainer,
+            appointmentStatusLabel(status),
+        )
+
         "CANCELLED" -> Triple(
             MaterialTheme.colorScheme.surfaceVariant,
             MaterialTheme.colorScheme.onSurfaceVariant,
-            "Cancelled",
+            appointmentStatusLabel(status),
         )
 
         else -> Triple(
             MaterialTheme.colorScheme.primaryContainer,
             MaterialTheme.colorScheme.onPrimaryContainer,
-            "Confirmed",
+            appointmentStatusLabel(status),
         )
     }
 
@@ -380,8 +441,9 @@ private fun BookingStatusPill(status: String) {
     }
 }
 
-private fun isUpcomingActionableAppointment(appointment: Appointment): Boolean = appointment.status != "CANCELLED" &&
-    appointment.appointmentTime > Clock.System.now().toEpochMilliseconds()
+private fun isUpcomingActionableAppointment(appointment: Appointment): Boolean =
+    appointment.resolvedStatus() in setOf(AppointmentStatus.PENDING_PAYMENT, AppointmentStatus.CONFIRMED) &&
+        appointment.appointmentTime > Clock.System.now().toEpochMilliseconds()
 
 private fun bookingDateSummary(timestampMs: Long): String {
     val dateTime = Instant.fromEpochMilliseconds(timestampMs)

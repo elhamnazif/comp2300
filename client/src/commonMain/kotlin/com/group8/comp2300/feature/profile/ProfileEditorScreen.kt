@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -44,7 +45,7 @@ private fun optionalLabel(label: String, optional: String): String = "$label ($o
 @Composable
 internal fun ProfileEditorScreen(
     mode: ProfileEditorMode,
-    onSaved: () -> Unit,
+    onSave: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ProfileEditorViewModel = koinViewModel(),
@@ -54,6 +55,7 @@ internal fun ProfileEditorScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val coroutineScope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    val currentOnSave by rememberUpdatedState(onSave)
 
     val filePickerLauncher = rememberFilePickerLauncher(
         type = FileKitType.File(extensions = listOf("jpg", "jpeg", "png", "webp")),
@@ -66,7 +68,7 @@ internal fun ProfileEditorScreen(
     }
 
     if (state.isComplete) {
-        onSaved()
+        currentOnSave()
     }
 
     if (state.showDatePicker) {

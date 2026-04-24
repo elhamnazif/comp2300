@@ -19,6 +19,9 @@ class AppointmentLocalDataSource(private val database: AppDatabase) {
                 notes = entity.notes,
                 hasReminder = entity.hasReminder != 0L,
                 paymentStatus = entity.paymentStatus,
+                paymentMethod = entity.paymentMethod,
+                paymentAmount = entity.paymentAmount,
+                transactionId = entity.transactionId,
             )
         }
 
@@ -37,6 +40,9 @@ class AppointmentLocalDataSource(private val database: AppDatabase) {
             notes = appointment.notes,
             hasReminder = if (appointment.hasReminder) 1L else 0L,
             paymentStatus = appointment.paymentStatus,
+            paymentMethod = appointment.paymentMethod,
+            paymentAmount = appointment.paymentAmount,
+            transactionId = appointment.transactionId,
         )
     }
 

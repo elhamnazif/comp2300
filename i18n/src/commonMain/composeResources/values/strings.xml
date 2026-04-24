@@ -55,7 +55,7 @@
     <!-- Email Verification -->
     <string name="email_verification_title">Verify Your Email</string>
     <string name="email_verification_desc">We've sent a 6-digit code to:</string>
-    <string name="email_verification_check_inbox">Enter the code from the email to verify your address.</string>
+    <string name="email_verification_check_inbox">Enter the code from the email to verify your address. It expires in 15 minutes.</string>
     <string name="email_verification_token_label">Verification code</string>
     <string name="email_verification_token_placeholder">Enter 6-digit code</string>
     <string name="email_verification_verify_button">Verify Email</string>
@@ -164,6 +164,9 @@
     <string name="home_today_next_appointment_none">No appointments scheduled</string>
     <string name="home_today_medications_due">Medications due</string>
     <string name="home_today_adherence">Adherence</string>
+    <string name="home_today_no_doses">No doses today</string>
+    <string name="home_today_starts_at">Starts %1$s</string>
+    <string name="home_today_taken_summary">%1$d of %2$d taken</string>
     <string name="home_today_adherence_empty">No routines due today</string>
     <string name="home_today_adherence_format">%1$d of %2$d doses taken</string>
     <string name="home_today_due_count_zero">Nothing due</string>
@@ -507,11 +510,12 @@
 
     <!-- Mood Display -->
     <string name="calendar_mood_section_title">Mood</string>
+    <string name="calendar_mood_entries_title">Mood entries</string>
     <string name="calendar_mood_one_entry">1 entry today</string>
     <string name="calendar_mood_entry_count">%1$d entries today</string>
     <string name="calendar_mood_one">1 mood</string>
     <string name="calendar_mood_many">%1$d moods</string>
-    <string name="calendar_mood_monthly_trends">Mood Trends</string>
+    <string name="calendar_mood_monthly_mix">Mood mix</string>
     <string name="calendar_mood_no_entries">No mood entries for this day.</string>
 
     <!-- Form Common -->
@@ -767,6 +771,7 @@
     <string name="account_change_email_submit">Send Code</string>
     <string name="account_change_email_verify_title">Verify New Email</string>
     <string name="account_change_email_verify_desc">Enter the code sent to</string>
+    <string name="account_change_email_verify_supporting">This code expires in 15 minutes.</string>
     <string name="account_change_email_confirm">Update Email</string>
     <string name="account_change_email_edit">Use different email</string>
     <string name="account_change_email_success">Email updated.</string>
@@ -798,7 +803,7 @@
     <string name="help_support_faq_title">Frequently Asked Questions</string>
     <string name="help_support_contact_title">Contact Support</string>
     <string name="help_support_email_label">Email Support</string>
-    <string name="help_support_email_val">support@sexualhealthapp.com</string>
+    <string name="help_support_email_val">vita@elham.dev</string>
     <string name="help_support_phone_label">Phone Support</string>
     <string name="help_support_phone_val">1-800-HEALTH (24/7)</string>
     <string name="help_support_resources_label">Resources</string>

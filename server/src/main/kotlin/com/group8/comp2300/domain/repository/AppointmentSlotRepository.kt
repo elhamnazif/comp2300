@@ -6,6 +6,7 @@ interface AppointmentSlotRepository {
     fun getSlotById(id: String): AppointmentSlot?
     fun updateSlotBookingStatus(id: String, isBooked: Boolean)
     fun getAvailableByClinic(clinicId: String): List<AppointmentSlot>
+    fun getByClinic(clinicId: String): List<AppointmentSlot>
     fun getNextAvailableStartTimesByClinicId(): Map<String, Long>
     fun createSlot(slot: AppointmentSlot)
     fun delete(id: String)

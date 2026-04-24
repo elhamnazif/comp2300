@@ -82,11 +82,13 @@ class AppointmentRepositoryImpl(private val database: ServerDatabase) : Appointm
         id: String,
         paymentMethod: String,
         paymentStatus: String,
+        paymentAmount: Double?,
         transactionId: String?,
     ) {
         database.appointmentQueries.updatePaymentDetails(
             payment_method = paymentMethod,
             payment_status = paymentStatus,
+            payment_amount = paymentAmount,
             transaction_id = transactionId,
             id = id,
         )

@@ -4,6 +4,7 @@ import com.group8.comp2300.data.local.AppointmentLocalDataSource
 import com.group8.comp2300.data.local.NotificationSettingsDataSource
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.domain.model.medical.Appointment
+import com.group8.comp2300.domain.model.medical.resolvedStatus
 import com.russhwolf.settings.Settings
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -35,7 +36,9 @@ class AppointmentNotificationSchedulerImpl(
     override suspend fun syncAppointment(appointment: Appointment) {
         cancelStoredNotification(appointment.id)
 
-        if (!platform.notificationsEnabled() || !notificationSettingsDataSource.state.value.appointmentRemindersEnabled) {
+        if (!platform.notificationsEnabled() ||
+            !notificationSettingsDataSource.state.value.appointmentRemindersEnabled
+        ) {
             registry.remove(appointment.id)
             return
         }
@@ -62,7 +65,9 @@ class AppointmentNotificationSchedulerImpl(
         val appointments = appointmentLocal.getAll()
         val appointmentIds = appointments.mapTo(mutableSetOf(), Appointment::id)
 
-        if (!platform.notificationsEnabled() || !notificationSettingsDataSource.state.value.appointmentRemindersEnabled) {
+        if (!platform.notificationsEnabled() ||
+            !notificationSettingsDataSource.state.value.appointmentRemindersEnabled
+        ) {
             trackedAppointmentIds.forEach { cancelStoredNotification(it) }
             return
         }
@@ -75,7 +80,8 @@ class AppointmentNotificationSchedulerImpl(
         val content = notificationContentFormatter.appointmentReminder(privacySettingsDataSource.state.value)
         appointments.forEach { appointment ->
             cancelStoredNotification(appointment.id)
-            val notification = planner.notificationForAppointment(appointment = appointment, content = content) ?: return@forEach
+            val notification =
+                planner.notificationForAppointment(appointment = appointment, content = content) ?: return@forEach
             platform.schedule(notification)
             registry.replace(appointment.id, notification.id)
         }
@@ -135,24 +141,32 @@ class AppointmentNotificationRegistry(
     }
 }
 
-private class AppointmentNotificationPlanner(
-    private val nowMs: Long,
-    private val leadTimeMs: Long = 24L * 60L * 60L * 1000L,
-) {
+private class AppointmentNotificationPlanner(private val nowMs: Long) {
     fun notificationForAppointment(
         appointment: Appointment,
         content: NotificationContent,
     ): ScheduledLocalNotification? {
-        if (appointment.status != "CONFIRMED" || !appointment.hasReminder) return null
+        if (!appointment.resolvedStatus().isScheduled || !appointment.hasReminder) return null
 
-        val fireAtMs = appointment.appointmentTime - leadTimeMs
-        if (fireAtMs <= nowMs) return null
+        val leadTime = leadTimes.firstOrNull { lead ->
+            appointment.appointmentTime - lead.durationMs > nowMs
+        } ?: return null
 
         return ScheduledLocalNotification(
-            id = "appointment:${appointment.id}:24h",
-            fireAtMs = fireAtMs,
+            id = "appointment:${appointment.id}:${leadTime.idSuffix}",
+            fireAtMs = appointment.appointmentTime - leadTime.durationMs,
             title = content.title,
             body = content.body,
+        )
+    }
+
+    private data class NotificationLeadTime(val idSuffix: String, val durationMs: Long)
+
+    private companion object {
+        val leadTimes = listOf(
+            NotificationLeadTime("24h", 24L * 60L * 60L * 1000L),
+            NotificationLeadTime("2h", 2L * 60L * 60L * 1000L),
+            NotificationLeadTime("30m", 30L * 60L * 1000L),
         )
     }
 }

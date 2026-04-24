@@ -25,6 +25,11 @@ class AppointmentSlotRepositoryImpl(private val database: ServerDatabase) : Appo
             .executeAsList()
             .map { it.toDomain() }
 
+    override fun getByClinic(clinicId: String): List<AppointmentSlot> =
+        database.appointmentSlotQueries.selectSlotsByClinic(clinicId)
+            .executeAsList()
+            .map { it.toDomain() }
+
     override fun getNextAvailableStartTimesByClinicId(): Map<String, Long> =
         database.appointmentSlotQueries.selectNextAvailableStartTimes()
             .executeAsList()

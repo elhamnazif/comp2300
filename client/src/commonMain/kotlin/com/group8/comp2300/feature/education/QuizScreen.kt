@@ -8,6 +8,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -15,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.components.AppTopBar
+import com.group8.comp2300.domain.model.education.EarnedBadge
 import com.group8.comp2300.domain.model.education.Quiz
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.EmojiEventsW400Outlinedfill1
@@ -27,6 +31,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun QuizScreen(onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: QuizViewModel = koinViewModel()) {
     val state by viewModel.state.collectAsState()
     val quiz = state.quiz
+    var badgePreview by remember { mutableStateOf<EducationBadgePreview?>(null) }
 
     Scaffold(
         modifier = modifier,
@@ -116,9 +121,11 @@ fun QuizScreen(onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: Qui
                     submissionError = state.submissionError,
                     isSubmitting = state.isSubmitting,
                     newlyAwardedBadges = state.submissionResult?.newlyAwardedBadges.orEmpty(),
+                    earnedBadges = state.earnedBadges,
                     perfectScores = state.progressStats?.totalPerfectScores ?: 0,
                     badgeCount = state.earnedBadges.size,
                     averageTimeSpentSeconds = state.progressStats?.averageTimeSpentSeconds ?: 0.0,
+                    onBadgeClick = { preview -> badgePreview = preview },
                     onRetrySubmit = viewModel::retrySubmission,
                     onRetake = viewModel::retakeQuiz,
                     onClose = onBack,
@@ -134,6 +141,13 @@ fun QuizScreen(onBack: () -> Unit, modifier: Modifier = Modifier, viewModel: Qui
                     modifier = Modifier.padding(innerPadding),
                 )
             }
+        }
+
+        badgePreview?.let { preview ->
+            EducationBadgePreviewDialog(
+                preview = preview,
+                onDismiss = { badgePreview = null },
+            )
         }
     }
 }
@@ -278,9 +292,11 @@ private fun ResultsScreen(
     submissionError: String?,
     isSubmitting: Boolean,
     newlyAwardedBadges: List<String>,
+    earnedBadges: List<EarnedBadge>,
     perfectScores: Long,
     badgeCount: Int,
     averageTimeSpentSeconds: Double,
+    onBadgeClick: (EducationBadgePreview) -> Unit,
     onRetrySubmit: () -> Unit,
     onRetake: () -> Unit,
     onClose: () -> Unit,
@@ -291,6 +307,7 @@ private fun ResultsScreen(
     } else {
         0
     }
+    val earnedBadgesByName = remember(earnedBadges) { earnedBadges.associateBy { it.badge.name } }
 
     Column(
         modifier = modifier
@@ -352,16 +369,17 @@ private fun ResultsScreen(
                         )
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             newlyAwardedBadges.forEach { badgeName ->
-                                AssistChip(
-                                    onClick = {},
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.EmojiEventsW400Outlinedfill1,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(16.dp),
+                                EducationBadgeChip(
+                                    badgeName = badgeName,
+                                    iconPath = earnedBadgesByName[badgeName]?.badge?.iconPath,
+                                    onClick = {
+                                        onBadgeClick(
+                                            EducationBadgePreview(
+                                                badgeName = badgeName,
+                                                iconPath = earnedBadgesByName[badgeName]?.badge?.iconPath,
+                                            ),
                                         )
                                     },
-                                    label = { Text(badgeName.replace('_', ' ')) },
                                 )
                             }
                         }

@@ -15,9 +15,10 @@ import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -26,12 +27,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
-import com.group8.comp2300.core.ui.components.CenteredLoadingPanel
 import com.group8.comp2300.core.ui.components.CenteredMessagePanel
+import com.group8.comp2300.core.ui.components.shimmerEffect
 import com.group8.comp2300.domain.model.content.ContentTopic
 import com.group8.comp2300.domain.model.education.ArticleSummary
 import com.group8.comp2300.domain.model.education.Category
@@ -67,6 +67,7 @@ fun EducationScreen(
         stats.totalPerfectScores > 0 || stats.averageTimeSpentSeconds > 0.0 || earnedBadges.isNotEmpty()
     val focusManager = LocalFocusManager.current
     val pullToRefreshState = rememberPullToRefreshState()
+    var badgePreview by remember { mutableStateOf<EducationBadgePreview?>(null) }
     val scaleFraction = {
         if (isLoading) {
             1f
@@ -113,12 +114,16 @@ fun EducationScreen(
                                 onSearchImeAction = { focusManager.clearFocus() },
                                 modifier = Modifier.fillMaxWidth(),
                             )
-                            CategoryRow(
-                                categories = categories,
-                                selectedCategoryId = selectedCategoryId,
-                                onCategorySelect = onCategorySelect,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
+                            if (isLoading) {
+                                ShimmerCategoryRow(modifier = Modifier.fillMaxWidth())
+                            } else {
+                                CategoryRow(
+                                    categories = categories,
+                                    selectedCategoryId = selectedCategoryId,
+                                    onCategorySelect = onCategorySelect,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
                         }
                     }
                 }
@@ -126,9 +131,16 @@ fun EducationScreen(
                 when {
                     isLoading -> {
                         item {
-                            LoadingPanel(
-                                title = stringResource(Res.string.education_library_loading),
-                            )
+                            ShimmerEducationProgressHeader()
+                        }
+                        item {
+                            ShimmerEducationSectionHeader()
+                        }
+                        item {
+                            ShimmerFeaturedArticleCard()
+                        }
+                        items(3) {
+                            ShimmerStandardArticleCard()
                         }
                     }
 
@@ -160,6 +172,12 @@ fun EducationScreen(
                                 CompactProgressHeader(
                                     stats = stats,
                                     earnedBadges = earnedBadges,
+                                    onBadgeClick = { badge ->
+                                        badgePreview = EducationBadgePreview(
+                                            badgeName = badge.badge.name,
+                                            iconPath = badge.badge.iconPath,
+                                        )
+                                    },
                                 )
                             }
                         }
@@ -209,6 +227,13 @@ fun EducationScreen(
                 isRefreshing = isLoading,
             )
         }
+
+        badgePreview?.let { preview ->
+            EducationBadgePreviewDialog(
+                preview = preview,
+                onDismiss = { badgePreview = null },
+            )
+        }
     }
 }
 
@@ -231,6 +256,7 @@ private fun EducationTitleRow(modifier: Modifier = Modifier) {
 private fun CompactProgressHeader(
     stats: UserQuizStats,
     earnedBadges: List<EarnedBadge>,
+    onBadgeClick: (EarnedBadge) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val metricItems = buildList {
@@ -302,22 +328,10 @@ private fun CompactProgressHeader(
                     )
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(earnedBadges.take(3)) { badge ->
-                            AssistChip(
-                                onClick = {},
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.EmojiEventsW400Outlinedfill1,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(16.dp),
-                                    )
-                                },
-                                label = {
-                                    Text(
-                                        text = badge.badge.name.replace('_', ' '),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                },
+                            EducationBadgeChip(
+                                badgeName = badge.badge.name,
+                                iconPath = badge.badge.iconPath,
+                                onClick = { onBadgeClick(badge) },
                             )
                         }
                     }
@@ -421,8 +435,86 @@ private fun EmptyStatePanel(title: String, modifier: Modifier = Modifier, body: 
 }
 
 @Composable
-private fun LoadingPanel(title: String, modifier: Modifier = Modifier) {
-    CenteredLoadingPanel(title = title, modifier = modifier)
+private fun ShimmerCategoryRow(modifier: Modifier = Modifier) {
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        item {
+            Box(
+                modifier = Modifier
+                    .width(74.dp)
+                    .height(32.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .shimmerEffect(),
+            )
+        }
+        items(3) { index ->
+            Box(
+                modifier = Modifier
+                    .width(if (index == 1) 116.dp else 92.dp)
+                    .height(32.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .shimmerEffect(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ShimmerEducationProgressHeader(modifier: Modifier = Modifier) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = MaterialTheme.shapes.extraLarge,
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.36f)
+                    .height(18.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .shimmerEffect(),
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                repeat(2) { index ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(if (index == 0) 56.dp else 60.dp)
+                            .clip(MaterialTheme.shapes.large)
+                            .shimmerEffect(),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ShimmerEducationSectionHeader(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.42f)
+                .height(22.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .shimmerEffect(),
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth(0.22f)
+                .height(16.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .shimmerEffect(),
+        )
+    }
 }
 
 @Composable
@@ -490,6 +582,65 @@ fun SearchBar(
 }
 
 @Composable
+private fun ShimmerFeaturedArticleCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(148.dp)
+                    .clip(MaterialTheme.shapes.extraLarge)
+                    .shimmerEffect(),
+            )
+
+            Column(
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(88.dp)
+                        .height(20.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.74f)
+                        .height(28.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(18.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.88f)
+                        .height(18.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.52f)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun FeaturedArticleCard(article: ArticleSummary, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Card(
         onClick = onClick,
@@ -525,6 +676,82 @@ private fun FeaturedArticleCard(article: ArticleSummary, onClick: () -> Unit, mo
                 )
                 ArticleMetaRow(article = article)
             }
+        }
+    }
+}
+
+@Composable
+private fun ShimmerStandardArticleCard(modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .width(84.dp)
+                            .height(20.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .shimmerEffect(),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .shimmerEffect(),
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.84f)
+                        .height(22.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(18.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.78f)
+                        .height(18.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.56f)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .shimmerEffect(),
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .width(108.dp)
+                    .height(96.dp)
+                    .clip(MaterialTheme.shapes.large)
+                    .shimmerEffect(),
+            )
         }
     }
 }

@@ -7,7 +7,7 @@ object ResendConfig {
 
     val apiKey: String = Environment.value("RESEND_API_KEY") ?: ""
 
-    val fromEmail: String = Environment.value("RESEND_FROM_EMAIL") ?: "Vita <noreply@vita.local>"
+    val fromEmail: String = Environment.value("RESEND_FROM_EMAIL") ?: "Vita <vita@elham.dev>"
 
     val appBaseUrl: String = Environment.value("APP_BASE_URL") ?: "http://localhost:8080"
 

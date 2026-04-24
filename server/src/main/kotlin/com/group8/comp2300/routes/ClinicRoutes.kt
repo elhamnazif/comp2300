@@ -2,6 +2,7 @@ package com.group8.comp2300.routes
 
 import com.group8.comp2300.domain.repository.AppointmentSlotRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
+import com.group8.comp2300.service.appointment.MockClinicOperationsService
 import io.ktor.http.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -10,9 +11,11 @@ import org.koin.ktor.ext.inject
 fun Route.clinicRoutes() {
     val clinicRepository: ClinicRepository by inject()
     val appointmentSlotRepository: AppointmentSlotRepository by inject()
+    val mockClinicOperationsService: MockClinicOperationsService by inject()
 
     route("/api/clinics") {
         get {
+            mockClinicOperationsService.prepareCatalog()
             call.respond(
                 HttpStatusCode.OK,
                 clinicRepository.getAll().sortedBy { it.distanceKm },
@@ -42,6 +45,7 @@ fun Route.clinicRoutes() {
                 return@get
             }
 
+            mockClinicOperationsService.prepareClinic(clinicId)
             call.respond(
                 HttpStatusCode.OK,
                 appointmentSlotRepository.getAvailableByClinic(clinicId).filter {

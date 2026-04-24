@@ -141,8 +141,8 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
                 .onSuccess {
                     onSuccess()
                 }
-                .onFailure { error ->
-                    onFailure(error.userMessage("Couldn't add item right now"))
+                .onFailure { _ ->
+                    onFailure(userMessage("Couldn't add item right now"))
                 }
         }
     }
@@ -160,8 +160,8 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
     fun removeCartItem(productId: String) {
         viewModelScope.launch {
             runCatching { repository.removeFromCart(productId) }
-                .onFailure { error ->
-                    cartStore.update { it.copy(error = error.userMessage("Couldn't update cart right now")) }
+                .onFailure { _ ->
+                    cartStore.update { it.copy(error = userMessage("Couldn't update cart right now")) }
                 }
         }
     }
@@ -198,11 +198,11 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
                     checkoutStore.value = CheckoutStore()
                     onSuccess(order)
                 }
-                .onFailure { error ->
+                .onFailure { _ ->
                     checkoutStore.update {
                         it.copy(
                             isPlacingOrder = false,
-                            orderError = error.userMessage("Couldn't place order right now"),
+                            orderError = userMessage("Couldn't place order right now"),
                         )
                     }
                 }
@@ -220,9 +220,9 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
                     allProducts.value = products
                     isLoadingProducts.value = false
                 }
-                .onFailure { error ->
+                .onFailure { _ ->
                     isLoadingProducts.value = false
-                    productsError.value = error.userMessage("Couldn't load products")
+                    productsError.value = userMessage("Couldn't load products")
                 }
         }
     }
@@ -243,8 +243,8 @@ class ShopViewModel(private val repository: ShopRepository) : ViewModel() {
     private fun updateCartQuantity(productId: String, quantity: Int) {
         viewModelScope.launch {
             runCatching { repository.updateCartQuantity(productId, quantity) }
-                .onFailure { error ->
-                    cartStore.update { it.copy(error = error.userMessage("Couldn't update cart right now")) }
+                .onFailure { _ ->
+                    cartStore.update { it.copy(error = userMessage("Couldn't update cart right now")) }
                 }
         }
     }
@@ -320,4 +320,4 @@ private data class BrowseChrome(val cartItemCount: Int, val feedback: BrowseFeed
 @Immutable
 data class BrowseFeedback(val productId: String? = null, val message: String, val isError: Boolean = false)
 
-private fun Throwable.userMessage(fallback: String): String = fallback
+private fun userMessage(fallback: String): String = fallback

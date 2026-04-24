@@ -9,6 +9,7 @@ import com.group8.comp2300.mapper.ArticleMapper
 import com.group8.comp2300.mapper.CategoryMapper
 import com.group8.comp2300.security.*
 import com.group8.comp2300.service.appointment.AppointmentService
+import com.group8.comp2300.service.appointment.MockClinicOperationsService
 import com.group8.comp2300.service.auth.AuthService
 import com.group8.comp2300.service.auth.InMemoryVerificationRequestThrottle
 import com.group8.comp2300.service.auth.ProfileImageStorage
@@ -93,11 +94,19 @@ val serverModule = module {
     }
     single { MedicalRecordService(repository = get(), medicalRecordCipher = get()) }
     single {
+        MockClinicOperationsService(
+            appointmentRepository = get(),
+            appointmentSlotRepository = get(),
+            clinicRepository = get(),
+        )
+    }
+    single {
         AppointmentService(
             appointmentRepository = get(),
             appointmentSlotRepository = get(),
             clinicRepository = get(),
             database = get(),
+            mockClinicOperationsService = get(),
         )
     }
     single { OrderService(get(), get()) }

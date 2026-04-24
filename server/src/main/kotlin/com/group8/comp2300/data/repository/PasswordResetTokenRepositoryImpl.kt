@@ -3,7 +3,7 @@ package com.group8.comp2300.data.repository
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.repository.PasswordResetTokenRepository
 import kotlin.time.Clock
-import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 class PasswordResetTokenRepositoryImpl(private val database: ServerDatabase) : PasswordResetTokenRepository {
 
@@ -39,6 +39,6 @@ class PasswordResetTokenRepositoryImpl(private val database: ServerDatabase) : P
     }
 
     companion object {
-        val TOKEN_EXPIRATION = 1.hours
+        val TOKEN_EXPIRATION = 15.minutes
     }
 }

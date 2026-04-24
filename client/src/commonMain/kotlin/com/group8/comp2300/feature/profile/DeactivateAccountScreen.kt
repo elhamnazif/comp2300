@@ -10,6 +10,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -31,7 +32,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun DeactivateAccountScreen(
     onBack: () -> Unit,
-    onAccountDeactivated: () -> Unit,
+    onAccountDeactivate: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: DeactivateAccountViewModel = koinViewModel(),
 ) {
@@ -39,10 +40,11 @@ fun DeactivateAccountScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
+    val currentOnAccountDeactivate by rememberUpdatedState(onAccountDeactivate)
 
     LaunchedEffect(state.isComplete) {
         if (state.isComplete) {
-            onAccountDeactivated()
+            currentOnAccountDeactivate()
         }
     }
 

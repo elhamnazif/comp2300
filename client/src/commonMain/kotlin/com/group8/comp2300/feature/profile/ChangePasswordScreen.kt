@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -31,7 +32,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun ChangePasswordScreen(
     onBack: () -> Unit,
-    onPasswordChanged: () -> Unit,
+    onPasswordChange: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ChangePasswordViewModel = koinViewModel(),
 ) {
@@ -39,10 +40,11 @@ fun ChangePasswordScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
+    val currentOnPasswordChange by rememberUpdatedState(onPasswordChange)
 
     LaunchedEffect(state.isPasswordChanged) {
         if (state.isPasswordChanged) {
-            onPasswordChanged()
+            currentOnPasswordChange()
         }
     }
 

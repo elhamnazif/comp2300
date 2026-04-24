@@ -30,7 +30,9 @@ class QuizRepositoryImpl(private val database: ServerDatabase) : QuizRepository 
                 title = quiz.title,
             )
 
-            // Wipe existing Questions/Options to avoid duplicates
+            // Clear nested rows explicitly instead of relying on SQLite cascades
+            // during seed-time upserts.
+            database.quizOptionQueries.deleteOptionsByQuizId(quiz.id)
             database.quizQuestionQueries.deleteQuestionsByQuizId(quiz.id)
 
             // Insert Questions and nested Options

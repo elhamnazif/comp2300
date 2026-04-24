@@ -27,9 +27,28 @@ internal data class TodaySummary(
     val medicationsDueCount: Int = 0,
     val takenMedicationCount: Int = 0,
     val totalMedicationCount: Int = 0,
+    val adherenceEligibleMedicationCount: Int = 0,
+    val firstMedicationTimeMs: Long? = null,
 ) {
     val adherenceProgress: Float
-        get() = if (totalMedicationCount == 0) 0f else takenMedicationCount.toFloat() / totalMedicationCount
+        get() = if (adherenceEligibleMedicationCount == 0) {
+            0f
+        } else {
+            takenMedicationCount.toFloat() / adherenceEligibleMedicationCount
+        }
+
+    val adherenceState: TodayAdherenceState
+        get() = when {
+            totalMedicationCount == 0 -> TodayAdherenceState.NO_DOSES
+            adherenceEligibleMedicationCount == 0 -> TodayAdherenceState.NOT_STARTED
+            else -> TodayAdherenceState.IN_PROGRESS
+        }
+}
+
+internal enum class TodayAdherenceState {
+    NO_DOSES,
+    NOT_STARTED,
+    IN_PROGRESS,
 }
 
 internal data class HomeAppointmentSummary(val appointmentId: String, val title: String, val appointmentTime: Long)
@@ -104,6 +123,11 @@ internal fun buildTodaySummary(
         }
 
     val medications = agenda.flatMap(RoutineDayAgenda::medications)
+    val adherenceEligibleMedicationCount = agenda.sumOf { routine ->
+        routine.medications.count { medication ->
+            medication.loggedTimeMs != null || routine.occurrenceTimeMs <= nowMs
+        }
+    }
     return TodaySummary(
         nextAppointment = nextAppointment,
         medicationsDueCount = agenda.sumOf { routine ->
@@ -117,6 +141,8 @@ internal fun buildTodaySummary(
         },
         takenMedicationCount = medications.count { it.status == MedicationLogStatus.TAKEN },
         totalMedicationCount = medications.size,
+        adherenceEligibleMedicationCount = adherenceEligibleMedicationCount,
+        firstMedicationTimeMs = agenda.minOfOrNull(RoutineDayAgenda::occurrenceTimeMs),
     )
 }
 

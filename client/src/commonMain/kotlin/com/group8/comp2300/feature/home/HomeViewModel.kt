@@ -12,9 +12,9 @@ import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationDataRepository
 import com.group8.comp2300.domain.repository.medical.MedicationLogDataRepository
 import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
@@ -60,7 +60,8 @@ class HomeViewModel(
                 )
                 loadedSnapshot = snapshot
 
-                state.value = buildLoadedState(snapshot = snapshot, settings = notificationSettingsDataSource.state.value)
+                state.value =
+                    buildLoadedState(snapshot = snapshot, settings = notificationSettingsDataSource.state.value)
             } catch (error: Exception) {
                 state.update { current ->
                     current.copy(
@@ -75,13 +76,11 @@ class HomeViewModel(
     private suspend fun applyNotificationSettings(settings: NotificationSettings) {
         val snapshot = loadedSnapshot ?: return
         val currentErrorMessage = state.value.errorMessage
-        state.value = buildLoadedState(snapshot = snapshot, settings = settings).copy(errorMessage = currentErrorMessage)
+        state.value =
+            buildLoadedState(snapshot = snapshot, settings = settings).copy(errorMessage = currentErrorMessage)
     }
 
-    private suspend fun buildLoadedState(
-        snapshot: LoadedHomeSnapshot,
-        settings: NotificationSettings,
-    ): HomeUiState {
+    private suspend fun buildLoadedState(snapshot: LoadedHomeSnapshot, settings: NotificationSettings): HomeUiState {
         val now = clock.now().toEpochMilliseconds()
         val routineNotificationsEnabled =
             runCatching { notificationService.notificationsEnabled() }.getOrDefault(true) &&

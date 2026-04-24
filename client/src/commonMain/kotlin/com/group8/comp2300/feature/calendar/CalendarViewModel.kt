@@ -90,15 +90,22 @@ class CalendarViewModel(
     fun loadAgendaForDate(dateString: String) {
         viewModelScope.launch {
             try {
+                val selectedDate = LocalDate.parse(dateString)
                 val moods = moodRepository.getMoodsForDate(dateString)
+                val monthMoodSummary = moodRepository.getMoodsForMonth(selectedDate.year, selectedDate.month.number)
+                    .groupingBy { it.moodType }
+                    .eachCount()
                 val agendaDays = loadAgendaDays(dateString)
+                val appointments = appointmentRepository.getAppointments()
                 state.update {
                     it.copy(
+                        appointments = appointments,
                         selectedDate = dateString,
                         routineAgenda = medicationLogRepository.getRoutineAgenda(dateString),
                         manualLogs = medicationLogRepository.getManualMedicationLogs(dateString),
                         agendaDays = agendaDays,
                         dayMoodEntries = moods,
+                        monthMoodSummary = monthMoodSummary,
                     )
                 }
             } catch (e: Exception) {

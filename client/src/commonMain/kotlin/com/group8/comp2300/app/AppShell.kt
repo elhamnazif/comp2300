@@ -298,14 +298,14 @@ private fun PinLockOverlay(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.surface,
         ) {
-                PinScreen(
-                    onComplete = onComplete,
-                    isSetup = false,
-                    errorMessage = errorMessage,
-                    inputEnabled = inputEnabled,
-                    onErrorMessageCleared = onErrorMessageCleared,
-                    onBiometricSuccess = onBiometricSuccess,
-                )
+            PinScreen(
+                onComplete = onComplete,
+                isSetup = false,
+                errorMessage = errorMessage,
+                inputEnabled = inputEnabled,
+                onErrorMessageCleared = onErrorMessageCleared,
+                onBiometricSuccess = onBiometricSuccess,
+            )
         }
     }
 }

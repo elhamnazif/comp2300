@@ -13,6 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.CheckCircleW400Outlinedfill1
+import com.group8.comp2300.util.formatCurrency
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -24,6 +25,7 @@ fun BookingSuccessScreen(
     onBack: () -> Unit,
     onViewCalendar: () -> Unit,
     onDone: () -> Unit,
+    onManageBooking: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: BookingViewModel = koinViewModel(),
 ) {
@@ -45,7 +47,7 @@ fun BookingSuccessScreen(
         modifier = modifier,
         topBar = {
             AppTopBar(
-                title = { Text(if (wasRescheduled) "Updated" else "Confirmed") },
+                title = { Text(if (wasRescheduled) "Updated" else "Paid") },
                 onBackClick = onBack,
                 backContentDescription = "Back",
             )
@@ -69,7 +71,7 @@ fun BookingSuccessScreen(
                             tint = MaterialTheme.colorScheme.primary,
                         )
                         Text(
-                            if (wasRescheduled) "Booking updated" else "Booking confirmed",
+                            if (wasRescheduled) "Booking updated" else "Payment complete",
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                         )
@@ -93,6 +95,36 @@ fun BookingSuccessScreen(
                         clinic?.address?.takeIf(String::isNotBlank)?.let {
                             Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
+                        appointment?.let {
+                            Text(
+                                appointmentStatusLabel(it.status),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Text(
+                                "Payment: ${paymentStatusLabel(it.paymentStatus)}",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            if (!wasRescheduled) {
+                                it.paymentMethod?.let { method ->
+                                    Text(
+                                        "Method: ${paymentMethodLabel(method)}",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                it.paymentAmount?.let { amount ->
+                                    Text(
+                                        "Paid: ${formatCurrency(amount)}",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                it.transactionId?.let { transactionId ->
+                                    Text(
+                                        "Transaction: $transactionId",
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
                         appointment?.appointmentType?.let {
                             Text(appointmentTypeLabel(it), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
@@ -109,6 +141,17 @@ fun BookingSuccessScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text("View calendar")
+                }
+            }
+
+            if (appointment != null) {
+                item {
+                    OutlinedButton(
+                        onClick = { onManageBooking(appointment.id) },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("Manage booking")
+                    }
                 }
             }
 

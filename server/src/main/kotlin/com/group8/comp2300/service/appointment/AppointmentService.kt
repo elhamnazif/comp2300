@@ -4,6 +4,8 @@ import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.domain.model.medical.Appointment
 import com.group8.comp2300.domain.model.medical.AppointmentStatus
 import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
+import com.group8.comp2300.domain.model.medical.bookingConsultationFee
+import com.group8.comp2300.domain.model.medical.resolvedStatus
 import com.group8.comp2300.domain.repository.AppointmentRepository
 import com.group8.comp2300.domain.repository.AppointmentSlotRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
@@ -20,10 +22,15 @@ class AppointmentService(
     private val appointmentSlotRepository: AppointmentSlotRepository,
     private val clinicRepository: ClinicRepository,
     private val database: ServerDatabase,
+    private val mockClinicOperationsService: MockClinicOperationsService,
 ) {
-    fun getAppointmentsForUser(userId: String): List<Appointment> = appointmentRepository.getByUserId(userId)
+    fun getAppointmentsForUser(userId: String): List<Appointment> =
+        mockClinicOperationsService.syncUserAppointments(userId)
 
     fun bookAppointment(userId: String, request: ClinicBookingRequest): AppointmentResult {
+        mockClinicOperationsService.prepareClinic(request.clinicId)
+        mockClinicOperationsService.syncUserAppointments(userId)
+
         val clinic = clinicRepository.getById(request.clinicId)
             ?: return AppointmentResult.Error(HttpStatusCode.NotFound, "Clinic not found")
 
@@ -36,6 +43,13 @@ class AppointmentService(
             return AppointmentResult.Error(HttpStatusCode.Conflict, "Slot is no longer available")
         }
 
+        if (hasOverlappingBooking(userId = userId, slotStartTime = slot.startTime, slotEndTime = slot.endTime)) {
+            return AppointmentResult.Error(HttpStatusCode.Conflict, "You already have a booking around that time")
+        }
+
+        val paymentMethod = request.paymentMethod
+            ?: return AppointmentResult.Error(HttpStatusCode.BadRequest, "Payment method is required")
+
         val newAppointment = Appointment(
             id = UUID.randomUUID().toString(),
             userId = userId,
@@ -47,7 +61,10 @@ class AppointmentService(
             status = "CONFIRMED",
             notes = request.reason?.trim()?.ifBlank { null },
             hasReminder = request.hasReminder,
-            paymentStatus = "PENDING",
+            paymentStatus = MockClinicOperationsService.MOCK_PAID_STATUS,
+            paymentMethod = paymentMethod.name,
+            paymentAmount = clinic.bookingConsultationFee(),
+            transactionId = "mock_${UUID.randomUUID().toString().take(12)}",
         )
 
         database.appointmentQueries.transaction {
@@ -67,12 +84,14 @@ class AppointmentService(
     }
 
     fun cancelAppointment(userId: String, appointmentId: String): AppointmentResult {
+        mockClinicOperationsService.syncUserAppointments(userId)
+
         val appointment = appointmentRepository.getAppointmentById(appointmentId)
         if (appointment == null || appointment.userId != userId) {
             return AppointmentResult.Error(HttpStatusCode.NotFound, "Appointment not found")
         }
 
-        if (appointment.status != AppointmentStatus.CONFIRMED.name ||
+        if (appointment.resolvedStatus() !in setOf(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING_PAYMENT) ||
             appointment.appointmentTime <= System.currentTimeMillis()
         ) {
             return AppointmentResult.Error(HttpStatusCode.Conflict, "Appointment can no longer be changed")
@@ -92,12 +111,15 @@ class AppointmentService(
     }
 
     fun rescheduleAppointment(userId: String, appointmentId: String, request: ClinicBookingRequest): AppointmentResult {
+        mockClinicOperationsService.prepareClinic(request.clinicId)
+        mockClinicOperationsService.syncUserAppointments(userId)
+
         val appointment = appointmentRepository.getAppointmentById(appointmentId)
         if (appointment == null || appointment.userId != userId) {
             return AppointmentResult.Error(HttpStatusCode.NotFound, "Appointment not found")
         }
 
-        if (appointment.status != AppointmentStatus.CONFIRMED.name ||
+        if (appointment.resolvedStatus() !in setOf(AppointmentStatus.CONFIRMED, AppointmentStatus.PENDING_PAYMENT) ||
             appointment.appointmentTime <= System.currentTimeMillis()
         ) {
             return AppointmentResult.Error(HttpStatusCode.Conflict, "Appointment can no longer be changed")
@@ -127,6 +149,17 @@ class AppointmentService(
             return AppointmentResult.Error(HttpStatusCode.Conflict, "Slot is no longer available")
         }
 
+        if (
+            hasOverlappingBooking(
+                userId = userId,
+                slotStartTime = newSlot.startTime,
+                slotEndTime = newSlot.endTime,
+                excludedAppointmentId = appointment.id,
+            )
+        ) {
+            return AppointmentResult.Error(HttpStatusCode.Conflict, "You already have a booking around that time")
+        }
+
         val updatedAppointment = appointment.copy(
             title = "Appointment at ${clinic.name}",
             appointmentTime = newSlot.startTime,
@@ -153,4 +186,20 @@ class AppointmentService(
 
         return AppointmentResult.Success(persistedAppointment)
     }
+
+    private fun hasOverlappingBooking(
+        userId: String,
+        slotStartTime: Long,
+        slotEndTime: Long,
+        excludedAppointmentId: String? = null,
+    ): Boolean = appointmentRepository.getByUserId(userId)
+        .asSequence()
+        .filter { it.id != excludedAppointmentId }
+        .filterNot { it.resolvedStatus().isTerminal }
+        .filter { it.appointmentTime + MockClinicOperationsService.SLOT_DURATION_MS > System.currentTimeMillis() }
+        .any { existing ->
+            val existingStart = existing.appointmentTime
+            val existingEnd = existingStart + MockClinicOperationsService.SLOT_DURATION_MS
+            slotStartTime < existingEnd && existingStart < slotEndTime
+        }
 }

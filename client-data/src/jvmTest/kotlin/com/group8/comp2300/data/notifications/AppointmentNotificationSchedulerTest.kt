@@ -52,8 +52,23 @@ class AppointmentNotificationSchedulerTest {
 
         fixture.scheduler.syncAppointment(appointment)
 
-        assertTrue(fixture.platform.scheduled.isEmpty())
-        assertEquals(emptyMap(), fixture.registry.all())
+        assertEquals(1, fixture.platform.scheduled.size)
+        val scheduled = fixture.platform.scheduled.single()
+        assertEquals("appointment:${appointment.id}:2h", scheduled.id)
+        assertEquals(utcMs(2026, Month.MARCH, 17, 18, 0), scheduled.fireAtMs)
+    }
+
+    @Test
+    fun appointmentsWithinTwoHoursUseThirtyMinuteReminder() = runTest {
+        val fixture = schedulerFixture(nowMs = utcMs(2026, Month.MARCH, 17, 8, 0))
+        val appointment = fixture.appointment(appointmentTime = utcMs(2026, Month.MARCH, 17, 9, 30))
+
+        fixture.scheduler.syncAppointment(appointment)
+
+        assertEquals(1, fixture.platform.scheduled.size)
+        val scheduled = fixture.platform.scheduled.single()
+        assertEquals("appointment:${appointment.id}:30m", scheduled.id)
+        assertEquals(utcMs(2026, Month.MARCH, 17, 9, 0), scheduled.fireAtMs)
     }
 
     @Test
