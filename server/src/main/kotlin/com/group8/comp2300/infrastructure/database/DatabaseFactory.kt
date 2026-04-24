@@ -24,8 +24,8 @@ private fun seedProducts(database: ServerDatabase) {
     } else {
         sampleProducts.forEach { sample ->
             val existing = repository.getById(sample.id) ?: return@forEach
-            if (existing.imageUrl.isNullOrBlank() && !sample.imageUrl.isNullOrBlank()) {
-                repository.update(existing.copy(imageUrl = sample.imageUrl))
+            if (existing != sample) {
+                repository.update(sample)
             }
         }
     }

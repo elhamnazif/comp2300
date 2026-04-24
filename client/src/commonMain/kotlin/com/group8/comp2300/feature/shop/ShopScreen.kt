@@ -455,7 +455,7 @@ private fun ProductCard(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = if (product.insuranceCovered) "$0" else product.formattedPrice,
+                        text = if (product.insuranceCovered) "RM 0.00" else product.formattedPrice,
                         modifier = Modifier.weight(1f),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,

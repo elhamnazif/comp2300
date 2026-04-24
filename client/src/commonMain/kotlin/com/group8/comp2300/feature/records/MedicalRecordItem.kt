@@ -6,6 +6,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.format.DateFormatter
 import com.group8.comp2300.domain.model.medical.MedicalRecordResponse
@@ -16,8 +17,15 @@ import com.group8.comp2300.symbols.icons.materialsymbols.icons.DeleteW400Outline
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.DescriptionW400Outlinedfill1
 
 @Composable
-fun MedicalRecordItem(record: MedicalRecordResponse, isOpening: Boolean, onOpen: () -> Unit, onDelete: () -> Unit) {
+fun MedicalRecordItem(
+    record: MedicalRecordResponse,
+    isOpening: Boolean,
+    isDeleting: Boolean,
+    onOpen: () -> Unit,
+    onDelete: () -> Unit,
+) {
     Card(
+        enabled = !isOpening && !isDeleting,
         onClick = onOpen,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         modifier = Modifier.fillMaxWidth(),
@@ -37,10 +45,15 @@ fun MedicalRecordItem(record: MedicalRecordResponse, isOpening: Boolean, onOpen:
             Spacer(Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(record.fileName, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = record.fileName,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
 
                 val date = DateFormatter.formatDayMonthYear(record.createdAt)
-                val size = "${record.fileSize / 1024} KB"
+                val size = record.fileSize.asReadableKilobytes()
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -88,13 +101,30 @@ fun MedicalRecordItem(record: MedicalRecordResponse, isOpening: Boolean, onOpen:
                 )
             }
 
-            IconButton(onClick = onDelete) {
-                Icon(
-                    Icons.DeleteW400Outlinedfill1,
-                    contentDescription = "Delete record",
-                    tint = MaterialTheme.colorScheme.error,
-                )
+            Box(
+                modifier = Modifier.width(48.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (isDeleting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    IconButton(onClick = onDelete, enabled = !isOpening) {
+                        Icon(
+                            Icons.DeleteW400Outlinedfill1,
+                            contentDescription = "Delete record",
+                            tint = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                }
             }
         }
     }
+}
+
+private fun Long.asReadableKilobytes(): String {
+    val kilobytes = (this / 1024).coerceAtLeast(1)
+    return "$kilobytes KB"
 }

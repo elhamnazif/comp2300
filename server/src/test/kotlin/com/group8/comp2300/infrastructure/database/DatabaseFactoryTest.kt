@@ -1,6 +1,7 @@
 package com.group8.comp2300.infrastructure.database
 
 import com.group8.comp2300.data.repository.BadgeRepositoryImpl
+import com.group8.comp2300.data.repository.ProductRepositoryImpl
 import com.group8.comp2300.domain.model.education.Badge
 import java.io.File
 import kotlin.test.Test
@@ -29,5 +30,23 @@ class DatabaseFactoryTest {
         val refreshed = refreshedRepository.getBadgeById("b1")
 
         assertEquals("/images/badges/badge_rookie.png", refreshed?.iconPath)
+    }
+
+    @Test
+    fun `product seed refreshes existing prices`() {
+        val dbFile = File.createTempFile("comp2300-products", ".db")
+        dbFile.deleteOnExit()
+        val dbUrl = "jdbc:sqlite:${dbFile.absolutePath}"
+
+        createServerDatabase(dbUrl)
+
+        val repository = ProductRepositoryImpl(createServerDatabase(dbUrl))
+        val staleProduct = repository.getById("4") ?: error("expected seeded product")
+        repository.update(staleProduct.copy(price = 20.0))
+
+        val refreshedRepository = ProductRepositoryImpl(createServerDatabase(dbUrl))
+        val refreshed = refreshedRepository.getById("4")
+
+        assertEquals(99.0, refreshed?.price)
     }
 }

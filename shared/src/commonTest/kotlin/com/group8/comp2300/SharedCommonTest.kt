@@ -3,6 +3,7 @@ package com.group8.comp2300
 import com.group8.comp2300.domain.model.medical.BookingPaymentMethod
 import com.group8.comp2300.domain.model.medical.PricingTier
 import com.group8.comp2300.domain.model.medical.consultationFeeFor
+import com.group8.comp2300.util.formatCurrency
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -20,5 +21,11 @@ class SharedCommonTest {
     fun paymentMethodParserAcceptsStoredNames() {
         assertEquals(BookingPaymentMethod.VISA_4242, BookingPaymentMethod.fromRaw("VISA_4242"))
         assertEquals(null, BookingPaymentMethod.fromRaw("MOCK_CARD"))
+    }
+
+    @Test
+    fun currencyFormatterUsesRinggitPrefix() {
+        assertEquals("RM 45.00", formatCurrency(45.0))
+        assertEquals("RM 0.00", formatCurrency(0.0))
     }
 }

@@ -334,21 +334,34 @@
     <string name="medical_medication_notification_disabled">Schedule saved, but notifications are disabled in system settings.</string>
 
     <!-- Self Diagnosis Module -->
-    <string name="medical_self_diagnosis_title">Self Diagnosis: HIV</string>
+    <string name="medical_self_diagnosis_title">HIV Check</string>
     <string name="medical_self_diagnosis_back_desc">Back</string>
-    <string name="medical_self_diagnosis_header">HIV Risk Assessment</string>
-    <string name="medical_self_diagnosis_desc">Please answer the following questions to assess your risk.</string>
-    <string name="medical_self_diagnosis_q1">Have you had unprotected sex in the last 3 months?</string>
-    <string name="medical_self_diagnosis_q2">Have you shared needles or injection equipment?</string>
-    <string name="medical_self_diagnosis_submit_button">Get Results</string>
-    <string name="medical_self_diagnosis_disclaimer">Note: This is a preliminary self-assessment and does not replace professional medical advice.</string>
-    <string name="medical_self_diagnosis_result_dialog_title">Assessment Result</string>
-    <string name="medical_self_diagnosis_risk_high">High Risk</string>
-    <string name="medical_self_diagnosis_risk_low">Low Risk</string>
-    <string name="medical_self_diagnosis_feedback_high">Based on your answers, you may be at higher risk for HIV. We recommend consulting a healthcare provider for further testing.</string>
-    <string name="medical_self_diagnosis_feedback_low">Based on your answers, your risk appears to be low. However, regular screening is always recommended for sexual health.</string>
-    <string name="medical_self_diagnosis_book_button">Book Appointment</string>
-    <string name="medical_self_diagnosis_close_button">Close</string>
+    <string name="medical_self_diagnosis_header">What should you do next?</string>
+    <string name="medical_self_diagnosis_desc">Answer a few questions and we will suggest whether to act now, book testing, or stay on routine screening.</string>
+    <string name="medical_self_diagnosis_q1">In the last 72 hours, have you had a possible HIV exposure during sex or by sharing needles?</string>
+    <string name="medical_self_diagnosis_q2">In the last 3 months, have you had sex without a condom or with a partner whose HIV status you do not know?</string>
+    <string name="medical_self_diagnosis_q3">Have you shared needles, syringes, or injection equipment?</string>
+    <string name="medical_self_diagnosis_q4">Have you had an HIV test in the last 12 months?</string>
+    <string name="medical_self_diagnosis_submit_button">Review Next Step</string>
+    <string name="medical_self_diagnosis_disclaimer">This is not a diagnosis. If you may have been exposed in the last 72 hours, get medical help now.</string>
+    <string name="medical_self_diagnosis_result_dialog_title">Next Step</string>
+    <string name="medical_self_diagnosis_risk_high">Act Now</string>
+    <string name="medical_self_diagnosis_risk_medium">Book Testing</string>
+    <string name="medical_self_diagnosis_risk_low">Stay on Routine Screening</string>
+    <string name="medical_self_diagnosis_feedback_high">A possible exposure in the last 72 hours can be a medical emergency. Seek urgent care or speak to a clinician about PEP now.</string>
+    <string name="medical_self_diagnosis_feedback_medium">Your answers suggest HIV testing should be arranged with a clinic.</string>
+    <string name="medical_self_diagnosis_feedback_low">Your answers do not suggest urgent follow-up, but routine HIV screening still matters.</string>
+    <string name="medical_self_diagnosis_book_button">Book Testing</string>
+    <string name="medical_self_diagnosis_find_care_button">Find Care</string>
+    <string name="medical_self_diagnosis_done_button">Done</string>
+    <string name="medical_self_diagnosis_reset_button">Start Over</string>
+    <string name="medical_self_diagnosis_reason_heading">Based on your answers</string>
+    <string name="medical_self_diagnosis_reason_recent_exposure">Possible exposure reported within 72 hours.</string>
+    <string name="medical_self_diagnosis_reason_recent_sex_risk">Recent sexual exposure risk reported.</string>
+    <string name="medical_self_diagnosis_reason_needle_risk">Shared injection equipment reported.</string>
+    <string name="medical_self_diagnosis_reason_overdue_test">No HIV test reported in the last 12 months.</string>
+    <string name="medical_self_diagnosis_reason_recent_test">HIV test reported in the last 12 months.</string>
+    <string name="medical_self_diagnosis_footer_note">Routine HIV testing is recommended at least once for everyone, and more often for people with ongoing risk.</string>
 
     <!-- Routine Module -->
     <string name="medical_routine_title">Schedules</string>
@@ -533,10 +546,21 @@
     <string name="medical_records_title">My Medical Records</string>
     <string name="medical_records_upload">Upload</string>
     <string name="medical_records_upload_desc">Upload record</string>
+    <string name="medical_records_loading">Loading records</string>
+    <string name="medical_records_empty_title">No records yet</string>
+    <string name="medical_records_empty_body">Upload a record to keep it here.</string>
+    <string name="medical_records_filtered_empty_title">No records in this category</string>
+    <string name="medical_records_clear_filter">Clear filter</string>
+    <string name="medical_records_filter_all">All</string>
+    <string name="medical_records_retry">Retry</string>
+    <string name="medical_records_delete_title">Delete record?</string>
+    <string name="medical_records_delete_message">This removes %1$s.</string>
+    <string name="medical_records_delete_confirm">Delete</string>
     <string name="medical_records_error_load">Failed to load records</string>
     <string name="medical_records_error_file_too_large">File exceeds 10MB limit</string>
     <string name="medical_records_error_upload">Failed to upload records</string>
     <string name="medical_records_error_open">Failed to open record</string>
+    <string name="medical_records_error_delete">Failed to delete record</string>
     <string name="shop_retry">Retry</string>
     
     <!-- Daily Action -->
@@ -574,7 +598,7 @@
     <string name="shop_browse_subtitle">Essentials for testing, prevention, and refills</string>
     <string name="shop_cart_desc">Cart</string>
     <string name="shop_view_cart">View cart</string>
-    <string name="shop_product_insured_price">$0 (Insured)</string>
+    <string name="shop_product_insured_price">RM 0.00 (Insured)</string>
     <string name="shop_covered">Covered</string>
     <string name="shop_product_add">Add</string>
     <string name="shop_added">Added</string>
