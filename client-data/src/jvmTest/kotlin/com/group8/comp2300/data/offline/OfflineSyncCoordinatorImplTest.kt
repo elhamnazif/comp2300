@@ -7,11 +7,7 @@ import com.group8.comp2300.data.local.OutboxState
 import com.group8.comp2300.data.remote.ApiException
 import com.group8.comp2300.data.repository.newDatabase
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class OfflineSyncCoordinatorImplTest {
     @Test

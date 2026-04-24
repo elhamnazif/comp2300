@@ -123,9 +123,6 @@ fun BookingConfirmationScreen(
                                     viewModel.bookClinicAppointment(
                                         clinicId = clinic.id,
                                         slotId = slot.id,
-                                        appointmentType = draft.appointmentType,
-                                        reason = draft.reason,
-                                        hasReminder = draft.hasReminder,
                                     )
                                 } else {
                                     onContinueToPayment(

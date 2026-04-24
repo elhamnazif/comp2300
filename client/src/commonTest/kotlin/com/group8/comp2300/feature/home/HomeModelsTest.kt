@@ -5,11 +5,7 @@ import com.group8.comp2300.domain.model.medical.MedicationLogStatus
 import com.group8.comp2300.domain.model.medical.RoutineDayAgenda
 import com.group8.comp2300.domain.model.medical.RoutineMedicationAgenda
 import kotlinx.datetime.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class HomeModelsTest {
     private val timeZone = TimeZone.UTC

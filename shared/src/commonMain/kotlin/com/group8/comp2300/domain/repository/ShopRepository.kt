@@ -1,10 +1,6 @@
 package com.group8.comp2300.domain.repository
 
-import com.group8.comp2300.domain.model.shop.Cart
-import com.group8.comp2300.domain.model.shop.CartDetails
-import com.group8.comp2300.domain.model.shop.Order
-import com.group8.comp2300.domain.model.shop.Product
-import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.domain.model.shop.*
 import kotlinx.coroutines.flow.Flow
 
 interface ShopRepository {

@@ -9,13 +9,10 @@ import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.domain.model.session.AuthSession
 import com.group8.comp2300.domain.model.session.userOrNull
 import com.group8.comp2300.domain.repository.AuthRepository
-import com.group8.comp2300.feature.profile.AccountScreen
-import com.group8.comp2300.feature.profile.ChangeEmailScreen
-import com.group8.comp2300.feature.profile.ChangePasswordScreen
-import com.group8.comp2300.feature.profile.DeactivateAccountScreen
-import com.group8.comp2300.feature.profile.EditProfileScreen
-import com.group8.comp2300.feature.profile.ProfileScreen
-import comp2300.i18n.generated.resources.*
+import com.group8.comp2300.feature.profile.*
+import comp2300.i18n.generated.resources.Res
+import comp2300.i18n.generated.resources.account_change_password_success
+import comp2300.i18n.generated.resources.account_deactivate_success
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.dsl.module

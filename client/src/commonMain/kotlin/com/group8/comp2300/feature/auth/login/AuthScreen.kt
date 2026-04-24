@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -16,12 +15,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.group8.comp2300.app.navigation.PrivacyLegalDocument
@@ -281,40 +283,34 @@ private fun CredentialsForm(
                 )
                 val annotatedText = buildAnnotatedString {
                     append(stringResource(Res.string.auth_agree_to))
-                    pushStringAnnotation(tag = termsTag, annotation = PrivacyLegalDocument.TermsOfService.name)
-                    pushStyle(linkStyle)
-                    append(stringResource(Res.string.auth_terms))
-                    pop()
-                    pop()
+                    withLink(
+                        LinkAnnotation.Clickable(
+                            tag = termsTag,
+                            styles = TextLinkStyles(style = linkStyle),
+                            linkInteractionListener = {
+                                onNavigateToLegalDocument(PrivacyLegalDocument.TermsOfService)
+                            },
+                        ),
+                    ) {
+                        append(stringResource(Res.string.auth_terms))
+                    }
                     append(stringResource(Res.string.auth_and))
-                    pushStringAnnotation(tag = privacyTag, annotation = PrivacyLegalDocument.PrivacyPolicy.name)
-                    pushStyle(linkStyle)
-                    append(stringResource(Res.string.auth_privacy_policy))
-                    pop()
-                    pop()
+                    withLink(
+                        LinkAnnotation.Clickable(
+                            tag = privacyTag,
+                            styles = TextLinkStyles(style = linkStyle),
+                            linkInteractionListener = {
+                                onNavigateToLegalDocument(PrivacyLegalDocument.PrivacyPolicy)
+                            },
+                        ),
+                    ) {
+                        append(stringResource(Res.string.auth_privacy_policy))
+                    }
                 }
-                ClickableText(
+                Text(
                     text = annotatedText,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 8.dp),
-                    onClick = { offset ->
-                        annotatedText
-                            .getStringAnnotations(start = offset, end = offset)
-                            .firstOrNull()
-                            ?.let { annotation ->
-                                when (annotation.item) {
-                                    PrivacyLegalDocument.TermsOfService.name -> {
-                                        onNavigateToLegalDocument(PrivacyLegalDocument.TermsOfService)
-                                    }
-
-                                    PrivacyLegalDocument.PrivacyPolicy.name -> {
-                                        onNavigateToLegalDocument(PrivacyLegalDocument.PrivacyPolicy)
-                                    }
-
-                                    else -> Unit
-                                }
-                            }
-                    },
                 )
             }
         }

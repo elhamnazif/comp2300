@@ -2,7 +2,9 @@ package com.group8.comp2300.data.repository
 
 import com.group8.comp2300.database.ServerDatabase
 import com.group8.comp2300.database.data.MedicationEntity
-import com.group8.comp2300.domain.model.medical.*
+import com.group8.comp2300.domain.model.medical.Medication
+import com.group8.comp2300.domain.model.medical.MedicationStatus
+import com.group8.comp2300.domain.model.medical.MedicationUnit
 import com.group8.comp2300.domain.repository.MedicationRepository
 
 class MedicationRepositoryImpl(private val database: ServerDatabase) : MedicationRepository {

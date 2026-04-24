@@ -2,30 +2,10 @@ package com.group8.comp2300.feature.booking
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,10 +29,10 @@ fun BookingPaymentScreen(
     appointmentType: String,
     reason: String,
     hasReminder: Boolean,
-    rescheduleAppointment: Appointment? = null,
     onBack: () -> Unit,
     onBookingConfirm: (com.group8.comp2300.domain.model.medical.Appointment, Boolean) -> Unit,
     modifier: Modifier = Modifier,
+    rescheduleAppointment: Appointment? = null,
     viewModel: BookingViewModel = koinViewModel(),
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
@@ -131,9 +111,6 @@ fun BookingPaymentScreen(
                                 viewModel.bookClinicAppointment(
                                     clinicId = clinic.id,
                                     slotId = slot.id,
-                                    appointmentType = draft.appointmentType,
-                                    reason = draft.reason,
-                                    hasReminder = draft.hasReminder,
                                 )
                             },
                             modifier = Modifier.fillMaxWidth(),

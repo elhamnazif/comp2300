@@ -8,7 +8,10 @@ import com.group8.comp2300.domain.usecase.auth.RequestEmailChangeUseCase
 import com.group8.comp2300.feature.auth.AuthRequestState
 import com.group8.comp2300.feature.auth.components.sanitizeVerificationCode
 import com.group8.comp2300.feature.auth.launchAuthRequest
-import comp2300.i18n.generated.resources.*
+import comp2300.i18n.generated.resources.Res
+import comp2300.i18n.generated.resources.auth_error_invalid_email
+import comp2300.i18n.generated.resources.auth_error_network
+import comp2300.i18n.generated.resources.email_verification_error_invalid_token
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

@@ -1,10 +1,6 @@
 package com.group8.comp2300.data.offline
 
-import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationLogRequest
-import com.group8.comp2300.domain.model.medical.MoodEntryRequest
-import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
+import com.group8.comp2300.domain.model.medical.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.serializer
 

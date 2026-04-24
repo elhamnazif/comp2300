@@ -1,11 +1,6 @@
 package com.group8.comp2300.feature.booking
 
-import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.AppointmentSlot
-import com.group8.comp2300.domain.model.medical.BookingPaymentMethod
-import com.group8.comp2300.domain.model.medical.Clinic
-import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
-import com.group8.comp2300.domain.model.medical.PricingTier
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 import com.group8.comp2300.domain.repository.medical.FailedSyncMutation
@@ -13,16 +8,8 @@ import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
 import com.group8.comp2300.domain.repository.medical.SyncStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.setMain
-import kotlin.test.AfterTest
-import kotlin.test.BeforeTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
+import kotlinx.coroutines.test.*
+import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookingViewModelTest {
@@ -101,9 +88,6 @@ class BookingViewModelTest {
         viewModel.bookClinicAppointment(
             clinicId = "clinic-1",
             slotId = "slot-1",
-            appointmentType = "FOLLOW_UP",
-            reason = "Bring results",
-            hasReminder = false,
         )
 
         advanceUntilIdle()

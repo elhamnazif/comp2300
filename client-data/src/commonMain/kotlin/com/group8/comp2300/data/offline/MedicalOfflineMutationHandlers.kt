@@ -1,17 +1,8 @@
 package com.group8.comp2300.data.offline
 
-import com.group8.comp2300.data.local.MedicationLocalDataSource
-import com.group8.comp2300.data.local.MedicationLogLocalDataSource
-import com.group8.comp2300.data.local.MoodLocalDataSource
-import com.group8.comp2300.data.local.OutboxItem
-import com.group8.comp2300.data.local.RoutineLocalDataSource
-import com.group8.comp2300.data.local.RoutineOccurrenceOverrideLocalDataSource
+import com.group8.comp2300.data.local.*
 import com.group8.comp2300.data.remote.ApiService
-import com.group8.comp2300.domain.model.medical.MedicationCreateRequest
-import com.group8.comp2300.domain.model.medical.MedicationLogRequest
-import com.group8.comp2300.domain.model.medical.MoodEntryRequest
-import com.group8.comp2300.domain.model.medical.RoutineCreateRequest
-import com.group8.comp2300.domain.model.medical.RoutineOccurrenceOverrideRequest
+import com.group8.comp2300.domain.model.medical.*
 
 class MedicationUpsertMutationHandler(
     private val apiService: ApiService,

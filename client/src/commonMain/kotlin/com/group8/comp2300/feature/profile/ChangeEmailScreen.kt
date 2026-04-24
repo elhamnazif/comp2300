@@ -17,13 +17,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.group8.comp2300.feature.auth.components.AuthBanner
-import com.group8.comp2300.feature.auth.components.AuthFormScaffold
-import com.group8.comp2300.feature.auth.components.AuthHeroSection
-import com.group8.comp2300.feature.auth.components.AuthLoadingButton
-import com.group8.comp2300.feature.auth.components.AuthPasswordField
-import com.group8.comp2300.feature.auth.components.AuthTextField
-import com.group8.comp2300.feature.auth.components.VerificationCodeField
+import com.group8.comp2300.feature.auth.components.*
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.MailOutlineW400Outlinedfill1
 import comp2300.i18n.generated.resources.*

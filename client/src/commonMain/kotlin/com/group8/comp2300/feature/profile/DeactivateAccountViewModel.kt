@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import com.group8.comp2300.domain.usecase.auth.DeactivateAccountUseCase
 import com.group8.comp2300.feature.auth.AuthRequestState
 import com.group8.comp2300.feature.auth.launchAuthRequest
-import comp2300.i18n.generated.resources.*
+import comp2300.i18n.generated.resources.Res
+import comp2300.i18n.generated.resources.auth_error_network
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

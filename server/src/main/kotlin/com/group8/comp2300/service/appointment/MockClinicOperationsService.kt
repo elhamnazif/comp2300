@@ -1,20 +1,13 @@
 package com.group8.comp2300.service.appointment
 
-import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.AppointmentSlot
-import com.group8.comp2300.domain.model.medical.AppointmentStatus
-import com.group8.comp2300.domain.model.medical.BookingPaymentMethod
-import com.group8.comp2300.domain.model.medical.Clinic
-import com.group8.comp2300.domain.model.medical.bookingConsultationFee
-import com.group8.comp2300.domain.model.medical.consultationFeeFor
-import com.group8.comp2300.domain.model.medical.resolvedStatus
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.repository.AppointmentRepository
 import com.group8.comp2300.domain.repository.AppointmentSlotRepository
 import com.group8.comp2300.domain.repository.ClinicRepository
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
-import java.util.UUID
+import java.util.*
 import kotlin.math.absoluteValue
 
 class MockClinicOperationsService(

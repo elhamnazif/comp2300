@@ -11,11 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.group8.comp2300.core.ui.components.ActionEmptyStateCard
-import com.group8.comp2300.core.ui.components.AppTopBar
-import com.group8.comp2300.core.ui.components.CenteredLoadingPanel
-import com.group8.comp2300.core.ui.components.ConsumeSnackbarMessage
-import com.group8.comp2300.core.ui.components.SectionHeader
+import com.group8.comp2300.core.ui.components.*
 import com.group8.comp2300.domain.model.medical.Medication
 import com.group8.comp2300.domain.model.medical.MedicationStatus
 import com.group8.comp2300.domain.model.medical.Routine

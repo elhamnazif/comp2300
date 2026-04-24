@@ -3,13 +3,7 @@ package com.group8.comp2300.feature.booking
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.group8.comp2300.domain.model.medical.Appointment
-import com.group8.comp2300.domain.model.medical.AppointmentSlot
-import com.group8.comp2300.domain.model.medical.BookingPaymentMethod
-import com.group8.comp2300.domain.model.medical.Clinic
-import com.group8.comp2300.domain.model.medical.ClinicBookingRequest
-import com.group8.comp2300.domain.model.medical.bookingConsultationFee
-import com.group8.comp2300.domain.model.medical.consultationFeeFor
+import com.group8.comp2300.domain.model.medical.*
 import com.group8.comp2300.domain.repository.ClinicRepository
 import com.group8.comp2300.domain.repository.medical.AppointmentDataRepository
 import com.group8.comp2300.domain.repository.medical.OfflineSyncCoordinator
@@ -17,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.milliseconds
 
 class BookingViewModel(
     private val clinicRepository: ClinicRepository,
@@ -229,10 +224,6 @@ class BookingViewModel(
         _state.update { it.copy(errorMessage = null) }
     }
 
-    fun clearPaymentError() {
-        _state.update { it.copy(paymentErrorMessage = null) }
-    }
-
     fun clearBookingFlow() {
         _state.update {
             it.copy(
@@ -356,9 +347,6 @@ class BookingViewModel(
     fun bookClinicAppointment(
         clinicId: String,
         slotId: String,
-        appointmentType: String,
-        reason: String,
-        hasReminder: Boolean,
     ) {
         viewModelScope.launch {
             val draft = _state.value.bookingDraft
@@ -374,14 +362,14 @@ class BookingViewModel(
                 val request = ClinicBookingRequest(
                     clinicId = clinicId,
                     slotId = slotId,
-                    appointmentType = draft?.appointmentType ?: appointmentType,
-                    reason = (draft?.reason ?: reason).trim().ifBlank { null },
-                    hasReminder = draft?.hasReminder ?: hasReminder,
+                    appointmentType = draft.appointmentType,
+                    reason = draft.reason.trim().ifBlank { null },
+                    hasReminder = draft.hasReminder,
                     paymentMethod = if (isReschedule) null else paymentMethod,
                 )
-                val rescheduleAppointmentId = draft?.rescheduleAppointmentId
+                val rescheduleAppointmentId = draft.rescheduleAppointmentId
                 if (rescheduleAppointmentId == null) {
-                    delay(PaymentProcessingDelayMs)
+                    delay(PaymentProcessingDelayMs.milliseconds)
                 }
                 val appointment = if (rescheduleAppointmentId == null) {
                     appointmentRepository.bookClinicAppointment(request)
@@ -435,11 +423,6 @@ class BookingViewModel(
 
     fun getManagedAppointment(appointmentId: String): Appointment? =
         _state.value.managedAppointments.firstOrNull { it.id == appointmentId }
-
-    fun getQuotedFee(clinicId: String): Double = _state.value.bookingDraft
-        ?.takeIf { it.clinicId == clinicId }
-        ?.quotedFee
-        ?: resolveConsultationFee(clinicId)
 
     private fun filterClinics(state: State): List<Clinic> {
         val query = state.searchQuery.trim()

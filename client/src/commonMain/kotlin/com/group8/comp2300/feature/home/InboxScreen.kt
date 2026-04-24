@@ -13,13 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.group8.comp2300.core.ui.components.AppTopBar
-import comp2300.i18n.generated.resources.Res
-import comp2300.i18n.generated.resources.home_inbox_empty_body
-import comp2300.i18n.generated.resources.home_inbox_empty_title
-import comp2300.i18n.generated.resources.home_inbox_section_attention
-import comp2300.i18n.generated.resources.home_inbox_section_today
-import comp2300.i18n.generated.resources.home_inbox_title
-import comp2300.i18n.generated.resources.home_retry
+import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

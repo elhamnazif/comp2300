@@ -6,7 +6,10 @@ import com.group8.comp2300.core.Validation
 import com.group8.comp2300.domain.usecase.auth.ChangePasswordUseCase
 import com.group8.comp2300.feature.auth.AuthRequestState
 import com.group8.comp2300.feature.auth.launchAuthRequest
-import comp2300.i18n.generated.resources.*
+import comp2300.i18n.generated.resources.Res
+import comp2300.i18n.generated.resources.auth_error_network
+import comp2300.i18n.generated.resources.auth_error_password_too_short
+import comp2300.i18n.generated.resources.reset_password_error_mismatch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

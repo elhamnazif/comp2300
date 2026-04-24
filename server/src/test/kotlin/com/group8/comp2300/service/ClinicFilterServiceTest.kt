@@ -1,6 +1,8 @@
 package com.group8.comp2300.service
 
-import com.group8.comp2300.domain.model.medical.*
+import com.group8.comp2300.domain.model.medical.Clinic
+import com.group8.comp2300.domain.model.medical.PricingTier
+import com.group8.comp2300.domain.model.medical.ServiceType
 import kotlin.math.*
 
 data class ClinicFilters(

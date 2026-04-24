@@ -3,11 +3,7 @@ package com.group8.comp2300.feature.shop
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.group8.comp2300.domain.model.shop.Cart
-import com.group8.comp2300.domain.model.shop.CartLine
-import com.group8.comp2300.domain.model.shop.Order
-import com.group8.comp2300.domain.model.shop.Product
-import com.group8.comp2300.domain.model.shop.ProductCategory
+import com.group8.comp2300.domain.model.shop.*
 import com.group8.comp2300.domain.repository.ShopRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

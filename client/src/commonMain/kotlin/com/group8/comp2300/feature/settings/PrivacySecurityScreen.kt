@@ -9,7 +9,10 @@ import com.group8.comp2300.core.ui.settings.*
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.platform.biometrics.isBiometricAvailable
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.ChevronRightW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.FingerprintW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.LockW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.VisibilityOffW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

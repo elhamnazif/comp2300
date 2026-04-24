@@ -8,7 +8,10 @@ import com.group8.comp2300.data.local.NotificationPrivacyMode
 import com.group8.comp2300.data.local.NotificationSettingsDataSource
 import com.group8.comp2300.data.local.PrivacySettingsDataSource
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
-import com.group8.comp2300.symbols.icons.materialsymbols.icons.*
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.CalendarMonthW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.EditW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.LocalPharmacyW400Outlinedfill1
+import com.group8.comp2300.symbols.icons.materialsymbols.icons.NotificationsW400Outlinedfill1
 import comp2300.i18n.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
