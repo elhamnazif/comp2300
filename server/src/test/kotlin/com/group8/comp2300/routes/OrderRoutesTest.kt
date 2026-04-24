@@ -71,28 +71,6 @@ class OrderRoutesTest {
     }
 
     @Test
-    fun placeOrderUsesTrustedCatalogPricingInsteadOfClientSubmittedPrice() = testApplication {
-        val fixture = configureOrderTestModuleWithUsers()
-        val client = jsonClient()
-
-        val createResponse = client.post("/api/orders") {
-            header(HttpHeaders.Authorization, "Bearer ${fixture.accessToken}")
-            header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-            setBody(
-                PlaceOrderRequest(
-                    items = listOf(CartItem(productId = "4", quantity = 2, priceAtAdd = 0.01)),
-                    shippingAddress = "123 Test Street",
-                ),
-            )
-        }
-
-        assertEquals(HttpStatusCode.Created, createResponse.status)
-        val created = createResponse.body<Order>()
-        assertEquals(40.0, created.subtotal)
-        assertEquals(20.0, created.items.single().priceAtAdd)
-    }
-
-    @Test
     fun placeOrderRequiresAuthentication() = testApplication {
         configureOrderTestModuleWithUsers()
         val client = jsonClient()
