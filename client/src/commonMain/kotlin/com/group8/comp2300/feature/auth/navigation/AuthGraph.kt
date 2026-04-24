@@ -3,6 +3,7 @@ package com.group8.comp2300.feature.auth.navigation
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import com.group8.comp2300.app.navigation.LocalNavigator
+import com.group8.comp2300.app.navigation.PrivacyLegalDocument
 import com.group8.comp2300.app.navigation.Screen
 import com.group8.comp2300.data.local.LocalAuthSettingsDataSource
 import com.group8.comp2300.data.local.PinDataSource
@@ -53,6 +54,9 @@ val authGraphModule = module {
             },
             onNavigateToForgotPassword = {
                 navigator.navigate(Screen.ForgotPassword)
+            },
+            onNavigateToLegalDocument = { document ->
+                navigator.navigate(Screen.PrivacyLegalese(initialDocument = document))
             },
         )
     }

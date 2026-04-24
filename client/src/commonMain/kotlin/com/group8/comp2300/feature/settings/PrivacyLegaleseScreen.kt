@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.group8.comp2300.app.navigation.PrivacyLegalDocument
 import com.group8.comp2300.core.ui.settings.SettingsInfoCard
 import com.group8.comp2300.core.ui.settings.SettingsNavigationRow
 import com.group8.comp2300.core.ui.settings.SettingsSection
@@ -30,18 +31,15 @@ import org.jetbrains.compose.resources.stringResource
 
 private const val LegalSupportEmail = "vita@elham.dev"
 
-private enum class LegalDocument {
-    TermsOfService,
-    PrivacyPolicy,
-}
-
 @Composable
-fun PrivacyLegaleseScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
-    var activeDocumentName by rememberSaveable { mutableStateOf<String?>(null) }
+fun PrivacyLegaleseScreen(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    initialDocument: PrivacyLegalDocument? = null,
+) {
+    var activeDocumentName by rememberSaveable(initialDocument) { mutableStateOf(initialDocument?.name) }
     val activeDocument = remember(activeDocumentName) {
-        activeDocumentName?.let { savedName ->
-            LegalDocument.entries.firstOrNull { it.name == savedName }
-        }
+        activeDocumentName?.let { savedName -> PrivacyLegalDocument.entries.firstOrNull { it.name == savedName } }
     }
     val uriHandler = LocalUriHandler.current
 
@@ -56,13 +54,13 @@ fun PrivacyLegaleseScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 title = stringResource(Res.string.privacy_legalese_overview_title),
                 description = stringResource(Res.string.privacy_legalese_overview_body),
             ) {
-                LegalDocument.entries.forEachIndexed { index, document ->
+                PrivacyLegalDocument.entries.forEachIndexed { index, document ->
                     SettingsNavigationRow(
                         icon = document.icon(),
                         title = stringResource(document.titleRes()),
                         description = stringResource(document.descriptionRes()),
                         index = index,
-                        total = LegalDocument.entries.size,
+                        total = PrivacyLegalDocument.entries.size,
                         onClick = { activeDocumentName = document.name },
                     )
                 }
@@ -99,7 +97,7 @@ fun PrivacyLegaleseScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun LegalDocumentViewer(document: LegalDocument, onDismiss: () -> Unit) {
+private fun LegalDocumentViewer(document: PrivacyLegalDocument, onDismiss: () -> Unit) {
     val title = stringResource(document.titleRes())
     val content = stringResource(document.contentRes())
     val sections = remember(document, title, content) {
@@ -208,22 +206,22 @@ private fun LegalDocumentScaffold(
     }
 }
 
-private fun LegalDocument.titleRes() = when (this) {
-    LegalDocument.TermsOfService -> Res.string.privacy_legalese_terms_title
-    LegalDocument.PrivacyPolicy -> Res.string.privacy_legalese_privacy_title
+private fun PrivacyLegalDocument.titleRes() = when (this) {
+    PrivacyLegalDocument.TermsOfService -> Res.string.privacy_legalese_terms_title
+    PrivacyLegalDocument.PrivacyPolicy -> Res.string.privacy_legalese_privacy_title
 }
 
-private fun LegalDocument.descriptionRes() = when (this) {
-    LegalDocument.TermsOfService -> Res.string.privacy_legalese_terms_desc
-    LegalDocument.PrivacyPolicy -> Res.string.privacy_legalese_privacy_desc
+private fun PrivacyLegalDocument.descriptionRes() = when (this) {
+    PrivacyLegalDocument.TermsOfService -> Res.string.privacy_legalese_terms_desc
+    PrivacyLegalDocument.PrivacyPolicy -> Res.string.privacy_legalese_privacy_desc
 }
 
-private fun LegalDocument.contentRes() = when (this) {
-    LegalDocument.TermsOfService -> Res.string.privacy_legalese_terms_content
-    LegalDocument.PrivacyPolicy -> Res.string.privacy_legalese_privacy_content
+private fun PrivacyLegalDocument.contentRes() = when (this) {
+    PrivacyLegalDocument.TermsOfService -> Res.string.privacy_legalese_terms_content
+    PrivacyLegalDocument.PrivacyPolicy -> Res.string.privacy_legalese_privacy_content
 }
 
-private fun LegalDocument.icon() = when (this) {
-    LegalDocument.TermsOfService -> Icons.DescriptionW400Outlinedfill1
-    LegalDocument.PrivacyPolicy -> Icons.ShieldW400Outlinedfill1
+private fun PrivacyLegalDocument.icon() = when (this) {
+    PrivacyLegalDocument.TermsOfService -> Icons.DescriptionW400Outlinedfill1
+    PrivacyLegalDocument.PrivacyPolicy -> Icons.ShieldW400Outlinedfill1
 }

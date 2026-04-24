@@ -1,11 +1,10 @@
 package com.group8.comp2300.data.repository
 
+import com.group8.comp2300.data.remote.ApiException
 import com.group8.comp2300.data.remote.ApiService
 import com.group8.comp2300.data.remote.dto.*
 import com.group8.comp2300.domain.model.education.*
 import com.group8.comp2300.domain.repository.EducationRepository
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 
 class EducationRepositoryImpl(private val apiService: ApiService) : EducationRepository {
     override suspend fun getCategories(): List<Category> =
@@ -36,15 +35,45 @@ class EducationRepositoryImpl(private val apiService: ApiService) : EducationRep
         ),
     ).toDomain()
 
-    override suspend fun getProgress(): EducationProgress = coroutineScope {
-        val statsDeferred = async { apiService.getEducationQuizStats().toDomain() }
-        val earnedDeferred = async { apiService.getEducationEarnedBadges().map(EarnedBadgeDto::toDomain) }
-        EducationProgress(
-            stats = statsDeferred.await(),
-            earnedBadges = earnedDeferred.await(),
+    override suspend fun getProgress(): EducationProgress {
+        val stats = getProgressStatsOrNull() ?: return emptyEducationProgress()
+        val earnedBadges = getEarnedBadgesOrNull() ?: return emptyEducationProgress()
+        return EducationProgress(
+            stats = stats,
+            earnedBadges = earnedBadges,
         )
     }
+
+    private suspend fun getProgressStatsOrNull(): UserQuizStats? = runCatching {
+        apiService.getEducationQuizStats().toDomain()
+    }.getOrElse { error ->
+        if (error.isAuthenticationFailure()) {
+            null
+        } else {
+            throw error
+        }
+    }
+
+    private suspend fun getEarnedBadgesOrNull(): List<EarnedBadge>? = runCatching {
+        apiService.getEducationEarnedBadges().map(EarnedBadgeDto::toDomain)
+    }.getOrElse { error ->
+        if (error.isAuthenticationFailure()) {
+            null
+        } else {
+            throw error
+        }
+    }
+
+    private fun emptyEducationProgress(): EducationProgress = EducationProgress(
+        stats = UserQuizStats(
+            totalPerfectScores = 0,
+            averageTimeSpentSeconds = 0.0,
+            earnedBadges = emptyList(),
+        ),
+    )
 }
+
+private fun Throwable.isAuthenticationFailure(): Boolean = this is ApiException && statusCode in listOf(401, 403)
 
 private fun CategoryDto.toDomain(): Category = Category(
     id = id,

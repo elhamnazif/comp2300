@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.group8.comp2300.app.navigation.PrivacyLegalDocument
 import com.group8.comp2300.core.ui.components.AppTopBar
 import com.group8.comp2300.feature.auth.components.AuthBanner
 import com.group8.comp2300.feature.auth.components.AuthLoadingButton
@@ -44,6 +46,7 @@ fun AuthScreen(
     onDismiss: () -> Unit = {},
     onNavigateToEmailVerification: (String) -> Unit = {},
     onNavigateToForgotPassword: () -> Unit = {},
+    onNavigateToLegalDocument: (PrivacyLegalDocument) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -109,6 +112,7 @@ fun AuthScreen(
                         state = state,
                         onEvent = viewModel::onEvent,
                         onNavigateToForgotPassword = onNavigateToForgotPassword,
+                        onNavigateToLegalDocument = onNavigateToLegalDocument,
                     )
                 }
 
@@ -202,6 +206,7 @@ private fun CredentialsForm(
     state: AuthViewModel.State,
     onEvent: (AuthViewModel.AuthUiEvent) -> Unit,
     onNavigateToForgotPassword: () -> Unit = {},
+    onNavigateToLegalDocument: (PrivacyLegalDocument) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
@@ -262,26 +267,54 @@ private fun CredentialsForm(
         if (state.isRegistering) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().clickable { onEvent(AuthViewModel.AuthUiEvent.ToggleTerms) },
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Checkbox(
                     checked = state.termsAccepted,
                     onCheckedChange = { onEvent(AuthViewModel.AuthUiEvent.ToggleTerms) },
                 )
+                val termsTag = "terms"
+                val privacyTag = "privacy"
+                val linkStyle = SpanStyle(
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline,
+                )
                 val annotatedText = buildAnnotatedString {
                     append(stringResource(Res.string.auth_agree_to))
-                    pushStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+                    pushStringAnnotation(tag = termsTag, annotation = PrivacyLegalDocument.TermsOfService.name)
+                    pushStyle(linkStyle)
                     append(stringResource(Res.string.auth_terms))
                     pop()
+                    pop()
                     append(stringResource(Res.string.auth_and))
-                    pushStyle(SpanStyle(textDecoration = TextDecoration.Underline))
+                    pushStringAnnotation(tag = privacyTag, annotation = PrivacyLegalDocument.PrivacyPolicy.name)
+                    pushStyle(linkStyle)
                     append(stringResource(Res.string.auth_privacy_policy))
                     pop()
+                    pop()
                 }
-                Text(
-                    annotatedText,
+                ClickableText(
+                    text = annotatedText,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 8.dp),
+                    onClick = { offset ->
+                        annotatedText
+                            .getStringAnnotations(start = offset, end = offset)
+                            .firstOrNull()
+                            ?.let { annotation ->
+                                when (annotation.item) {
+                                    PrivacyLegalDocument.TermsOfService.name -> {
+                                        onNavigateToLegalDocument(PrivacyLegalDocument.TermsOfService)
+                                    }
+
+                                    PrivacyLegalDocument.PrivacyPolicy.name -> {
+                                        onNavigateToLegalDocument(PrivacyLegalDocument.PrivacyPolicy)
+                                    }
+
+                                    else -> Unit
+                                }
+                            }
+                    },
                 )
             }
         }

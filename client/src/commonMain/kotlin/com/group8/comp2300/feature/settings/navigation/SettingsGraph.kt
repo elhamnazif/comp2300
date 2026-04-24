@@ -73,10 +73,11 @@ val settingsGraphModule = module {
         )
     }
 
-    navigation<Screen.PrivacyLegalese>(metadata = overlayNavigationMetadata()) {
+    navigation<Screen.PrivacyLegalese>(metadata = overlayNavigationMetadata()) { screen ->
         val navigator = LocalNavigator.current
         PrivacyLegaleseScreen(
             onBack = navigator::goBack,
+            initialDocument = screen.initialDocument,
         )
     }
 }

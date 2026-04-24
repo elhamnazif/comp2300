@@ -1,5 +1,6 @@
 package com.group8.comp2300.data.repository
 
+import com.group8.comp2300.data.remote.ApiException
 import com.group8.comp2300.data.remote.dto.*
 import com.group8.comp2300.domain.model.education.UserQuizAnswerInput
 import kotlinx.coroutines.test.runTest
@@ -18,6 +19,22 @@ class EducationRepositoryImplTest {
         assertEquals(42.5, progress.stats.averageTimeSpentSeconds)
         assertEquals(2, progress.earnedBadges.size)
         assertEquals("Quiz Champion", progress.earnedBadges.first().badge.name)
+    }
+
+    @Test
+    fun getProgressReturnsEmptyStateWhenGuestProgressEndpointsAreUnauthorized() = runTest {
+        val repository = EducationRepositoryImpl(
+            EducationApiServiceStub().apply {
+                quizStatsError = ApiException(401, "Authentication failed")
+            },
+        )
+
+        val progress = repository.getProgress()
+
+        assertEquals(0L, progress.stats.totalPerfectScores)
+        assertEquals(0.0, progress.stats.averageTimeSpentSeconds)
+        assertEquals(emptyList(), progress.stats.earnedBadges)
+        assertEquals(emptyList(), progress.earnedBadges)
     }
 
     @Test
@@ -60,6 +77,8 @@ class EducationRepositoryImplTest {
 private class EducationApiServiceStub : FakeApiService() {
     var lastSubmissionQuizId: String? = null
     var lastSubmissionRequest: QuizSubmissionRequestDto? = null
+    var quizStatsError: Throwable? = null
+    var earnedBadgesError: Throwable? = null
 
     override suspend fun getEducationCategories(): List<CategoryDto> = listOf(
         CategoryDto(id = "cat-1", title = "Sexual Health", articleCount = 1),
@@ -125,24 +144,30 @@ private class EducationApiServiceStub : FakeApiService() {
         )
     }
 
-    override suspend fun getEducationQuizStats(): UserQuizStatsDto = UserQuizStatsDto(
-        totalPerfectScores = 3,
-        averageTimeSpentSeconds = 42.5,
-        earnedBadges = listOf("Quiz Champion", "Quick Learner"),
-    )
+    override suspend fun getEducationQuizStats(): UserQuizStatsDto {
+        quizStatsError?.let { throw it }
+        return UserQuizStatsDto(
+            totalPerfectScores = 3,
+            averageTimeSpentSeconds = 42.5,
+            earnedBadges = listOf("Quiz Champion", "Quick Learner"),
+        )
+    }
 
-    override suspend fun getEducationEarnedBadges(): List<EarnedBadgeDto> = listOf(
-        EarnedBadgeDto(
-            id = "badge-1",
-            name = "Quiz Champion",
-            iconPath = "/badges/quiz-champion.png",
-            earnedAt = 1710000001000,
-        ),
-        EarnedBadgeDto(
-            id = "badge-2",
-            name = "Quick Learner",
-            iconPath = "/badges/quick-learner.png",
-            earnedAt = 1710000002000,
-        ),
-    )
+    override suspend fun getEducationEarnedBadges(): List<EarnedBadgeDto> {
+        earnedBadgesError?.let { throw it }
+        return listOf(
+            EarnedBadgeDto(
+                id = "badge-1",
+                name = "Quiz Champion",
+                iconPath = "/badges/quiz-champion.png",
+                earnedAt = 1710000001000,
+            ),
+            EarnedBadgeDto(
+                id = "badge-2",
+                name = "Quick Learner",
+                iconPath = "/badges/quick-learner.png",
+                earnedAt = 1710000002000,
+            ),
+        )
+    }
 }

@@ -5,6 +5,12 @@ import com.group8.comp2300.domain.model.medical.Appointment
 import kotlinx.serialization.Serializable
 
 @Serializable
+enum class PrivacyLegalDocument {
+    TermsOfService,
+    PrivacyPolicy,
+}
+
+@Serializable
 sealed interface Screen : NavKey {
     // Root App Shell
     @Serializable
@@ -139,7 +145,7 @@ sealed interface Screen : NavKey {
     data object Chatbot : Screen
 
     @Serializable
-    data object PrivacyLegalese : Screen
+    data class PrivacyLegalese(val initialDocument: PrivacyLegalDocument? = null) : Screen
 
     @Serializable
     data object Cart : Screen
