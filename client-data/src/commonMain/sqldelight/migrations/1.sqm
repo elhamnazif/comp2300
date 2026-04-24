@@ -1,7 +1,0 @@
-ALTER TABLE AppointmentEntity ADD COLUMN paymentMethod TEXT;
-ALTER TABLE AppointmentEntity ADD COLUMN paymentAmount REAL;
-ALTER TABLE AppointmentEntity ADD COLUMN transactionId TEXT;
-
-UPDATE AppointmentEntity
-SET status = 'PENDING_PAYMENT'
-WHERE status = 'PENDING';
