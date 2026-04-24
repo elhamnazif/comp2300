@@ -129,11 +129,5 @@ fun NotificationsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 )
             }
         }
-        item {
-            SettingsInfoCard(
-                title = stringResource(Res.string.notifications_privacy_title),
-                description = stringResource(Res.string.notifications_privacy_info),
-            )
-        }
     }
 }

@@ -3,23 +3,21 @@ package com.group8.comp2300.mock
 val faqs =
     listOf(
         "How do I book an appointment?" to
-            "Tap the 'Care' tab at the bottom, browse available clinics, select a clinic, " +
-            "and choose an available time slot. You'll receive a confirmation once your " +
-            "booking is complete.",
-        "How long does it take to get test results?" to
-            "Most test results are available within 3-5 business days. You'll receive a " +
-            "notification when your results are ready to view in the app.",
+            "Open the Booking tab, choose a clinic, pick an available time slot, and confirm " +
+            "your appointment.",
+        "Where can I find my results and records?" to
+            "Go to Profile > Health Records to view files and records available in your account.",
         "Is my data secure?" to
             "Yes, all your health data is encrypted using industry-standard encryption. " +
-            "We use biometric authentication and never share your personal information " +
-            "without your explicit consent.",
-        "How do I notify partners anonymously?" to
-            "On your Profile screen, tap the 'Notify Partners Anonymously' card. This will " +
-            "redirect you to TellYourPartner.org where you can send discreet SMS notifications.",
-        "Can I delete my account?" to
-            "Yes, you can request account deletion by contacting our support team. " +
-            "All your data will be permanently removed within 30 days.",
+            "You can also turn on app lock, biometric unlock, and discreet notifications " +
+            "from Profile settings.",
+        "How do I change my email or password?" to
+            "Go to Profile > Account. From there you can change your email, change your " +
+            "password, or deactivate your account.",
+        "What happens if I deactivate my account?" to
+            "Deactivating signs you out and disables sign-in for that account until it is restored. " +
+            "Your data is kept on the account.",
         "How do I change my notification settings?" to
-            "Go to Profile > Settings > Notifications to customize what notifications you " +
-            "receive and enable Discreet Mode.",
+            "Go to Profile > Notifications to choose which alerts you receive and whether " +
+            "notifications stay discreet.",
     )
