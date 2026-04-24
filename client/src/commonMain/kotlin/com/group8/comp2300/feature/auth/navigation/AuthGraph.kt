@@ -54,9 +54,6 @@ val authGraphModule = module {
             onNavigateToForgotPassword = {
                 navigator.navigate(Screen.ForgotPassword)
             },
-            onNavigateToLegalDocument = { document ->
-                navigator.navigate(Screen.PrivacyLegalese(initialDocument = document))
-            },
         )
     }
 

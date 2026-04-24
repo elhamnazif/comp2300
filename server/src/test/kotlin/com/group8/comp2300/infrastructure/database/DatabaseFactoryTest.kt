@@ -33,7 +33,7 @@ class DatabaseFactoryTest {
     }
 
     @Test
-    fun `product seed refreshes existing prices`() {
+    fun `product seed refreshes existing catalog fields`() {
         val dbFile = File.createTempFile("comp2300-products", ".db")
         dbFile.deleteOnExit()
         val dbUrl = "jdbc:sqlite:${dbFile.absolutePath}"
@@ -41,12 +41,13 @@ class DatabaseFactoryTest {
         createServerDatabase(dbUrl)
 
         val repository = ProductRepositoryImpl(createServerDatabase(dbUrl))
-        val staleProduct = repository.getById("4") ?: error("expected seeded product")
-        repository.update(staleProduct.copy(price = 20.0))
+        val staleProduct = repository.getById("1") ?: error("expected seeded product")
+        repository.update(staleProduct.copy(price = 20.0, insuranceCovered = true))
 
         val refreshedRepository = ProductRepositoryImpl(createServerDatabase(dbUrl))
-        val refreshed = refreshedRepository.getById("4")
+        val refreshed = refreshedRepository.getById("1")
 
-        assertEquals(99.0, refreshed?.price)
+        assertEquals(49.9, refreshed?.price)
+        assertEquals(false, refreshed?.insuranceCovered)
     }
 }

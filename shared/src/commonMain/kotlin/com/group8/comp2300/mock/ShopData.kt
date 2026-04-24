@@ -11,7 +11,7 @@ val sampleProducts =
             "Results in 15 mins",
             49.9,
             ProductCategory.TESTING,
-            true,
+            false,
             "/images/shop/icare1_hiv_test_wholeblood.png",
         ),
         Product(
@@ -20,7 +20,7 @@ val sampleProducts =
             "3-month supply",
             195.0,
             ProductCategory.MEDICATION,
-            true,
+            false,
             "/images/shop/prep1_generic_tenoem.png",
         ),
         Product(

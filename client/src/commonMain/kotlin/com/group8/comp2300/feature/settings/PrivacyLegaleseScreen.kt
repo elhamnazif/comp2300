@@ -89,7 +89,7 @@ fun PrivacyLegaleseScreen(
     }
 
     if (activeDocument != null) {
-        LegalDocumentViewer(
+        LegalDocumentViewerDialog(
             document = activeDocument,
             onDismiss = { activeDocumentName = null },
         )
@@ -97,7 +97,7 @@ fun PrivacyLegaleseScreen(
 }
 
 @Composable
-private fun LegalDocumentViewer(document: PrivacyLegalDocument, onDismiss: () -> Unit) {
+fun LegalDocumentViewerDialog(document: PrivacyLegalDocument, onDismiss: () -> Unit) {
     val title = stringResource(document.titleRes())
     val content = stringResource(document.contentRes())
     val sections = remember(document, title, content) {

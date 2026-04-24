@@ -10,6 +10,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
@@ -32,6 +35,7 @@ import com.group8.comp2300.feature.auth.components.AuthBanner
 import com.group8.comp2300.feature.auth.components.AuthLoadingButton
 import com.group8.comp2300.feature.auth.components.AuthPasswordField
 import com.group8.comp2300.feature.auth.components.AuthTextField
+import com.group8.comp2300.feature.settings.LegalDocumentViewerDialog
 import com.group8.comp2300.symbols.icons.materialsymbols.Icons
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.MailOutlineW400Outlinedfill1
 import com.group8.comp2300.symbols.icons.materialsymbols.icons.PersonW400Outlinedfill1
@@ -48,12 +52,12 @@ fun AuthScreen(
     onDismiss: () -> Unit = {},
     onNavigateToEmailVerification: (String) -> Unit = {},
     onNavigateToForgotPassword: () -> Unit = {},
-    onNavigateToLegalDocument: (PrivacyLegalDocument) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    var activeLegalDocument by rememberSaveable { mutableStateOf<PrivacyLegalDocument?>(null) }
 
     val authError = state.errorMessageRes?.let { stringResource(it) } ?: state.errorMessage
     val successMessage = if (authError == null) initialSuccessMessage else null
@@ -114,7 +118,7 @@ fun AuthScreen(
                         state = state,
                         onEvent = viewModel::onEvent,
                         onNavigateToForgotPassword = onNavigateToForgotPassword,
-                        onNavigateToLegalDocument = onNavigateToLegalDocument,
+                        onOpenLegalDocument = { activeLegalDocument = it },
                     )
                 }
 
@@ -148,6 +152,13 @@ fun AuthScreen(
                 }
             }
         }
+    }
+
+    if (activeLegalDocument != null) {
+        LegalDocumentViewerDialog(
+            document = activeLegalDocument!!,
+            onDismiss = { activeLegalDocument = null },
+        )
     }
 }
 
@@ -208,7 +219,7 @@ private fun CredentialsForm(
     state: AuthViewModel.State,
     onEvent: (AuthViewModel.AuthUiEvent) -> Unit,
     onNavigateToForgotPassword: () -> Unit = {},
-    onNavigateToLegalDocument: (PrivacyLegalDocument) -> Unit = {},
+    onOpenLegalDocument: (PrivacyLegalDocument) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     Column(modifier) {
@@ -288,7 +299,7 @@ private fun CredentialsForm(
                             tag = termsTag,
                             styles = TextLinkStyles(style = linkStyle),
                             linkInteractionListener = {
-                                onNavigateToLegalDocument(PrivacyLegalDocument.TermsOfService)
+                                onOpenLegalDocument(PrivacyLegalDocument.TermsOfService)
                             },
                         ),
                     ) {
@@ -300,7 +311,7 @@ private fun CredentialsForm(
                             tag = privacyTag,
                             styles = TextLinkStyles(style = linkStyle),
                             linkInteractionListener = {
-                                onNavigateToLegalDocument(PrivacyLegalDocument.PrivacyPolicy)
+                                onOpenLegalDocument(PrivacyLegalDocument.PrivacyPolicy)
                             },
                         ),
                     ) {
